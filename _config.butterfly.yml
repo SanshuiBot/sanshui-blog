@@ -57,7 +57,7 @@ social:
 # Image Settings
 # --------------------------------------
 
-favicon: /img/tx.jpg
+favicon: /img/favicon.ico
 
 avatar:
   img: https://picsum.photos/110
