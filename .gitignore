@@ -8,5 +8,6 @@
 node_modules/
 .github
 .git
+.deploy_git
 public
 package-lock.json
