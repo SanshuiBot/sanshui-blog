@@ -9,6 +9,6 @@ node_modules/
 .github
 .git
 .deploy_git
-public
+public/
 db.json
 package-lock.json
