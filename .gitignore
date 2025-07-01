@@ -10,4 +10,5 @@ node_modules/
 .git
 .deploy_git
 public
+db.json
 package-lock.json
