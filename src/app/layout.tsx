@@ -26,11 +26,6 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  alternates: {
-    types: {
-      'application/rss+xml': '/sanshui-blog/feed.xml',
-    },
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
