@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
   description: '记录技术思考、生活感悟与创作灵感',
   icons: {
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
+    icon: [{ url: '/sanshui-blog/favicon.svg', type: 'image/svg+xml' }],
   },
   openGraph: {
     title: '三水 | 个人博客',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   alternates: {
     types: {
-      'application/rss+xml': '/feed.xml',
+      'application/rss+xml': '/sanshui-blog/feed.xml',
     },
   },
 };
