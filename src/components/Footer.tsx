@@ -59,14 +59,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/feed.xml"
-                  className="text-sm text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-200"
-                >
-                  RSS Feed
-                </Link>
-              </li>
-              <li>
                 <a
                   href="https://github.com/SanshuiBot"
                   target="_blank"
