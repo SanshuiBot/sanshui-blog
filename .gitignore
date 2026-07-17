@@ -43,9 +43,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# old hexo files
+# old hexo files (build output directories)
 db.json
-public/
 .deploy_git
 scaffolds/
 source/
