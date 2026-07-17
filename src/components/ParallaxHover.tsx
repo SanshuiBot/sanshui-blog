@@ -38,11 +38,17 @@ export function MagneticHover({ children, className = '', strength = 0.3 }: Magn
     <motion.div
       ref={ref}
       className={className}
-      style={{ x: springX, y: springY }}
+      style={{
+        x: springX,
+        y: springY,
+        backfaceVisibility: 'hidden',
+      }}
       onMouseMove={handleMouse}
       onMouseLeave={handleLeave}
     >
-      {children}
+      <div style={{ backfaceVisibility: 'hidden', transformStyle: 'preserve-3d' }}>
+        {children}
+      </div>
     </motion.div>
   );
 }
