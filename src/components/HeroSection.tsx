@@ -68,18 +68,13 @@ export default function HeroSection() {
             transition={{ duration: 0.5, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
             className="flex flex-wrap items-center gap-4"
           >
-            <MagneticHover strength={0.15}>
-              <Link
+            <Link
                 href="#posts"
-                className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm hover:bg-stone-800 dark:hover:bg-stone-200 transition-all duration-300 shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98]"
+                className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm hover:bg-stone-700 dark:hover:bg-stone-200 transition-all duration-300 shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98]"
               >
                 浏览文章
-                <ArrowUpRight
-                  size={16}
-                  className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                />
+                <ArrowUpRight size={16} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
-            </MagneticHover>
 
             <div className="flex items-center gap-1">
               {[
