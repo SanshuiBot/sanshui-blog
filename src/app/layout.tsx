@@ -3,6 +3,7 @@ import './globals.css';
 import { ThemeProvider } from '@/components/ThemeToggle';
 import Layout from '@/components/Layout';
 import { BlogSiteJsonLd } from '@/components/JsonLd';
+import MeshGradient from '@/components/MeshGradient';
 import { getAllPosts } from '@/lib/posts';
 
 export const metadata: Metadata = {
@@ -62,6 +63,7 @@ export default function RootLayout({
         <ThemeProvider>
           <Layout posts={posts}>{children}</Layout>
           <BlogSiteJsonLd />
+          <MeshGradient />
         </ThemeProvider>
       </body>
     </html>

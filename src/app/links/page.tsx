@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Globe, ExternalLink } from 'lucide-react';
+import ScrollReveal from '@/components/ScrollReveal';
 
 const links = [
   {
@@ -35,22 +35,23 @@ const links = [
 export default function LinksPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors mb-10">
-        <ArrowLeft size={16} />
-        返回首页
-      </Link>
+      <ScrollReveal direction="up">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors mb-10">
+          <ArrowLeft size={16} />
+          返回首页
+        </Link>
+      </ScrollReveal>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <ScrollReveal direction="up" delay={0.1}>
         <h1 className="text-3xl sm:text-4xl font-bold text-stone-900 dark:text-stone-50 tracking-tight mb-3">
           友情链接
         </h1>
         <p className="text-stone-500 dark:text-stone-500 mb-10">
           那些人，那些事
         </p>
+      </ScrollReveal>
 
+      <ScrollReveal direction="up" delay={0.2}>
         <div className="grid gap-4">
           {links.map((link, i) => (
             <motion.a
@@ -85,7 +86,7 @@ export default function LinksPage() {
             </motion.a>
           ))}
         </div>
-      </motion.div>
+      </ScrollReveal>
     </div>
   );
 }

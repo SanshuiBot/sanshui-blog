@@ -1,25 +1,27 @@
-﻿'use client';
+'use client';
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import ScrollReveal from '@/components/ScrollReveal';
 
 export default function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors mb-10">
-        <ArrowLeft size={16} />
-        返回首页
-      </Link>
+      <ScrollReveal direction="up">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors mb-10">
+          <ArrowLeft size={16} />
+          返回首页
+        </Link>
+      </ScrollReveal>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <ScrollReveal direction="up" delay={0.1}>
         <h1 className="text-3xl sm:text-4xl font-bold text-stone-900 dark:text-stone-50 tracking-tight mb-8">
           关于我
         </h1>
+      </ScrollReveal>
 
+      <ScrollReveal direction="up" delay={0.2}>
         <div className="prose-custom space-y-6">
           <p>
             你好！我是<strong className="text-stone-900 dark:text-stone-50">三水</strong>，一个热爱技术和写作的人。
@@ -45,7 +47,7 @@ export default function AboutPage() {
             <li>GitHub: github.com/sanshui</li>
           </ul>
         </div>
-      </motion.div>
+      </ScrollReveal>
     </div>
   );
 }
