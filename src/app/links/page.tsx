@@ -8,10 +8,10 @@ import ScrollReveal from "@/components/ScrollReveal";
 const links = [
   {
     name: "GitHub",
-    url: "https://hexo.io/zh-tw/",
+    url: "https://github.com/SanshuiBot",
     avatar:
-      "https://d33wubrfki0l68.cloudfront.net/6657ba50e702d84afb32fe846bed54fba1a77add/827ae/logo.svg",
-    desc: "快速、简单且强大的网志框架",
+      "https://cdn.jsdelivr.net/gh/SanshuiBot/CDN@latest/avatar/github.png",
+    desc: "个人开源项目托管平台",
   },
 ];
 
