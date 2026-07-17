@@ -10,7 +10,7 @@ const links = [
   {
     name: 'GitHub',
     url: 'https://github.com/SanshuiBot',
-    avatar: '/sanshui-blog/github.png',
+    avatar: 'github.png',
     desc: '个人开源项目托管平台',
   },
 ];
