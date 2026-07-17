@@ -9,7 +9,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
           {/* Brand */}
           <div className="sm:col-span-1">
-            <Link href="/" className="text-xl font-bold text-stone-900 dark:text-stone-50 tracking-tight">
+            <Link
+              href="/"
+              className="text-xl font-bold text-stone-900 dark:text-stone-50 tracking-tight"
+            >
               三水
             </Link>
             <p className="mt-3 text-sm text-stone-500 dark:text-stone-500 leading-relaxed max-w-xs">
@@ -48,12 +51,18 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/links" className="text-sm text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-200">
+                <Link
+                  href="/links"
+                  className="text-sm text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-200"
+                >
                   友情链接
                 </Link>
               </li>
               <li>
-                <Link href="/feed.xml" className="text-sm text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-200">
+                <Link
+                  href="/feed.xml"
+                  className="text-sm text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-200"
+                >
                   RSS Feed
                 </Link>
               </li>

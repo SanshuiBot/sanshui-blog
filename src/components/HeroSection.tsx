@@ -19,7 +19,10 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,0,0,0.02)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.02)_0%,transparent_60%)]" />
       </div>
 
-      <motion.div style={{ opacity, y }} className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+      <motion.div
+        style={{ opacity, y }}
+        className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28"
+      >
         <div className="max-w-3xl">
           {/* Status badge */}
           <motion.div
@@ -55,8 +58,7 @@ export default function HeroSection() {
             transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-10"
           >
-            在这里记录技术思考、生活感悟与创作灵感。
-            用文字沉淀知识，用代码改变世界。
+            在这里记录技术思考、生活感悟与创作灵感。 用文字沉淀知识，用代码改变世界。
           </motion.p>
 
           {/* CTA + Social */}
@@ -72,7 +74,10 @@ export default function HeroSection() {
                 className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm hover:bg-stone-800 dark:hover:bg-stone-200 transition-all duration-300 shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98]"
               >
                 浏览文章
-                <ArrowUpRight size={16} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ArrowUpRight
+                  size={16}
+                  className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
               </Link>
             </MagneticHover>
 
@@ -82,7 +87,7 @@ export default function HeroSection() {
                 { icon: Mail, href: 'mailto:hello@sanshui.dev', label: 'Email' },
                 { icon: MapPin, href: '#', label: 'Location' },
                 { icon: Coffee, href: '#', label: 'Buy Me a Coffee' },
-              ].map(({ icon: Icon, href, label }, i) => (
+              ].map(({ icon: Icon, href, label }) => (
                 <MagneticHover key={label} strength={0.2}>
                   <Link
                     href={href}
@@ -111,7 +116,9 @@ export default function HeroSection() {
               { value: '1', label: '个作者' },
             ].map((stat) => (
               <div key={stat.label}>
-                <div className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-50 tracking-tight">{stat.value}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-50 tracking-tight">
+                  {stat.value}
+                </div>
                 <div className="text-sm text-stone-500 dark:text-stone-500 mt-1">{stat.label}</div>
               </div>
             ))}

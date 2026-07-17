@@ -26,7 +26,10 @@ export default function Home() {
                   精选文章
                 </span>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-stone-900 dark:text-stone-50 tracking-tight mb-4 max-w-2xl">
-                  <Link href={`/posts/${featuredPost.slug}`} className="hover:text-red-600 dark:hover:text-red-400 transition-colors duration-300">
+                  <Link
+                    href={`/posts/${featuredPost.slug}`}
+                    className="hover:text-red-600 dark:hover:text-red-400 transition-colors duration-300"
+                  >
                     {featuredPost.title}
                   </Link>
                 </h2>
@@ -42,7 +45,11 @@ export default function Home() {
                     <ArrowRight size={14} />
                   </Link>
                   <span className="text-xs text-stone-400 dark:text-stone-500">
-                    {new Date(featuredPost.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    {new Date(featuredPost.date).toLocaleDateString('zh-CN', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
                   </span>
                 </div>
               </div>

@@ -13,7 +13,12 @@ function readPostFile(fileName: string): Post {
   const slug = fileName.replace(/\.md$/, '');
   const title = data.title || slug;
   const date = data.date ? new Date(data.date).toISOString().split('T')[0] : '';
-  const excerpt = data.excerpt || content.slice(0, 160).replace(/[#*`\[\]]/g, '').trim();
+  const excerpt =
+    data.excerpt ||
+    content
+      .slice(0, 160)
+      .replace(/[#*`\[\]]/g, '')
+      .trim();
   const tags: string[] = data.tags || [];
 
   return { slug, title, date, excerpt, tags, content };

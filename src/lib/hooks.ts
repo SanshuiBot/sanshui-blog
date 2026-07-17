@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-export function useMouseMoveTransform(smoothFactor = 0.05) {
+export function useMouseMoveTransform() {
   const target = useRef({ x: 0, y: 0 });
   const current = useRef({ x: 0, y: 0 });
 

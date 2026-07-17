@@ -26,7 +26,7 @@ export async function GET() {
       <description><![CDATA[${post.excerpt}]]></description>
       <content:encoded><![CDATA[${post.content}]]></content:encoded>
       ${post.tags.map((tag) => `<category>${tag}</category>`).join('')}
-    </item>`
+    </item>`,
       )
       .join('')}
   </channel>

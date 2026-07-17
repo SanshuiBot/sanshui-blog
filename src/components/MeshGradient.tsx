@@ -5,7 +5,7 @@ import { useMouseMoveTransform } from '@/lib/hooks';
 
 export default function MeshGradient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouse = useMouseMoveTransform(0.05);
+  const mouse = useMouseMoveTransform();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -18,10 +18,10 @@ export default function MeshGradient() {
     let time = 0;
 
     const colors = [
-      { r: 220, g: 38, b: 38 },   // red
-      { r: 234, g: 88, b: 12 },   // orange
+      { r: 220, g: 38, b: 38 }, // red
+      { r: 234, g: 88, b: 12 }, // orange
       { r: 168, g: 162, b: 158 }, // stone
-      { r: 28, g: 25, b: 23 },    // near black
+      { r: 28, g: 25, b: 23 }, // near black
     ];
 
     const resize = () => {
@@ -50,7 +50,7 @@ export default function MeshGradient() {
       ctx.clearRect(0, 0, w, h);
 
       // Update blob positions with mouse influence
-      blobs.forEach((blob, i) => {
+      blobs.forEach((blob) => {
         blob.x += blob.vx + Math.sin(time + blob.phase) * 0.2;
         blob.y += blob.vy + Math.cos(time * 0.7 + blob.phase) * 0.2;
 
@@ -72,10 +72,7 @@ export default function MeshGradient() {
         if (blob.y > h + blob.radius) blob.y = -blob.radius;
 
         // Radial gradient blob
-        const gradient = ctx.createRadialGradient(
-          blob.x, blob.y, 0,
-          blob.x, blob.y, blob.radius
-        );
+        const gradient = ctx.createRadialGradient(blob.x, blob.y, 0, blob.x, blob.y, blob.radius);
         gradient.addColorStop(0, `rgba(${blob.color.r}, ${blob.color.g}, ${blob.color.b}, 0.12)`);
         gradient.addColorStop(0.5, `rgba(${blob.color.r}, ${blob.color.g}, ${blob.color.b}, 0.06)`);
         gradient.addColorStop(1, `rgba(${blob.color.r}, ${blob.color.g}, ${blob.color.b}, 0)`);

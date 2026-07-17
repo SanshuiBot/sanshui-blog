@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { ArrowLeft, ExternalLink, Globe } from "lucide-react";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import ScrollReveal from "@/components/ScrollReveal";
+import { ArrowLeft, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import ScrollReveal from '@/components/ScrollReveal';
 
 const links = [
   {
-    name: "GitHub",
-    url: "https://github.com/SanshuiBot",
-    avatar:
-      "https://cdn.jsdelivr.net/gh/SanshuiBot/CDN@latest/avatar/github.png",
-    desc: "个人开源项目托管平台",
+    name: 'GitHub',
+    url: 'https://github.com/SanshuiBot',
+    avatar: 'https://cdn.jsdelivr.net/gh/SanshuiBot/CDN@latest/avatar/github.png',
+    desc: '个人开源项目托管平台',
   },
 ];
 
@@ -32,9 +32,7 @@ export default function LinksPage() {
         <h1 className="text-3xl sm:text-4xl font-bold text-stone-900 dark:text-stone-50 tracking-tight mb-3">
           友情链接
         </h1>
-        <p className="text-stone-500 dark:text-stone-500 mb-10">
-          那些人，那些事
-        </p>
+        <p className="text-stone-500 dark:text-stone-500 mb-10">那些人，那些事</p>
       </ScrollReveal>
 
       <ScrollReveal direction="up" delay={0.2}>
@@ -51,13 +49,17 @@ export default function LinksPage() {
               className="group flex items-center gap-4 p-5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700 hover:shadow-md transition-all duration-300"
             >
               <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-stone-100 dark:bg-stone-800">
-                <img
+                <Image
                   src={link.avatar}
                   alt={link.name}
+                  width={48}
+                  height={48}
                   className="w-full h-full object-cover"
+                  unoptimized
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22><rect fill=%22%23e7e5e4%22 width=%2248%22 height=%2248%22/><text x=%2224%22 y=%2230%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22%23a8a29e%22>G</text></svg>";
+                    const target = e.currentTarget as HTMLImageElement;
+                    target.src =
+                      'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 48 48%22><rect fill=%22%23e7e5e4%22 width=%2248%22 height=%2248%22/><text x=%2224%22 y=%2230%22 text-anchor=%22middle%22 font-size=%2220%22 fill=%22%23a8a29e%22>G</text></svg>';
                   }}
                 />
               </div>
@@ -71,9 +73,7 @@ export default function LinksPage() {
                     className="text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                   />
                 </div>
-                <p className="text-sm text-stone-500 dark:text-stone-500 truncate">
-                  {link.desc}
-                </p>
+                <p className="text-sm text-stone-500 dark:text-stone-500 truncate">{link.desc}</p>
               </div>
             </motion.a>
           ))}

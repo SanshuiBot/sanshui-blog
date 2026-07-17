@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -19,9 +19,7 @@ export default function NotFound() {
         >
           404
         </motion.div>
-        <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-50 mb-3">
-          页面走丢了
-        </h1>
+        <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-50 mb-3">页面走丢了</h1>
         <p className="text-stone-500 dark:text-stone-500 mb-8">
           抱歉，你访问的页面不存在或已被移除。
         </p>

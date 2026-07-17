@@ -33,7 +33,10 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
 
   const results = useMemo(() => {
     if (!query.trim()) return [];
-    return fuse.search(query).slice(0, 8).map((r) => r.item);
+    return fuse
+      .search(query)
+      .slice(0, 8)
+      .map((r) => r.item);
   }, [query, fuse]);
 
   // Keyboard shortcut
@@ -87,7 +90,10 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] flex items-start justify-center pt-[15vh] px-4"
           >
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+            <div
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setIsOpen(false)}
+            />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: -10 }}
@@ -108,7 +114,10 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
                   className="flex-1 bg-transparent text-stone-900 dark:text-stone-50 placeholder-stone-400 dark:placeholder-stone-500 outline-none text-base"
                 />
                 {query && (
-                  <button onClick={() => setQuery('')} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">
+                  <button
+                    onClick={() => setQuery('')}
+                    className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
+                  >
                     <X size={16} />
                   </button>
                 )}
@@ -144,7 +153,10 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
                             ))}
                           </div>
                         </div>
-                        <ArrowRight size={14} className="text-stone-300 dark:text-stone-600 group-hover:text-red-500 shrink-0" />
+                        <ArrowRight
+                          size={14}
+                          className="text-stone-300 dark:text-stone-600 group-hover:text-red-500 shrink-0"
+                        />
                       </Link>
                     ))}
                   </div>

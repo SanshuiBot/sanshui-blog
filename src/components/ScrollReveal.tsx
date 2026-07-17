@@ -30,7 +30,7 @@ export default function ScrollReveal({
           observer.unobserve(el);
         }
       },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' },
     );
 
     observer.observe(el);
@@ -54,9 +54,7 @@ export default function ScrollReveal({
         ...directionOffset[direction],
       }}
       animate={
-        isVisible
-          ? { opacity: 1, x: 0, y: 0 }
-          : { opacity: 0, ...directionOffset[direction] }
+        isVisible ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, ...directionOffset[direction] }
       }
       transition={{
         duration: 0.6,
