@@ -19,7 +19,10 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,0,0,0.02)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.02)_0%,transparent_60%)]" />
       </div>
 
-      <motion.div style={{ opacity, y }} className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+      <motion.div
+        style={{ opacity, y }}
+        className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28"
+      >
         <div className="max-w-3xl">
           {/* Status badge */}
           <motion.div
@@ -55,8 +58,7 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-10"
           >
-            在这里记录技术思考、生活感悟与创作灵感。
-            用文字沉淀知识，用代码改变世界。
+            在这里记录技术思考、生活感悟与创作灵感。 用文字沉淀知识，用代码改变世界。
           </motion.p>
 
           {/* CTA + Social */}
@@ -73,7 +75,10 @@ export default function HeroSection() {
               >
                 <span>浏览文章</span>
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/15 dark:bg-stone-900/15 group-hover:bg-white/25 dark:group-hover:bg-stone-900/25 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
-                  <ArrowUpRight size={14} className="transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <ArrowUpRight
+                    size={14}
+                    className="transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  />
                 </span>
               </Link>
             </MagneticHover>
@@ -81,7 +86,7 @@ export default function HeroSection() {
             <div className="flex items-center gap-1">
               {[
                 { icon: Code2, href: 'https://github.com/SanshuiBot', label: 'GitHub' },
-                { icon: Mail, href: 'mailto:hello@sanshui.dev', label: 'Email' },
+                { icon: Mail, href: 'mailto:localhost6@foxmail.com', label: 'Email' },
                 { icon: MapPin, href: '#', label: 'Location' },
                 { icon: Coffee, href: '#', label: 'Buy Me a Coffee' },
               ].map(({ icon: Icon, href, label }) => (
