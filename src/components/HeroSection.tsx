@@ -12,23 +12,20 @@ export default function HeroSection() {
 
   return (
     <section className="relative overflow-hidden min-h-[100dvh] flex items-center">
-      {/* Premium background */}
+      {/* Premium background mesh */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-red-100/60 via-orange-50/30 to-transparent dark:from-red-950/20 dark:via-orange-950/10 dark:to-transparent rounded-full blur-3xl -translate-y-1/4 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-stone-100/80 to-transparent dark:from-stone-900/30 dark:to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
+        <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-gradient-to-br from-red-100/50 via-orange-50/20 to-transparent dark:from-red-950/15 dark:via-orange-950/8 dark:to-transparent rounded-full blur-3xl -translate-y-1/4 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-stone-100/60 to-transparent dark:from-stone-900/20 dark:to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,0,0,0.02)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.02)_0%,transparent_60%)]" />
       </div>
 
-      <motion.div
-        style={{ opacity, y }}
-        className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28"
-      >
+      <motion.div style={{ opacity, y }} className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
         <div className="max-w-3xl">
           {/* Status badge */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-900/5 dark:bg-stone-50/10 border border-stone-900/10 dark:border-stone-50/10 text-stone-500 dark:text-stone-400 text-xs font-medium mb-8 tracking-wide"
           >
             <span className="relative flex h-2 w-2">
@@ -38,11 +35,11 @@ export default function HeroSection() {
             正在写作中
           </motion.div>
 
-          {/* Main heading - editorial style */}
+          {/* Main heading */}
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-stone-900 dark:text-stone-50 leading-[1.08] mb-6"
           >
             你好，我是
@@ -55,26 +52,29 @@ export default function HeroSection() {
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-10"
           >
-            在这里记录技术思考、生活感悟与创作灵感。 用文字沉淀知识，用代码改变世界。
+            在这里记录技术思考、生活感悟与创作灵感。
+            用文字沉淀知识，用代码改变世界。
           </motion.p>
 
           {/* CTA + Social */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-wrap items-center gap-4"
           >
             <MagneticHover strength={0.15}>
               <Link
                 href="#posts"
-                className="group inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm hover:bg-stone-700 dark:hover:bg-stone-200 transition-all duration-300 shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98]"
+                className="group relative inline-flex items-center gap-3 px-6 py-3 rounded-full bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98]"
               >
-                浏览文章
-                <ArrowUpRight size={16} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <span>浏览文章</span>
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/15 dark:bg-stone-900/15 group-hover:bg-white/25 dark:group-hover:bg-stone-900/25 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
+                  <ArrowUpRight size={14} className="transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
               </Link>
             </MagneticHover>
 
@@ -89,7 +89,7 @@ export default function HeroSection() {
                   <Link
                     href={href}
                     aria-label={label}
-                    className="p-2.5 rounded-xl text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-300 active:scale-95"
+                    className="p-2.5 rounded-full text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95"
                   >
                     <Icon size={18} />
                   </Link>
@@ -101,10 +101,10 @@ export default function HeroSection() {
 
         {/* Stats row */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-          className="mt-20 pt-10 border-t border-stone-200/60 dark:border-stone-800/60"
+          transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-20 pt-10 border-t border-stone-200/40 dark:border-stone-800/40"
         >
           <div className="flex gap-12 sm:gap-16">
             {[
