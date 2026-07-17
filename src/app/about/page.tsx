@@ -46,7 +46,7 @@ export default function AboutPage() {
           </h2>
           <p>如果你有任何问题或想法，欢迎通过以下方式联系我：</p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>Email: localhostwm@qq.com</li>
+            <li>Email: localhost6@foxmail.com</li>
             <li>GitHub: https://github.com/SanshuiBot</li>
           </ul>
         </div>
