@@ -4,42 +4,103 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowRight, Tag } from 'lucide-react';
 import Link from 'next/link';
-import Fuse from 'fuse.js';
 import type { Post } from '@/lib/types';
 
 interface SearchDialogProps {
   posts: Post[];
 }
 
+interface PagefindResult {
+  data: () => Promise<{ url: string; excerpt: string; meta: { title: string; date: string; tags?: string[] } }>;
+  excerpt: string;
+  meta: { title: string; date: string; tags?: string[] };
+  url: string;
+}
+
+interface PagefindResolved {
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  tags: string[];
+}
+
+// pagefind is generated at build time and loaded from /pagefind/pagefind.js
+// Fall back to simple client-side substring search if pagefind isn't available (dev mode)
 export default function SearchDialog({ posts }: SearchDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const [pagefindReady, setPagefindReady] = useState(false);
 
-  const fuse = useMemo(
-    () =>
-      new Fuse(posts, {
-        keys: [
-          { name: 'title', weight: 2 },
-          { name: 'tags', weight: 1.5 },
-          { name: 'excerpt', weight: 1 },
-          { name: 'content', weight: 0.5 },
-        ],
-        threshold: 0.4,
-        includeScore: true,
-      }),
-    [posts],
-  );
+  // Load pagefind script + index once
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const existing = document.getElementById('pagefind-search');
+    if (existing) {
+      setPagefindReady(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.id = 'pagefind-search';
+    script.src = '/sanshui-blog/pagefind/pagefind.js';
+    script.async = true;
+    script.onload = () => {
+      // @ts-expect-error - pagefind injects globals
+      if (window.pagefind) {
+        // @ts-expect-error
+        window.pagefind.options({ basePath: '/sanshui-blog/pagefind/' });
+        setPagefindReady(true);
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
 
-  const results = useMemo(() => {
-    if (!query.trim()) return [];
-    return fuse
-      .search(query)
-      .slice(0, 8)
-      .map((r) => r.item);
-  }, [query, fuse]);
+  const results = useMemo(async () => {
+    const q = query.trim();
+    if (!q) return [];
+    // @ts-expect-error - pagefind global injected by script
+    if (pagefindReady && window.pagefind) {
+      try {
+        // @ts-expect-error
+        const search = await window.pagefind.search(q);
+        const top: PagefindResult[] = search.results.slice(0, 8);
+        const data = await Promise.all(top.map((r) => r.data()));
+        const resolved: PagefindResolved[] = data.map((d) => ({
+          slug: d.url.replace(/\/$/, '').split('/').pop()!,
+          title: d.meta.title,
+          date: d.meta.date,
+          excerpt: d.excerpt,
+          tags: d.meta.tags ?? [],
+        }));
+        return resolved;
+      } catch {
+        return [];
+      }
+    }
+    // Fallback: substring search
+    const lower = q.toLowerCase();
+    return posts
+      .filter(
+        (p) =>
+          p.title.toLowerCase().includes(lower) ||
+          p.excerpt.toLowerCase().includes(lower) ||
+          p.tags.some((t) => t.toLowerCase().includes(lower)),
+      )
+      .slice(0, 8);
+  }, [query, posts, pagefindReady]);
 
-  // Keyboard shortcut
+  const [resolved, setResolved] = useState<typeof posts>([]);
+  useEffect(() => {
+    let cancelled = false;
+    results.then((r) => {
+      if (!cancelled) setResolved(r as typeof posts);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [results]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -60,7 +121,6 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
 
   return (
     <>
-      {/* Search trigger */}
       <button
         onClick={() => setIsOpen(true)}
         className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors border border-stone-200 dark:border-stone-700"
@@ -81,7 +141,6 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
         <Search size={18} />
       </button>
 
-      {/* Overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -90,10 +149,7 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[70] flex items-start justify-center pt-[15vh] px-4"
           >
-            <div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={() => setIsOpen(false)}
-            />
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: -10 }}
@@ -102,7 +158,6 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
               transition={{ duration: 0.15 }}
               className="relative w-full max-w-xl bg-white dark:bg-stone-900 rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-800 overflow-hidden"
             >
-              {/* Search input */}
               <div className="flex items-center gap-3 px-5 py-4 border-b border-stone-200 dark:border-stone-800">
                 <Search size={18} className="text-stone-400 shrink-0" />
                 <input
@@ -114,10 +169,7 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
                   className="flex-1 bg-transparent text-stone-900 dark:text-stone-50 placeholder-stone-400 dark:placeholder-stone-500 outline-none text-base"
                 />
                 {query && (
-                  <button
-                    onClick={() => setQuery('')}
-                    className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
-                  >
+                  <button onClick={() => setQuery('')} className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">
                     <X size={16} />
                   </button>
                 )}
@@ -126,11 +178,10 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
                 </kbd>
               </div>
 
-              {/* Results */}
               <div className="max-h-80 overflow-y-auto p-2">
-                {results.length > 0 ? (
+                {resolved.length > 0 ? (
                   <div className="space-y-0.5">
-                    {results.map((post) => (
+                    {resolved.map((post) => (
                       <Link
                         key={post.slug}
                         href={`/posts/${post.slug}`}
@@ -153,10 +204,7 @@ export default function SearchDialog({ posts }: SearchDialogProps) {
                             ))}
                           </div>
                         </div>
-                        <ArrowRight
-                          size={14}
-                          className="text-stone-300 dark:text-stone-600 group-hover:text-red-500 shrink-0"
-                        />
+                        <ArrowRight size={14} className="text-stone-300 dark:text-stone-600 group-hover:text-red-500 shrink-0" />
                       </Link>
                     ))}
                   </div>

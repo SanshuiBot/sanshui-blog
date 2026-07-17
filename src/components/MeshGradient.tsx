@@ -32,15 +32,18 @@ export default function MeshGradient() {
     resize();
     window.addEventListener('resize', resize);
 
-    const blobs = Array.from({ length: 5 }, (_, i) => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      radius: 200 + Math.random() * 300,
-      color: colors[i % colors.length],
-      phase: Math.random() * Math.PI * 2,
-    }));
+    const blobs = Array.from({ length: 5 }, (_, i) => {
+      const color = colors[i % colors.length]!;
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        radius: 200 + Math.random() * 300,
+        color,
+        phase: Math.random() * Math.PI * 2,
+      };
+    });
 
     const render = () => {
       time += 0.002;

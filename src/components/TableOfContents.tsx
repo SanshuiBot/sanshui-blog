@@ -22,8 +22,8 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
     const items: TOCItem[] = [];
     let match;
     while ((match = regex.exec(content)) !== null) {
-      const level = match[1].length;
-      const text = match[2].trim();
+      const level = match[1]?.length ?? 1;
+      const text = (match[2] ?? '').trim();
       const id = text
         .toLowerCase()
         .replace(/[^\w\u4e00-\u9fff]+/g, '-')

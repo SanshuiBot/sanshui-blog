@@ -13,8 +13,11 @@ interface PostCardProps {
 
 export default function PostCard({ post, index }: PostCardProps) {
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
   return (
@@ -22,14 +25,15 @@ export default function PostCard({ post, index }: PostCardProps) {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      style={{ viewTransitionName: `post-card-${post.slug}` }}
     >
       <TiltCard tiltDegree={5}>
         {/* Double-Bezel: Outer Shell */}
         <div className="p-[1px] rounded-2xl bg-gradient-to-b from-stone-200/60 to-transparent dark:from-stone-800/40 dark:to-transparent">
           {/* Inner Core */}
-          <article className="group relative flex flex-col bg-white dark:bg-stone-900/80 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
+          <article className="group relative flex flex-col bg-white dark:bg-stone-900/80 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] transition-all duration-700 ease-[var(--ease-out-quint)]">
             {/* Top accent gradient */}
-            <div className="h-[2px] bg-gradient-to-r from-transparent via-transparent to-transparent group-hover:from-red-500 group-hover:via-orange-400 group-hover:to-amber-400 transition-all duration-1000 ease-[cubic-bezier(0.32,0.72,0,1)]" />
+            <div className="h-[2px] bg-gradient-to-r from-transparent via-transparent to-transparent group-hover:from-red-500 group-hover:via-orange-400 group-hover:to-amber-400 transition-all duration-1000 ease-[var(--ease-out-quint)]" />
 
             <div className="flex-1 p-6 sm:p-7">
               {/* Tags */}
@@ -37,7 +41,7 @@ export default function PostCard({ post, index }: PostCardProps) {
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 group-hover:bg-red-50 dark:group-hover:bg-red-950/30 group-hover:text-red-600 dark:group-hover:text-red-400 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 group-hover:bg-red-50 dark:group-hover:bg-red-950/30 group-hover:text-red-600 dark:group-hover:text-red-400 transition-all duration-500 ease-[var(--ease-out-quint)]"
                   >
                     <Tag size={10} />
                     {tag}
@@ -46,7 +50,7 @@ export default function PostCard({ post, index }: PostCardProps) {
               </div>
 
               {/* Title */}
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-50 mb-3 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] line-clamp-2 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-50 mb-3 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-500 ease-[var(--ease-out-quint)] line-clamp-2 tracking-tight">
                 {post.title}
               </h2>
 
@@ -65,11 +69,14 @@ export default function PostCard({ post, index }: PostCardProps) {
                 {/* Button-in-button trailing icon */}
                 <Link
                   href={`/posts/${post.slug}`}
-                  className="group/btn inline-flex items-center gap-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                  className="group/btn inline-flex items-center gap-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-500 ease-[var(--ease-out-quint)]"
                 >
                   <span>阅读</span>
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 group-hover/btn:bg-red-50 dark:group-hover/btn:bg-red-950/30 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]">
-                    <ArrowRight size={12} className="transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover/btn:translate-x-0.5" />
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 group-hover/btn:bg-red-50 dark:group-hover/btn:bg-red-950/30 transition-all duration-500 ease-[var(--ease-out-quint)]">
+                    <ArrowRight
+                      size={12}
+                      className="transition-transform duration-500 ease-[var(--ease-out-quint)] group-hover/btn:translate-x-0.5"
+                    />
                   </span>
                 </Link>
               </div>

@@ -11,15 +11,15 @@ function readPostFile(fileName: string): Post {
   const { data, content } = matter(fileContent);
 
   const slug = fileName.replace(/\.md$/, '');
-  const title = data.title || slug;
-  const date = data.date ? new Date(data.date).toISOString().split('T')[0] : '';
-  const excerpt =
-    data.excerpt ||
+  const title: string = data.title ?? slug;
+  const date: string = data.date ? new Date(data.date).toISOString().split('T')[0]! : '';
+  const excerpt: string =
+    data.excerpt ??
     content
       .slice(0, 160)
       .replace(/[#*`\[\]]/g, '')
       .trim();
-  const tags: string[] = data.tags || [];
+  const tags: string[] = data.tags ?? [];
 
   return { slug, title, date, excerpt, tags, content };
 }
@@ -27,7 +27,7 @@ function readPostFile(fileName: string): Post {
 export function getAllPosts(): Post[] {
   const fileNames = fs.readdirSync(postsDirectory);
   const posts = fileNames
-    .filter((fn) => fn.endsWith('.md'))
+    .filter((fn) => fn.endsWith('.md') || fn.endsWith('.mdx'))
     .map(readPostFile)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -37,7 +37,7 @@ export function getAllPosts(): Post[] {
 export function getPostBySlug(slug: string): Post | undefined {
   try {
     const decodedSlug = decodeURIComponent(slug);
-    const fileName = fs.readdirSync(postsDirectory).find((fn) => fn.replace(/\.md$/, '') === decodedSlug);
+    const fileName = fs.readdirSync(postsDirectory).find((fn) => fn.replace(/\.(md|mdx)$/, '') === decodedSlug);
     if (!fileName) return undefined;
     return readPostFile(fileName);
   } catch {

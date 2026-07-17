@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import ReactMarkdown from 'react-markdown';
+import { MDXRemote } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
@@ -9,6 +9,7 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, Tag, Calendar, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
+import readingTime from 'reading-time';
 import type { Post } from '@/lib/types';
 import TableOfContents from './TableOfContents';
 
@@ -26,10 +27,8 @@ export default function PostReader({ post }: PostReaderProps) {
   };
 
   const estimatedReadTime = useMemo(() => {
-    const cnChars = (post.content.match(/[\u4e00-\u9fff]/g) || []).length;
-    const words = post.content.split(/\s+/).length;
-    const total = cnChars + words;
-    return Math.max(1, Math.ceil(total / 400));
+    const result = readingTime(post.content, { wordsPerMinute: 300 });
+    return Math.max(1, Math.ceil(result.minutes));
   }, [post.content]);
 
   const scrollToTop = () => {
@@ -37,16 +36,15 @@ export default function PostReader({ post }: PostReaderProps) {
   };
 
   return (
-    <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24">
+    <div
+      style={{ viewTransitionName: 'post-reader' }}
+      className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24"
+    >
       <div className="lg:grid lg:grid-cols-[1fr_220px] lg:gap-12">
         {/* Main content */}
         <article className="min-w-0">
           {/* Back link */}
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="mb-10"
-          >
+          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mb-10">
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 text-sm text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-200"
@@ -104,23 +102,26 @@ export default function PostReader({ post }: PostReaderProps) {
             style={{ transformOrigin: 'left' }}
           />
 
-          {/* Content */}
+          {/* Content - MDX */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
             className="prose-custom"
           >
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[
-                rehypeSlug,
-                [rehypeAutolinkHeadings, { behavior: 'wrap' }],
-                rehypeHighlight,
-              ]}
-            >
-              {post.content}
-            </ReactMarkdown>
+            <MDXRemote
+              source={post.content}
+              options={{
+                mdxOptions: {
+                  remarkPlugins: [remarkGfm],
+                  rehypePlugins: [
+                    rehypeSlug,
+                    [rehypeAutolinkHeadings, { behavior: 'wrap' }],
+                    rehypeHighlight,
+                  ],
+                },
+              }}
+            />
           </motion.div>
 
           {/* Bottom tags */}

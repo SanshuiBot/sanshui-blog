@@ -11,7 +11,10 @@ export default function HeroSection() {
   const y = useTransform(scrollY, [0, 400], [0, 80]);
 
   return (
-    <section className="relative overflow-hidden min-h-[100dvh] flex items-center">
+    <section
+      style={{ viewTransitionName: 'hero-section' }}
+      className="relative overflow-hidden min-h-[100dvh] flex items-center"
+    >
       {/* Premium background mesh */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-gradient-to-br from-red-100/50 via-orange-50/20 to-transparent dark:from-red-950/15 dark:via-orange-950/8 dark:to-transparent rounded-full blur-3xl -translate-y-1/4 translate-x-1/4" />
@@ -29,7 +32,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-900/5 dark:bg-stone-50/10 border border-stone-900/10 dark:border-stone-50/10 text-stone-500 dark:text-stone-400 text-xs font-medium mb-8 tracking-wide"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-950/5 dark:bg-stone-50/10 border border-stone-950/10 dark:border-stone-50/10 text-stone-500 dark:text-stone-400 text-xs font-medium mb-8 tracking-wide"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -58,7 +61,7 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-10"
           >
-            在这里记录技术思考、生活感悟与创作灵感。 用文字沉淀知识，用代码改变世界。
+            在这里记录技术思考、生活感悟与创作灵感. 用文字沉淀知识，用代码改变世界.
           </motion.p>
 
           {/* CTA + Social */}
@@ -71,13 +74,13 @@ export default function HeroSection() {
             <MagneticHover strength={0.15}>
               <Link
                 href="#posts"
-                className="group relative inline-flex items-center gap-3 px-6 py-3 rounded-full bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98]"
+                className="group relative inline-flex items-center gap-3 px-6 py-3 rounded-full bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm transition-all duration-700 ease-[var(--ease-out-quint)] shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98]"
               >
                 <span>浏览文章</span>
-                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/15 dark:bg-stone-900/15 group-hover:bg-white/25 dark:group-hover:bg-stone-900/25 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/15 dark:bg-stone-900/15 group-hover:bg-white/25 dark:group-hover:bg-stone-900/25 transition-all duration-700 ease-[var(--ease-out-quint)]">
                   <ArrowUpRight
                     size={14}
-                    className="transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    className="transition-transform duration-700 ease-[var(--ease-out-quint)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                   />
                 </span>
               </Link>
@@ -94,7 +97,7 @@ export default function HeroSection() {
                   <Link
                     href={href}
                     aria-label={label}
-                    className="p-2.5 rounded-full text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95"
+                    className="p-2.5 rounded-full text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-500 ease-[var(--ease-out-quint)] active:scale-95"
                   >
                     <Icon size={18} />
                   </Link>
@@ -113,7 +116,7 @@ export default function HeroSection() {
         >
           <div className="flex gap-12 sm:gap-16">
             {[
-              { value: '3+', label: '文章' },
+              { value: '4+', label: '文章' },
               { value: '∞', label: '想法' },
               { value: '1', label: '个作者' },
             ].map((stat) => (
