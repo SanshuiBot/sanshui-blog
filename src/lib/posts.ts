@@ -36,7 +36,8 @@ export function getAllPosts(): Post[] {
 
 export function getPostBySlug(slug: string): Post | undefined {
   try {
-    const fileName = fs.readdirSync(postsDirectory).find((fn) => fn.replace(/\.md$/, '') === slug);
+    const decodedSlug = decodeURIComponent(slug);
+    const fileName = fs.readdirSync(postsDirectory).find((fn) => fn.replace(/\.md$/, '') === decodedSlug);
     if (!fileName) return undefined;
     return readPostFile(fileName);
   } catch {
