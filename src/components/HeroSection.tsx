@@ -1,29 +1,48 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowUpRight, Code2, Mail, MapPin, Coffee } from 'lucide-react';
+import { ArrowUpRight, Code2, Mail, MapPin, Coffee, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { MagneticHover } from '@/components/ParallaxHover';
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 export default function HeroSection() {
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
   const y = useTransform(scrollY, [0, 400], [0, 80]);
+  const blur = useTransform(scrollY, [0, 400], [0, 8]);
+  const blurFilter = useTransform(blur, (b) => `blur(${b}px)`);
 
   return (
     <section
       style={{ viewTransitionName: 'hero-section' }}
       className="relative overflow-hidden min-h-[100dvh] flex items-center"
     >
-      {/* Premium background mesh */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-gradient-to-br from-red-100/50 via-orange-50/20 to-transparent dark:from-red-950/15 dark:via-orange-950/8 dark:to-transparent rounded-full blur-3xl -translate-y-1/4 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-stone-100/60 to-transparent dark:from-stone-900/20 dark:to-transparent rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(0,0,0,0.02)_0%,transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.02)_0%,transparent_60%)]" />
+      {/* Premium multi-layer ambient background */}
+      <div className="absolute inset-0 -z-10 pointer-events-none">
+        {/* Primary warm orb */}
+        <div className="absolute top-[-10%] right-[-5%] w-[42rem] h-[42rem] rounded-full blur-[120px] opacity-60 dark:opacity-30 animate-float"
+             style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.35), rgba(234,88,12,0.18) 40%, transparent 70%)' }} />
+        {/* Secondary cool orb */}
+        <div className="absolute bottom-[-15%] left-[-10%] w-[36rem] h-[36rem] rounded-full blur-[100px] opacity-50 dark:opacity-25 animate-float"
+             style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.28), rgba(254,215,170,0.12) 50%, transparent 75%)', animationDelay: '2s' }} />
+        {/* Center soft halo */}
+        <div className="absolute inset-0"
+             style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 35%, rgba(254,242,226,0.4), transparent 60%)' }} />
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]"
+             style={{
+               backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)',
+               backgroundSize: '64px 64px',
+               color: 'var(--text-primary)',
+               maskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%)',
+               WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%)',
+             }} />
       </div>
 
       <motion.div
-        style={{ opacity, y }}
+        style={{ opacity, y, filter: blurFilter }}
         className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28"
       >
         <div className="max-w-3xl">
@@ -31,26 +50,27 @@ export default function HeroSection() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-950/5 dark:bg-stone-50/10 border border-stone-950/10 dark:border-stone-50/10 text-stone-500 dark:text-stone-400 text-xs font-medium mb-8 tracking-wide"
+            transition={{ duration: 0.6, ease: EASE }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-stone-600 dark:text-stone-300 text-xs font-medium mb-8 tracking-wide"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
             </span>
             正在写作中
+            <Sparkles size={11} className="text-amber-500" />
           </motion.div>
 
           {/* Main heading */}
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-stone-900 dark:text-stone-50 leading-[1.08] mb-6"
+            transition={{ duration: 0.7, ease: EASE }}
+            className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-stone-900 dark:text-stone-50 leading-[1.08] mb-6 text-balance"
           >
             你好，我是
             <span className="block mt-2">
-              <span className="gradient-text">三水</span>
+              <span className="gradient-text-animated">三水</span>
             </span>
           </motion.h1>
 
@@ -58,8 +78,8 @@ export default function HeroSection() {
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-10"
+            transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
+            className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-10 text-pretty"
           >
             在这里记录技术思考、生活感悟与创作灵感. 用文字沉淀知识，用代码改变世界.
           </motion.p>
@@ -68,13 +88,13 @@ export default function HeroSection() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.6, delay: 0.25, ease: EASE }}
             className="flex flex-wrap items-center gap-4"
           >
             <MagneticHover strength={0.15}>
               <Link
                 href="#posts"
-                className="group relative inline-flex items-center gap-3 px-6 py-3 rounded-full bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm transition-all duration-700 ease-[var(--ease-out-quint)] shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98]"
+                className="group relative inline-flex items-center gap-3 px-6 py-3 rounded-full bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm transition-all duration-700 ease-[var(--ease-out-quint)] shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98] hover:shadow-xl hover:shadow-stone-900/20 dark:hover:shadow-stone-50/20"
               >
                 <span>浏览文章</span>
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/15 dark:bg-stone-900/15 group-hover:bg-white/25 dark:group-hover:bg-stone-900/25 transition-all duration-700 ease-[var(--ease-out-quint)]">
@@ -111,7 +131,7 @@ export default function HeroSection() {
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
           className="mt-20 pt-10 border-t border-stone-200/40 dark:border-stone-800/40"
         >
           <div className="flex gap-12 sm:gap-16">
@@ -119,16 +139,32 @@ export default function HeroSection() {
               { value: '4+', label: '文章' },
               { value: '∞', label: '想法' },
               { value: '1', label: '个作者' },
-            ].map((stat) => (
-              <div key={stat.label}>
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 + i * 0.1, duration: 0.5, ease: EASE }}
+              >
                 <div className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-50 tracking-tight">
                   {stat.value}
                 </div>
                 <div className="text-sm text-stone-500 dark:text-stone-500 mt-1">{stat.label}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
+      </motion.div>
+
+      {/* Scroll indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 0.6 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-stone-400 dark:text-stone-600 pointer-events-none"
+      >
+        <span className="text-[10px] uppercase tracking-[0.2em]">scroll</span>
+        <div className="w-px h-8 bg-gradient-to-b from-current to-transparent" />
       </motion.div>
     </section>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -15,6 +15,55 @@ import TableOfContents from './TableOfContents';
 
 interface PostReaderProps {
   post: Post;
+}
+
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+/**
+ * Copy-button injected into every <pre> element after MDX renders.
+ * Walks the rendered DOM, finds code blocks, and overlays a button.
+ */
+function useCopyCodeButtons() {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const inject = useCallback((container: HTMLElement) => {
+    const pres = container.querySelectorAll('pre');
+    pres.forEach((pre, i) => {
+      if (pre.dataset.copyInjected === 'true') return;
+      pre.dataset.copyInjected = 'true';
+      pre.dataset.copyId = `code-${i}`;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('aria-label', '复制代码');
+      btn.className =
+        'copy-code-btn absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-stone-200';
+      btn.innerHTML = '<span class="copy-text">复制</span>';
+      btn.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+        try {
+          await navigator.clipboard.writeText(code.textContent ?? '');
+          setCopiedId(`code-${i}`);
+          btn.classList.add('text-green-500');
+          const text = btn.querySelector('.copy-text');
+          if (text) text.textContent = '已复制';
+          setTimeout(() => {
+            setCopiedId(null);
+            btn.classList.remove('text-green-500');
+            if (text) text.textContent = '复制';
+          }, 1500);
+        } catch {
+          // ignore
+        }
+      });
+      // Mark the <pre> as group for hover reveal
+      pre.classList.add('group', 'relative');
+      pre.appendChild(btn);
+    });
+  }, []);
+
+  return { inject, copiedId };
 }
 
 export default function PostReader({ post }: PostReaderProps) {
@@ -35,6 +84,8 @@ export default function PostReader({ post }: PostReaderProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const { inject } = useCopyCodeButtons();
+
   return (
     <div
       style={{ viewTransitionName: 'post-reader' }}
@@ -42,9 +93,14 @@ export default function PostReader({ post }: PostReaderProps) {
     >
       <div className="lg:grid lg:grid-cols-[1fr_220px] lg:gap-12">
         {/* Main content */}
-        <article className="min-w-0">
+        <article className="min-w-0" ref={(el: HTMLElement | null) => { if (el) inject(el); }}>
           {/* Back link */}
-          <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mb-10">
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ ease: EASE, duration: 0.4 }}
+            className="mb-10"
+          >
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 text-sm text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-200"
@@ -58,7 +114,7 @@ export default function PostReader({ post }: PostReaderProps) {
           <motion.header
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ delay: 0.1, duration: 0.5, ease: EASE }}
             className="mb-12"
           >
             {/* Tags */}
@@ -76,16 +132,17 @@ export default function PostReader({ post }: PostReaderProps) {
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-50 tracking-tight leading-tight mb-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-50 tracking-tight leading-tight mb-6 text-balance">
               {post.title}
             </h1>
 
             {/* Meta */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-stone-400 dark:text-stone-500">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-stone-400 dark:text-stone-500">
               <span className="flex items-center gap-1.5">
                 <Calendar size={14} />
                 {formatDate(post.date)}
               </span>
+              <span className="text-stone-200 dark:text-stone-700">·</span>
               <span className="flex items-center gap-1.5">
                 <Clock size={14} />
                 预计阅读 {estimatedReadTime} 分钟
@@ -97,7 +154,7 @@ export default function PostReader({ post }: PostReaderProps) {
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
-            transition={{ delay: 0.3, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ delay: 0.3, duration: 0.6, ease: EASE }}
             className="h-px bg-gradient-to-r from-red-600/50 via-orange-500/30 to-transparent mb-12"
             style={{ transformOrigin: 'left' }}
           />
@@ -147,13 +204,11 @@ export default function PostReader({ post }: PostReaderProps) {
 
         {/* Sidebar - Table of Contents */}
         <aside className="hidden lg:block">
-          <div className="sticky top-24">
-            <TableOfContents content={post.content} />
-          </div>
+          <TableOfContents content={post.content} />
         </aside>
       </div>
 
-      {/* Mobile TOC */}
+      {/* Mobile TOC — render inside PostReader so it has access to content */}
       <div className="lg:hidden">
         <TableOfContents content={post.content} />
       </div>

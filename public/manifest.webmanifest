@@ -1,0 +1,48 @@
+{
+  "name": "三水 | 个人博客",
+  "short_name": "三水",
+  "description": "记录技术思考、生活感悟与创作灵感",
+  "start_url": "/sanshui-blog/",
+  "scope": "/sanshui-blog/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#fafaf9",
+  "theme_color": "#dc2626",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["education", "productivity", "books"],
+  "icons": [
+    {
+      "src": "/sanshui-blog/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/sanshui-blog/favicon.ico",
+      "sizes": "16x16 32x32 48x48",
+      "type": "image/x-icon",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "归档",
+      "short_name": "归档",
+      "url": "/sanshui-blog/archive",
+      "icons": [{ "src": "/sanshui-blog/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "标签",
+      "short_name": "标签",
+      "url": "/sanshui-blog/tags",
+      "icons": [{ "src": "/sanshui-blog/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "关于",
+      "short_name": "关于",
+      "url": "/sanshui-blog/about",
+      "icons": [{ "src": "/sanshui-blog/favicon.svg", "sizes": "any" }]
+    }
+  ]
+}
