@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowUpRight, Code2, Mail, MapPin, Coffee, Sparkles } from 'lucide-react';
-import Link from 'next/link';
+import Link from '@/components/TransitionLink';
 import { MagneticHover } from '@/components/ParallaxHover';
 import MorphBlob from '@/components/MorphBlob';
 import SparklesComp from '@/components/Sparkles';

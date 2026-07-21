@@ -1,5 +1,5 @@
 import { Hash } from 'lucide-react';
-import Link from 'next/link';
+import Link from '@/components/TransitionLink';
 import { getAllTags, getPostsByTag } from '@/lib/posts';
 import ScrollReveal from '@/components/ScrollReveal';
 import TagCloud from '@/components/TagCloud';

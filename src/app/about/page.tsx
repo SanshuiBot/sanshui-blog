@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeft, Mail, Code2, Sparkles, Heart } from 'lucide-react';
-import Link from 'next/link';
+import Link from '@/components/TransitionLink';
 import ScrollReveal from '@/components/ScrollReveal';
 import GradientText from '@/components/GradientText';
 import MorphBlob from '@/components/MorphBlob';

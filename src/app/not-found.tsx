@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect, useState, useRef } from 'react';
 import { Home, ArrowLeft, Compass } from 'lucide-react';
-import Link from 'next/link';
+import Link from '@/components/TransitionLink';
 import GradientText from '@/components/GradientText';
 
 // Deterministic seeded random — same output on server and client.

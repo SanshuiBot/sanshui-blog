@@ -3,7 +3,7 @@
 import { ExternalLink, ArrowLeft, Link2, Sparkles, Heart } from 'lucide-react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
+import Link from '@/components/TransitionLink';
 import ScrollReveal from '@/components/ScrollReveal';
 import GradientText from '@/components/GradientText';
 import MorphBlob from '@/components/MorphBlob';
@@ -15,7 +15,7 @@ const links = [
   {
     name: 'GitHub',
     url: 'https://github.com/SanshuiBot',
-    avatar: 'github.png',
+    avatar: '',
     desc: '个人开源项目托管平台',
     color: 'from-stone-700 to-stone-900 dark:from-stone-300 dark:to-stone-500',
   },
@@ -29,7 +29,10 @@ export default function LinksPage() {
           href="/"
           className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors mb-8 group/back"
         >
-          <ArrowLeft size={16} className="transition-transform duration-300 group/back:-translate-x-1" />
+          <ArrowLeft
+            size={16}
+            className="transition-transform duration-300 group/back:-translate-x-1"
+          />
           返回首页
         </Link>
       </ScrollReveal>

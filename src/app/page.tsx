@@ -2,7 +2,7 @@ import { getAllPosts } from '@/lib/posts';
 import PostCard from '@/components/PostCard';
 import HeroSection from '@/components/HeroSection';
 import ScrollReveal from '@/components/ScrollReveal';
-import Link from 'next/link';
+import Link from '@/components/TransitionLink';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import AuroraDivider from '@/components/AuroraDivider';
 import SparklesComp from '@/components/Sparkles';

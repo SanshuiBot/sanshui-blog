@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '@/components/TransitionLink';
 import { Code2, Mail, Rss } from 'lucide-react';
 import { motion } from 'framer-motion';
 
