@@ -15,7 +15,7 @@ const links = [
   {
     name: 'GitHub',
     url: 'https://github.com/SanshuiBot',
-    avatar: '',
+    avatar: '/github.png',
     desc: '个人开源项目托管平台',
     color: 'from-stone-700 to-stone-900 dark:from-stone-300 dark:to-stone-500',
   },
