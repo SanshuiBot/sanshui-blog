@@ -8,7 +8,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, Tag, Calendar, ArrowUp } from 'lucide-react';
-import Link from '@/components/TransitionLink';
+import Link from 'next/link';
 import readingTime from 'reading-time';
 import type { Post } from '@/lib/types';
 import TableOfContents from './TableOfContents';

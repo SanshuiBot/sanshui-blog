@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import Link from '@/components/TransitionLink';
+import Link from 'next/link';
 
 interface TagCloudProps {
   tags: Array<{ name: string; count: number }>;

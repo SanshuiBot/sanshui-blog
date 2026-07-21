@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Sun, Moon, Menu, X } from 'lucide-react';
-import Link from '@/components/TransitionLink';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from './ThemeToggle';
 import { useState } from 'react';

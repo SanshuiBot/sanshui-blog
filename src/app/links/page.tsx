@@ -3,7 +3,7 @@
 import { ExternalLink, ArrowLeft, Link2, Sparkles, Heart } from 'lucide-react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import Link from '@/components/TransitionLink';
+import Link from 'next/link';
 import ScrollReveal from '@/components/ScrollReveal';
 import GradientText from '@/components/GradientText';
 import MorphBlob from '@/components/MorphBlob';

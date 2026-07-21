@@ -2,7 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowRight, Tag, Clock } from 'lucide-react';
-import Link from '@/components/TransitionLink';
+import Link from 'next/link';
 import { useRef } from 'react';
 import type { Post } from '@/lib/types';
 

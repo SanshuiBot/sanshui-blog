@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowRight, Tag } from 'lucide-react';
-import Link from '@/components/TransitionLink';
+import Link from 'next/link';
 import type { Post } from '@/lib/types';
 
 interface SearchDialogProps {

@@ -1,5 +1,5 @@
 import { ArrowLeft, BookOpen } from 'lucide-react';
-import Link from '@/components/TransitionLink';
+import Link from 'next/link';
 import { getAllPosts } from '@/lib/posts';
 import PostCard from '@/components/PostCard';
 import ScrollReveal from '@/components/ScrollReveal';

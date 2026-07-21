@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
-import Link from '@/components/TransitionLink';
+import Link from 'next/link';
 import ScrollReveal from '@/components/ScrollReveal';
 
 interface PageHeaderProps {
