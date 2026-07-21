@@ -41,7 +41,10 @@ export const metadata: Metadata = {
     icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
     apple: [{ url: '/apple-icon.png', sizes: '180x180' }],
   },
-  manifest: '/manifest.webmanifest',
+  // Next.js does not prepend `basePath` to `metadata.manifest`, so we must
+  // reference it via the full deployed path. Without this the browser
+  // requests `https://sanshuibot.github.io/manifest.webmanifest` (404).
+  manifest: '/sanshui-blog/manifest.webmanifest',
   alternates: {
     canonical: '/',
     types: {
