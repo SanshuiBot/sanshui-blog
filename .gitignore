@@ -51,5 +51,3 @@ source/
 themes/
 _config.yml
 _config.butterfly.yml
-
-package-lock.json
