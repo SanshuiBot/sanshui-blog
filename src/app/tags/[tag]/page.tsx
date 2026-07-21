@@ -1,6 +1,6 @@
+import { Hash } from 'lucide-react';
 import { getPostsByTag, getAllTags } from '@/lib/posts';
 import { notFound } from 'next/navigation';
-import { Hash } from 'lucide-react';
 import PostCard from '@/components/PostCard';
 import PageHeader from '@/components/PageHeader';
 import ScrollReveal from '@/components/ScrollReveal';
@@ -30,7 +30,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
         backLabel="所有标签"
       >
         <div className="flex items-center gap-3 mt-3">
-          <Hash size={24} className="text-red-500" />
+          <Hash size={24} className="text-pink-500" />
         </div>
       </PageHeader>
 

@@ -19,10 +19,6 @@ interface PostReaderProps {
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-/**
- * Copy-button injected into every <pre> element after MDX renders.
- * Walks the rendered DOM, finds code blocks, and overlays a button.
- */
 function useCopyCodeButtons() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -37,8 +33,10 @@ function useCopyCodeButtons() {
       btn.type = 'button';
       btn.setAttribute('aria-label', '复制代码');
       btn.className =
-        'copy-code-btn absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-900 dark:hover:text-stone-200';
-      btn.innerHTML = '<span class="copy-text">复制</span>';
+        'copy-code-btn absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 bg-stone-800/90 text-stone-300 hover:bg-stone-700 hover:text-white backdrop-blur-sm';
+      btn.innerHTML = copiedId === `code-${i}`
+        ? '<svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="text-green-400">已复制</span>'
+        : '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg><span>复制</span>';
       btn.addEventListener('click', async () => {
         const code = pre.querySelector('code');
         if (!code) return;
@@ -46,22 +44,18 @@ function useCopyCodeButtons() {
           await navigator.clipboard.writeText(code.textContent ?? '');
           setCopiedId(`code-${i}`);
           btn.classList.add('text-green-500');
-          const text = btn.querySelector('.copy-text');
-          if (text) text.textContent = '已复制';
           setTimeout(() => {
             setCopiedId(null);
             btn.classList.remove('text-green-500');
-            if (text) text.textContent = '复制';
-          }, 1500);
+          }, 2000);
         } catch {
           // ignore
         }
       });
-      // Mark the <pre> as group for hover reveal
       pre.classList.add('group', 'relative');
       pre.appendChild(btn);
     });
-  }, []);
+  }, [copiedId]);
 
   return { inject, copiedId };
 }
@@ -103,9 +97,9 @@ export default function PostReader({ post }: PostReaderProps) {
           >
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-sm text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-200"
+              className="inline-flex items-center gap-1.5 text-sm text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-200 group/back"
             >
-              <ArrowLeft size={14} />
+              <ArrowLeft size={14} className="transition-transform duration-300 group/back:-translate-x-1" />
               返回首页
             </Link>
           </motion.div>
@@ -123,7 +117,7 @@ export default function PostReader({ post }: PostReaderProps) {
                 <Link
                   key={tag}
                   href={`/tags/${encodeURIComponent(tag)}`}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-pink-500/10 to-violet-500/10 dark:from-pink-500/20 dark:to-violet-500/20 text-stone-600 dark:text-stone-400 hover:from-pink-500/20 hover:to-violet-500/20 transition-all duration-300"
                 >
                   <Tag size={10} />
                   {tag}
@@ -155,7 +149,7 @@ export default function PostReader({ post }: PostReaderProps) {
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
             transition={{ delay: 0.3, duration: 0.6, ease: EASE }}
-            className="h-px bg-gradient-to-r from-red-600/50 via-orange-500/30 to-transparent mb-12"
+            className="h-px bg-gradient-to-r from-pink-500/50 via-violet-500/30 to-cyan-500/20 mb-12"
             style={{ transformOrigin: 'left' }}
           />
 
@@ -193,7 +187,7 @@ export default function PostReader({ post }: PostReaderProps) {
                 <Link
                   key={tag}
                   href={`/tags/${encodeURIComponent(tag)}`}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-700 hover:text-stone-700 dark:hover:text-stone-300 transition-colors duration-200"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-pink-500/10 to-violet-500/10 dark:from-pink-500/20 dark:to-violet-500/20 text-stone-500 dark:text-stone-500 hover:from-pink-500/20 hover:to-violet-500/20 transition-all duration-300"
                 >
                   #{tag}
                 </Link>
@@ -208,7 +202,7 @@ export default function PostReader({ post }: PostReaderProps) {
         </aside>
       </div>
 
-      {/* Mobile TOC — render inside PostReader so it has access to content */}
+      {/* Mobile TOC */}
       <div className="lg:hidden">
         <TableOfContents content={post.content} />
       </div>
@@ -219,7 +213,7 @@ export default function PostReader({ post }: PostReaderProps) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1 }}
         onClick={scrollToTop}
-        className="fixed bottom-6 left-6 z-40 p-2.5 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:shadow-lg transition-all duration-300 active:scale-95"
+        className="fixed bottom-6 left-6 z-40 p-2.5 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:shadow-lg hover:shadow-holographic/30 transition-all duration-300 active:scale-95"
         aria-label="回到顶部"
       >
         <ArrowUp size={16} />

@@ -4,6 +4,9 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowUpRight, Code2, Mail, MapPin, Coffee, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { MagneticHover } from '@/components/ParallaxHover';
+import MorphBlob from '@/components/MorphBlob';
+import SparklesComp from '@/components/Sparkles';
+import GradientText from '@/components/GradientText';
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -19,7 +22,7 @@ export default function HeroSection() {
       style={{ viewTransitionName: 'hero-section' }}
       className="relative overflow-hidden min-h-[100dvh] flex items-center"
     >
-      {/* Premium multi-layer ambient background */}
+      {/* Multi-layer ambient background */}
       <div className="absolute inset-0 -z-10 pointer-events-none">
         {/* Primary warm orb */}
         <div className="absolute top-[-10%] right-[-5%] w-[42rem] h-[42rem] rounded-full blur-[120px] opacity-60 dark:opacity-30 animate-float"
@@ -40,6 +43,23 @@ export default function HeroSection() {
                WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%)',
              }} />
       </div>
+
+      {/* Decorative morphing blobs */}
+      <MorphBlob
+        color="rgba(244, 114, 182, 0.08)"
+        size={500}
+        duration={20}
+        className="absolute top-[10%] left-[5%] pointer-events-none"
+      />
+      <MorphBlob
+        color="rgba(96, 165, 250, 0.06)"
+        size={400}
+        duration={25}
+        className="absolute bottom-[15%] right-[10%] pointer-events-none"
+      />
+
+      {/* Sparkles */}
+      <SparklesComp count={10} className="pointer-events-none" />
 
       <motion.div
         style={{ opacity, y, filter: blurFilter }}
@@ -70,7 +90,7 @@ export default function HeroSection() {
           >
             你好，我是
             <span className="block mt-2">
-              <span className="gradient-text-animated">三水</span>
+              <GradientText mode="holo" size="xl">三水</GradientText>
             </span>
           </motion.h1>
 
@@ -94,7 +114,7 @@ export default function HeroSection() {
             <MagneticHover strength={0.15}>
               <Link
                 href="#posts"
-                className="group relative inline-flex items-center gap-3 px-6 py-3 rounded-full bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm transition-all duration-700 ease-[var(--ease-out-quint)] shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98] hover:shadow-xl hover:shadow-stone-900/20 dark:hover:shadow-stone-50/20"
+                className="group relative inline-flex items-center gap-3 px-6 py-3 rounded-full bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 font-medium text-sm transition-all duration-700 ease-[var(--ease-out-quint)] shadow-lg shadow-stone-900/10 dark:shadow-stone-50/10 active:scale-[0.98] hover:shadow-xl hover:shadow-stone-900/20 dark:hover:shadow-stone-50/20 light-ray ripple"
               >
                 <span>浏览文章</span>
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/15 dark:bg-stone-900/15 group-hover:bg-white/25 dark:group-hover:bg-stone-900/25 transition-all duration-700 ease-[var(--ease-out-quint)]">

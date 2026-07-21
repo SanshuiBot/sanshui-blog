@@ -5,6 +5,11 @@ import { ThemeProvider } from '@/components/ThemeToggle';
 import Layout from '@/components/Layout';
 import { BlogSiteJsonLd } from '@/components/JsonLd';
 import MeshGradient from '@/components/MeshGradient';
+import ParticleBackgroundWrapper from '@/components/ParticleBackgroundWrapper';
+import StarField from '@/components/StarField';
+import AmbientOrbs from '@/components/AmbientOrbs';
+import GridDistortion from '@/components/GridDistortion';
+import MouseCursor from '@/components/MouseCursor';
 import { getAllPosts } from '@/lib/posts';
 
 const baseUrl = 'https://sanshuibot.github.io/sanshui-blog';
@@ -12,7 +17,6 @@ const siteName = '三水 | 个人博客';
 const description = '记录技术思考、生活感悟与创作灵感. 用文字沉淀知识，用代码改变世界.';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(baseUrl),
   title: {
     default: siteName,
     template: '%s | 三水',
@@ -34,10 +38,7 @@ export const metadata: Metadata = {
   creator: '三水',
   publisher: '三水',
   icons: {
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' },
-    ],
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
     apple: [{ url: '/apple-icon.png', sizes: '180x180' }],
   },
   manifest: '/manifest.webmanifest',
@@ -100,17 +101,19 @@ export const viewport: Viewport = {
   colorScheme: 'light dark',
 };
 
+// Client wrapper handles the dynamic import internally
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const posts = getAllPosts();
 
   return (
     <html
       lang="zh-CN"
+      dir="ltr"
       suppressHydrationWarning
       className={`${sans.variable} ${mono.variable} ${serif.variable}`}
     >
       <head>
-        {/* Critical: prevent flash of wrong theme */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -131,9 +134,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           跳转到主要内容
         </a>
         <ThemeProvider>
+          {/* Background layers (z-order: mesh → grid → orbs → stars → particles) */}
+          <MeshGradient />
+          <GridDistortion />
+          <AmbientOrbs />
+          <StarField />
+          <ParticleBackgroundWrapper />
+          <MouseCursor />
           <Layout posts={posts}>{children}</Layout>
           <BlogSiteJsonLd />
-          <MeshGradient />
         </ThemeProvider>
       </body>
     </html>

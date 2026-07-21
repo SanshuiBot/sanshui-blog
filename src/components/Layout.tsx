@@ -11,7 +11,7 @@ export default function Layout({ children, posts }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950">
       <Header posts={posts} />
-      <main className="flex-1">{children}</main>
+      <main id="main-content" className="flex-1">{children}</main>
       <Footer />
     </div>
   );
