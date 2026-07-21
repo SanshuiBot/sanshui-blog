@@ -44,6 +44,11 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
   },
   trailingSlash: true,
+  experimental: {
+    // Enable browser View Transitions API for instant cross-fade
+    // navigation between routes.
+    viewTransition: true,
+  },
   async headers() {
     return [
       {
