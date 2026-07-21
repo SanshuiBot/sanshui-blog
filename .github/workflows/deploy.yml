@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Linux lightningcss native binary
+        run: npm install --no-save lightningcss-linux-x64-gnu@1.32.0
+
       - name: Build with Next.js
         run: npm run build
 
