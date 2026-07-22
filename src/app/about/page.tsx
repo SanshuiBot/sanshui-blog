@@ -65,7 +65,7 @@ export default function AboutPage() {
         <h2 className="text-xl font-bold text-white mb-3">联系我</h2>
         <p className="text-gray-400 mb-6">如果你有任何问题或想法，欢迎通过以下方式联系我。</p>
         <div className="flex flex-wrap gap-3">
-          <a href="https://github.com/SanshuiBot" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-ink text-sm font-medium hover:scale-105 active:scale-95 transition-transform"><GitFork size={16} />GitHub</a>
+          <a href="https://github.com/SanshuiBot" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-black text-sm font-medium hover:scale-105 active:scale-95 transition-transform"><GitFork size={16} />GitHub</a>
           <a href="mailto:localhost6@foxmail.com" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 text-gray-300 text-sm font-medium border border-white/10 hover:scale-105 active:scale-95 transition-transform hover:border-accent-violet/40"><Mail size={16} />Email</a>
           <a href="#" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 text-gray-300 text-sm font-medium border border-white/10 hover:scale-105 active:scale-95 transition-transform hover:border-accent-pink/40"><Heart size={16} className="text-accent-pink" />赞助我</a>
         </div>

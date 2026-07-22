@@ -1,8 +1,10 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getPostBySlug, getAllPosts } from "@/lib/posts";
+import { getPostBySlug, getAllPosts, getAdjacentPosts } from "@/lib/posts";
+import { extractHeadings } from "@/lib/toc";
 import PostContent from "@/components/Post/PostContent";
 import PostMeta from "@/components/Post/PostMeta";
+import TableOfContents from "@/components/Post/TableOfContents";
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -27,10 +29,18 @@ export default async function PostPage({ params }: Props) {
   const post = getPostBySlug(slug);
   if (!post) notFound();
 
+  const headings = extractHeadings(post.content);
+  const { prev, next } = getAdjacentPosts(slug);
+
   return (
-    <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
-      <PostMeta post={post} />
-      <PostContent content={post.content} />
+    <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
+      <div className="flex gap-10">
+        <div className="flex-1 min-w-0 max-w-3xl">
+          <PostMeta post={post} prev={prev ? { slug: prev.slug, title: prev.title } : null} next={next ? { slug: next.slug, title: next.title } : null} />
+          <PostContent content={post.content} />
+        </div>
+        <TableOfContents items={headings} />
+      </div>
     </div>
   );
 }

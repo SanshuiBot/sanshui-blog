@@ -40,14 +40,14 @@ const nextConfig: NextConfig = {
   // React strict mode surfaces more bugs in dev.
   reactStrictMode: true,
   images: {
-    unoptimized: true, // static export â€” no server optimizer
+    unoptimized: true, // static export â€?no server optimizer
     formats: ['image/avif', 'image/webp'],
   },
   trailingSlash: true,
   experimental: {
     // Enable browser View Transitions API for instant cross-fade
     // navigation between routes.
-    viewTransition: true,
+    viewTransition: false,
   },
   async headers() {
     return [

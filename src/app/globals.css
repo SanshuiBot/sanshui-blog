@@ -51,7 +51,7 @@
 
 @layer utilities {
   .glass{background:var(--glass-bg);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
-  .glass-heavy{background:var(--color-glass-heavy);backdrop-filter:blur(32px) saturate(1.8);-webkit-backdrop-filter:blur(32px) saturate(1.8);border:1px solid var(--glass-border)}
+  .glass-heavy{background:var(--color-glass-heavy);backdrop-filter:blur(32px) saturate(1.8);-webkit-backdrop-filter:blur(32px) saturate(1.8);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
   .border-glow{position:relative}
   .border-glow::before{content:'';position:absolute;inset:-1px;border-radius:inherit;background:conic-gradient(from 0deg,#ff6ec7,#a855f7,#38bdf8,#2dd4bf,#fbbf24,#ff6ec7);animation:border-spin 4s linear infinite;opacity:0;z-index:-1;transition:opacity .5s var(--ease-out-expo);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;-webkit-mask-composite:xor;padding:1px}
   .border-glow:hover::before{opacity:1}

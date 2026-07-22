@@ -51,3 +51,9 @@ export function getAllTags(): string[] {
 export function getPostsByTag(tag: string): Post[] {
   return getAllPosts().filter((p) => p.tags.includes(tag));
 }
+export function getAdjacentPosts(slug: string): { prev: Post | null; next: Post | null } {
+  const posts = getAllPosts();
+  const idx = posts.findIndex((p) => p.slug === decodeURIComponent(slug));
+  if (idx === -1) return { prev: null, next: null };
+  return { prev: posts[idx + 1] ?? null, next: posts[idx - 1] ?? null };
+}
