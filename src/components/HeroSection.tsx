@@ -14,7 +14,7 @@ export default function HeroSection() {
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
   const y = useTransform(scrollY, [0, 400], [0, 80]);
-  const blur = useTransform(scrollY, [0, 400], [0, 10]);
+  const blurFilter = useTransform(scrollY, [0, 400], ['blur(0px)', 'blur(10px)']);
   const prefersRM = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -41,7 +41,7 @@ export default function HeroSection() {
       <div className="absolute top-[-10%] right-[-5%] w-[42rem] h-[42rem] rounded-full blur-[120px] opacity-50 dark:opacity-25 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.25), rgba(234,88,12,0.12) 40%, transparent 70%)' }} />
       <div className="absolute bottom-[-15%] left-[-10%] w-[36rem] h-[36rem] rounded-full blur-[100px] opacity-40 dark:opacity-20 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.2), rgba(254,215,170,0.08) 50%, transparent 75%)' }} />
 
-      <motion.div ref={ref} style={{ opacity, y, filter: blur ? `blur(${blur}px)` : 'none' }} className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
+      <motion.div ref={ref} style={{ opacity, y, filter: blurFilter }} className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28">
         <div className="max-w-3xl">
           <motion.div initial={prefersRM ? {} : { opacity: 0, y: 12 }} animate={prefersRM ? {} : { opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE }}>
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-stone-600 dark:text-stone-300 text-xs font-medium mb-8 tracking-wide">

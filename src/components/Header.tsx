@@ -114,14 +114,16 @@ export default function Header({ posts }: HeaderProps) {
         )}
       </AnimatePresence>
 
+      {mounted && (
       <div className="fixed bottom-6 right-6 z-[var(--z-sticky)] flex flex-col gap-3">
-        <motion.button onClick={toggleTheme} initial={mounted ? { scale: 0, opacity: 0 } : false} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3, duration: 0.4, ease: EASE }}
+        <motion.button onClick={toggleTheme}
           className="p-3 rounded-full glass-strong text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 transition-all duration-300 shadow-lg active:scale-95" aria-label="切换主题"
         >
           {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
         </motion.button>
         <SearchDialog posts={posts} />
       </div>
+      )}
     </>
   );
 }
