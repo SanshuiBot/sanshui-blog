@@ -3,6 +3,8 @@ import ReadingProgress from '@/components/ReadingProgress';
 import { BlogPostJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd';
 import { getPostBySlug, getAllPosts } from '@/lib/posts';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
+import PageSkeleton from '@/components/Skeletons';
 
 const baseUrl = 'https://sanshuibot.github.io/sanshui-blog';
 
@@ -59,7 +61,9 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           { name: post.title, url: `/posts/${post.slug}` },
         ]}
       />
-      <PostReader post={post} />
+      <Suspense fallback={<PageSkeleton />}>
+        <PostReader post={post} />
+      </Suspense>
     </>
   );
 }

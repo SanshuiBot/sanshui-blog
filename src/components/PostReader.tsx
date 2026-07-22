@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -33,7 +33,7 @@ function useCopyCodeButtons() {
       btn.type = 'button';
       btn.setAttribute('aria-label', '复制代码');
       btn.className =
-        'copy-code-btn absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 bg-stone-800/90 text-stone-300 hover:bg-stone-700 hover:text-white backdrop-blur-sm';
+        'copy-code-btn absolute top-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 bg-stone-800/90 text-stone-300 hover:bg-stone-700 hover:text-white backdrop-blur-sm z-50';
       btn.innerHTML = copiedId === `code-${i}`
         ? '<svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span class="text-green-400">已复制</span>'
         : '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg><span>复制</span>';
@@ -57,7 +57,17 @@ function useCopyCodeButtons() {
     });
   }, [copiedId]);
 
-  return { inject, copiedId };
+  useEffect(() => {
+    return () => {
+      const pres = document.querySelectorAll('pre[data-copy-injected]');
+      pres.forEach(pre => {
+        const btn = pre.querySelector('.copy-code-btn');
+        if (btn) pre.removeChild(btn);
+      });
+    };
+  }, []);
+
+  return { inject };
 }
 
 export default function PostReader({ post }: PostReaderProps) {
@@ -74,11 +84,28 @@ export default function PostReader({ post }: PostReaderProps) {
     return Math.max(1, Math.ceil(result.minutes));
   }, [post.content]);
 
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const articleRef = useRef<HTMLElement>(null);
   const { inject } = useCopyCodeButtons();
+
+  useEffect(() => {
+    if (articleRef.current) {
+      inject(articleRef.current);
+    }
+  }, [inject]);
 
   return (
     <div
@@ -87,7 +114,7 @@ export default function PostReader({ post }: PostReaderProps) {
     >
       <div className="lg:grid lg:grid-cols-[1fr_220px] lg:gap-12">
         {/* Main content */}
-        <article className="min-w-0" ref={(el: HTMLElement | null) => { if (el) inject(el); }}>
+        <article ref={articleRef} className="min-w-0">
           {/* Back link */}
           <motion.div
             initial={{ opacity: 0, x: -10 }}
@@ -208,16 +235,19 @@ export default function PostReader({ post }: PostReaderProps) {
       </div>
 
       {/* Back to top */}
-      <motion.button
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1 }}
-        onClick={scrollToTop}
-        className="fixed bottom-6 left-6 z-40 p-2.5 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:shadow-lg hover:shadow-holographic/30 transition-all duration-300 active:scale-95"
-        aria-label="回到顶部"
-      >
-        <ArrowUp size={16} />
-      </motion.button>
+      {showBackToTop && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ delay: 0.2 }}
+          onClick={scrollToTop}
+          className="fixed bottom-6 left-6 z-40 p-2.5 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:shadow-lg hover:shadow-holographic/30 transition-all duration-300 active:scale-95"
+          aria-label="回到顶部"
+        >
+          <ArrowUp size={16} />
+        </motion.button>
+      )}
     </div>
   );
 }

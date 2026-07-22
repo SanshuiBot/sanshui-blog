@@ -4,6 +4,7 @@ import { useMemo, useEffect, useState, useRef } from 'react';
 import { Home, ArrowLeft, Compass } from 'lucide-react';
 import Link from 'next/link';
 import GradientText from '@/components/GradientText';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Deterministic seeded random — same output on server and client.
 // Avoids hydration mismatch from Math.random() / Date.now().
@@ -45,7 +46,8 @@ export default function NotFound() {
   );
 
   return (
-    <div className="min-h-[80dvh] flex items-center justify-center px-4 py-20 relative overflow-hidden">
+    <ErrorBoundary>
+      <div className="min-h-[80dvh] flex items-center justify-center px-4 py-20 relative overflow-hidden">
       {/* Floating particles via CSS */}
       {randomPositions.map((p, i) => (
         <div
@@ -134,5 +136,6 @@ export default function NotFound() {
         </div>
       </div>
     </div>
+    </ErrorBoundary>
   );
 }

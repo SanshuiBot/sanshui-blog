@@ -1,8 +1,9 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, Code2, Mail, MapPin, Coffee, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { useRef, useEffect, useState } from 'react';
 import { MagneticHover } from '@/components/ParallaxHover';
 import MorphBlob from '@/components/MorphBlob';
 import SparklesComp from '@/components/Sparkles';
@@ -17,20 +18,77 @@ export default function HeroSection() {
   const blur = useTransform(scrollY, [0, 400], [0, 8]);
   const blurFilter = useTransform(blur, (b) => `blur(${b}px)`);
 
+  const prefersReducedMotion = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Use intersection observer for initial load
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry && entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Animation variants with reduced motion support
+  const variants = {
+    initial: prefersReducedMotion ? {} : { opacity: 0, y: 12 },
+    animate: prefersReducedMotion ? {} : { opacity: 1, y: 0 },
+  };
+
+  const transition = { duration: 0.6, ease: EASE };
+
   return (
     <section
       style={{ viewTransitionName: 'hero-section' }}
       className="relative overflow-hidden min-h-[100dvh] flex items-center"
     >
-      {/* Multi-layer ambient background */}
+      {/* Multi-layer ambient background - Optimized with will-change */}
       <div className="absolute inset-0 -z-10 pointer-events-none">
-        {/* Primary warm orb */}
-        <div className="absolute top-[-10%] right-[-5%] w-[42rem] h-[42rem] rounded-full blur-[120px] opacity-60 dark:opacity-30 animate-float"
-             style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.35), rgba(234,88,12,0.18) 40%, transparent 70%)' }} />
-        {/* Secondary cool orb */}
-        <div className="absolute bottom-[-15%] left-[-10%] w-[36rem] h-[36rem] rounded-full blur-[100px] opacity-50 dark:opacity-25 animate-float"
-             style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.28), rgba(254,215,170,0.12) 50%, transparent 75%)', animationDelay: '2s' }} />
-        {/* Center soft halo */}
+        <div className="absolute inset-0 will-change-transform">
+          {/* Primary warm orb */}
+          <motion.div
+            initial={false}
+            animate={isVisible ? {
+              x: [0, 20, 0],
+              y: [0, -15, 0],
+            } : {}}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            className="absolute top-[-10%] right-[-5%] w-[42rem] h-[42rem] rounded-full blur-[120px] opacity-60 dark:opacity-30"
+            style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.35), rgba(234,88,12,0.18) 40%, transparent 70%)' }}
+          />
+          {/* Secondary cool orb */}
+          <motion.div
+            initial={false}
+            animate={isVisible ? {
+              x: [0, -25, 0],
+              y: [0, 20, 0],
+            } : {}}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: 2,
+            }}
+            className="absolute bottom-[-15%] left-[-10%] w-[36rem] h-[36rem] rounded-full blur-[100px] opacity-50 dark:opacity-25"
+            style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.28), rgba(254,215,170,0.12) 50%, transparent 75%)' }}
+          />
+        </div>
+        {/* Center soft halo - Static for performance */}
         <div className="absolute inset-0"
              style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 35%, rgba(254,242,226,0.4), transparent 60%)' }} />
         {/* Subtle grid pattern */}
@@ -62,16 +120,16 @@ export default function HeroSection() {
       <SparklesComp count={10} className="pointer-events-none" />
 
       <motion.div
+        ref={containerRef}
         style={{ opacity, y, filter: blurFilter }}
         className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28"
       >
         <div className="max-w-3xl">
           {/* Status badge */}
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: EASE }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-stone-600 dark:text-stone-300 text-xs font-medium mb-8 tracking-wide"
+            {...variants}
+            transition={transition}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-stone-600 dark:text-stone-300 text-xs font-medium mb-8 tracking-wide will-change-transform"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
@@ -83,8 +141,8 @@ export default function HeroSection() {
 
           {/* Main heading */}
           <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: 24 }}
+            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: EASE }}
             className="text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-stone-900 dark:text-stone-50 leading-[1.08] mb-6 text-balance"
           >
@@ -96,8 +154,8 @@ export default function HeroSection() {
 
           {/* Subtitle */}
           <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: 16 }}
+            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
             className="text-lg sm:text-xl text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-10 text-pretty"
           >
@@ -106,10 +164,10 @@ export default function HeroSection() {
 
           {/* CTA + Social */}
           <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={prefersReducedMotion ? {} : { opacity: 0, y: 16 }}
+            animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.25, ease: EASE }}
-            className="flex flex-wrap items-center gap-4"
+            className="flex flex-wrap items-center gap-4 will-change-transform"
           >
             <MagneticHover strength={0.15}>
               <Link
@@ -149,10 +207,10 @@ export default function HeroSection() {
 
         {/* Stats row */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={prefersReducedMotion ? {} : { opacity: 0, y: 24 }}
+          animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
-          className="mt-20 pt-10 border-t border-stone-200/40 dark:border-stone-800/40"
+          className="mt-20 pt-10 border-t border-stone-200/40 dark:border-stone-800/40 will-change-transform"
         >
           <div className="flex gap-12 sm:gap-16">
             {[
@@ -162,8 +220,8 @@ export default function HeroSection() {
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={prefersReducedMotion ? {} : { opacity: 0, y: 10 }}
+                animate={prefersReducedMotion ? {} : { opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 + i * 0.1, duration: 0.5, ease: EASE }}
               >
                 <div className="text-2xl sm:text-3xl font-bold text-stone-900 dark:text-stone-50 tracking-tight">
@@ -176,12 +234,12 @@ export default function HeroSection() {
         </motion.div>
       </motion.div>
 
-      {/* Scroll indicator */}
+      {/* Scroll indicator - Optimized */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={prefersReducedMotion ? {} : { opacity: 0 }}
+        animate={prefersReducedMotion ? {} : { opacity: 1 }}
         transition={{ delay: 1.2, duration: 0.6 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-stone-400 dark:text-stone-600 pointer-events-none"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-stone-400 dark:text-stone-600 pointer-events-none will-change-opacity"
       >
         <span className="text-[10px] uppercase tracking-[0.2em]">scroll</span>
         <div className="w-px h-8 bg-gradient-to-b from-current to-transparent" />

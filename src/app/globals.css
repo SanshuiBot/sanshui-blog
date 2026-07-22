@@ -1430,6 +1430,223 @@
 }
 
 /* ============================================================
+   Performance Optimizations
+   ============================================================ */
+@layer utilities {
+  /* GPU acceleration hints for smooth animations */
+  .gpu-accelerate {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  /* Content-visibility for large content blocks */
+  .content-visibility-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
+
+  /* Prevent layout thrashing */
+  .layout-stable {
+    contain: layout;
+  }
+
+  /* Paint containment for isolated repaints */
+  .paint-isolated {
+    contain: paint;
+  }
+
+  /* Size containment for performance */
+  .size-contained {
+    contain: size;
+  }
+
+  /* Full containment for optimal performance */
+  .fully-contained {
+    contain: strict;
+  }
+
+  /* Smooth scrollbar with native feel */
+  .scrollbar-smooth {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Reduced blur for better performance */
+  .blur-performance {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Optimized gradients - reduce complexity */
+  .gradient-simple {
+    background: linear-gradient(to right, var(--accent), var(--accent));
+    background-size: 200% auto;
+    animation: gradient-simple 3s linear infinite;
+  }
+
+  @keyframes gradient-simple {
+    to {
+      background-position: 200% center;
+    }
+  }
+
+  /* Performance-friendly animations */
+  .animate-performance {
+    animation-duration: 0.3s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+  }
+
+  /* Optimized hover states */
+  .hover-optimized {
+    transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+    will-change: transform, opacity;
+  }
+
+  /* Lazy load indicators */
+  .lazy-load {
+    background: linear-gradient(
+      90deg,
+      var(--bg-secondary) 25%,
+      var(--bg-elevated) 50%,
+      var(--bg-secondary) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer-simple 1.5s infinite;
+  }
+
+  @keyframes shimmer-simple {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Optimized shadows - single shadow instead of multiple */
+  .shadow-optimized {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Hardware accelerated border-radius */
+  .border-radius-smooth {
+    border-radius: 8px;
+    transform: translateZ(0);
+  }
+}
+
+/* ============================================================
+   Mobile Performance Optimizations
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Reduce blur effects on mobile */
+  .glass {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .glass-strong {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Disable heavy animations on mobile */
+  .animate-float,
+  .animate-orbit-slow,
+  .aurora-ribbon::before {
+    animation-duration: 0.01ms !important;
+  }
+
+  /* Reduce shadow complexity */
+  .shadow-xl,
+  .shadow-2xl,
+  .shadow-holographic {
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Optimize gradient animations */
+  .holo-text,
+  .gradient-text-animated {
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================
+   Battery Saver Mode
+   ============================================================ */
+@media (prefers-reduced-data: reduce) {
+  /* Disable background images and complex effects */
+  .noise-overlay,
+  .mesh-bg,
+  .gradient-mesh-advanced,
+  .shimmer-surface::after,
+  .aurora::before {
+    display: none !important;
+  }
+
+  /* Reduce animation complexity */
+  .animate-float,
+  .animate-orbit-slow,
+  .holo-text,
+  .gradient-text-animated,
+  .aurora-ribbon::before {
+    animation-duration: 0.01ms !important;
+  }
+
+  /* Simplify shadows */
+  .shadow-lg,
+  .shadow-xl,
+  .shadow-2xl,
+  .shadow-holographic,
+  .shadow-prism {
+    box-shadow: var(--shadow-sm) !important;
+  }
+
+  /* Reduce blur effects */
+  .glass,
+  .glass-strong,
+  .glass-refract {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+}
+
+/* ============================================================
+   High Contrast Mode Support
+   ============================================================ */
+@media (prefers-contrast: high) {
+  :root {
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(0, 0, 0, 0.3);
+    --shadow-holographic: 0 0 0 1px currentColor;
+  }
+
+  .dark {
+    --glass-bg: rgba(0, 0, 0, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Enhance text visibility */
+  .text-secondary,
+  .text-muted {
+    color: var(--text-primary);
+  }
+
+  /* Enhance borders */
+  .glass,
+  .glass-strong {
+    border-width: 2px;
+  }
+}
+/* ============================================================
    highlight.js theme — Atom One Dark (refined)
    ============================================================ */
 .hljs {

@@ -10,6 +10,7 @@ import StarField from '@/components/StarField';
 import AmbientOrbs from '@/components/AmbientOrbs';
 import GridDistortion from '@/components/GridDistortion';
 import MouseCursor from '@/components/MouseCursor';
+import { TransitionProvider } from '@/lib/transition';
 import { getAllPosts } from '@/lib/posts';
 
 const baseUrl = 'https://sanshuibot.github.io/sanshui-blog';
@@ -17,6 +18,7 @@ const siteName = '三水 | 个人博客';
 const description = '记录技术思考、生活感悟与创作灵感. 用文字沉淀知识，用代码改变世界.';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
   title: {
     default: siteName,
     template: '%s | 三水',
@@ -41,9 +43,6 @@ export const metadata: Metadata = {
     icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
     apple: [{ url: '/apple-icon.png', sizes: '180x180' }],
   },
-  // Next.js does not prepend `basePath` to `metadata.manifest`, so we must
-  // reference it via the full deployed path. Without this the browser
-  // requests `https://sanshuibot.github.io/manifest.webmanifest` (404).
   manifest: '/sanshui-blog/manifest.webmanifest',
   alternates: {
     canonical: '/',
@@ -137,15 +136,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           跳转到主要内容
         </a>
         <ThemeProvider>
-          {/* Background layers (z-order: mesh → grid → orbs → stars → particles) */}
-          <MeshGradient />
-          <GridDistortion />
-          <AmbientOrbs />
-          <StarField />
-          <ParticleBackgroundWrapper />
-          <MouseCursor />
-          <Layout posts={posts}>{children}</Layout>
-          <BlogSiteJsonLd />
+          <TransitionProvider>
+            {/* Background layers (z-order: mesh → grid → orbs → stars → particles) */}
+            <MeshGradient />
+            <GridDistortion />
+            <AmbientOrbs />
+            <StarField />
+            <ParticleBackgroundWrapper />
+            <MouseCursor />
+            <Layout posts={posts}>{children}</Layout>
+            <BlogSiteJsonLd />
+          </TransitionProvider>
         </ThemeProvider>
       </body>
     </html>

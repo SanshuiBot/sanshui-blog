@@ -2,11 +2,11 @@
 
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Sun, Moon, Menu, X } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from './ThemeToggle';
 import { useState } from 'react';
 import SearchDialog from './SearchDialog';
+import { NavigationButton } from '@/lib/transition';
 import type { Post } from '@/lib/types';
 
 interface HeaderProps {
@@ -69,7 +69,10 @@ export default function Header({ posts }: HeaderProps) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-[72px]">
           {/* Holographic logo */}
-          <Link href="/" className="flex items-center gap-3 group relative">
+          <NavigationButton
+            href="/"
+            className="flex items-center gap-3 group relative"
+          >
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -82,14 +85,14 @@ export default function Header({ posts }: HeaderProps) {
               {/* Animated underline */}
               <span className="absolute -bottom-0.5 left-0 h-[2px] w-0 bg-gradient-to-r from-pink-500 via-violet-500 to-cyan-500 group-hover:w-full transition-all duration-700 ease-[var(--ease-out-quint)]" />
             </motion.div>
-          </Link>
+          </NavigationButton>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
-                <Link
+                <NavigationButton
                   key={link.href}
                   href={link.href}
                   className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-500 ease-[var(--ease-out-quint)] group ${
@@ -108,7 +111,7 @@ export default function Header({ posts }: HeaderProps) {
                   {/* Underline on hover */}
                   <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-pink-500 to-violet-500 group-hover:w-full transition-all duration-500 ease-[var(--ease-out-quint)]" />
                   <span className="relative z-10">{link.label}</span>
-                </Link>
+                </NavigationButton>
               );
             })}
           </nav>
@@ -156,7 +159,7 @@ export default function Header({ posts }: HeaderProps) {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05, duration: 0.3 }}
                 >
-                  <Link
+                  <NavigationButton
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
                     className={`block px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
@@ -166,7 +169,7 @@ export default function Header({ posts }: HeaderProps) {
                     }`}
                   >
                     {link.label}
-                  </Link>
+                  </NavigationButton>
                 </motion.div>
               ))}
             </nav>
