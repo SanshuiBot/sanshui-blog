@@ -18,9 +18,7 @@ export default function PostCard({ post, index }: PostCardProps) {
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+      year: 'numeric', month: 'long', day: 'numeric',
     });
   };
 
@@ -77,15 +75,13 @@ export default function PostCard({ post, index }: PostCardProps) {
       style={{ viewTransitionName: `post-card-${post.slug}` }}
       className="group relative"
     >
-      {/* Prism border glow */}
+      {/* Hover spotlight glow */}
       <motion.div
         aria-hidden="true"
-        className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        className="absolute -inset-px rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
         style={{
-          background: useTransform(
-            [glowX, glowY],
-            ([x, y]) =>
-              `radial-gradient(250px circle at ${x} ${y}, rgba(244,114,182,0.2), rgba(192,132,252,0.15) 30%, rgba(96,165,250,0.1) 60%, transparent 70%)`,
+          background: useTransform([glowX, glowY], ([x, y]) =>
+            `radial-gradient(300px circle at ${x} ${y}, rgba(244,114,182,0.25), rgba(192,132,252,0.18) 30%, rgba(96,165,250,0.12) 60%, transparent 70%)`
           ),
         }}
       />
@@ -103,26 +99,21 @@ export default function PostCard({ post, index }: PostCardProps) {
         }}
         className="relative"
       >
-        {/* Outer gradient bezel with prism shimmer */}
-        <div className="p-[1.5px] rounded-2xl bg-gradient-to-b from-stone-200/60 via-violet-200/30 to-transparent dark:from-stone-800/40 dark:via-violet-900/20 dark:to-transparent transition-all duration-700 ease-[var(--ease-out-quint)] group-hover:from-pink-500/40 group-hover:via-violet-500/30 group-hover:to-cyan-500/20 dark:group-hover:from-pink-500/50 dark:group-hover:via-violet-500/40 dark:group-hover:to-cyan-500/30">
-          <article className="group/card relative flex flex-col bg-white/90 dark:bg-stone-900/90 backdrop-blur-md rounded-2xl overflow-hidden transition-all duration-700 ease-[var(--ease-out-quint)] group-hover:shadow-holographic group-hover:-translate-y-1">
+        {/* Double-bezel outer shell with gradient border */}
+        <div className="p-[1.5px] rounded-3xl bg-gradient-to-b from-stone-200/60 via-violet-200/30 to-transparent dark:from-stone-800/40 dark:via-violet-900/20 dark:to-transparent transition-all duration-700 ease-[var(--ease-out-quint)] group-hover:from-pink-500/40 group-hover:via-violet-500/30 group-hover:to-cyan-500/20 dark:group-hover:from-pink-500/50 dark:group-hover:via-violet-500/40 dark:group-hover:to-cyan-500/30">
+          <article className="group/card relative flex flex-col bg-white/90 dark:bg-stone-900/90 backdrop-blur-md rounded-3xl overflow-hidden transition-all duration-700 ease-[var(--ease-out-quint)] group-hover:shadow-iridescent group-hover:-translate-y-1">
             {/* Top gradient accent bar */}
             <div className="h-[2px] bg-gradient-to-r from-transparent via-transparent to-transparent group-hover:from-pink-500 group-hover:via-violet-500 group-hover:to-cyan-500 transition-all duration-1000 ease-[var(--ease-out-quint)] group-hover:h-[3px]" />
 
             {/* Shimmer surface */}
-            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
               <motion.div
                 className="absolute inset-0"
                 style={{
                   background: 'linear-gradient(90deg, transparent 0%, rgba(244,114,182,0.03) 45%, rgba(192,132,252,0.05) 50%, rgba(96,165,250,0.03) 55%, transparent 100%)',
                 }}
                 animate={{ x: ['-100%', '200%'] }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  repeatDelay: 6,
-                  ease: 'easeInOut',
-                }}
+                transition={{ duration: 4, repeat: Infinity, repeatDelay: 6, ease: 'easeInOut' }}
               />
             </div>
 
@@ -163,11 +154,8 @@ export default function PostCard({ post, index }: PostCardProps) {
                 {/* Button-in-button trailing icon */}
                 <span className="group/btn relative inline-flex items-center gap-2 text-sm font-medium text-stone-600 dark:text-stone-400 transition-colors duration-500 ease-[var(--ease-out-quint)] group-hover:text-red-600 dark:group-hover:text-red-400">
                   <span>阅读</span>
-                  <span className="relative inline-flex items-center justify-center w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 group-hover/btn:bg-gradient-to-r group-hover/btn:from-pink-500/20 group-hover/btn:to-violet-500/20 dark:group-hover/btn:from-pink-500/30 dark:group-hover/btn:to-violet-500/30 transition-all duration-500 ease-[var(--ease-out-quint)] overflow-hidden">
-                    <ArrowRight
-                      size={12}
-                      className="relative transition-transform duration-500 ease-[var(--ease-out-quint)] group-hover/btn:translate-x-0.5"
-                    />
+                  <span className="btn-icon-wrap bg-stone-100 dark:bg-stone-800 group-hover/btn:bg-gradient-to-r group-hover/btn:from-pink-500/20 group-hover/btn:to-violet-500/20 dark:group-hover/btn:from-pink-500/30 dark:group-hover/btn:to-violet-500/30">
+                    <ArrowRight size={12} className="transition-transform duration-500 ease-[var(--ease-out-quint)] group-hover/btn:translate-x-0.5" />
                   </span>
                 </span>
               </div>

@@ -27,14 +27,8 @@ export const metadata: Metadata = {
   applicationName: siteName,
   generator: 'Next.js',
   keywords: [
-    '三水',
-    '个人博客',
-    '技术博客',
-    '前端开发',
-    'Next.js',
-    'React',
-    'TypeScript',
-    'MDX',
+    '三水', '个人博客', '技术博客', '前端开发',
+    'Next.js', 'React', 'TypeScript', 'MDX',
   ],
   authors: [{ name: '三水', url: `${baseUrl}/about` }],
   creator: '三水',
@@ -57,14 +51,7 @@ export const metadata: Metadata = {
     locale: 'zh_CN',
     url: baseUrl,
     siteName: '三水博客',
-    images: [
-      {
-        url: '/og.png',
-        width: 1200,
-        height: 630,
-        alt: '三水 | 个人博客',
-      },
-    ],
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: '三水 | 个人博客' }],
   },
   twitter: {
     card: 'summary_large_image',
@@ -83,11 +70,7 @@ export const metadata: Metadata = {
     },
   },
   category: 'technology',
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
+  formatDetection: { email: false, address: false, telephone: false },
 };
 
 export const viewport: Viewport = {
@@ -98,12 +81,10 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#fafaf9' },
-    { media: '(prefers-color-scheme: dark)', color: '#0a0908' },
+    { media: '(prefers-color-scheme: dark)', color: '#050505' },
   ],
   colorScheme: 'light dark',
 };
-
-// Client wrapper handles the dynamic import internally
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const posts = getAllPosts();
@@ -131,7 +112,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="min-h-[100dvh] flex flex-col bg-stone-50 dark:bg-stone-950 antialiased">
+      <body className="min-h-[100dvh] flex flex-col bg-stone-50 dark:bg-[#050505] antialiased">
         <a href="#main-content" className="skip-link">
           跳转到主要内容
         </a>
@@ -144,6 +125,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <StarField />
             <ParticleBackgroundWrapper />
             <MouseCursor />
+            {/* Noise overlay — single fixed element, GPU-friendly */}
+            <div className="noise-overlay" aria-hidden="true" />
             <Layout posts={posts}>{children}</Layout>
             <BlogSiteJsonLd />
           </TransitionProvider>

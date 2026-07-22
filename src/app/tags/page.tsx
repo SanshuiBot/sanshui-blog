@@ -15,25 +15,21 @@ export default function TagsPage() {
   }));
 
   return (
-    <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+    <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24">
       <ScrollReveal direction="up" delay={0.05}>
         <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors mb-8 group/back"
         >
-          <span className="transition-transform duration-300 group/back:-translate-x-1">←</span>
+          <span className="transition-transform duration-300 group/back:-translate-x-1">&larr;</span>
           返回首页
         </Link>
       </ScrollReveal>
 
       <ScrollReveal direction="up" delay={0.1}>
         <div className="mb-12 relative">
-          <MorphBlob
-            color="rgba(192, 132, 252, 0.08)"
-            size={300}
-            className="absolute -top-10 -right-10 pointer-events-none"
-          />
-          <SparklesComp count={8} className="pointer-events-none" />
+          <MorphBlob color="rgba(192, 132, 252, 0.08)" size={300} className="absolute -top-10 -right-10 pointer-events-none" />
+          <SparklesComp count={8} className="pointer-events-none" shapes={['dot', 'star']} />
           <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-widest mb-4">
             <Hash size={12} />
             标签

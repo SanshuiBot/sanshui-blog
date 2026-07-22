@@ -6,8 +6,6 @@ import Link from 'next/link';
 import GradientText from '@/components/GradientText';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-// Deterministic seeded random — same output on server and client.
-// Avoids hydration mismatch from Math.random() / Date.now().
 function seededRandom(seed: number): number {
   const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
   return x - Math.floor(x);
@@ -36,106 +34,95 @@ export default function NotFound() {
     }));
   }, []);
 
-  // Pre-compute deterministic glitch offsets to avoid Math.random() in render.
   const glitchOffsets = useMemo(
     () => ({
-        shadow: { x: seededRandom(101) * 6 - 3, y: seededRandom(102) * 6 - 3 },
-        main: { x: seededRandom(103) * 6 - 3, y: seededRandom(104) * 6 - 3 },
-      }),
+      shadow: { x: seededRandom(101) * 6 - 3, y: seededRandom(102) * 6 - 3 },
+      main: { x: seededRandom(103) * 6 - 3, y: seededRandom(104) * 6 - 3 },
+    }),
     [glitch],
   );
 
   return (
     <ErrorBoundary>
       <div className="min-h-[80dvh] flex items-center justify-center px-4 py-20 relative overflow-hidden">
-      {/* Floating particles via CSS */}
-      {randomPositions.map((p, i) => (
-        <div
-          key={i}
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: `${p.size}px`,
-            height: `${p.size}px`,
-            background: ['#f472b6', '#c084fc', '#60a5fa', '#34d399'][i % 4],
-            boxShadow: `0 0 ${p.size * 3}px ${['#f472b6', '#c084fc', '#60a5fa', '#34d399'][i % 4]}`,
-            animation: `float-particle ${p.duration}s ease-in-out ${p.delay}s infinite`,
-          }}
-        />
-      ))}
-
-      <div
-        ref={containerRef}
-        className="relative text-center max-w-md animate-fade-up"
-      >
-        {/* Glitch 404 */}
-        <div className="relative mb-6">
+        {/* Floating particles */}
+        {randomPositions.map((p, i) => (
           <div
-            className="relative"
+            key={i}
+            className="absolute rounded-full pointer-events-none"
             style={{
-              animation: 'float 4s ease-in-out infinite',
-              animationIterationCount: '1',
-              animationDuration: '9s',
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              background: ['#f472b6', '#c084fc', '#60a5fa', '#34d399'][i % 4],
+              boxShadow: `0 0 ${p.size * 3}px ${['#f472b6', '#c084fc', '#60a5fa', '#34d399'][i % 4]}`,
+              animation: `float-particle ${p.duration}s ease-in-out ${p.delay}s infinite`,
             }}
-          >
-            {/* Shadow layer - glitch effect */}
-            <div
-              className="absolute inset-0 text-8xl font-bold text-pink-500/30 leading-none"
-              style={{
-                transform: glitch
-                  ? `translate(${glitchOffsets.shadow.x}px, ${glitchOffsets.shadow.y}px)`
-                  : 'none',
-                transition: 'transform 0.1s',
-              }}
-            >
-              404
-            </div>
-            {/* Main text */}
-            <div
-              className="text-8xl font-bold leading-none relative"
-              style={{
-                transform: glitch
-                  ? `translate(${glitchOffsets.main.x}px, ${glitchOffsets.main.y}px)`
-                  : 'none',
-                transition: 'transform 0.1s',
-              }}
-            >
-              <GradientText mode="holo" size="xl">404</GradientText>
+          />
+        ))}
+
+        <div ref={containerRef} className="relative text-center max-w-md">
+          {/* Glitch 404 */}
+          <div className="relative mb-6">
+            <div className="relative">
+              {/* Shadow layer */}
+              <div
+                className="absolute inset-0 text-8xl font-bold text-pink-500/30 leading-none"
+                style={{
+                  transform: glitch
+                    ? `translate(${glitchOffsets.shadow.x}px, ${glitchOffsets.shadow.y}px)`
+                    : 'none',
+                  transition: 'transform 0.1s',
+                }}
+              >
+                404
+              </div>
+              {/* Main layer */}
+              <div
+                className="text-8xl font-bold leading-none relative"
+                style={{
+                  transform: glitch
+                    ? `translate(${glitchOffsets.main.x}px, ${glitchOffsets.main.y}px)`
+                    : 'none',
+                  transition: 'transform 0.1s',
+                }}
+              >
+                <GradientText mode="holo" size="xl" glow>404</GradientText>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="inline-flex items-center gap-2 text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-widest mb-4">
-          <Compass size={12} />
-          迷路了
-        </div>
+          <div className="inline-flex items-center gap-2 text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-widest mb-4">
+            <Compass size={12} />
+            迷路了
+          </div>
 
-        <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-50 mb-3 text-balance">
-          页面走丢了
-        </h1>
-        <p className="text-stone-500 dark:text-stone-400 mb-8 text-pretty">
-          抱歉，你访问的页面不存在或已被移除。也许可以回到首页，或者去归档看看.
-        </p>
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-50 mb-3 text-balance">
+            页面走丢了
+          </h1>
+          <p className="text-stone-500 dark:text-stone-400 mb-8 text-pretty">
+            抱歉，你访问的页面不存在或已被移除。也许可以回到首页，或者去归档看看.
+          </p>
 
-        <div className="flex items-center justify-center gap-3 flex-wrap">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 text-sm font-medium hover:scale-105 active:scale-95 transition-transform light-ray ripple"
-          >
-            <Home size={16} />
-            返回首页
-          </Link>
-          <Link
-            href="/archive"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 text-sm font-medium border border-stone-200 dark:border-stone-800 hover:scale-105 active:scale-95 transition-transform hover:border-pink-300 dark:hover:border-pink-700 hover:shadow-holographic light-ray ripple"
-          >
-            <ArrowLeft size={16} />
-            浏览归档
-          </Link>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 text-sm font-medium hover:scale-105 active:scale-95 transition-transform light-ray"
+            >
+              <Home size={16} />
+              返回首页
+            </Link>
+            <Link
+              href="/archive"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 text-sm font-medium border border-stone-200 dark:border-stone-800 hover:scale-105 active:scale-95 transition-transform hover:border-pink-300 dark:hover:border-pink-700 hover:shadow-iridescent light-ray"
+            >
+              <ArrowLeft size={16} />
+              浏览归档
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
     </ErrorBoundary>
   );
 }

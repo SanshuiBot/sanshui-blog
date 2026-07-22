@@ -44,13 +44,8 @@ function useCopyCodeButtons() {
           await navigator.clipboard.writeText(code.textContent ?? '');
           setCopiedId(`code-${i}`);
           btn.classList.add('text-green-500');
-          setTimeout(() => {
-            setCopiedId(null);
-            btn.classList.remove('text-green-500');
-          }, 2000);
-        } catch {
-          // ignore
-        }
+          setTimeout(() => { setCopiedId(null); btn.classList.remove('text-green-500'); }, 2000);
+        } catch { /* ignore */ }
       });
       pre.classList.add('group', 'relative');
       pre.appendChild(btn);
@@ -73,9 +68,7 @@ function useCopyCodeButtons() {
 export default function PostReader({ post }: PostReaderProps) {
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+      year: 'numeric', month: 'long', day: 'numeric',
     });
   };
 
@@ -87,24 +80,18 @@ export default function PostReader({ post }: PostReaderProps) {
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setShowBackToTop(window.scrollY > 300);
-    };
+    const handleScroll = () => setShowBackToTop(window.scrollY > 300);
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const articleRef = useRef<HTMLElement>(null);
   const { inject } = useCopyCodeButtons();
 
   useEffect(() => {
-    if (articleRef.current) {
-      inject(articleRef.current);
-    }
+    if (articleRef.current) inject(articleRef.current);
   }, [inject]);
 
   return (
@@ -113,7 +100,6 @@ export default function PostReader({ post }: PostReaderProps) {
       className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24"
     >
       <div className="lg:grid lg:grid-cols-[1fr_220px] lg:gap-12">
-        {/* Main content */}
         <article ref={articleRef} className="min-w-0">
           {/* Back link */}
           <motion.div
@@ -152,12 +138,10 @@ export default function PostReader({ post }: PostReaderProps) {
               ))}
             </div>
 
-            {/* Title */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-900 dark:text-stone-50 tracking-tight leading-tight mb-6 text-balance">
               {post.title}
             </h1>
 
-            {/* Meta */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-stone-400 dark:text-stone-500">
               <span className="flex items-center gap-1.5">
                 <Calendar size={14} />
@@ -171,7 +155,7 @@ export default function PostReader({ post }: PostReaderProps) {
             </div>
           </motion.header>
 
-          {/* Divider */}
+          {/* Animated gradient divider */}
           <motion.div
             initial={{ scaleX: 0 }}
             animate={{ scaleX: 1 }}
@@ -180,7 +164,7 @@ export default function PostReader({ post }: PostReaderProps) {
             style={{ transformOrigin: 'left' }}
           />
 
-          {/* Content - MDX */}
+          {/* Content */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -223,7 +207,7 @@ export default function PostReader({ post }: PostReaderProps) {
           </motion.div>
         </article>
 
-        {/* Sidebar - Table of Contents */}
+        {/* Sidebar TOC */}
         <aside className="hidden lg:block">
           <TableOfContents content={post.content} />
         </aside>
@@ -240,9 +224,8 @@ export default function PostReader({ post }: PostReaderProps) {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ delay: 0.2 }}
           onClick={scrollToTop}
-          className="fixed bottom-6 left-6 z-40 p-2.5 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:shadow-lg hover:shadow-holographic/30 transition-all duration-300 active:scale-95"
+          className="fixed bottom-6 left-6 z-[var(--z-sticky)] p-2.5 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:shadow-lg hover:shadow-iridescent/30 transition-all duration-300 active:scale-95"
           aria-label="回到顶部"
         >
           <ArrowUp size={16} />

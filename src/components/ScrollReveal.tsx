@@ -12,6 +12,8 @@ interface ScrollRevealProps {
   staggerChildren?: boolean;
   staggerAmount?: number;
   duration?: number;
+  distance?: number;
+  once?: boolean;
 }
 
 export default function ScrollReveal({
@@ -22,18 +24,20 @@ export default function ScrollReveal({
   threshold = 0.1,
   staggerChildren = false,
   staggerAmount = 0.05,
-  duration = 0.6,
+  duration = 0.7,
+  distance = 32,
+  once = true,
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: '0px 0px -40px 0px', amount: threshold });
+  const isInView = useInView(ref, { once, margin: '0px 0px -60px 0px', amount: threshold });
 
   const directionOffset = {
-    up: { y: 40 },
-    down: { y: -40 },
-    left: { x: 40 },
-    right: { x: -40 },
-    scale: { scale: 0.85, y: 20 },
-    blur: { y: 20, filter: 'blur(8px)' },
+    up: { y: distance },
+    down: { y: -distance },
+    left: { x: distance },
+    right: { x: -distance },
+    scale: { scale: 0.85, y: distance * 0.6 },
+    blur: { y: distance * 0.6, filter: 'blur(8px)' },
     none: {},
   };
 
@@ -57,19 +61,9 @@ export default function ScrollReveal({
           return (
             <motion.div
               key={index}
-              initial={{
-                opacity: 0,
-                ...directionOffset[direction],
-              }}
-              animate={
-                isInView
-                  ? { opacity: 1, x: 0, y: 0, scale: 1, filter: 'blur(0px)' }
-                  : { opacity: 0, ...directionOffset[direction] }
-              }
-              transition={{
-                ...baseTransition,
-                delay: delay + index * staggerAmount,
-              }}
+              initial={{ opacity: 0, ...directionOffset[direction] }}
+              animate={isInView ? { opacity: 1, x: 0, y: 0, scale: 1, filter: 'blur(0px)' } : { opacity: 0, ...directionOffset[direction] }}
+              transition={{ ...baseTransition, delay: delay + index * staggerAmount }}
             >
               {child}
             </motion.div>
@@ -83,15 +77,8 @@ export default function ScrollReveal({
     <motion.div
       ref={ref}
       className={className}
-      initial={{
-        opacity: 0,
-        ...directionOffset[direction],
-      }}
-      animate={
-        isInView
-          ? { opacity: 1, x: 0, y: 0, scale: 1, filter: 'blur(0px)' }
-          : { opacity: 0, ...directionOffset[direction] }
-      }
+      initial={{ opacity: 0, ...directionOffset[direction] }}
+      animate={isInView ? { opacity: 1, x: 0, y: 0, scale: 1, filter: 'blur(0px)' } : { opacity: 0, ...directionOffset[direction] }}
       transition={baseTransition}
     >
       {children}

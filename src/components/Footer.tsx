@@ -1,11 +1,22 @@
 'use client';
 
 import Link from 'next/link';
-import { Code2, Mail, Rss } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Code2, Mail, Rss, ArrowUp } from 'lucide-react';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { useState } from 'react';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, 'change', (v) => {
+    setShowBackToTop(v > 400);
+  });
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const navLinks = [
     { href: '/', label: '首页' },
@@ -16,24 +27,14 @@ export default function Footer() {
 
   const connectLinks = [
     { href: '/links', label: '友情链接', isInternal: true },
-    {
-      href: 'https://github.com/SanshuiBot',
-      label: 'GitHub',
-      icon: <Code2 size={14} />,
-      external: true,
-    },
-    {
-      href: 'mailto:localhost6@foxmail.com',
-      label: 'Email',
-      icon: <Mail size={14} />,
-      external: false,
-    },
+    { href: 'https://github.com/SanshuiBot', label: 'GitHub', icon: <Code2 size={14} />, external: true },
+    { href: 'mailto:localhost6@foxmail.com', label: 'Email', icon: <Mail size={14} />, external: false },
   ];
 
   return (
     <footer
       style={{ viewTransitionName: 'site-footer' }}
-      className="relative border-t border-stone-200/60 dark:border-stone-800/60 bg-stone-50/50 dark:bg-stone-950/50 overflow-hidden"
+      className="relative border-t border-stone-200/60 dark:border-stone-800/60 bg-stone-50/80 dark:bg-stone-950/80 overflow-hidden backdrop-blur-sm"
     >
       {/* Animated gradient top border */}
       <div className="absolute top-0 left-0 right-0 h-[1px] overflow-hidden">
@@ -43,16 +44,24 @@ export default function Footer() {
             background: 'linear-gradient(90deg, transparent, #f472b6, #c084fc, #60a5fa, #34d399, transparent)',
             backgroundSize: '200% 100%',
           }}
-          animate={{
-            backgroundPosition: ['0% 0%', '200% 0%'],
-          }}
-          transition={{
-            duration: 6,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
+          animate={{ backgroundPosition: ['0% 0%', '200% 0%'] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
         />
       </div>
+
+      {/* Back to top */}
+      {showBackToTop && (
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          onClick={scrollToTop}
+          className="absolute -top-5 left-1/2 -translate-x-1/2 z-10 p-2.5 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:shadow-lg hover:shadow-iridescent/30 transition-all duration-300 active:scale-95"
+          aria-label="回到顶部"
+        >
+          <ArrowUp size={16} />
+        </motion.button>
+      )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
@@ -76,10 +85,10 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="relative text-sm text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-300 group/light"
+                    className="relative text-sm text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-300 group"
                   >
                     <span className="relative z-10">{link.label}</span>
-                    <span className="absolute -bottom-0.5 left-0 h-[1px] w-0 bg-gradient-to-r from-pink-500 to-violet-500 group-hover/light:w-full transition-all duration-500 ease-[var(--ease-out-quint)]" />
+                    <span className="absolute -bottom-0.5 left-0 h-[1px] w-0 bg-gradient-to-r from-pink-500 to-violet-500 group-hover:w-full transition-all duration-500 ease-[var(--ease-out-quint)]" />
                   </Link>
                 </li>
               ))}
@@ -98,11 +107,11 @@ export default function Footer() {
                     href={link.href}
                     target={link.external ? '_blank' : undefined}
                     rel={link.external ? 'noopener noreferrer' : undefined}
-                    className="inline-flex items-center gap-1.5 text-sm text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-300 group/connect"
+                    className="inline-flex items-center gap-1.5 text-sm text-stone-500 dark:text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors duration-300 group"
                   >
                     {link.icon}
                     <span className="relative z-10">{link.label}</span>
-                    <span className="absolute -bottom-0.5 left-0 h-[1px] w-0 bg-gradient-to-r from-pink-500 to-violet-500 group-hover/connect:w-full transition-all duration-500 ease-[var(--ease-out-quint)]" />
+                    <span className="absolute -bottom-0.5 left-0 h-[1px] w-0 bg-gradient-to-r from-pink-500 to-violet-500 group-hover:w-full transition-all duration-500 ease-[var(--ease-out-quint)]" />
                   </Link>
                 </li>
               ))}
@@ -124,25 +133,18 @@ export default function Footer() {
 
       {/* Floating decorative particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        {[...Array(6)].map((_, i) => (
+        {[...Array(8)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-1 h-1 rounded-full bg-gradient-to-r from-pink-500 to-violet-500"
+            className="absolute w-1 h-1 rounded-full"
             style={{
-              left: `${15 + i * 15}%`,
-              top: `${20 + (i % 3) * 20}%`,
-              opacity: 0.2,
+              left: `${10 + i * 11}%`,
+              top: `${15 + (i % 4) * 18}%`,
+              background: ['#f472b6', '#c084fc', '#60a5fa', '#34d399'][i % 4],
+              boxShadow: `0 0 6px ${['#f472b6', '#c084fc', '#60a5fa', '#34d399'][i % 4]}`,
             }}
-            animate={{
-              y: [0, -15, 0],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: 4 + i * 0.5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              delay: i * 0.3,
-            }}
+            animate={{ y: [0, -20, 0], opacity: [0.1, 0.4, 0.1] }}
+            transition={{ duration: 4 + i * 0.7, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
           />
         ))}
       </div>

@@ -2,8 +2,8 @@ import { Hash } from 'lucide-react';
 import { getPostsByTag, getAllTags } from '@/lib/posts';
 import { notFound } from 'next/navigation';
 import PostCard from '@/components/PostCard';
-import PageHeader from '@/components/PageHeader';
 import ScrollReveal from '@/components/ScrollReveal';
+import PageHeader from '@/components/PageHeader';
 
 export function generateStaticParams() {
   return getAllTags().map((tag) => ({ tag }));
@@ -22,7 +22,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
   if (posts.length === 0) notFound();
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24">
       <PageHeader
         title={decodedTag}
         description={`共 ${posts.length} 篇文章`}
