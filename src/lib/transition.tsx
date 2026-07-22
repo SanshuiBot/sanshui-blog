@@ -12,9 +12,7 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (prevPathRef.current !== pathname) {
       setIsTransitioning(true);
-      const timer = setTimeout(() => {
-        setIsTransitioning(false);
-      }, 250);
+      const timer = setTimeout(() => setIsTransitioning(false), 250);
       prevPathRef.current = pathname;
       return () => clearTimeout(timer);
     }
@@ -32,10 +30,9 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
             transition={{ duration: 0.18 }}
             className="fixed inset-0 z-50 pointer-events-none"
           >
-            {/* Holographic gradient flash */}
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/8 via-violet-500/8 to-cyan-500/8 dark:from-pink-500/12 dark:via-violet-500/12 dark:to-cyan-500/12" />
+            <div className="absolute inset-0 bg-linear-to-br from-pink-500/8 via-violet-500/8 to-cyan-500/8 dark:from-pink-500/12 dark:via-violet-500/12 dark:to-cyan-500/12" />
             <motion.div
-              className="absolute top-0 left-0 right-0 h-[1px]"
+              className="absolute top-0 left-0 right-0 h-px"
               style={{
                 background: 'linear-gradient(90deg, transparent, #f472b6, #c084fc, #60a5fa, #34d399, transparent)',
                 backgroundSize: '200% 100%',
