@@ -1,8 +1,6 @@
 ﻿import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
 
 export default function PostContent({ content }: { content: string }) {
   return (
@@ -14,7 +12,7 @@ export default function PostContent({ content }: { content: string }) {
           options={{
             mdxOptions: {
               remarkPlugins: [remarkGfm],
-              rehypePlugins: [rehypeSlug, [rehypeAutolinkHeadings, { behavior: "wrap" }], rehypeHighlight],
+              rehypePlugins: [rehypeSlug],
             },
           }}
         />

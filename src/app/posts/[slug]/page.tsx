@@ -1,4 +1,4 @@
-﻿import { notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPostBySlug, getAllPosts, getAdjacentPosts } from "@/lib/posts";
 import { extractHeadings } from "@/lib/toc";
@@ -31,7 +31,7 @@ export default async function PostPage({ params }: Props) {
   if (!post) notFound();
 
   const headings = extractHeadings(post.content);
-  const { prev, next } = getAdjacentPosts(slug);
+  const { prev } = getAdjacentPosts(slug);
 
   return (
     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
@@ -39,9 +39,7 @@ export default async function PostPage({ params }: Props) {
         <div className="flex-1 min-w-0 max-w-3xl">
           <PostMeta post={post} />
           <PostContent content={post.content} />
-          <PostNav
-            prev={prev ? { slug: prev.slug, title: prev.title } : null}
-            next={next ? { slug: next.slug, title: next.title } : null}
+          <PostNav prev={prev ? { slug: prev.slug, title: prev.title } : null}
           />
         </div>
         <TableOfContents items={headings} />
