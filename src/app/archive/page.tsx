@@ -32,7 +32,7 @@ export default function ArchivePage() {
             <div className="text-3xl font-bold text-gray-800 tracking-tight">{year}</div>
             <div className="flex-1 h-px bg-white/5" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
             {(grouped[year] ?? []).map((p, i) => (
               <PostCard key={p.slug} post={p} index={i} />
             ))}
