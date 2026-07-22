@@ -1,6 +1,1 @@
-'use client';
-import { useMemo } from 'react';
-export default function StarField({ count = 100 }: { count?: number }) {
-  const stars = useMemo(() => { const rng=(s:number)=>{let a=s>>>0;return()=>{a|=0;a=(a+0x6d2b79f5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};};const r=rng(42);return Array.from({length:count},(_,i)=>({id:i,l:`${r()*100}%`,t:`${r()*100}%`,s:0.5+r()*2,d:r()*6,u:2+r()*5,p:r()<.3?'warm':r()<.6?'cool':'neu',b:.5+r()*.5})); }, [count]);
-  return (<div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">{stars.map(s=>{const h=s.p==='warm'?45:s.p==='cool'?210:0;const col=s.p==='neu'?'#fafaf9':`hsl(${h},80%,75%)`;return(<div key={s.id} className="absolute" style={{left:s.l,top:s.t,width:`${s.s}px`,height:`${s.s}px`}}><div className="absolute rounded-full inset-0" style={{background:col,boxShadow:`0 0 ${s.s*3}px ${col}${Math.round(s.b*60)}`,animation:`twinkle ${s.u}s ease-in-out ${s.d}s infinite`}}/>{s.s>1.2&&<div className="absolute rounded-full" style={{inset:`-${s.s*2}px`,background:`radial-gradient(circle,${col}44,transparent 70%)`,animation:`twinkle ${s.u}s ease-in-out ${s.d}s infinite`,opacity:.3}}/>}</div>);})}<style>{`@keyframes twinkle{0%,100%{opacity:0.1;transform:scale(0.7)}50%{opacity:1;transform:scale(1.3)}}`}</style></div>);
-}
+export default function StarField() { return null }

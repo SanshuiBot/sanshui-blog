@@ -1,13 +1,43 @@
-'use client'; import { useEffect, useState } from 'react'; import { Home, ArrowLeft, Compass } from 'lucide-react'; import Link from 'next/link';
-function sr(s:number){const x=Math.sin(s*12.9898+78.233)*43758.5453;return x-Math.floor(x);}
+﻿"use client";
+import { Home, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+
 export default function NotFound() {
-  const [g,setG]=useState(false);
-  useEffect(()=>{const i=setInterval(()=>{setG(true);setTimeout(()=>setG(false),200)},3000);return()=>clearInterval(i)},[]);
-  const p=Array.from({length:20},(_,i)=>({x:sr(i*7+1)*100,y:sr(i*11+3)*100,z:2+sr(i*13+5)*4,de:sr(i*17+7)*5,du:3+sr(i*19+9)*4,he:Math.floor(sr(i*23+11)*360)}));
-  return(<div className="min-h-[80dvh] flex items-center justify-center px-4 py-20 relative overflow-hidden">{p.map((q,i)=><div key={i} className="absolute rounded-full pointer-events-none" style={{left:`${q.x}%`,top:`${q.y}%`,width:`${q.z}px`,height:`${q.z}px`,background:['#f472b6','#c084fc','#60a5fa','#34d399'][i%4],boxShadow:`0 0 ${q.z*3}px ${['#f472b6','#c084fc','#60a5fa','#34d399'][i%4]}`,animation:`float-particle ${q.du}s ease-in-out ${q.de}s infinite`}}/>)}
-  <div className="relative text-center max-w-md"><div className="relative mb-6"><div className="text-8xl font-bold leading-none" style={{textShadow:g?'2px 2px 0 #f472b6,-2px -2px 0 #60a5fa':'none',transition:'text-shadow 0.1s'}}><span className="holo-text">404</span></div></div>
-  <div className="inline-flex items-center gap-2 text-xs font-medium text-fuchsia-600 dark:text-fuchsia-400 uppercase tracking-widest mb-4"><Compass size={12}/>迷路了</div>
-  <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-50 mb-3">页面走丢了</h1><p className="text-stone-500 dark:text-stone-400 mb-8">抱歉，你访问的页面不存在.</p>
-  <div className="flex items-center justify-center gap-3 flex-wrap"><Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 text-sm font-medium hover:scale-105 active:scale-95 transition-transform"><Home size={16}/>返回首页</Link><Link href="/archive" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 text-sm font-medium border border-stone-200 dark:border-stone-800 hover:scale-105 active:scale-95 transition-transform hover:border-fuchsia-300 dark:hover:border-fuchsia-700"><ArrowLeft size={16}/>浏览归档</Link></div></div>
-  <style>{`@keyframes float-particle{0%,100%{transform:translateY(0)translateX(0)scale(1);opacity:0.4}25%{transform:translateY(-30px)translateX(15px)scale(1.2);opacity:0.8}50%{transform:translateY(-15px)translateX(-10px)scale(0.8);opacity:0.6}75%{transform:translateY(-40px)translateX(5px)scale(1.1);opacity:0.7}}`}</style>
-</div>);}
+  return (
+    <div className="min-h-[80dvh] flex items-center justify-center px-4 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full animate-float"
+            style={{
+              left: `${10 + (i * 8) % 90}%`,
+              top: `${10 + (i * 13) % 80}%`,
+              width: `${2 + (i % 3) * 3}px`,
+              height: `${2 + (i % 3) * 3}px`,
+              background: ["#ff6ec7", "#a855f7", "#38bdf8", "#2dd4bf"][i % 4],
+              boxShadow: `0 0 ${4 + (i % 3) * 4}px ${["#ff6ec7", "#a855f7", "#38bdf8", "#2dd4bf"][i % 4]}`,
+              animationDelay: `${i * 0.5}s`,
+              animationDuration: `${3 + i * 0.7}s`,
+            }}
+          />
+        ))}
+      </div>
+      <div className="relative text-center max-w-md">
+        <div className="relative mb-6">
+          <div className="text-9xl font-black leading-none text-aurora tracking-tighter">404</div>
+        </div>
+        <h1 className="text-2xl font-bold text-white mb-3">页面走丢了</h1>
+        <p className="text-gray-500 mb-10">抱歉，你访问的页面不存在。</p>
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-sm font-medium hover:scale-105 active:scale-95 transition-transform">
+            <Home size={16} />返回首页
+          </Link>
+          <Link href="/archive" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 text-gray-300 text-sm font-medium border border-white/10 hover:scale-105 active:scale-95 transition-transform hover:border-accent-violet/40">
+            <ArrowLeft size={16} />浏览归档
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

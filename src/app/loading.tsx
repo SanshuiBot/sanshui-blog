@@ -1,3 +1,13 @@
-export default function Loading() {
-  return (<div role="status" aria-label="加载中" className="flex min-h-[60vh] items-center justify-center"><div className="flex flex-col items-center gap-4"><span className="sr-only">正在加载...</span><div className="relative w-12 h-12"><div className="absolute inset-0 rounded-full border-2 border-stone-200 dark:border-stone-800"/><div className="absolute inset-0 rounded-full border-2 border-t-fuchsia-500 border-r-violet-500 animate-spin" style={{animationDuration:'0.8s'}}/></div><span className="text-xs text-stone-400 dark:text-stone-600 animate-pulse">加载中...</span></div></div>);
+﻿export default function Loading() {
+  return (
+    <div role="status" aria-label="加载中" className="flex min-h-[70vh] items-center justify-center">
+      <div className="flex flex-col items-center gap-5">
+        <div className="relative w-14 h-14">
+          <div className="absolute inset-0 rounded-full border-2 border-white/5" />
+          <div className="absolute inset-0 rounded-full border-2 border-t-accent-violet border-r-accent-pink animate-spin" style={{ animationDuration: "0.8s" }} />
+        </div>
+        <span className="text-sm text-gray-600 animate-pulse">加载中...</span>
+      </div>
+    </div>
+  );
 }
