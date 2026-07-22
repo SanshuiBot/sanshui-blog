@@ -27,7 +27,7 @@ export default function Home() {
           </Link>
         </div>
         {remaining.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
             {remaining.map((p, i) => <PostCard key={p.slug} post={p} index={i} />)}
           </div>
         ) : (

@@ -34,7 +34,7 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
       viewport={{ once: true, margin: '-40px' }}
       transition={{ delay: index * 0.06, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className="group relative h-full">
+      <div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} className="group relative">
         <motion.div
           aria-hidden
           className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
@@ -45,7 +45,7 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
           }}
         />
         <div className="p-[1px] rounded-2xl bg-white/5 group-hover:bg-gradient-to-br group-hover:from-accent-pink/30 group-hover:via-accent-violet/20 group-hover:to-accent-blue/10 transition-all duration-500">
-          <article className="relative flex flex-col h-full bg-surface rounded-2xl overflow-hidden transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl">
+          <article className="relative flex flex-col bg-surface rounded-2xl overflow-hidden transition-all duration-500 group-hover:-translate-y-1 group-hover:shadow-2xl">
             <div className="h-[2px] bg-transparent group-hover:bg-gradient-to-r group-hover:from-accent-pink group-hover:via-accent-violet group-hover:to-accent-blue transition-all duration-700" />
             <div className="flex-1 p-5 sm:p-6 flex flex-col">
               <div className="flex flex-wrap gap-1.5 mb-3">
@@ -58,7 +58,7 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
               <h2 className="text-lg font-bold text-white mb-2 group-hover:text-accent-violet transition-colors line-clamp-2 tracking-tight leading-snug">
                 <Link href={`/posts/${post.slug}`} className="after:absolute after:inset-0">{post.title}</Link>
               </h2>
-              <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1">{post.excerpt}</p>
+              <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2">{post.excerpt}</p>
               <div className="flex items-center justify-between pt-3 border-t border-white/5">
                 <span className="flex items-center gap-1.5 text-xs text-gray-600"><Clock size={11} />{fmt(post.date)}</span>
                 <span className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 group-hover:text-accent-violet transition-colors">

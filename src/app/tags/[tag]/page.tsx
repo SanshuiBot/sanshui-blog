@@ -30,7 +30,7 @@ export default async function TagPage({ params }: Props) {
         <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">#{tag}</h1>
         <p className="mt-3 text-gray-500">{posts.length} posts</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start items-start">
         {posts.map((p, i) => <PostCard key={p.slug} post={p} index={i} />)}
       </div>
     </div>
