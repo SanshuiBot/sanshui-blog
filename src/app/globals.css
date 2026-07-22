@@ -33,10 +33,10 @@
   :root {
     --glass-bg: rgba(20,20,32,0.6);
     --glass-border: rgba(255,255,255,0.06);
-    --glass-shadow: 0 8px 32px rgba(0,0,0,0.4);
-    --glow-pink: rgba(255,110,199,0.15);
-    --glow-violet: rgba(168,85,247,0.12);
-    --glow-blue: rgba(56,189,248,0.1);
+    --glass-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    --glow-pink: rgba(255,110,199,0.06);
+    --glow-violet: rgba(168,85,247,0.05);
+    --glow-blue: rgba(56,189,248,0.04);
   }
   *,*::before,*::after{box-sizing:border-box;border-color:rgba(255,255,255,0.06)}
   html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent;text-rendering:optimizeLegibility}
@@ -57,8 +57,8 @@
   .border-glow:hover::before{opacity:1}
   .text-aurora{background:linear-gradient(135deg,#ff6ec7,#a855f7 30%,#38bdf8 60%,#2dd4bf 80%,#fbbf24);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:aurora-shift 8s ease-in-out infinite}
   .text-aurora-subtle{background:linear-gradient(135deg,rgba(255,110,199,0.9),rgba(168,85,247,0.9));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-  .glow-pink{box-shadow:0 0 20px var(--glow-pink),0 0 60px rgba(255,110,199,0.08)}
-  .glow-violet{box-shadow:0 0 20px var(--glow-violet),0 0 60px rgba(168,85,247,0.08)}
+  .glow-pink{box-shadow:0 0 10px var(--glow-pink),0 0 30px rgba(255,110,199,0.04)}
+  .glow-violet{box-shadow:0 0 10px var(--glow-violet),0 0 30px rgba(168,85,247,0.04)}
   .animate-float{animation:float 6s ease-in-out infinite}
   .animate-float-delayed{animation:float 7s ease-in-out 1s infinite}
   .shimmer{position:relative;overflow:hidden}
