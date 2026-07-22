@@ -532,4 +532,3 @@ FHIR 正在扩展 **Genomics** 领域（如 MolecularSequence、GenomicsReport R
 
 医疗 IT 是一个慢工出细活的领域，但每一行正确流转的数据，最终都可能挽救一条生命。
 
-> 下一篇预告：《游戏引擎架构与 Unity 实战：从渲染管线到 ECS》

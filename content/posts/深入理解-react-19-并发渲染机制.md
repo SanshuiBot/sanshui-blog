@@ -262,4 +262,3 @@ React 18 起的 SSR 是分阶段的：
 
 React 19 在此基础上还加入了 Actions、`useOptimistic`、`useFormStatus` 等更上层的封装，但这些的背后，都是同一套并发渲染机制在支撑。掌握它，你就掌握了现代 React 的灵魂。
 
-> 下一篇预告：《TypeScript 类型体操实战：从 Conditional Types 到 Template Literal Types》

@@ -319,4 +319,3 @@ navigate('/posts/:id/comments', { id: '1' });// ✅
 
 掌握 Conditional Types、Mapped Types、Template Literal Types、infer 这四大金刚，你就掌握了类型体操 90% 的能力。剩下的 10%，是阅读 type-fest 源码、刷 type-challenges 时自然获得的肌肉记忆。
 
-> 下一篇预告：《云原生架构与 Kubernetes 实战：从 Pod 到 Service Mesh》
