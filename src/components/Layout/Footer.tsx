@@ -1,15 +1,15 @@
-"use client";
+ï»¿"use client";
 import Link from "next/link";
 import { Code2, Mail, ArrowUp, Rss } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import { useState } from "react";
 
 const navLinks = [
-  { href: "/", label: "Ê×Ò³" },
-  { href: "/archive", label: "¹éµµ" },
-  { href: "/tags", label: "±êÇ©" },
-  { href: "/about", label: "¹ØÓÚ" },
-  { href: "/links", label: "ÓÑÁ´" },
+  { href: "/", label: "é¦–é¡µ" },
+  { href: "/archive", label: "å½’æ¡£" },
+  { href: "/tags", label: "æ ‡ç­¾" },
+  { href: "/about", label: "å…³äº" },
+  { href: "/links", label: "å‹é“¾" },
 ];
 
 export default function Footer() {
@@ -28,17 +28,17 @@ export default function Footer() {
         <motion.button initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           className="absolute -top-5 left-1/2 -translate-x-1/2 z-10 p-2.5 rounded-full bg-surface border border-white/10 text-gray-400 hover:text-white hover:glow-violet transition-all active:scale-95"
-          aria-label="»Øµ½¶¥²¿"><ArrowUp size={16} /></motion.button>
+          aria-label="å›åˆ°é¡¶éƒ¨"><ArrowUp size={16} /></motion.button>
       )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-12">
           <div>
-            <Link href="/" className="text-xl font-bold tracking-tight text-aurora">ÈıË®</Link>
-            <p className="mt-3 text-sm text-gray-500 leading-relaxed max-w-xs">¼ÇÂ¼¼¼ÊõË¼¿¼Óë´´×÷Áé¸Ğ¡£</p>
+            <Link href="/" className="text-xl font-bold tracking-tight text-aurora">ä¸‰æ°´</Link>
+            <p className="mt-3 text-sm text-gray-500 leading-relaxed max-w-xs">è®°å½•æŠ€æœ¯æ€è€ƒä¸åˆ›ä½œçµæ„Ÿã€‚</p>
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-5">µ¼º½</h3>
+            <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-5">å¯¼èˆª</h3>
             <ul className="space-y-3">
               {navLinks.map((link) => (
                 <li key={link.href}>
@@ -48,16 +48,16 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-5">ÁªÏµ</h3>
+            <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-5">è”ç³»</h3>
             <div className="space-y-3">
-              <a href="https://Code2.com/SanshuiBot" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"><Code2 size={14} />Code2</a>
+              <a href="https://github.com/SanshuiBot" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"><Code2 size={14} />GitHub</a>
               <br />
               <a href="mailto:localhost6@foxmail.com" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"><Mail size={14} />Email</a>
             </div>
           </div>
         </div>
         <div className="mt-14 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-gray-600">&copy; {new Date().getFullYear()} ÈıË®. All rights reserved.</p>
+          <p className="text-xs text-gray-600">&copy; {new Date().getFullYear()} ä¸‰æ°´. All rights reserved.</p>
           <p className="text-xs text-gray-600 flex items-center gap-1">Next.js &bull; MDX &bull; Tailwind CSS <Rss size={12} className="opacity-40" /></p>
         </div>
       </div>

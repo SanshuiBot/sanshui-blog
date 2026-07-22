@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowDown, Code2, Mail, MapPin } from "lucide-react";
-import Link from "next/link";
+import { useState } from "react";
 
 const social = [
   { icon: Code2, href: "https://github.com/SanshuiBot", label: "GitHub" },
@@ -16,6 +16,7 @@ export default function HeroScene() {
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
   const y = useTransform(scrollY, [0, 400], [0, 80]);
+  const [ctaDir, setCtaDir] = useState<"left" | "right" | "center">("center");
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -93,10 +94,37 @@ export default function HeroScene() {
             用文字沉淀知识，用代码改变世界。
           </motion.p>
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.55 }} className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="#posts" className="group relative inline-flex items-center gap-3 px-7 py-3 rounded-full bg-white text-black font-semibold text-sm hover:glow-pink active:scale-[0.98] transition-all duration-300">
-              <span>浏览文章</span>
-              <span className="opacity-30 group-hover:opacity-60 transition-opacity"><ArrowDown size={14} /></span>
-            </Link>
+            <motion.a
+              href="#posts"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                setCtaDir(x < rect.width / 3 ? "left" : x > (rect.width * 2) / 3 ? "right" : "center");
+              }}
+              onMouseLeave={() => setCtaDir("center")}
+              className="group relative inline-flex items-center gap-3 px-7 py-3 rounded-full bg-white text-black font-semibold text-sm transition-all duration-300"
+            >
+              <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{
+                  background: ctaDir === "left" ? "linear-gradient(135deg,rgba(168,85,247,0.15),transparent 60%)" :
+                             ctaDir === "right" ? "linear-gradient(225deg,rgba(255,110,199,0.15),transparent 60%)" :
+                             "linear-gradient(180deg,rgba(168,85,247,0.1),transparent 60%)",
+                }}
+              />
+              <span className="relative z-10">浏览文章</span>
+              <motion.span
+                className="relative z-10 opacity-40 group-hover:opacity-80 transition-opacity"
+                animate={{
+                  x: ctaDir === "right" ? 0 : 0,
+                  rotate: ctaDir === "left" ? -45 : ctaDir === "right" ? 45 : 0,
+                }}
+                transition={{ duration: 0.3 }}
+              >
+                <ArrowDown size={14} />
+              </motion.span>
+            </motion.a>
             <div className="flex items-center gap-1">
               {social.map(({ icon: Icon, href, label }) => (
                 <a key={label} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined} aria-label={label} className="p-3 rounded-full text-gray-500 hover:text-white hover:bg-white/5 transition-all active:scale-95">

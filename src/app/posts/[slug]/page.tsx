@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPostBySlug, getAllPosts } from "@/lib/posts";
-import PostReader from "@/components/Post/PostReader";
+import PostContent from "@/components/Post/PostContent";
+import PostMeta from "@/components/Post/PostMeta";
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -25,5 +26,11 @@ export default async function PostPage({ params }: Props) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) notFound();
-  return <PostReader post={post} />;
+
+  return (
+    <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
+      <PostMeta post={post} />
+      <PostContent content={post.content} />
+    </div>
+  );
 }
