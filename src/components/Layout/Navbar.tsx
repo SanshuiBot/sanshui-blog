@@ -1,9 +1,10 @@
-'use client';
+﻿'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Menu, X } from 'lucide-react';
+import ThemeToggle from '@/components/UI/ThemeToggle';
 import SearchModal from '@/components/UI/SearchModal';
 
 const links = [
@@ -45,6 +46,7 @@ export default function Navbar({ posts }: { posts: any[] }) {
           </div>
           <div className="flex items-center gap-1">
             <button onClick={() => setSearchOpen(true)} className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all" aria-label="搜索"><Search size={16} /></button>
+            <ThemeToggle />
             <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all md:hidden" aria-label="菜单">{mobileOpen ? <X size={18} /> : <Menu size={18} />}</button>
           </div>
         </nav>
@@ -68,3 +70,4 @@ export default function Navbar({ posts }: { posts: any[] }) {
     </>
   );
 }
+

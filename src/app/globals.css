@@ -107,3 +107,73 @@
 .hljs-tag{color:#ff6ec7}
 .hljs-name{color:#38bdf8}
 .hljs-selector-class,.hljs-selector-tag{color:#fbbf24}
+
+/* ═══ FADED GRID BACKGROUND ═══ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 70%);
+}
+
+/* ═══ CENTER GLOW OVERLAY ═══ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 30%, rgba(168,85,247,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 65% 50%, rgba(255,110,199,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 25% at 35% 55%, rgba(56,189,248,0.04) 0%, transparent 60%);
+}
+
+/* Light mode grid and glow */
+html:not(.dark) body::before {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+}
+html:not(.dark) body::after {
+  background:
+    radial-gradient(ellipse 50% 40% at 50% 30%, rgba(168,85,247,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 65% 50%, rgba(255,110,199,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 25% at 35% 55%, rgba(56,189,248,0.05) 0%, transparent 60%);
+}
+
+/* Light mode overrides for components */
+html:not(.dark) body { background: #fafaf9; color: #1c1917; }
+html:not(.dark) ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); }
+html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+html:not(.dark) .glass { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.06); }
+html:not(.dark) .glass-heavy { background: rgba(255,255,255,0.85); border-color: rgba(0,0,0,0.08); }
+html:not(.dark) .border-white\/5 { border-color: rgba(0,0,0,0.06); }
+html:not(.dark) .border-white\/10 { border-color: rgba(0,0,0,0.1); }
+html:not(.dark) .bg-white\/5 { background: rgba(0,0,0,0.03); }
+html:not(.dark) .bg-white\/10 { background: rgba(0,0,0,0.06); }
+html:not(.dark) .bg-white { background: #1c1917; }
+html:not(.dark) .text-white { color: #1c1917; }
+html:not(.dark) .text-black { color: #ffffff; }
+html:not(.dark) .text-gray-300 { color: #44403c; }
+html:not(.dark) .text-gray-400 { color: #57534e; }
+html:not(.dark) .text-gray-500 { color: #78716c; }
+html:not(.dark) .text-gray-600 { color: #a8a29e; }
+html:not(.dark) .text-gray-700 { color: #d6d3d1; }
+html:not(.dark) .text-gray-800 { color: #e7e5e4; }
+html:not(.dark) .bg-surface { background: #ffffff; }
+html:not(.dark) .prose-article { color: #57534e; }
+html:not(.dark) .prose-article h1,
+html:not(.dark) .prose-article h2,
+html:not(.dark) .prose-article h3,
+html:not(.dark) .prose-article strong { color: #1c1917; }
+html:not(.dark) .prose-article pre { background: #f5f5f4; border-color: rgba(0,0,0,0.08); }
+html:not(.dark) .prose-article pre code { color: #1c1917; }
+html:not(.dark) .prose-article code { background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.1); }

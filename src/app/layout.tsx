@@ -32,8 +32,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const posts = getAllPosts();
   return (
-    <html lang="zh-CN" suppressHydrationWarning className={`dark ${sans.variable} ${mono.variable}`}>
-      <body className="min-h-dvh flex flex-col bg-ink text-fg antialiased">
+    <html lang="zh-CN" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
+      <body className="min-h-dvh flex flex-col bg-ink text-fg antialiased relative">
         <Provider posts={posts}>{children}</Provider>
       </body>
     </html>

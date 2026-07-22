@@ -1,4 +1,4 @@
-﻿import { notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPostBySlug, getAllPosts } from "@/lib/posts";
 import PostContent from "@/components/Post/PostContent";

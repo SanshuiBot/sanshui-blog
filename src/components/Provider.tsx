@@ -8,7 +8,7 @@ import type { Post } from "@/lib/types";
 
 export default function Provider({ children, posts }: { children: React.ReactNode; posts: Post[] }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="aurora-theme">
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="aurora-theme">
       <CursorGlow />
       <ScrollProgress />
       <Navbar posts={posts} />
