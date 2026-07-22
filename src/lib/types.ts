@@ -6,8 +6,3 @@ export interface Post {
   tags: string[];
   content: string;
 }
-
-export interface PageData {
-  title: string;
-  content: string;
-}
