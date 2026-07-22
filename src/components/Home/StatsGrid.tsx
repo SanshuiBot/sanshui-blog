@@ -1,11 +1,12 @@
-'use client';
-import { motion } from 'framer-motion';
+﻿"use client";
+import { motion } from "framer-motion";
+import { FileText, Globe, Lightbulb, User } from "lucide-react";
 
 const stats = [
-  { value: '10+', label: '文章' },
-  { value: '24/7', label: '在线' },
-  { value: '∞', label: '想法' },
-  { value: '1', label: '作者' },
+  { value: "10+", label: "\u6587\u7ae0", icon: FileText, color: "from-accent-pink/20 to-accent-rose/10", dot: "bg-accent-pink" },
+  { value: "24/7", label: "\u5728\u7ebf", icon: Globe, color: "from-accent-violet/20 to-accent-blue/10", dot: "bg-accent-violet" },
+  { value: "\u221e", label: "\u60f3\u6cd5", icon: Lightbulb, color: "from-accent-blue/20 to-accent-teal/10", dot: "bg-accent-blue" },
+  { value: "1", label: "\u4f5c\u8005", icon: User, color: "from-accent-gold/20 to-accent-rose/10", dot: "bg-accent-gold" },
 ];
 
 export default function StatsGrid() {
@@ -20,10 +21,15 @@ export default function StatsGrid() {
             viewport={{ once: true }}
             transition={{ delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             whileHover={{ y: -4 }}
-            className="group relative p-5 rounded-2xl glass border-white/5 transition-all duration-500 hover:border-white/10 hover:glow-pink"
+            className="group relative p-5 rounded-2xl glass border-white/5 transition-all duration-500 hover:border-white/10 overflow-hidden"
           >
-            <div className="text-2xl font-bold text-white mb-1 tracking-tight">{s.value}</div>
-            <div className="text-xs text-gray-500">{s.label}</div>
+            <div className={`absolute inset-0 bg-gradient-to-br ${s.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+            <div className={`absolute top-3 right-3 w-2 h-2 rounded-full ${s.dot} opacity-40`} />
+            <div className="relative">
+              <s.icon size={20} className="text-gray-500 mb-3" />
+              <div className="text-2xl font-bold text-white mb-1 tracking-tight">{s.value}</div>
+              <div className="text-xs text-gray-500">{s.label}</div>
+            </div>
           </motion.div>
         ))}
       </div>
