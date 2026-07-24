@@ -191,18 +191,49 @@ export default function HeroScene() {
             className="flex flex-wrap items-center justify-center gap-3"
           >
             {[
-              { href: "/tags", icon: Hash, label: "标签导航" },
-              { href: "/archive", icon: Archive, label: "文章归档" },
-              { href: "/about", icon: User, label: "关于我" },
-            ].map(({ href, icon: Icon, label }) => (
-              <Link
+              { href: "/tags", icon: Hash, label: "标签导航", color: "#a855f7" },
+              { href: "/archive", icon: Archive, label: "文章归档", color: "#38bdf8" },
+              { href: "/about", icon: User, label: "关于我", color: "#2dd4bf" },
+            ].map(({ href, icon: Icon, label, color }) => (
+              <motion.div
                 key={label}
-                href={href}
-                className="group inline-flex items-center gap-1.5 px-4 py-2 rounded-full glass border border-white/5 hover:border-white/20 text-xs text-gray-500 hover:text-white transition-all duration-500 hover:-translate-y-0.5"
+                whileHover={{ y: -4, scale: 1.04 }}
+                transition={{ type: "spring", stiffness: 220, damping: 14 }}
               >
-                <Icon size={12} className="transition-transform group-hover:scale-110" />
-                {label}
-              </Link>
+                <Link
+                  href={href}
+                  className="group relative inline-flex items-center gap-2 px-5 py-2 rounded-full glass border border-white/5 overflow-hidden"
+                >
+                  {/* Hover glow backdrop */}
+                  <motion.span
+                    className="absolute inset-0 rounded-full pointer-events-none"
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 150, damping: 18 }}
+                    style={{
+                      background: `radial-gradient(80px circle at center, ${color}18, transparent 70%)`,
+                    }}
+                  />
+                  {/* Icon */}
+                  <motion.span
+                    whileHover={{ rotate: 8, scale: 1.2 }}
+                    transition={{ type: "spring", stiffness: 250, damping: 12 }}
+                    className="relative"
+                    style={{ color }}
+                  >
+                    <Icon size={12} />
+                  </motion.span>
+                  {/* Label */}
+                  <motion.span
+                    className="relative text-xs font-medium"
+                    style={{ color: "#78716c" }}
+                    whileHover={{ color: "#fff" }}
+                    transition={{ type: "spring", stiffness: 180, damping: 16 }}
+                  >
+                    {label}
+                  </motion.span>
+                </Link>
+              </motion.div>
             ))}
           </motion.div>
         </motion.div>

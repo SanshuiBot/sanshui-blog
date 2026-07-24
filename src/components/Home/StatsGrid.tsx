@@ -20,10 +20,15 @@ export default function StatsGrid() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            whileHover={{ y: -4 }}
-            className="group relative p-5 rounded-2xl glass border-white/5 transition-all duration-500 hover:border-white/10 overflow-hidden"
+            whileHover={{ y: -5, transition: { type: "spring", stiffness: 200, damping: 15 } }}
+            className="group relative p-5 rounded-2xl glass border-white/5 overflow-hidden"
           >
-            <div className={`absolute inset-0 bg-gradient-to-br ${s.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+            <motion.div
+              className={`absolute inset-0 bg-gradient-to-br ${s.color}`}
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              transition={{ type: "spring", stiffness: 150, damping: 18 }}
+            />
             <div className={`absolute top-3 right-3 w-2 h-2 rounded-full ${s.dot} opacity-40`} />
             <div className="relative">
               <s.icon size={20} className="text-gray-500 mb-3" />
