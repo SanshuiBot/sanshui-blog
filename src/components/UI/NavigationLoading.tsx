@@ -1,6 +1,5 @@
 'use client';
-import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 interface NavigationContextValue {
   /** 立即显示全屏骨架屏 */
@@ -84,10 +83,7 @@ function SkeletonLine({ className }: { className?: string }) {
 export function NavigationLoadingProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startTimeRef = useRef(0);
-  const pathname = usePathname();
-
-  const MIN_DISPLAY_MS = 200;
+  const ensureRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clear = useCallback(() => {
     setLoading(false);
@@ -95,37 +91,26 @@ export function NavigationLoadingProvider({ children }: { children: React.ReactN
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+    if (ensureRef.current) {
+      clearTimeout(ensureRef.current);
+      ensureRef.current = null;
+    }
   }, []);
-
-  // 路径变化 → 等下一帧（requestAnimationFrame）确保新页面内容已渲染到 DOM 后再隐藏骨架屏，
-  // 避免新内容还没就绪就撤掉覆盖层、闪现旧页面内容
-  useEffect(() => {
-    if (!loading) return;
-    const elapsed = Date.now() - startTimeRef.current;
-    const wait = Math.max(0, MIN_DISPLAY_MS - elapsed);
-
-    const timer = setTimeout(() => {
-      // requestAnimationFrame 让 React 先把新内容提交到 DOM，再移除覆盖层
-      const raf = requestAnimationFrame(() => {
-        clear();
-      });
-      timerRef.current = setTimeout(() => {
-        cancelAnimationFrame(raf);
-      }, 10000); // 兜底防止 RAF 永远不触发
-    }, wait);
-
-    return () => {
-      clearTimeout(timer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
 
   const startNavigation = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    startTimeRef.current = Date.now();
+    if (ensureRef.current) clearTimeout(ensureRef.current);
+
     setLoading(true);
-    // 兜底：10秒后自动隐藏
-    timerRef.current = setTimeout(clear, 10000);
+
+    // 固定 2 秒后自动隐藏骨架屏。
+    // 静态导出的页面 CDN 分发极快，2 秒足够新页面加载完成。
+    // 不依赖 usePathname() 变化来触发隐藏，因为 pathname 变化
+    // 先于页面内容就绪，导致覆盖层撤掉后旧内容闪现。
+    timerRef.current = setTimeout(clear, 2000);
+
+    // 兜底 10 秒（极端慢速网络）
+    ensureRef.current = setTimeout(clear, 10000);
   }, [clear]);
 
   return (
