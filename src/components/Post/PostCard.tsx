@@ -80,7 +80,7 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
           whileHover={{ y: -8, scale: 1.01 }}
           transition={{ type: 'spring', stiffness: 200, damping: 14, mass: 0.8 }}
           style={{ rotateX: srx, rotateY: sry, transformStyle: 'preserve-3d' }}
-          className="p-[1px] rounded-2xl bg-white/5 h-full"
+          className="p-[1px] rounded-2xl bg-white/5 h-full shadow-neon-hover"
         >
           {/* Border glow */}
           <motion.div

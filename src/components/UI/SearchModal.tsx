@@ -27,7 +27,7 @@ export default function SearchModal({ posts, open, onClose }: { posts: any[]; op
       {open && (
         <div className="fixed inset-0 z-[80] flex items-start justify-center pt-[18vh] px-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-          <motion.div initial={{ opacity: 0, scale: 0.95, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -20 }} transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }} className="relative w-full max-w-xl glass-heavy rounded-2xl overflow-hidden border border-white/10">
+          <motion.div initial={{ opacity: 0, scale: 0.95, y: -20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -20 }} transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }} className="relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-white/10">
             <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
               <Search size={18} className="text-gray-500 shrink-0" />
               <input ref={inputRef} type="text" value={q} onChange={e => setQ(e.target.value)} placeholder="搜索文章..." className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-base" />

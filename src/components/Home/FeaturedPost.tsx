@@ -36,7 +36,7 @@ export default function FeaturedPost({ post }: Props) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6 }}
-        className="relative p-8 sm:p-12 rounded-3xl overflow-hidden border border-white/5 glass-heavy group"
+        className="relative p-8 sm:p-12 rounded-3xl overflow-hidden border border-white/5 glass-heavy shadow-dual shadow-dual-hover group"
       >
         <motion.div
           aria-hidden
