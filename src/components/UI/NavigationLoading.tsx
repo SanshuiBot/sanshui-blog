@@ -84,28 +84,40 @@ function SkeletonLine({ className }: { className?: string }) {
 export function NavigationLoadingProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startTimeRef = useRef(0);
   const pathname = usePathname();
 
-  // 监听路径变化 → 导航完成 → 隐藏覆盖层
+  const MIN_DISPLAY_MS = 600;
+
+  const clear = useCallback(() => {
+    setLoading(false);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  // 路径变化 → 至少展示 MIN_DISPLAY_MS 再隐藏，避免新页面内容尚未就绪时闪现旧内容
   useEffect(() => {
-    if (loading) {
-      setLoading(false);
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
+    if (!loading) return;
+    const elapsed = Date.now() - startTimeRef.current;
+    if (elapsed >= MIN_DISPLAY_MS) {
+      clear();
+    } else {
+      const remaining = MIN_DISPLAY_MS - elapsed;
+      const t = setTimeout(clear, remaining);
+      return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const startNavigation = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
+    startTimeRef.current = Date.now();
     setLoading(true);
     // 兜底：10秒后自动隐藏
-    timerRef.current = setTimeout(() => {
-      setLoading(false);
-    }, 10000);
-  }, []);
+    timerRef.current = setTimeout(clear, 10000);
+  }, [clear]);
 
   return (
     <NavigationContext.Provider value={{ startNavigation }}>
