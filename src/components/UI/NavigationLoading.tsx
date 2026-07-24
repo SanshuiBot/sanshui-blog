@@ -4,10 +4,13 @@ import { createContext, useContext, useState, useCallback, useRef } from 'react'
 interface NavigationContextValue {
   /** 立即显示全屏骨架屏 */
   startNavigation: () => void;
+  /** 新页面内容已就绪，通知覆盖层隐藏 */
+  done: () => void;
 }
 
 const NavigationContext = createContext<NavigationContextValue>({
   startNavigation: () => {},
+  done: () => {},
 });
 
 export function useNavigationLoading() {
@@ -82,39 +85,29 @@ function SkeletonLine({ className }: { className?: string }) {
 
 export function NavigationLoadingProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const ensureRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clear = useCallback(() => {
     setLoading(false);
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    if (ensureRef.current) {
-      clearTimeout(ensureRef.current);
-      ensureRef.current = null;
+    if (fallbackRef.current) {
+      clearTimeout(fallbackRef.current);
+      fallbackRef.current = null;
     }
   }, []);
 
+  const done = useCallback(() => {
+    clear();
+  }, [clear]);
+
   const startNavigation = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    if (ensureRef.current) clearTimeout(ensureRef.current);
-
+    if (fallbackRef.current) clearTimeout(fallbackRef.current);
     setLoading(true);
-
-    // 固定 2 秒后自动隐藏骨架屏。
-    // 静态导出的页面 CDN 分发极快，2 秒足够新页面加载完成。
-    // 不依赖 usePathname() 变化来触发隐藏，因为 pathname 变化
-    // 先于页面内容就绪，导致覆盖层撤掉后旧内容闪现。
-    timerRef.current = setTimeout(clear, 2000);
-
-    // 兜底 10 秒（极端慢速网络）
-    ensureRef.current = setTimeout(clear, 10000);
+    // 兜底：5 秒后自动隐藏（正常情况 PostContentImpl 的 done() 会在 ms 级触发）
+    fallbackRef.current = setTimeout(clear, 5000);
   }, [clear]);
 
   return (
-    <NavigationContext.Provider value={{ startNavigation }}>
+    <NavigationContext.Provider value={{ startNavigation, done }}>
       {/* 即时导航骨架屏覆盖层 — 自动匹配主题 */}
       {loading && (
         <div className="fixed inset-0 z-[100] flex flex-col">
