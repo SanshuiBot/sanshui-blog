@@ -87,7 +87,7 @@ export function NavigationLoadingProvider({ children }: { children: React.ReactN
   const startTimeRef = useRef(0);
   const pathname = usePathname();
 
-  const MIN_DISPLAY_MS = 600;
+  const MIN_DISPLAY_MS = 200;
 
   const clear = useCallback(() => {
     setLoading(false);
@@ -97,17 +97,26 @@ export function NavigationLoadingProvider({ children }: { children: React.ReactN
     }
   }, []);
 
-  // 路径变化 → 至少展示 MIN_DISPLAY_MS 再隐藏，避免新页面内容尚未就绪时闪现旧内容
+  // 路径变化 → 等下一帧（requestAnimationFrame）确保新页面内容已渲染到 DOM 后再隐藏骨架屏，
+  // 避免新内容还没就绪就撤掉覆盖层、闪现旧页面内容
   useEffect(() => {
     if (!loading) return;
     const elapsed = Date.now() - startTimeRef.current;
-    if (elapsed >= MIN_DISPLAY_MS) {
-      clear();
-    } else {
-      const remaining = MIN_DISPLAY_MS - elapsed;
-      const t = setTimeout(clear, remaining);
-      return () => clearTimeout(t);
-    }
+    const wait = Math.max(0, MIN_DISPLAY_MS - elapsed);
+
+    const timer = setTimeout(() => {
+      // requestAnimationFrame 让 React 先把新内容提交到 DOM，再移除覆盖层
+      const raf = requestAnimationFrame(() => {
+        clear();
+      });
+      timerRef.current = setTimeout(() => {
+        cancelAnimationFrame(raf);
+      }, 10000); // 兜底防止 RAF 永远不触发
+    }, wait);
+
+    return () => {
+      clearTimeout(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 

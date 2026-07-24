@@ -8,7 +8,7 @@ import { ArrowLeft, Hash } from "lucide-react";
 interface Props { params: Promise<{ tag: string }> }
 
 export async function generateStaticParams() {
-  return getAllTags().map((t) => ({ tag: encodeURIComponent(t) }));
+  return getAllTags().map((t) => ({ tag: t }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
