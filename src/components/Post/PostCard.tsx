@@ -53,6 +53,7 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
 
   return (
     <motion.div
+      className="h-full"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
@@ -79,7 +80,7 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
           whileHover={{ y: -8, scale: 1.01 }}
           transition={{ type: 'spring', stiffness: 200, damping: 14, mass: 0.8 }}
           style={{ rotateX: srx, rotateY: sry, transformStyle: 'preserve-3d' }}
-          className="p-[1px] rounded-2xl bg-white/5"
+          className="p-[1px] rounded-2xl bg-white/5 h-full"
         >
           {/* Border glow */}
           <motion.div
@@ -109,7 +110,7 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
             <div className="flex-1 p-5 sm:p-6 flex flex-col">
               {/* Tags — standalone links */}
               <motion.div
-                className="flex flex-wrap gap-1.5 mb-3"
+                className="flex flex-wrap gap-1.5 mb-3 min-h-[1.375rem]"
                 whileHover="hovered"
                 initial="idle"
               >
@@ -140,15 +141,15 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
               >
                 {/* Title */}
                 <motion.h2
-                  className="text-lg font-bold text-white mb-2 line-clamp-2 tracking-tight leading-snug group-hover/link:text-accent-violet transition-colors"
-                  whileHover={{ x: 2 }}
-                  transition={{ type: 'spring', stiffness: 200, damping: 16 }}
+                  className="text-lg font-bold text-white mb-2 line-clamp-2 overflow-hidden min-h-[2.75rem] tracking-tight leading-snug shrink-0"
+                  whileHover={{ color: '#a855f7', x: 2 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 >
                   {post.title}
                 </motion.h2>
 
                 {/* Excerpt */}
-                <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1">{post.excerpt}</p>
+                <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1 min-h-0">{post.excerpt}</p>
 
                 {/* Footer with "阅读" as part of the link */}
                 <motion.div
