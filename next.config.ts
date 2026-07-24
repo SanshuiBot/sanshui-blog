@@ -29,12 +29,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // `output: 'export'` is only enabled at build time (CI/prod) via NEXT_BUILD=1.
-  // In dev it causes spurious "missing param in generateStaticParams" errors
+  // `output: `"'export`"' / basePath / assetPrefix are ONLY enabled at build time.
+  // In dev they break HMR (hot reload hangs / server crashes on every edit).
   // for dynamic routes with non-ASCII (Chinese) slugs.
-  ...(process.env.NEXT_BUILD === '1' ? { output: 'export' as const } : {}),
-  basePath: '/sanshui-blog',
-  assetPrefix: '/sanshui-blog',
+  ...(process.env.NEXT_BUILD === '1' ? { output: 'export' as const, basePath: '/sanshui-blog', assetPrefix: '/sanshui-blog' } : {}),
   // Remove `X-Powered-By: Next.js` header for security through obscurity.
   poweredByHeader: false,
   // React strict mode surfaces more bugs in dev.
