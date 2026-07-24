@@ -131,9 +131,16 @@ body::after {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 50% 40% at 50% 30%, rgba(168,85,247,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 65% 50%, rgba(255,110,199,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 25% at 35% 55%, rgba(56,189,248,0.04) 0%, transparent 60%);
+    radial-gradient(ellipse 55% 45% at 50% 28%, rgba(168,85,247,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 65% 48%, rgba(255,110,199,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 35% 25% at 35% 55%, rgba(56,189,248,0.06) 0%, transparent 60%);
+  animation: glow-breathe 8s ease-in-out infinite;
+}
+
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1) translate(0, 0); }
+  33% { opacity: 0.8; transform: scale(1.03) translate(0.5%, -0.5%); }
+  66% { opacity: 0.7; transform: scale(0.98) translate(-0.5%, 0.5%); }
 }
 
 /* Light mode grid and glow */

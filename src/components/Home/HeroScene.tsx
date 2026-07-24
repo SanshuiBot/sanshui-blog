@@ -1,13 +1,20 @@
-﻿"use client";
+"use client";
 import { useEffect, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowDown, Code2, Mail, MapPin } from "lucide-react";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import { ArrowDown, Code2, Mail, MapPin, Hash, Archive, User, Terminal, Atom, Database } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 const social = [
   { icon: Code2, href: "https://github.com/SanshuiBot", label: "GitHub" },
   { icon: Mail, href: "mailto:localhost6@foxmail.com", label: "Email" },
   { icon: MapPin, href: "#", label: "Location" },
+];
+
+const techStack = [
+  { icon: Terminal, label: "Next.js" },
+  { icon: Atom, label: "React" },
+  { icon: Database, label: "TypeScript" },
 ];
 
 export default function HeroScene() {
@@ -17,6 +24,27 @@ export default function HeroScene() {
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
   const y = useTransform(scrollY, [0, 400], [0, 80]);
   const [ctaDir, setCtaDir] = useState<"left" | "right" | "center">("center");
+  const btnRef = useRef<HTMLAnchorElement>(null);
+  const btnX = useMotionValue(0);
+  const btnY = useMotionValue(0);
+  const sBtnX = useSpring(btnX, { stiffness: 200, damping: 18 });
+  const sBtnY = useSpring(btnY, { stiffness: 200, damping: 18 });
+
+  const onBtnMove = (e: React.MouseEvent) => {
+    const el = btnRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+    const dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+    btnX.set(dx * 10);
+    btnY.set(dy * 10);
+    setCtaDir(dx < -0.3 ? "left" : dx > 0.3 ? "right" : "center");
+  };
+  const onBtnLeave = () => {
+    btnX.set(0);
+    btnY.set(0);
+    setCtaDir("center");
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -72,13 +100,14 @@ export default function HeroScene() {
   }, []);
 
   return (
-    <motion.section ref={sectionRef} style={{ opacity, y }} className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <motion.section ref={sectionRef} style={{ opacity, y }} className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" aria-hidden="true" />
       <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full bg-accent-violet/5 blur-[150px] animate-float pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] rounded-full bg-accent-pink/4 blur-[130px] animate-float-delayed pointer-events-none" />
       <div className="absolute top-1/2 right-1/3 w-[25rem] h-[25rem] rounded-full bg-accent-blue/4 blur-[100px] animate-float pointer-events-none" style={{ animationDelay: "3s" }} />
       <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
+          {/* Status badge */}
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 200 }} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border-white/5 mb-10">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inset-0 rounded-full bg-emerald-400 opacity-75" />
@@ -86,25 +115,52 @@ export default function HeroScene() {
             </span>
             <span className="text-xs text-gray-400 font-medium">在线创作中</span>
           </motion.div>
+
+          {/* Title */}
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05] mb-6">
             <span className="block text-white">你好，我是</span>
             <span className="block mt-3 text-aurora">三水</span>
           </h1>
-          <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed">
+
+          {/* Subtitle */}
+          <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-6 leading-relaxed">
             用文字沉淀知识，用代码改变世界。
           </motion.p>
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.55 }} className="flex flex-wrap items-center justify-center gap-4">
+
+          {/* Identity tagline + Tech stack badges */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.48 }}
+            className="flex flex-wrap items-center justify-center gap-3 mb-10"
+          >
+            <span className="text-sm text-gray-500 tracking-wide">全栈开发者</span>
+            <span className="w-1 h-1 rounded-full bg-gray-600" />
+            <span className="text-sm text-gray-500 tracking-wide">技术写作者</span>
+            <span className="w-1 h-1 rounded-full bg-gray-600" />
+            <span className="text-sm text-gray-500 tracking-wide">开源爱好者</span>
+            <div className="w-full sm:w-auto flex items-center justify-center gap-2 mt-2 sm:mt-0 sm:ml-2">
+              {techStack.map(({ icon: Icon, label }) => (
+                <span
+                  key={label}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[11px] text-gray-500"
+                >
+                  <Icon size={10} />
+                  {label}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* CTA + Social */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.55 }} className="flex flex-wrap items-center justify-center gap-4 mb-12">
             <motion.a
+              ref={btnRef}
               href="#posts"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onMouseMove={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                setCtaDir(x < rect.width / 3 ? "left" : x > (rect.width * 2) / 3 ? "right" : "center");
-              }}
-              onMouseLeave={() => setCtaDir("center")}
-              className="group relative inline-flex items-center gap-3 px-7 py-3 rounded-full bg-white text-black font-semibold text-sm transition-all duration-300"
+              onMouseMove={onBtnMove}
+              onMouseLeave={onBtnLeave}
+              style={{ x: sBtnX, y: sBtnY }}
+              className="group relative inline-flex items-center gap-3 px-7 py-3 rounded-full bg-white text-black font-semibold text-sm"
             >
               <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{
@@ -114,16 +170,9 @@ export default function HeroScene() {
                 }}
               />
               <span className="relative z-10">浏览文章</span>
-              <motion.span
-                className="relative z-10 opacity-40 group-hover:opacity-80 transition-opacity"
-                animate={{
-                  x: ctaDir === "right" ? 0 : 0,
-                  rotate: ctaDir === "left" ? -45 : ctaDir === "right" ? 45 : 0,
-                }}
-                transition={{ duration: 0.3 }}
-              >
+              <span className="relative z-10 opacity-40 group-hover:opacity-80 transition-opacity">
                 <ArrowDown size={14} />
-              </motion.span>
+              </span>
             </motion.a>
             <div className="flex items-center gap-1">
               {social.map(({ icon: Icon, href, label }) => (
@@ -133,8 +182,47 @@ export default function HeroScene() {
               ))}
             </div>
           </motion.div>
+
+          {/* Quick nav pills */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.7 }}
+            className="flex flex-wrap items-center justify-center gap-3"
+          >
+            {[
+              { href: "/tags", icon: Hash, label: "标签导航" },
+              { href: "/archive", icon: Archive, label: "文章归档" },
+              { href: "/about", icon: User, label: "关于我" },
+            ].map(({ href, icon: Icon, label }) => (
+              <Link
+                key={label}
+                href={href}
+                className="group inline-flex items-center gap-1.5 px-4 py-2 rounded-full glass border border-white/5 hover:border-white/20 text-xs text-gray-500 hover:text-white transition-all duration-500 hover:-translate-y-0.5"
+              >
+                <Icon size={12} className="transition-transform group-hover:scale-110" />
+                {label}
+              </Link>
+            ))}
+          </motion.div>
         </motion.div>
       </div>
+
+      {/* Scroll indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.5, duration: 0.8 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      >
+        <span className="text-[10px] text-gray-600 tracking-[0.2em] uppercase font-mono">滚动探索</span>
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ArrowDown size={13} className="text-gray-500" />
+        </motion.div>
+      </motion.div>
     </motion.section>
   );
 }
