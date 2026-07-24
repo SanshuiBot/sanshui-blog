@@ -1,5 +1,6 @@
 "use client";
-import { ArrowLeft, Mail, GitFork, Sparkles, Heart } from "lucide-react";
+import { ArrowLeft, Mail, Sparkles, Heart, Code2, Server, Wrench } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -13,9 +14,31 @@ const skills = [
 ];
 
 const stack = [
-  { title: "前端", items: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Framer Motion"], color: "from-accent-pink to-accent-rose" },
-  { title: "后端", items: ["Node.js", "Python", "SQLite", "REST API"], color: "from-accent-violet to-accent-blue" },
-  { title: "工具", items: ["Git", "Docker", "VS Code", "Vite"], color: "from-accent-teal to-accent-gold" },
+  {
+    title: "前端", icon: Code2,
+    items: [
+      { name: "Next.js", level: 5 }, { name: "React", level: 5 },
+      { name: "TypeScript", level: 4 }, { name: "Tailwind CSS", level: 5 },
+      { name: "Framer Motion", level: 4 },
+    ],
+    color: "from-accent-pink to-accent-rose",
+  },
+  {
+    title: "后端", icon: Server,
+    items: [
+      { name: "Node.js", level: 4 }, { name: "Python", level: 3 },
+      { name: "SQLite", level: 3 }, { name: "REST API", level: 4 },
+    ],
+    color: "from-accent-violet to-accent-blue",
+  },
+  {
+    title: "工具", icon: Wrench,
+    items: [
+      { name: "Git", level: 5 }, { name: "Docker", level: 3 },
+      { name: "VS Code", level: 5 }, { name: "Vite", level: 4 },
+    ],
+    color: "from-accent-teal to-accent-gold",
+  },
 ];
 
 const btnClass = "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium";
@@ -56,11 +79,14 @@ export default function AboutPage() {
       <div className="mb-16">
         <h2 className="text-xl font-bold text-white mb-6">技术栈</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {stack.map((s) => (
+          {stack.map((s, catIdx) => (
             <motion.div
               key={s.title}
-              whileHover={{ y: -4, scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: catIdx * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -4 }}
               className="relative p-5 rounded-2xl glass border border-white/5 hover:border-white/20 overflow-hidden group"
             >
               <motion.div
@@ -70,10 +96,43 @@ export default function AboutPage() {
                 transition={{ type: "spring", stiffness: 180, damping: 16 }}
                 style={{ transformOrigin: "left" }}
               />
-              <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-widest">{s.title}</h3>
-              <ul className="space-y-1.5 text-sm text-gray-400">
-                {s.items.map((item) => (<li key={item} className="flex items-center gap-2"><span className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${s.color}`} />{item}</li>))}
-              </ul>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <s.icon size={15} className="text-gray-500" />
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-widest">{s.title}</h3>
+                </div>
+                <span className="text-[11px] font-medium text-gray-600 bg-white/5 px-2 py-0.5 rounded-full">{s.items.length} 项</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {s.items.map((item, i) => (
+                  <motion.div
+                    key={item.name}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.15 + i * 0.06, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    whileHover={{ y: -2, scale: 1.04 }}
+                    className="relative"
+                  >
+                    <div className="relative px-3 py-1.5 rounded-lg border border-white/5 bg-white/[0.03] hover:bg-white/[0.07] transition-colors cursor-default">
+                      <div className={`absolute left-0 top-1.5 bottom-1.5 w-[2.5px] rounded-r-full bg-gradient-to-b ${s.color}`} />
+                      <div className="flex items-center gap-2 pl-2">
+                        <span className="text-sm text-gray-300">{item.name}</span>
+                        <div className="flex items-center gap-[2px]">
+                          {Array.from({ length: 5 }, (_, di) => (
+                            <span
+                              key={di}
+                              className={`w-1 h-1 rounded-full transition-colors ${
+                                di < item.level ? "bg-white/40" : "bg-white/10"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </motion.div>
           ))}
         </div>
@@ -92,7 +151,7 @@ export default function AboutPage() {
             href="https://github.com/SanshuiBot" target="_blank" rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             className={`${btnClass} bg-white text-black`}
-          ><GitFork size={16} />GitHub</motion.a>
+          ><FaGithub size={16} />GitHub</motion.a>
           <motion.a
             href="mailto:localhost6@foxmail.com"
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}

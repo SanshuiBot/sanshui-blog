@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/predev.js",
     "dev": "next dev",
     "build": "cross-env NEXT_BUILD=1 next build --no-lint && pagefind --site out",
     "postbuild": "pagefind --site out",
@@ -27,6 +28,7 @@
     "next": "^15.1.0",
     "next-mdx-remote": "^6.0.0",
     "next-themes": "^0.4.6",
+    "react-icons": "^5.7.0",
     "react-intersection-observer": "^10.1.0",
     "reading-time": "^1.5.0",
     "rehype-autolink-headings": "^7.1.0",

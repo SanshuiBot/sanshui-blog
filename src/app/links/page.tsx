@@ -1,5 +1,6 @@
 'use client';
-import { ExternalLink, ArrowLeft, Link2, Mail, Heart } from 'lucide-react';
+import { ExternalLink, ArrowLeft, Link2, Mail } from 'lucide-react';
+import { FaGithub } from "react-icons/fa";
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -95,7 +96,7 @@ export default function LinksPage() {
             whileTap={{ scale: 0.97 }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 text-gray-300 text-sm font-medium border border-white/10"
           >
-            <Heart size={14} className="text-accent-pink" />
+            <FaGithub size={14} />
             GitHub
           </motion.a>
         </div>
