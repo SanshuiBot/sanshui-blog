@@ -5,6 +5,7 @@ import { extractHeadings } from "@/lib/toc";
 import PostContent from "@/components/Post/PostContent";
 import PostMeta from "@/components/Post/PostMeta";
 import PostNav from "@/components/Post/PostNav";
+import PostDone from "@/components/Post/PostDone";
 import TableOfContents from "@/components/Post/TableOfContents";
 
 interface Props { params: Promise<{ slug: string }> }
@@ -46,6 +47,7 @@ export default async function PostPage({ params }: Props) {
         </div>
         <TableOfContents items={headings} />
       </div>
+      <PostDone />
     </div>
   );
 }

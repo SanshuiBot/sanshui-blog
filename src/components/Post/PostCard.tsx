@@ -3,6 +3,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowUpRight, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useRef } from 'react';
+import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 const tagGradients = [
   'from-accent-pink/20 to-accent-rose/20',
@@ -14,6 +15,7 @@ const tagGradients = [
 
 export default function PostCard({ post, index }: { post: any; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
+  const { startNavigation } = useNavigationLoading();
 
   // Mouse-following spotlight
   const mx = useMotionValue(50);
@@ -138,6 +140,7 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
               <Link
                 href={`/posts/${post.slug}`}
                 prefetch={true}
+                onClick={startNavigation}
                 className="flex-1 flex flex-col group/link"
               >
                 {/* Title */}
