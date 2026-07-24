@@ -3,14 +3,12 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useRef } from "react";
-import { useNavigationLoading } from "@/components/UI/NavigationLoading";
 
 interface Props { post: any }
 
 export default function FeaturedPost({ post }: Props) {
   if (!post) return null;
   const ref = useRef<HTMLDivElement>(null);
-  const { startNavigation } = useNavigationLoading();
   const mx = useMotionValue(50);
   const my = useMotionValue(50);
   const smx = useSpring(mx, { stiffness: 100, damping: 20 });
@@ -51,7 +49,7 @@ export default function FeaturedPost({ post }: Props) {
           <Sparkles size={12} />精选文章
         </span>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-4 max-w-2xl">
-          <Link href={`/posts/${post.slug}`} prefetch={true} onClick={startNavigation} className="hover:text-accent-violet transition-colors">
+          <Link href={`/posts/${post.slug}`} prefetch={true} className="hover:text-accent-violet transition-colors">
             {post.title}
           </Link>
         </h2>
@@ -59,7 +57,6 @@ export default function FeaturedPost({ post }: Props) {
         <Link
           href={`/posts/${post.slug}`}
           prefetch={true}
-          onClick={startNavigation}
           className="inline-flex items-center gap-2 text-sm font-medium text-accent-violet hover:gap-3 transition-all hover:text-accent-pink"
         >
           阅读全文<ArrowRight size={14} />
