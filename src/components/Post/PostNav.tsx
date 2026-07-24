@@ -2,6 +2,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useNavigationLoading } from "@/components/UI/NavigationLoading";
 
 interface Props {
   prev: { slug: string; title: string } | null;
@@ -10,6 +11,7 @@ interface Props {
 
 export default function PostNav({ prev, next }: Props) {
   if (!prev && !next) return null;
+  const { startNavigation } = useNavigationLoading();
 
   return (
     <nav className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4" aria-label="上下篇导航">
@@ -18,6 +20,7 @@ export default function PostNav({ prev, next }: Props) {
           <Link
             href={`/posts/${prev.slug}`}
             prefetch={true}
+            onClick={startNavigation}
             className="group flex items-start gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"
           >
             <motion.span whileHover={{ x: -2 }} transition={{ type: "spring", stiffness: 200, damping: 15 }}>
@@ -35,6 +38,7 @@ export default function PostNav({ prev, next }: Props) {
           <Link
             href={`/posts/${next.slug}`}
             prefetch={true}
+            onClick={startNavigation}
             className="group flex items-start justify-end gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"
           >
             <div className="min-w-0 text-right">

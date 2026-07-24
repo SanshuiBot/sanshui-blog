@@ -3,8 +3,10 @@ import { ExternalLink, ArrowLeft, Link2, Mail } from 'lucide-react';
 import { FaGithub } from "react-icons/fa";
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 
 export default function LinksPage() {
+  const [imgLoaded, setImgLoaded] = useState<boolean | undefined>(undefined);
   const friend = {
     name: 'GitHub',
     url: 'https://github.com/SanshuiBot',
@@ -42,12 +44,23 @@ export default function LinksPage() {
         className="group flex items-center gap-5 p-6 rounded-2xl glass border border-white/5"
       >
         <motion.div
-          className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-white/5"
+          className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-white/5 relative"
           style={{ boxShadow: '0 0 0px rgba(168,85,247,0)' }}
           whileHover={{ boxShadow: '0 0 24px rgba(168,85,247,0.25)' }}
           transition={{ type: 'spring', stiffness: 180, damping: 15 }}
         >
-          <img src={friend.avatar} alt={friend.name} className="w-full h-full object-cover" />
+          {imgLoaded === undefined || imgLoaded === false ? (
+            <div className="absolute inset-0 bg-white/5 animate-pulse flex items-center justify-center">
+              <FaGithub size={20} className="text-gray-600" />
+            </div>
+          ) : null}
+          <img
+            src={friend.avatar}
+            alt={friend.name}
+            className="w-full h-full object-cover"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgLoaded(false)}
+          />
         </motion.div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
