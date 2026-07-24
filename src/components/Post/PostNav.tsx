@@ -17,6 +17,7 @@ export default function PostNav({ prev, next }: Props) {
         <motion.div whileHover={{ y: -3, scale: 1.01 }} transition={{ type: "spring", stiffness: 200, damping: 15 }}>
           <Link
             href={`/posts/${prev.slug}`}
+            prefetch={true}
             className="group flex items-start gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"
           >
             <motion.span whileHover={{ x: -2 }} transition={{ type: "spring", stiffness: 200, damping: 15 }}>
@@ -33,6 +34,7 @@ export default function PostNav({ prev, next }: Props) {
         <motion.div whileHover={{ y: -3, scale: 1.01 }} transition={{ type: "spring", stiffness: 200, damping: 15 }} className="sm:col-start-2">
           <Link
             href={`/posts/${next.slug}`}
+            prefetch={true}
             className="group flex items-start justify-end gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"
           >
             <div className="min-w-0 text-right">

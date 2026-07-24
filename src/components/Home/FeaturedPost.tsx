@@ -49,13 +49,14 @@ export default function FeaturedPost({ post }: Props) {
           <Sparkles size={12} />精选文章
         </span>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight mb-4 max-w-2xl">
-          <Link href={`/posts/${post.slug}`} className="hover:text-accent-violet transition-colors">
+          <Link href={`/posts/${post.slug}`} prefetch={true} className="hover:text-accent-violet transition-colors">
             {post.title}
           </Link>
         </h2>
         <p className="text-gray-400 text-sm sm:text-base max-w-xl mb-6">{post.excerpt}</p>
         <Link
           href={`/posts/${post.slug}`}
+          prefetch={true}
           className="inline-flex items-center gap-2 text-sm font-medium text-accent-violet hover:gap-3 transition-all hover:text-accent-pink"
         >
           阅读全文<ArrowRight size={14} />

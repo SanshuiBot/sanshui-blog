@@ -137,6 +137,7 @@ export default function PostCard({ post, index }: { post: any; index: number }) 
               {/* Everything below is ONE link to the post — no ambiguity */}
               <Link
                 href={`/posts/${post.slug}`}
+                prefetch={true}
                 className="flex-1 flex flex-col group/link"
               >
                 {/* Title */}
