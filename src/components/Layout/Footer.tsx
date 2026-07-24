@@ -42,7 +42,11 @@ export default function Footer() {
             <ul className="space-y-3">
               {navLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-gray-500 hover:text-white transition-colors duration-300">{link.label}</Link>
+                  <Link href={link.href} className="text-sm"
+                    style={{ color: '#78716c', textDecoration: 'none' }}
+                    onMouseEnter={e => { e.currentTarget.style.color = '#a855f7' }}
+                    onMouseLeave={e => { e.currentTarget.style.color = '#78716c' }}
+                  >{link.label}</Link>
                 </li>
               ))}
             </ul>
@@ -50,9 +54,17 @@ export default function Footer() {
           <div>
             <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-5">联系</h3>
             <div className="space-y-3">
-              <a href="https://github.com/SanshuiBot" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"><Code2 size={14} />GitHub</a>
+              <a href="https://github.com/SanshuiBot" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm"
+                style={{ color: '#78716c', textDecoration: 'none' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#a855f7' }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#78716c' }}
+              ><Code2 size={14} />GitHub</a>
               <br />
-              <a href="mailto:localhost6@foxmail.com" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"><Mail size={14} />Email</a>
+              <a href="mailto:localhost6@foxmail.com" className="inline-flex items-center gap-2 text-sm"
+                style={{ color: '#78716c', textDecoration: 'none' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#a855f7' }}
+                onMouseLeave={e => { e.currentTarget.style.color = '#78716c' }}
+              ><Mail size={14} />Email</a>
             </div>
           </div>
         </div>
