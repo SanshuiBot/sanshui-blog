@@ -310,6 +310,128 @@
   }
 }
 
+/* ── Resume Terminal：流式打印简历模块 ── 暗/亮双主题 ── */
+.resume-terminal {
+  --rt-border: rgba(255, 255, 255, 0.1);
+  --rt-bg: rgba(14, 14, 24, 0.85);
+  --rt-titlebar-bg: rgba(255, 255, 255, 0.02);
+  --rt-titlebar-border: rgba(255, 255, 255, 0.05);
+  --rt-titlebar-text: #8b8b9e;
+  --rt-titlebar-status: #5c5c70;
+  --rt-body-bg: rgba(10, 10, 20, 0.6);
+  --rt-prompt: #8b8b9e;
+  --rt-heading: #a855f7;
+  --rt-text: #d4d4d8;
+  --rt-quote-border: #ff6ec7;
+  --rt-quote-text: #8b8b9e;
+  --rt-list-marker: #2dd4bf;
+  --rt-list-text: #d4d4d8;
+  --rt-bold: #ffffff;
+  --rt-code-bg: rgba(168, 85, 247, 0.12);
+  --rt-code-text: #c084fc;
+  --rt-code-border: rgba(168, 85, 247, 0.2);
+  --rt-cursor: #a855f7;
+  --rt-cursor-done-opacity: 0.3;
+  --rt-done-border: rgba(255, 255, 255, 0.06);
+  --rt-done-text: #8b8b9e;
+  --rt-done-icon: #2dd4bf;
+  --rt-hr: rgba(255, 255, 255, 0.1);
+  background: var(--rt-bg);
+  border: 1px solid var(--rt-border);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  box-shadow: var(--shadow-emboss);
+}
+
+.resume-terminal .resume-titlebar {
+  border-color: var(--rt-titlebar-border);
+  background: var(--rt-titlebar-bg);
+}
+.resume-terminal .resume-titlebar-text {
+  color: var(--rt-titlebar-text);
+}
+.resume-terminal .resume-titlebar-status {
+  color: var(--rt-titlebar-status);
+}
+
+.resume-terminal .resume-body {
+  background: var(--rt-body-bg);
+  color: var(--rt-text);
+}
+.resume-terminal .resume-prompt {
+  color: var(--rt-prompt);
+}
+.resume-terminal .resume-heading {
+  color: var(--rt-heading);
+}
+.resume-terminal .resume-quote {
+  border-left: 2px solid var(--rt-quote-border);
+  color: var(--rt-quote-text);
+}
+.resume-terminal .resume-list-marker {
+  color: var(--rt-list-marker);
+}
+.resume-terminal .resume-list {
+  color: var(--rt-list-text);
+}
+.resume-terminal .resume-text {
+  color: var(--rt-text);
+}
+.resume-terminal .resume-bold {
+  color: var(--rt-bold);
+}
+.resume-terminal .resume-code {
+  background: var(--rt-code-bg);
+  color: var(--rt-code-text);
+  border-color: var(--rt-code-border);
+}
+.resume-terminal .resume-cursor {
+  background-color: var(--rt-cursor);
+}
+.resume-terminal .resume-cursor-done {
+  background: transparent;
+  border-left: 2px solid var(--rt-cursor);
+  opacity: var(--rt-cursor-done-opacity);
+}
+.resume-terminal .resume-done {
+  border-color: var(--rt-done-border);
+  color: var(--rt-done-text);
+}
+.resume-terminal .resume-done-icon {
+  color: var(--rt-done-icon);
+}
+.resume-terminal .resume-hr {
+  border-color: var(--rt-hr);
+}
+
+/* ── 亮色主题覆盖：html:not(.dark) ── */
+html:not(.dark) .resume-terminal {
+  --rt-border: rgba(0, 0, 0, 0.1);
+  --rt-bg: rgba(255, 255, 255, 0.85);
+  --rt-titlebar-bg: rgba(0, 0, 0, 0.02);
+  --rt-titlebar-border: rgba(0, 0, 0, 0.06);
+  --rt-titlebar-text: #57534e;
+  --rt-titlebar-status: #a8a29e;
+  --rt-body-bg: #ffffff;
+  --rt-prompt: #78716c;
+  --rt-heading: #7c3aed;
+  --rt-text: #44403c;
+  --rt-quote-border: #db2777;
+  --rt-quote-text: #57534e;
+  --rt-list-marker: #0d9488;
+  --rt-list-text: #44403c;
+  --rt-bold: #1c1917;
+  --rt-code-bg: rgba(124, 58, 237, 0.08);
+  --rt-code-text: #6d28d9;
+  --rt-code-border: rgba(124, 58, 237, 0.15);
+  --rt-cursor: #7c3aed;
+  --rt-cursor-done-opacity: 0.4;
+  --rt-done-border: rgba(0, 0, 0, 0.08);
+  --rt-done-text: #57534e;
+  --rt-done-icon: #0d9488;
+  --rt-hr: rgba(0, 0, 0, 0.12);
+}
+
 @keyframes aurora-shift {
   0%,
   100% {

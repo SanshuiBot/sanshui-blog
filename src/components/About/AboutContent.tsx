@@ -1,8 +1,9 @@
 'use client';
-import { ArrowLeft, Mail, Sparkles, Heart, Code2, Server, Wrench } from 'lucide-react';
+import { ArrowLeft, Mail, Sparkles, Heart, Code2, Server, Wrench, Terminal } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import ResumeTerminal from './ResumeTerminal';
 
 const skills = [
   { label: 'Next.js', level: 90, color: 'from-accent-pink to-accent-rose' },
@@ -52,7 +53,12 @@ const stack = [
 
 const btnClass = 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium';
 
-export default function AboutContent() {
+interface AboutContentProps {
+  /** 本地简历 markdown，由服务端页面在构建时读取并注入 */
+  resumeMarkdown?: string;
+}
+
+export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
   return (
     <>
       <Link
@@ -174,6 +180,21 @@ export default function AboutContent() {
           ))}
         </div>
       </div>
+
+      {/* 流式打印简历 */}
+      {resumeMarkdown && resumeMarkdown.trim().length > 0 && (
+        <div className="mb-16">
+          <div className="flex items-center gap-2 mb-6">
+            <Terminal size={18} className="text-accent-violet" />
+            <h2 className="text-xl font-bold text-white">个人简历</h2>
+            <span className="ml-auto text-xs text-gray-600 font-mono">streaming output</span>
+          </div>
+          <p className="text-gray-500 text-sm mb-5">
+            进入视图后，简历会一行行像终端流式输出般打印出来，直至完整呈现。
+          </p>
+          <ResumeTerminal source={resumeMarkdown} />
+        </div>
+      )}
 
       {/* Contact */}
       <motion.div

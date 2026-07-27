@@ -26,6 +26,7 @@
 - [项目结构](#-项目结构)
 - [快速开始](#-快速开始)
 - [添加文章](#-添加文章)
+- [📄 个人简历模块](#-个人简历模块)
 - [部署](#-部署)
 - [开发注意事项](#-开发注意事项)
 
@@ -47,6 +48,7 @@
 | 📜 **阅读进度条**      | 滚动驱动的渐变进度指示器                           |
 | 🧭 **自动目录**        | 文章 h2/h3 自动提取 + 滚动高亮锚点                 |
 | 🎯 **三水极光 favicon**| 三条流动水波 + 极光渐变，呼应「三水」之名          |
+| 📜 **流式打印简历**   | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配 |
 
 ---
 
@@ -69,19 +71,21 @@
 
 ```
 sanshui-blog/
-├── content/posts/              # Markdown 文章 (gray-matter frontmatter)
-│   ├── 深入理解-react-19-并发渲染机制.md
-│   ├── 金融量化交易系统设计.md
-│   └── ...
+├── content/
+│   ├── posts/                  # Markdown 文章 (gray-matter frontmatter)
+│   │   ├── 深入理解-react-19-并发渲染机制.md
+│   │   ├── 金融量化交易系统设计.md
+│   │   └── ...
+│   └── resume.md               # 个人简历源文件（流式打印模块读取）
 ├── src/
 │   ├── app/                    # Next.js App Router 页面
 │   │   ├── page.tsx            # 首页 (Hero + Stats + Featured + PostList)
 │   │   ├── layout.tsx          # 根布局 (Provider 包裹，favicon metadata)
-│   │   ├── globals.css         # Tailwind v4 + 自定义设计系统
+│   │   ├── globals.css         # Tailwind v4 + 自定义设计系统 + 简历模块双主题
 │   │   ├── fonts.ts            # Inter + JetBrains Mono 字体配置
 │   │   ├── not-found.tsx       # 404 页面 (粒子动画)
 │   │   ├── loading.tsx         # 全局骨架屏
-│   │   ├── about/              # 关于页 (技能条 + 技术栈)
+│   │   ├── about/              # 关于页 (技能条 + 技术栈 + 流式简历)
 │   │   ├── archive/            # 归档 (按年份分组)
 │   │   ├── tags/               # 标签云 + 按标签筛选
 │   │   ├── posts/[slug]/       # 文章详情 (RSC MDX 渲染)
@@ -90,11 +94,13 @@ sanshui-blog/
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
 │   │   ├── Home/               # HeroScene · StatsGrid · FeaturedPost
 │   │   ├── Post/               # PostCard · PostContent · PostMeta · TOC
+│   │   ├── About/              # ResumeTerminal (流式打印简历)
 │   │   └── UI/                 # CursorGlow · GithubIcon · SearchModal · ThemeToggle · NavigationLoading
 │   └── lib/
 │       ├── types.ts            # Post 类型定义
 │       ├── posts.ts            # 文章读取 (FS 缓存 + 签名)
 │       ├── toc.ts              # Markdown 标题提取
+│       ├── resume.ts           # 简历读取 (构建期 fs.readFileSync)
 │       └── basePath.ts         # 构建时 basePath 中心定义
 ├── scripts/
 │   ├── predev.js               # ConsoleNinja 兼容脚本
@@ -165,6 +171,54 @@ excerpt: 一句话摘要（可选，不写则自动取正文前 160 字）
 | `excerpt` | string   | 可选，摘要，不写则自动截取 |
 
 > 💡 新增/修改文章后，`predev` 或 `prebuild` 钩子会自动重新生成 `public/posts-index.json`，SearchModal 即可搜索到新文章。
+
+---
+
+## 📄 个人简历模块
+
+关于页（`/about`）内置一个**终端式流式打印简历**模块：进入视口后，简历内容会一行行像终端 `cat` 输出般逐行打印，直至完整呈现。
+
+### 工作原理
+
+```
+content/resume.md  ──(构建期 fs.readFileSync)──►  src/lib/resume.ts
+                                                          │
+                                                          ▼
+src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
+                                                          │
+                                                          ▼
+                                          src/components/About/ResumeTerminal.tsx
+                                          (IntersectionObserver 触发 + setTimeout 逐行打印)
+```
+
+- **数据源**：`content/resume.md`（纯 Markdown，约 4KB）
+- **读取时机**：构建期同步读取，注入 `AboutContent` 作为 `resumeMarkdown` prop
+- **动画触发**：`IntersectionObserver` 监听组件进入视口（threshold 0.2），首次进入即启动打印
+- **打印节奏**：`setTimeout` 调度，空行 0.4×、标题行 2.4×、普通行 1×（默认 `lineDelay = 60ms`）
+- **自动滚动**：每打印一行自动 `scrollTop = scrollHeight`，模拟终端追加
+- **双主题适配**：`globals.css` 中 `.resume-terminal` 用 CSS 变量定义暗/亮两套配色，`html:not(.dark)` 覆盖亮色值
+
+### 渲染能力
+
+| Markdown 语法 | 渲染效果 |
+|---------------|----------|
+| `# / ## / ###` | 紫色高亮标题，层级决定字号 |
+| `- xxx` | 青色圆点列表项 |
+| `> xxx` | 粉色左边框引用块 |
+| `---` | 灰色分隔线 |
+| `**粗体**` | 加粗白色文字 |
+| `` `代码` `` | 浅紫底 + 紫色文字的行内代码 |
+
+### 性能特征
+
+- **零运行时 fetch**：简历文本在构建期注入静态 HTML，无 API 路由、无网络请求
+- **路由级代码分割**：`ResumeTerminal` 仅被 `/about/` 路由按需加载，首页/文章/标签页 JS bundle 不含此组件
+- **动画不阻塞渲染**：`setTimeout` 调度对主线程几乎零负担，`IntersectionObserver` 仅触发一次
+- **静态导出场景零运行时开销**：about 页面在 `npm run build` 时已预渲染为静态 HTML
+
+### 修改简历
+
+直接编辑 `content/resume.md` 即可，无需改代码。支持的标准 Markdown 语法见上表。下次 `npm run dev` 或 `npm run build` 自动生效。
 
 ---
 
