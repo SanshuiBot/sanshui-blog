@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Menu, X } from "lucide-react";
 import ThemeToggle from "@/components/UI/ThemeToggle";
 import SearchModal from "@/components/UI/SearchModal";
+import type { Post } from "@/lib/types";
 
 const links = [
   { href: "/", label: "首页" },
@@ -15,7 +16,7 @@ const links = [
   { href: "/links", label: "友链" },
 ];
 
-export default function Navbar({ posts }: { posts: any[] }) {
+export default function Navbar({ posts }: { posts: Post[] }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);

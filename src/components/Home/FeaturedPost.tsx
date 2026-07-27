@@ -3,8 +3,9 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useRef } from "react";
+import type { Post } from "@/lib/types";
 
-interface Props { post: any }
+interface Props { post: Post }
 
 export default function FeaturedPost({ post }: Props) {
   if (!post) return null;

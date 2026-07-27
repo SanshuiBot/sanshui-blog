@@ -1,4 +1,6 @@
-﻿export interface TocItem {
+﻿import "server-only";
+
+export interface TocItem {
   id: string;
   text: string;
   level: number;

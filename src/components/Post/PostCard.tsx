@@ -4,6 +4,7 @@ import { ArrowUpRight, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
+import type { Post } from "@/lib/types";
 
 const tagGradients = [
   'from-accent-pink/20 to-accent-rose/20',
@@ -13,7 +14,7 @@ const tagGradients = [
   'from-accent-gold/20 to-accent-rose/20',
 ];
 
-export default function PostCard({ post, index }: { post: any; index: number }) {
+export default function PostCard({ post, index }: { post: Post; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
 

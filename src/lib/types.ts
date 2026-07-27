@@ -1,3 +1,5 @@
+import "server-only";
+
 export interface Post {
   slug: string;
   title: string;
