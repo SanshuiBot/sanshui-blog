@@ -25,6 +25,8 @@
 *.pem
 .idea
 .vscode
+.atomcode
+.agents
 
 # debug
 npm-debug.log*
