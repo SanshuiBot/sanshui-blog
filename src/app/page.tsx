@@ -13,6 +13,19 @@ export default function Home() {
 
   return (
     <>
+      {/* 批量预取所有文章页 HTML：用户点击卡片前，目标 HTML 已在浏览器 HTTP 缓存。
+          低优先级、空闲时拉取，不阻塞首屏。 */}
+      <head>
+        {posts.map((p) => (
+          <link
+            key={p.slug}
+            rel="prefetch"
+            as="document"
+            href={`/posts/${p.slug}/`}
+            fetchPriority="low"
+          />
+        ))}
+      </head>
       <HeroScene />
       <StatsGrid />
       {featured && <FeaturedPost post={featured} />}

@@ -20,7 +20,7 @@ export default function PostNav({ prev, next }: Props) {
         >
           <Link
             href={`/posts/${prev.slug}`}
-            prefetch={true}
+            prefetch={false}
             className="group flex items-start gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"
           >
             <motion.span
@@ -51,7 +51,7 @@ export default function PostNav({ prev, next }: Props) {
         >
           <Link
             href={`/posts/${next.slug}`}
-            prefetch={true}
+            prefetch={false}
             className="group flex items-start justify-end gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"
           >
             <div className="min-w-0 text-right">

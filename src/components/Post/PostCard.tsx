@@ -3,6 +3,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowUpRight, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import type { Post } from '@/lib/types';
 
@@ -17,6 +18,15 @@ const tagGradients = [
 export default function PostCard({ post, index }: { post: Post; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
+  const router = useRouter();
+  const postHref = `/posts/${post.slug}`;
+  const prefetchedRef = useRef(false);
+
+  const onCardMouseEnter = () => {
+    if (prefetchedRef.current) return;
+    prefetchedRef.current = true;
+    router.prefetch(postHref);
+  };
 
   // Mouse-following spotlight
   const mx = useMotionValue(50);
@@ -142,9 +152,10 @@ export default function PostCard({ post, index }: { post: Post; index: number })
 
               {/* Everything below is ONE link to the post — no ambiguity */}
               <Link
-                href={`/posts/${post.slug}`}
-                prefetch={true}
+                href={postHref}
+                prefetch={false}
                 onClick={startNavigation}
+                onMouseEnter={onCardMouseEnter}
                 className="flex-1 flex flex-col group/link"
               >
                 {/* Title */}

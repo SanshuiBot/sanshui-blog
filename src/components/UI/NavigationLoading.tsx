@@ -67,14 +67,19 @@ function Overlay() {
 
 export function NavigationLoadingProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
+  const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clear = useCallback(() => {
-    setLoading(false);
+    if (showTimerRef.current) {
+      clearTimeout(showTimerRef.current);
+      showTimerRef.current = null;
+    }
     if (fallbackRef.current) {
       clearTimeout(fallbackRef.current);
       fallbackRef.current = null;
     }
+    setLoading(false);
   }, []);
 
   const done = useCallback(() => {
@@ -82,8 +87,11 @@ export function NavigationLoadingProvider({ children }: { children: React.ReactN
   }, [clear]);
 
   const startNavigation = useCallback(() => {
+    // 延迟 300ms 显示覆盖层：快跳转（< 300ms）根本看不到覆盖层，
+    // 慢跳转才显示，避免用户误以为卡死。
+    if (showTimerRef.current) clearTimeout(showTimerRef.current);
+    showTimerRef.current = setTimeout(() => setLoading(true), 300);
     if (fallbackRef.current) clearTimeout(fallbackRef.current);
-    setLoading(true);
     // 兜底 5 秒（正常情况下 PostPage 挂载时 done() 在 ms 级触发）
     fallbackRef.current = setTimeout(clear, 5000);
   }, [clear]);
