@@ -174,14 +174,14 @@ excerpt: 一句话摘要（可选，不写则自动取正文前 160 字）
 
 ```mermaid
 graph LR
-  A[git push] --> B[GitHub Actions]
-  B --> C[npm install]
-  C --> D[prebuild: 生成文章索引]
-  D --> E[npm run build]
-  E --> F[静态导出 out/]
-  F --> G[Pagefind 搜索索引]
-  G --> H[Upload Artifact]
-  H --> I[Deploy to Pages]
+  A["git push"] --> B["GitHub Actions"]
+  B --> C["npm install"]
+  C --> D["prebuild: 生成文章索引"]
+  D --> E["npm run build"]
+  E --> F["静态导出 out/"]
+  F --> G["Pagefind 搜索索引"]
+  G --> H["Upload Artifact"]
+  H --> I["Deploy to Pages"]
 ```
 
 **部署特征：**
