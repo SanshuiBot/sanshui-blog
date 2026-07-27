@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
+import { withBase } from '@/lib/basePath';
 import type { Post } from '@/lib/types';
 
 const tagGradients = [
@@ -19,7 +20,7 @@ export default function PostCard({ post, index }: { post: Post; index: number })
   const ref = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
   const router = useRouter();
-  const postHref = `/posts/${post.slug}`;
+  const postHref = withBase(`/posts/${post.slug}`);
   const prefetchedRef = useRef(false);
 
   const onCardMouseEnter = () => {

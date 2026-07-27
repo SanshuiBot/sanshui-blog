@@ -1,4 +1,5 @@
 ﻿import { getAllPosts } from '@/lib/posts';
+import { withBase } from '@/lib/basePath';
 import PostCard from '@/components/Post/PostCard';
 import HeroScene from '@/components/Home/HeroScene';
 import StatsGrid from '@/components/Home/StatsGrid';
@@ -14,14 +15,15 @@ export default function Home() {
   return (
     <>
       {/* 批量预取所有文章页 HTML：用户点击卡片前，目标 HTML 已在浏览器 HTTP 缓存。
-          低优先级、空闲时拉取，不阻塞首屏。 */}
+          低优先级、空闲时拉取，不阻塞首屏。
+          原生 <link> 标签不走 Next <Link> 的 basePath 自动注入，必须手动拼。 */}
       <head>
         {posts.map((p) => (
           <link
             key={p.slug}
             rel="prefetch"
             as="document"
-            href={`/posts/${p.slug}/`}
+            href={withBase(`/posts/${p.slug}/`)}
             fetchPriority="low"
           />
         ))}
