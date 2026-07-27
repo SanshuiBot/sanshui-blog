@@ -2,12 +2,12 @@
 import { useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { ArrowDown, Mail, Hash, Archive, User, Terminal, Atom, Database } from 'lucide-react';
-import { FaGithub } from 'react-icons/fa';
+import Github from '@/components/UI/GithubIcon';
 import { useState } from 'react';
 import Link from 'next/link';
 
 const social = [
-  { icon: FaGithub, href: 'https://github.com/SanshuiBot', label: 'GitHub' },
+  { icon: Github, href: 'https://github.com/SanshuiBot', label: 'GitHub' },
   { icon: Mail, href: 'mailto:localhost6@foxmail.com', label: 'Email' },
 ];
 

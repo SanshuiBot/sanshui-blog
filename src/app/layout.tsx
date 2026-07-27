@@ -2,7 +2,6 @@
 import './globals.css';
 import { sans, mono } from './fonts';
 import Provider from '@/components/Provider';
-import { getAllPosts } from '@/lib/posts';
 
 const base = 'https://sanshuibot.github.io/sanshui-blog';
 
@@ -27,6 +26,10 @@ export const metadata: Metadata = {
     locale: 'zh_CN',
   },
   twitter: { card: 'summary_large_image' },
+  icons: {
+    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/favicon.ico', sizes: 'any' }],
+    shortcut: '/favicon.ico',
+  },
 };
 
 export const viewport: Viewport = {
@@ -37,11 +40,10 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const posts = getAllPosts();
   return (
     <html lang="zh-CN" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
       <body className="min-h-dvh flex flex-col bg-ink text-fg antialiased relative">
-        <Provider posts={posts}>{children}</Provider>
+        <Provider>{children}</Provider>
       </body>
     </html>
   );

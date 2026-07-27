@@ -1,6 +1,6 @@
 'use client';
 import { ExternalLink, ArrowLeft, Link2, Mail } from 'lucide-react';
-import { FaGithub } from 'react-icons/fa';
+import Github from '@/components/UI/GithubIcon';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -52,7 +52,7 @@ export default function LinksContent() {
         >
           {imgLoaded === undefined || imgLoaded === false ? (
             <div className="absolute inset-0 bg-white/5 animate-pulse flex items-center justify-center">
-              <FaGithub size={20} className="text-gray-600" />
+              <Github size={20} className="text-gray-600" />
             </div>
           ) : null}
           <Image
@@ -112,7 +112,7 @@ export default function LinksContent() {
             whileTap={{ scale: 0.97 }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 text-gray-300 text-sm font-medium border border-white/10"
           >
-            <FaGithub size={14} />
+            <Github size={14} />
             GitHub
           </motion.a>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 import { ArrowLeft, Mail, Sparkles, Heart, Code2, Server, Wrench } from 'lucide-react';
-import { FaGithub } from 'react-icons/fa';
+import Github from '@/components/UI/GithubIcon';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -192,7 +192,7 @@ export default function AboutContent() {
             whileTap={{ scale: 0.97 }}
             className={`${btnClass} bg-white text-black`}
           >
-            <FaGithub size={16} />
+            <Github size={16} />
             GitHub
           </motion.a>
           <motion.a

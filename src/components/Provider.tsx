@@ -1,25 +1,23 @@
 ﻿'use client';
 import { ThemeProvider } from 'next-themes';
-import CursorGlow from '@/components/UI/CursorGlow';
+import dynamic from 'next/dynamic';
 import Navbar from '@/components/Layout/Navbar';
 import Footer from '@/components/Layout/Footer';
-import ScrollProgress from '@/components/Layout/ScrollProgress';
 import { NavigationLoadingProvider } from '@/components/UI/NavigationLoading';
-import type { Post } from '@/lib/types';
 
-export default function Provider({
-  children,
-  posts,
-}: {
-  children: React.ReactNode;
-  posts: Post[];
-}) {
+// 懒加载非首屏必需的 client 组件，避免被打进首屏 chunk 图
+const CursorGlow = dynamic(() => import('@/components/UI/CursorGlow'), { ssr: false });
+const ScrollProgress = dynamic(() => import('@/components/Layout/ScrollProgress'), {
+  ssr: false,
+});
+
+export default function Provider({ children }: { children: React.ReactNode }) {
   return (
     <NavigationLoadingProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="aurora-theme">
         <CursorGlow />
         <ScrollProgress />
-        <Navbar posts={posts} />
+        <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
       </ThemeProvider>

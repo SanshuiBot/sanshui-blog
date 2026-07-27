@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Menu, X } from 'lucide-react';
 import ThemeToggle from '@/components/UI/ThemeToggle';
 import SearchModal from '@/components/UI/SearchModal';
-import type { Post } from '@/lib/types';
 
 const links = [
   { href: '/', label: '首页' },
@@ -16,7 +15,7 @@ const links = [
   { href: '/links', label: '友链' },
 ];
 
-export default function Navbar({ posts }: { posts: Post[] }) {
+export default function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -121,7 +120,7 @@ export default function Navbar({ posts }: { posts: Post[] }) {
           </motion.div>
         )}
       </AnimatePresence>
-      <SearchModal posts={posts} open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

@@ -3,20 +3,30 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { withBase } from '@/lib/basePath';
 
-import type { Post } from '@/lib/types';
+interface SearchPost {
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  tags: string[];
+}
 
-export default function SearchModal({
-  posts,
-  open,
-  onClose,
-}: {
-  posts: Post[];
-  open: boolean;
-  onClose: () => void;
-}) {
+export default function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState('');
+  const [posts, setPosts] = useState<SearchPost[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // 首次打开时拉取轻量索引（~10KB），不再走 RSC payload
+  useEffect(() => {
+    if (!open || posts !== null) return;
+    fetch(`${withBase('/posts-index.json')}`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: SearchPost[]) => setPosts(data))
+      .catch(() => setPosts([]));
+  }, [open, posts]);
+
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
     else setQ('');
@@ -34,11 +44,12 @@ export default function SearchModal({
   }, [open, onClose]);
 
   const results = useMemo(() => {
+    if (!posts) return [];
     const t = q.trim().toLowerCase();
     if (!t) return [];
     return posts
       .filter(
-        (p: Post) =>
+        (p: SearchPost) =>
           p.title.toLowerCase().includes(t) ||
           p.excerpt.toLowerCase().includes(t) ||
           p.tags.some((x: string) => x.toLowerCase().includes(t)),
@@ -87,8 +98,10 @@ export default function SearchModal({
               </kbd>
             </div>
             <div className="max-h-80 overflow-y-auto p-2">
-              {results.length > 0 ? (
-                results.map((p: Post, i: number) => (
+              {posts === null ? (
+                <div className="text-center py-10 text-gray-500 text-sm">加载中...</div>
+              ) : results.length > 0 ? (
+                results.map((p: SearchPost, i: number) => (
                   <motion.div
                     key={p.slug}
                     initial={{ opacity: 0, x: -8 }}

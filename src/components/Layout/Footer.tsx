@@ -1,7 +1,7 @@
 ﻿'use client';
 import Link from 'next/link';
 import { Mail, ArrowUp, Rss } from 'lucide-react';
-import { FaGithub } from 'react-icons/fa';
+import Github from '@/components/UI/GithubIcon';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useState } from 'react';
 
@@ -96,7 +96,7 @@ export default function Footer() {
                   e.currentTarget.style.color = '#78716c';
                 }}
               >
-                <FaGithub size={14} />
+                <Github size={14} />
                 GitHub
               </a>
               <br />
