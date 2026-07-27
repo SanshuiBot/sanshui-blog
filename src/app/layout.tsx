@@ -2,6 +2,7 @@
 import './globals.css';
 import { sans, mono } from './fonts';
 import Provider from '@/components/Provider';
+import { BASE_PATH } from '@/lib/basePath';
 
 const base = 'https://sanshuibot.github.io/sanshui-blog';
 
@@ -27,8 +28,11 @@ export const metadata: Metadata = {
   },
   twitter: { card: 'summary_large_image' },
   icons: {
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }, { url: '/favicon.ico', sizes: 'any' }],
-    shortcut: '/favicon.ico',
+    icon: [
+      { url: `${BASE_PATH}/favicon.svg`, type: 'image/svg+xml' },
+      { url: `${BASE_PATH}/favicon.ico`, sizes: 'any' },
+    ],
+    shortcut: `${BASE_PATH}/favicon.ico`,
   },
 };
 
