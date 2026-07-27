@@ -4,15 +4,7 @@ import { Hash } from 'lucide-react';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
 
-function TagItem({
-  name,
-  count,
-  color,
-}: {
-  name: string;
-  count: number;
-  color: string;
-}) {
+function TagItem({ name, count, color }: { name: string; count: number; color: string }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [showRipple, setShowRipple] = useState(false);
@@ -145,7 +137,12 @@ function TagItem({
                   }}
                   initial={{ x: '-100%' }}
                   animate={{ x: ['-100%', '200%'] }}
-                  transition={{ duration: 1.8, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1.5 }}
+                  transition={{
+                    duration: 1.8,
+                    ease: 'easeInOut',
+                    repeat: Infinity,
+                    repeatDelay: 1.5,
+                  }}
                 />
               </motion.span>
             )}

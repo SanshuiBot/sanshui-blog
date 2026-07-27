@@ -1,7 +1,8 @@
 'use client';
 import { ExternalLink, ArrowLeft, Link2, Mail } from 'lucide-react';
-import { FaGithub } from "react-icons/fa";
+import { FaGithub } from 'react-icons/fa';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 
@@ -54,10 +55,12 @@ export default function LinksContent() {
               <FaGithub size={20} className="text-gray-600" />
             </div>
           ) : null}
-          <img
+          <Image
             src={friend.avatar}
             alt={friend.name}
-            className="w-full h-full object-cover"
+            fill
+            sizes="56px"
+            className="object-cover"
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgLoaded(false)}
           />

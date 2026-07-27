@@ -1,13 +1,13 @@
-﻿"use client";
-import { useEffect, useState } from "react";
-import type { TocItem } from "@/lib/toc";
+﻿'use client';
+import { useEffect, useState } from 'react';
+import type { TocItem } from '@/lib/toc';
 
 interface Props {
   items: TocItem[];
 }
 
 export default function TableOfContents({ items }: Props) {
-  const [activeId, setActiveId] = useState<string>("");
+  const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -18,7 +18,7 @@ export default function TableOfContents({ items }: Props) {
           }
         }
       },
-      { rootMargin: "-80px 0px -70% 0px", threshold: 0 }
+      { rootMargin: '-80px 0px -70% 0px', threshold: 0 },
     );
 
     for (const item of items) {
@@ -42,14 +42,14 @@ export default function TableOfContents({ items }: Props) {
               onClick={(e) => {
                 e.preventDefault();
                 const el = document.getElementById(item.id);
-                if (el) el.scrollIntoView({ behavior: "smooth" });
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
               className={`block py-1 text-sm transition-colors duration-200 truncate ${
-                item.level === 2 ? "pl-0" : "pl-3"
+                item.level === 2 ? 'pl-0' : 'pl-3'
               } ${
                 activeId === item.id
-                  ? "text-accent-violet font-medium"
-                  : "text-gray-500 hover:text-gray-300"
+                  ? 'text-accent-violet font-medium'
+                  : 'text-gray-500 hover:text-gray-300'
               }`}
             >
               {item.text}

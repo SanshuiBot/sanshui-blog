@@ -127,8 +127,8 @@ spec:
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: 1        # 滚动时最多多出 1 个 Pod
-      maxUnavailable: 0  # 滚动期间不允许任何 Pod 不可用
+      maxSurge: 1 # 滚动时最多多出 1 个 Pod
+      maxUnavailable: 0 # 滚动期间不允许任何 Pod 不可用
   selector:
     matchLabels:
       app: api-server
@@ -156,11 +156,11 @@ spec:
 
 **三个关键概念**：
 
-| 探针 | 作用 | 失败结果 |
-|------|------|---------|
-| `livenessProbe` | 容器是否"活着" | 重启容器 |
-| `readinessProbe` | 容器是否"准备好接流量" | 从 Service 端点移除 |
-| `startupProbe` | 容器是否"启动完成"（JVM 这类慢启动用） | 启动期间禁用上面两个探针 |
+| 探针             | 作用                                   | 失败结果                 |
+| ---------------- | -------------------------------------- | ------------------------ |
+| `livenessProbe`  | 容器是否"活着"                         | 重启容器                 |
+| `readinessProbe` | 容器是否"准备好接流量"                 | 从 Service 端点移除      |
+| `startupProbe`   | 容器是否"启动完成"（JVM 这类慢启动用） | 启动期间禁用上面两个探针 |
 
 ### 3.3 Service：稳定的网络端点
 
@@ -172,11 +172,11 @@ kind: Service
 metadata:
   name: api-server
 spec:
-  type: ClusterIP  # 默认值，只集群内可达
+  type: ClusterIP # 默认值，只集群内可达
   selector:
     app: api-server
   ports:
-    - port: 80         # Service 监听的端口
+    - port: 80 # Service 监听的端口
       targetPort: 3000 # Pod 的端口
 ```
 
@@ -241,7 +241,7 @@ metadata:
   name: postgres-data
 spec:
   accessModes: [ReadWriteOnce]
-  storageClassName: fast-ssd  # 由管理员预先创建
+  storageClassName: fast-ssd # 由管理员预先创建
   resources:
     requests:
       storage: 50Gi
@@ -279,7 +279,7 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
-  volumeClaimTemplates:  # 每个 Pod 自动生成一个 PVC
+  volumeClaimTemplates: # 每个 Pod 自动生成一个 PVC
     - metadata:
         name: data
       spec:
@@ -319,7 +319,7 @@ metadata:
   name: db-credentials
 type: Opaque
 data:
-  POSTGRES_PASSWORD: cGFzc3dvcmQxMjM=  # base64 编码
+  POSTGRES_PASSWORD: cGFzc3dvcmQxMjM= # base64 编码
 ```
 
 **安全提示**：默认 Secret 在 etcd 中只是 base64 编码，不是加密。生产环境必须：
@@ -359,7 +359,7 @@ spec:
           averageUtilization: 80
   behavior:
     scaleDown:
-      stabilizationWindowSeconds: 300  # 5 分钟内不再缩容
+      stabilizationWindowSeconds: 300 # 5 分钟内不再缩容
       policies:
         - type: Percent
           value: 50
@@ -413,7 +413,7 @@ const httpRequestDuration = new Histogram({
   name: 'http_request_duration_seconds',
   help: 'HTTP request duration',
   labelNames: ['method', 'route'],
-  buckets: [0.005, 0.01, 0.05, 0.1, 0.5, 1, 5],  // 业务相关
+  buckets: [0.005, 0.01, 0.05, 0.1, 0.5, 1, 5], // 业务相关
 });
 ```
 
@@ -533,6 +533,7 @@ spec:
 ```
 
 这段配置实现：
+
 - 带 `x-canary: true` 头的请求全走 v2
 - 其他流量按 95:5 分配到 v1/v2
 - 5xx 错误连续 5 次后，对应 Pod 被弹出 30 秒
@@ -608,4 +609,3 @@ spec:
 云原生的学习曲线陡峭，但它的价值也是实实在在的：资源利用率提升 30-50%、故障恢复时间从小时降到分钟、版本发布频率从月级到日级。
 
 记住一个原则：**技术选型要匹配组织规模**。3 个人的团队搞一套完整的 Istio + ArgoCD + Prometheus Stack 是灾难；300 个人的团队不上这些东西就是低效。云原生是工具，不是目的。
-

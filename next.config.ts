@@ -32,13 +32,15 @@ const nextConfig: NextConfig = {
   // `output: `"'export`"' / basePath / assetPrefix are ONLY enabled at build time.
   // In dev they break HMR (hot reload hangs / server crashes on every edit).
   // for dynamic routes with non-ASCII (Chinese) slugs.
-  ...(process.env.NEXT_BUILD === '1' ? { output: 'export' as const, basePath: '/sanshui-blog', assetPrefix: '/sanshui-blog' } : {}),
+  ...(process.env.NEXT_BUILD === '1'
+    ? { output: 'export' as const, basePath: '/sanshui-blog', assetPrefix: '/sanshui-blog' }
+    : {}),
   // Remove `X-Powered-By: Next.js` header for security through obscurity.
   poweredByHeader: false,
   // React strict mode surfaces more bugs in dev.
   reactStrictMode: true,
   images: {
-    unoptimized: true, // static export â€?no server optimizer
+    unoptimized: true, // static export ï¿½?no server optimizer
     formats: ['image/avif', 'image/webp'],
   },
   trailingSlash: true,

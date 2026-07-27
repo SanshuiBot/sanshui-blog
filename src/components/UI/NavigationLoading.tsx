@@ -23,17 +23,35 @@ function Overlay() {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#fafaf9]/95 dark:bg-[#05050a]/95 backdrop-blur-sm">
       <svg className="w-14 h-14" viewBox="0 0 48 48">
         {/* 底层环 */}
-        <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="3"
-          className="text-black/[0.08] dark:text-white/[0.08]" />
+        <circle
+          cx="24"
+          cy="24"
+          r="20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          className="text-black/[0.08] dark:text-white/[0.08]"
+        />
         {/* 上层旋转弧 */}
-        <circle cx="24" cy="24" r="20" fill="none" strokeWidth="3"
+        <circle
+          cx="24"
+          cy="24"
+          r="20"
+          fill="none"
+          strokeWidth="3"
           strokeLinecap="round"
           stroke="url(#nav-spin-grad)"
           strokeDasharray="125.6"
-          strokeDashoffset="31.4">
-          <animateTransform attributeName="transform" type="rotate"
-            from="-90 24 24" to="270 24 24"
-            dur="0.8s" repeatCount="indefinite" />
+          strokeDashoffset="31.4"
+        >
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from="-90 24 24"
+            to="270 24 24"
+            dur="0.8s"
+            repeatCount="indefinite"
+          />
         </circle>
         <defs>
           <linearGradient id="nav-spin-grad" x1="0%" y1="0%" x2="100%" y2="100%">

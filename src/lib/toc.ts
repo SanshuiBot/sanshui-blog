@@ -1,4 +1,4 @@
-﻿import "server-only";
+﻿import 'server-only';
 
 export interface TocItem {
   id: string;
@@ -15,11 +15,11 @@ export function extractHeadings(content: string): TocItem[] {
     const text = match[2]!.trim();
     const id = text
       .toLowerCase()
-      .replace(/<[^>]*>/g, "")
-      .replace(/[^\w\u4e00-\u9fff\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
+      .replace(/<[^>]*>/g, '')
+      .replace(/[^\w\u4e00-\u9fff\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
     items.push({ id, text, level });
   }
   return items;

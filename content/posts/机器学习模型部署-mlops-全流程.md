@@ -29,10 +29,10 @@ MLOps = Machine Learning + DevOps。它是一套让 ML 模型能够**可靠、�
 
 Google 定义了 MLOps 的三个等级：
 
-| 等级 | 特征 |
-|------|------|
-| Level 0 | 手动训练、手动部署，没有流水线 |
-| Level 1 | 自动化训练流水线，CI/CD 部署模型 |
+| 等级    | 特征                               |
+| ------- | ---------------------------------- |
+| Level 0 | 手动训练、手动部署，没有流水线     |
+| Level 1 | 自动化训练流水线，CI/CD 部署模型   |
 | Level 2 | 元数据治理、自动化再训练、A/B 测试 |
 
 大多数公司停在 Level 0 到 Level 1 之间。
@@ -378,12 +378,12 @@ def ks_drift_score(reference: np.ndarray, current: np.ndarray) -> float:
 
 ### 7.3 监控指标体系
 
-| 维度 | 指标 | 工具 |
-|------|------|------|
+| 维度 | 指标              | 工具                 |
+| ---- | ----------------- | -------------------- |
 | 系统 | 延迟、QPS、错误率 | Prometheus + Grafana |
-| 模型 | Accuracy、AUC | Evidently、WhyLabs |
-| 数据 | PSI、缺失率 | Alibi Detect |
-| 业务 | 转化率、GMV | 自建 BI |
+| 模型 | Accuracy、AUC     | Evidently、WhyLabs   |
+| 数据 | PSI、缺失率       | Alibi Detect         |
+| 业务 | 转化率、GMV       | 自建 BI              |
 
 ### 7.4 实战：Prometheus 暴露推理指标
 
@@ -415,7 +415,7 @@ name: Train Model
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * 0'  # 每周日凌晨 2 点
+    - cron: '0 2 * * 0' # 每周日凌晨 2 点
 
 jobs:
   train:
@@ -476,14 +476,14 @@ async def run_shadow(req, primary_result):
 
 ### 9.2 开源组合
 
-| 环节 | 工具 |
-|------|------|
-| 数据版本 | DVC、LakeFS、Pachyderm |
-| 实验追踪 | MLflow、Weights & Biases、Neptune |
+| 环节     | 工具                                            |
+| -------- | ----------------------------------------------- |
+| 数据版本 | DVC、LakeFS、Pachyderm                          |
+| 实验追踪 | MLflow、Weights & Biases、Neptune               |
 | 模型注册 | MLflow Model Registry、Vertex AI Model Registry |
-| 特征存储 | Feast、Tecton、Hopsworks |
-| 模型服务 | Triton、TorchServe、BentoML、Seldon Core |
-| 监控 | Evidently、WhyLabs、Arize |
+| 特征存储 | Feast、Tecton、Hopsworks                        |
+| 模型服务 | Triton、TorchServe、BentoML、Seldon Core        |
+| 监控     | Evidently、WhyLabs、Arize                       |
 
 ### 9.3 推荐"穷人版"组合
 
@@ -541,4 +541,3 @@ MLOps 是一门还在快速演进的工程学科。没有人能做到"完美 MLO
 4. 监控**覆盖系统、模型、数据三层**
 
 把这些基础设施搭好，你的团队就能从"每季度发一个模型"进化到"每周发一个模型"——这是真正的工程胜利。
-

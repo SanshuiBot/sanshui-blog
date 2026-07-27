@@ -31,12 +31,12 @@ excerpt: 一篇文章打通游戏引擎的完整技术栈：渲染管线、资�
 
 **主流引擎对比**：
 
-| 引擎 | 主语言 | 特点 |
-|------|--------|------|
+| 引擎   | 主语言          | 特点                        |
+| ------ | --------------- | --------------------------- |
 | Unreal | C++ / Blueprint | AAA 级，Nanite / Lumen 渲染 |
-| Unity | C# | 跨平台之王，DOTS 架构 |
-| Godot | C++ / GDScript | 开源，2D 强 |
-| Bevy | Rust | ECS 原生，社区活跃 |
+| Unity  | C#              | 跨平台之王，DOTS 架构       |
+| Godot  | C++ / GDScript  | 开源，2D 强                 |
+| Bevy   | Rust            | ECS 原生，社区活跃          |
 
 ## 二、渲染管线：从顶点到像素
 
@@ -124,7 +124,7 @@ struct GBuffer {
 public class OutlineFeature : ScriptableRendererFeature {
     public RenderPassEvent passEvent = RenderPassEvent.AfterRenderingOpaques;
     public Material outlineMaterial;
-    
+
     class OutlinePass : ScriptableRenderPass {
         // ...
     }
@@ -174,7 +174,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
     [SerializeField] private float speed = 5f;
     [SerializeField] private float jumpForce = 7f;
-    
+
     private Rigidbody _rb;
     private bool _isGrounded;
 
@@ -186,7 +186,7 @@ public class PlayerController : MonoBehaviour {
         var move = Input.GetAxis("Horizontal") * Vector3.right +
                    Input.GetAxis("Vertical") * Vector3.forward;
         _rb.velocity = new Vector3(move.x * speed, _rb.velocity.y, move.z * speed);
-        
+
         if (Input.GetButtonDown("Jump") && _isGrounded) {
             _rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
@@ -237,7 +237,7 @@ Idle ──speed>0.1──► Walk ──speed>1.5──► Run
 void Update() {
     float speed = _rb.velocity.magnitude;
     _animator.SetFloat("Speed", speed);
-    
+
     if (Input.GetButtonDown("Jump")) {
         _animator.SetTrigger("Jump");
     }
@@ -297,7 +297,7 @@ public struct Target : IComponentData {
 public partial class MoveToTargetSystem : SystemBase {
     protected override void OnUpdate() {
         float dt = SystemAPI.Time.DeltaTime;
-        
+
         Entities
             .WithName("MoveToTarget")
             .ForEach((ref LocalTransform transform,
@@ -313,7 +313,7 @@ public partial class MoveToTargetSystem : SystemBase {
 // Authoring Component (MonoBehaviour 用于编辑器)
 public class MoveToTargetAuthoring : MonoBehaviour {
     public float speed = 5f;
-    
+
     class Baker : Baker<MoveToTargetAuthoring> {
         public override void Bake(MoveToTargetAuthoring src) {
             var e = GetEntity(TransformUsageFlags.Dynamic);
@@ -386,11 +386,11 @@ Addressables.Release(handle);
 
 ### 7.3 资源加载策略
 
-| 时机 | 方式 | 场景 |
-|------|------|------|
-| 启动时 | `Resources.Load` | 必备资源 |
-| 关卡进入 | Addressables | 关卡专属资源 |
-| 运行时 | Streaming Assets | 视频、配置 |
+| 时机     | 方式             | 场景         |
+| -------- | ---------------- | ------------ |
+| 启动时   | `Resources.Load` | 必备资源     |
+| 关卡进入 | Addressables     | 关卡专属资源 |
+| 运行时   | Streaming Assets | 视频、配置   |
 
 ## 八、网络与多人同步
 
@@ -410,7 +410,7 @@ public class PlayerNetwork : NetworkBehaviour {
 
     void Update() {
         if (!IsOwner) return;  // 只控制自己的角色
-        
+
         var move = new Vector3(Input.GetAxis("Horizontal"), 0,
                                 Input.GetAxis("Vertical")) * speed;
         _rb.velocity = move;
@@ -563,13 +563,13 @@ public class BulletPool : MonoBehaviour {
 
 ### 10.3 包体优化
 
-| 项目 | 优化方式 |
-|------|---------|
-| 贴图 | ASTC 压缩，移动端用 6x6 |
-| 音频 | iOS 用 AAC，Android 用 Vorbis |
-| Mesh | 启用 Mesh Compression |
-| Animation | 用 Keyframe Reduction |
-| Shader | 去除未用变体（Shader Variant Collection） |
+| 项目      | 优化方式                                  |
+| --------- | ----------------------------------------- |
+| 贴图      | ASTC 压缩，移动端用 6x6                   |
+| 音频      | iOS 用 AAC，Android 用 Vorbis             |
+| Mesh      | 启用 Mesh Compression                     |
+| Animation | 用 Keyframe Reduction                     |
+| Shader    | 去除未用变体（Shader Variant Collection） |
 
 ## 结语
 
@@ -578,4 +578,3 @@ public class BulletPool : MonoBehaviour {
 Unity DOTS 的 ECS + Job System + Burst Compiler 组合，让 C# 游戏第一次在性能上能和 C++ 平起平坐。如果你做的是 RTS、弹幕射击、塔防这类有大量同类对象的游戏，DOTS 是必选项；其他场景传统 MonoBehaviour 依然够用。
 
 游戏开发的乐趣在于"所见即所得"——你写的每一行代码，下一秒就能在屏幕上看到。这种即时反馈的快乐，是其他领域难以比拟的。
-

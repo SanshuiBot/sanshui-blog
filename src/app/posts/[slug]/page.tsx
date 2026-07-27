@@ -1,14 +1,16 @@
-import { notFound } from "next/navigation";
-import type { Metadata } from "next";
-import { getPostBySlug, getAllPosts, getAdjacentPosts } from "@/lib/posts";
-import { extractHeadings } from "@/lib/toc";
-import PostContent from "@/components/Post/PostContent";
-import PostMeta from "@/components/Post/PostMeta";
-import PostNav from "@/components/Post/PostNav";
-import PostDone from "@/components/Post/PostDone";
-import TableOfContents from "@/components/Post/TableOfContents";
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import { getPostBySlug, getAllPosts, getAdjacentPosts } from '@/lib/posts';
+import { extractHeadings } from '@/lib/toc';
+import PostContent from '@/components/Post/PostContent';
+import PostMeta from '@/components/Post/PostMeta';
+import PostNav from '@/components/Post/PostNav';
+import PostDone from '@/components/Post/PostDone';
+import TableOfContents from '@/components/Post/TableOfContents';
 
-interface Props { params: Promise<{ slug: string }> }
+interface Props {
+  params: Promise<{ slug: string }>;
+}
 
 export async function generateStaticParams() {
   return getAllPosts().map((p) => ({ slug: p.slug }));
@@ -22,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: post.title,
     description: post.excerpt,
     keywords: post.tags,
-    openGraph: { title: post.title, description: post.excerpt, type: "article", tags: post.tags },
+    openGraph: { title: post.title, description: post.excerpt, type: 'article', tags: post.tags },
   };
 }
 

@@ -4,16 +4,34 @@ export default function PostLoading() {
       {/* 顶部旋转加载环 — SVG 原生 animateTransform */}
       <div className="flex items-center justify-center mb-10">
         <svg className="w-12 h-12" viewBox="0 0 48 48">
-          <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="3"
-            className="text-black/[0.08] dark:text-white/[0.08]" />
-          <circle cx="24" cy="24" r="20" fill="none" strokeWidth="3"
+          <circle
+            cx="24"
+            cy="24"
+            r="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            className="text-black/[0.08] dark:text-white/[0.08]"
+          />
+          <circle
+            cx="24"
+            cy="24"
+            r="20"
+            fill="none"
+            strokeWidth="3"
             strokeLinecap="round"
             stroke="url(#post-spin-grad)"
             strokeDasharray="125.6"
-            strokeDashoffset="31.4">
-            <animateTransform attributeName="transform" type="rotate"
-              from="-90 24 24" to="270 24 24"
-              dur="0.8s" repeatCount="indefinite" />
+            strokeDashoffset="31.4"
+          >
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="-90 24 24"
+              to="270 24 24"
+              dur="0.8s"
+              repeatCount="indefinite"
+            />
           </circle>
           <defs>
             <linearGradient id="post-spin-grad" x1="0%" y1="0%" x2="100%" y2="100%">

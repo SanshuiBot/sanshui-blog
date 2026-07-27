@@ -35,34 +35,34 @@
 
 **Aurora 暗色主题** — 全暗色玻璃态设计系统，极光渐变与物理动效深度融合。
 
-| | |
-|---|---|
-| 🎨 **暗色玻璃态** | `backdrop-filter: blur(20px)` 半透明卡片，微光边框 |
-| 🌈 **极光渐变文字** | 多色渐变 + `background-clip: text` 动画 |
-| ⚛️ **Canvas 粒子网络** | Three.js 60 节点粒子系统，动态连线 |
-| 🖱️ **自定义鼠标光晕** | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点 |
-| 📐 **渐隐网格背景** | `radial-gradient` mask 从中心向四周淡出 |
-| 💫 **中心极光光晕** | 三层极光色径向渐变叠加动画 |
-| 🃏 **3D 倾斜卡片** | `useMotionValue` + spring 物理模拟鼠标视差 |
-| 🔍 **⌘K 全局搜索** | Pagefind 驱动 + 模糊匹配快捷键 |
-| 📜 **阅读进度条** | 滚动驱动的渐变进度指示器 |
-| 🧭 **自动目录** | 文章 h2/h3 自动提取 + 滚动高亮锚点 |
+|                        |                                                    |
+| ---------------------- | -------------------------------------------------- |
+| 🎨 **暗色玻璃态**      | `backdrop-filter: blur(20px)` 半透明卡片，微光边框 |
+| 🌈 **极光渐变文字**    | 多色渐变 + `background-clip: text` 动画            |
+| ⚛️ **Canvas 粒子网络** | Three.js 60 节点粒子系统，动态连线                 |
+| 🖱️ **自定义鼠标光晕**  | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点      |
+| 📐 **渐隐网格背景**    | `radial-gradient` mask 从中心向四周淡出            |
+| 💫 **中心极光光晕**    | 三层极光色径向渐变叠加动画                         |
+| 🃏 **3D 倾斜卡片**     | `useMotionValue` + spring 物理模拟鼠标视差         |
+| 🔍 **⌘K 全局搜索**     | Pagefind 驱动 + 模糊匹配快捷键                     |
+| 📜 **阅读进度条**      | 滚动驱动的渐变进度指示器                           |
+| 🧭 **自动目录**        | 文章 h2/h3 自动提取 + 滚动高亮锚点                 |
 
 ---
 
 ## 🔧 技术栈
 
-| 类别 | 技术 |
-|------|------|
-| **框架** | Next.js 15 (App Router, SSG 静态导出) |
-| **语言** | TypeScript 5 (strict 模式 + 额外严格检查) |
+| 类别     | 技术                                                             |
+| -------- | ---------------------------------------------------------------- |
+| **框架** | Next.js 15 (App Router, SSG 静态导出)                            |
+| **语言** | TypeScript 5 (strict 模式 + 额外严格检查)                        |
 | **样式** | Tailwind CSS v4 (`@theme` 自定义设计令牌，无 tailwind.config.js) |
-| **动画** | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜) |
-| **3D** | Three.js + `@react-three/fiber` + `@react-three/drei` |
-| **图标** | Lucide React + React Icons |
-| **内容** | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight) |
-| **搜索** | Pagefind (静态全文搜索，构建时自动索引) |
-| **部署** | GitHub Pages + GitHub Actions 自动 CI/CD |
+| **动画** | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                |
+| **3D**   | Three.js + `@react-three/fiber` + `@react-three/drei`            |
+| **图标** | Lucide React + React Icons                                       |
+| **内容** | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)      |
+| **搜索** | Pagefind (静态全文搜索，构建时自动索引)                          |
+| **部署** | GitHub Pages + GitHub Actions 自动 CI/CD                         |
 
 ---
 
@@ -123,13 +123,13 @@ npx serve out
 
 ### 可用命令
 
-| 命令 | 作用 |
-|------|------|
-| `npm run dev` | 开发模式，`predev` 自动生成路由清单兼容文件 |
-| `npm run build` | 静态导出 + Pagefind 索引，需设置 `NEXT_BUILD=1` |
-| `npm run start` | Next.js 生产服务器 (非静态导出) |
-| `npm run lint` | ESLint 检查 (flat config) |
-| `npm run format` | Prettier 格式化 |
+| 命令             | 作用                                            |
+| ---------------- | ----------------------------------------------- |
+| `npm run dev`    | 开发模式，`predev` 自动生成路由清单兼容文件     |
+| `npm run build`  | 静态导出 + Pagefind 索引，需设置 `NEXT_BUILD=1` |
+| `npm run start`  | Next.js 生产服务器 (非静态导出)                 |
+| `npm run lint`   | ESLint 检查 (flat config)                       |
+| `npm run format` | Prettier 格式化                                 |
 
 ---
 
@@ -154,12 +154,12 @@ excerpt: 一句话摘要（可选，不写则自动取正文前 160 字）
 
 **Frontmatter 字段：**
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `title` | string | 必填，文章标题 |
-| `date` | string | 必填，YYYY-MM-DD 格式 |
-| `tags` | string[] | 可选，标签列表 |
-| `excerpt` | string | 可选，摘要，不写则自动截取 |
+| 字段      | 类型     | 说明                       |
+| --------- | -------- | -------------------------- |
+| `title`   | string   | 必填，文章标题             |
+| `date`    | string   | 必填，YYYY-MM-DD 格式      |
+| `tags`    | string[] | 可选，标签列表             |
+| `excerpt` | string   | 可选，摘要，不写则自动截取 |
 
 ---
 
@@ -179,6 +179,7 @@ graph LR
 ```
 
 **部署特征：**
+
 - 纯静态 HTML 输出（`output: 'export'`），无需 Node.js 服务器
 - Pagefind 在构建后自动索引全文搜索
 - 安全响应头全开（HSTS、X-Frame-Options、Permissions-Policy）

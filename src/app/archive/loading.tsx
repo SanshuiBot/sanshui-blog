@@ -19,7 +19,10 @@ export default function ArchiveLoading() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden">
+              <div
+                key={i}
+                className="rounded-2xl bg-white/[0.03] border border-white/5 overflow-hidden"
+              >
                 <div className="h-[2px] bg-white/5" />
                 <div className="p-5 sm:p-6 space-y-3">
                   <div className="flex gap-1.5">

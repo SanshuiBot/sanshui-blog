@@ -108,13 +108,13 @@ export const IdleLane = 0b0100000000000000000000000000000;
 
 常见优先级由高到低：
 
-| Lane | 含义 | 典型场景 |
-|------|------|----------|
-| SyncLane | 同步，立即执行 | useState 同步更新 |
-| InputContinuousLane | 连续输入 | 拖拽、滚动 |
-| DefaultLane | 默认 | 一般的 setState |
-| TransitionLane | 过渡 | useTransition 标记的更新 |
-| IdleLane | 空闲 | 预渲染、垃圾回收 |
+| Lane                | 含义           | 典型场景                 |
+| ------------------- | -------------- | ------------------------ |
+| SyncLane            | 同步，立即执行 | useState 同步更新        |
+| InputContinuousLane | 连续输入       | 拖拽、滚动               |
+| DefaultLane         | 默认           | 一般的 setState          |
+| TransitionLane      | 过渡           | useTransition 标记的更新 |
+| IdleLane            | 空闲           | 预渲染、垃圾回收         |
 
 Lane 的位运算让 React 可以高效地"合并/比较/分离"多个更新，比旧的数值模型灵活得多。
 
@@ -261,4 +261,3 @@ React 18 起的 SSR 是分阶段的：
 并发渲染不是 React 增加的某个 API，而是 React 内部架构的一次重构——从"同步阻塞"进化到"可中断、可调度、可优先级"。理解 Fiber、Lane、Scheduler 这三大基石，你就能在生产中正确使用 `useTransition`、`useDeferredValue` 和 Suspense，写出真正流畅的大型应用。
 
 React 19 在此基础上还加入了 Actions、`useOptimistic`、`useFormStatus` 等更上层的封装，但这些的背后，都是同一套并发渲染机制在支撑。掌握它，你就掌握了现代 React 的灵魂。
-

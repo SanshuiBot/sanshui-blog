@@ -1,19 +1,26 @@
-﻿import { Hash, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { getAllTags, getPostsByTag } from "@/lib/posts";
-import TagList from "@/components/TagList";
+﻿import { Hash, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { getAllTags, getPostsByTag } from '@/lib/posts';
+import TagList from '@/components/TagList';
 
 export default function TagsPage() {
   const tags = getAllTags().map((t) => ({ name: t, count: getPostsByTag(t).length }));
-  const colors = ["#ff6ec7", "#a855f7", "#38bdf8", "#2dd4bf", "#fbbf24", "#fb7185"];
+  const colors = ['#ff6ec7', '#a855f7', '#38bdf8', '#2dd4bf', '#fbbf24', '#fb7185'];
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white transition-colors mb-8 group/back">
-        <ArrowLeft size={14} className="transition-transform group/back:-translate-x-1" />返回首页
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white transition-colors mb-8 group/back"
+      >
+        <ArrowLeft size={14} className="transition-transform group/back:-translate-x-1" />
+        返回首页
       </Link>
       <div className="mb-12">
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent-violet uppercase tracking-widest mb-4"><Hash size={12} />标签</span>
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent-violet uppercase tracking-widest mb-4">
+          <Hash size={12} />
+          标签
+        </span>
         <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">全部标签</h1>
         <p className="mt-3 text-gray-500">共 {tags.length} 个标签</p>
       </div>

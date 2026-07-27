@@ -4,7 +4,7 @@ import { ArrowUpRight, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
-import type { Post } from "@/lib/types";
+import type { Post } from '@/lib/types';
 
 const tagGradients = [
   'from-accent-pink/20 to-accent-rose/20',
@@ -25,7 +25,8 @@ export default function PostCard({ post, index }: { post: Post; index: number })
   const sy = useSpring(my, { stiffness: 100, damping: 20 });
   const spotlight = useTransform(
     [sx, sy],
-    ([x, y]) => `radial-gradient(280px circle at ${x}% ${y}%, rgba(168,85,247,0.22), rgba(255,110,199,0.12) 30%, transparent 60%)`,
+    ([x, y]) =>
+      `radial-gradient(280px circle at ${x}% ${y}%, rgba(168,85,247,0.22), rgba(255,110,199,0.12) 30%, transparent 60%)`,
   );
 
   // 3D tilt values
@@ -52,7 +53,8 @@ export default function PostCard({ post, index }: { post: Post; index: number })
     ry.set(0);
   };
 
-  const fmt = (d: string) => new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+  const fmt = (d: string) =>
+    new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
     <motion.div
@@ -90,7 +92,8 @@ export default function PostCard({ post, index }: { post: Post; index: number })
             aria-hidden
             className="absolute -inset-[1px] rounded-2xl pointer-events-none"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,110,199,0.4), rgba(168,85,247,0.3), rgba(56,189,248,0.2))',
+              background:
+                'linear-gradient(135deg, rgba(255,110,199,0.4), rgba(168,85,247,0.3), rgba(56,189,248,0.2))',
               opacity: 0,
             }}
             whileHover={{ opacity: 1 }}
@@ -154,7 +157,9 @@ export default function PostCard({ post, index }: { post: Post; index: number })
                 </motion.h2>
 
                 {/* Excerpt */}
-                <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1 min-h-0">{post.excerpt}</p>
+                <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1 min-h-0">
+                  {post.excerpt}
+                </p>
 
                 {/* Footer with "阅读" as part of the link */}
                 <motion.div

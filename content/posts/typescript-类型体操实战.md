@@ -26,8 +26,8 @@ T extends U ? X : Y
 ```typescript
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
-type T1 = IsAny<any>;     // true
-type T2 = IsAny<string>;  // false
+type T1 = IsAny<any>; // true
+type T2 = IsAny<string>; // false
 type T3 = IsAny<unknown>; // false
 ```
 
@@ -59,11 +59,12 @@ type R2 = IsNever<never>; // true
 type MyExclude<T, U> = T extends U ? never : T;
 type MyExtract<T, U> = T extends U ? T : never;
 
-type T1 = MyExclude<'a' | 'b' | 'c', 'a'>;      // 'b' | 'c'
+type T1 = MyExclude<'a' | 'b' | 'c', 'a'>; // 'b' | 'c'
 type T2 = MyExtract<'a' | 'b' | 'c', 'a' | 'b'>; // 'a' | 'b'
 ```
 
 执行过程：
+
 - `MyExclude<'a' | 'b' | 'c', 'a'>` 先展开成 `'a' extends 'a' ? never : 'a'` | `'b' extends 'a' ? ...` | `'c' extends 'a' ? ...`
 - 'a' 的分支返回 `never`，'b' 和 'c' 返回自身
 - 最后 union：`never | 'b' | 'c'` = `'b' | 'c'`
@@ -87,6 +88,7 @@ type Result = UnionToTuple<'a' | 'b' | 'c'>;
 ```
 
 这里出现了两个关键技巧：
+
 - `UnionToIntersection`：利用函数参数的逆变位置，把 union 转成 intersection
 - 递归 + `Exclude`：每次"弹出"union 的最后一个成员
 
@@ -144,13 +146,12 @@ Template Literal Types 让我们能对字符串类型做拼接、提取、变换
 把 `kebab-case` 或 `snake_case` 转成 `camelCase`：
 
 ```typescript
-type CamelCase<S extends string> =
-  S extends `${infer Head}_${infer Tail}`
-    ? `${Head}${Capitalize<CamelCase<Tail>>}`
-    : S;
+type CamelCase<S extends string> = S extends `${infer Head}_${infer Tail}`
+  ? `${Head}${Capitalize<CamelCase<Tail>>}`
+  : S;
 
-type R1 = CamelCase<'hello_world'>;       // 'helloWorld'
-type R2 = CamelCase<'user_first_name'>;  // 'userFirstName'
+type R1 = CamelCase<'hello_world'>; // 'helloWorld'
+type R2 = CamelCase<'user_first_name'>; // 'userFirstName'
 ```
 
 每次匹配 `Head_Tail`，把 Head 保留，对 Tail 递归处理并首字母大写。
@@ -168,11 +169,15 @@ type Schema = {
 };
 
 type SchemaToType<S> = {
-  [K in keyof S]: S[K] extends 'number' ? number
-    : S[K] extends 'string' ? string
-    : S[K] extends 'boolean' ? boolean
-    : S[K] extends `${infer T}[]` ? Array<SchemaToType<{ x: T }>['x']>
-    : never;
+  [K in keyof S]: S[K] extends 'number'
+    ? number
+    : S[K] extends 'string'
+      ? string
+      : S[K] extends 'boolean'
+        ? boolean
+        : S[K] extends `${infer T}[]`
+          ? Array<SchemaToType<{ x: T }>['x']>
+          : never;
 };
 
 type Entity = SchemaToType<Schema>;
@@ -196,7 +201,9 @@ type Entity = SchemaToType<Schema>;
 type MyReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
 type MyParameters<T> = T extends (...args: infer P) => any ? P : never;
 
-function foo(x: number, y: string): boolean { return true; }
+function foo(x: number, y: string): boolean {
+  return true;
+}
 
 type R1 = MyReturnType<typeof foo>; // boolean
 type R2 = MyParameters<typeof foo>; // [number, string]
@@ -251,6 +258,7 @@ type Infinite<T> = Infinite<T>;
 ```
 
 **实战建议**：
+
 - 涉及深嵌套类型时，先用单元测试验证类型推断
 - 用 `// @ts-expect-error` 跑负向测试，确保错误被正确捕获
 - 真正复杂的类型运算，考虑用 codegen（比如从 GraphQL schema 生成 TS 类型）
@@ -263,18 +271,14 @@ type Infinite<T> = Infinite<T>;
 type Routes = '/users' | '/users/:id' | '/posts' | '/posts/:id/comments';
 
 // 提取路径参数
-type PathParams<Path> =
-  Path extends `${string}:${infer Param}/${infer Rest}`
-    ? { [K in Param]: string } & PathParams<`/${Rest}`>
-    : Path extends `${string}:${infer Param}`
-      ? { [K in Param]: string }
-      : {};
+type PathParams<Path> = Path extends `${string}:${infer Param}/${infer Rest}`
+  ? { [K in Param]: string } & PathParams<`/${Rest}`>
+  : Path extends `${string}:${infer Param}`
+    ? { [K in Param]: string }
+    : {};
 
 // 类型安全的导航函数
-function navigate<Path extends Routes>(
-  path: Path,
-  params: PathParams<Path>
-): void {
+function navigate<Path extends Routes>(path: Path, params: PathParams<Path>): void {
   // 运行时实现
   let url = path;
   for (const key in params) {
@@ -284,9 +288,9 @@ function navigate<Path extends Routes>(
 }
 
 // 调用——参数错误会在编译期报错
-navigate('/users/:id', { id: '123' });      // ✅
-navigate('/users/:id', {});                  // ❌ 缺少 id
-navigate('/posts/:id/comments', { id: '1' });// ✅
+navigate('/users/:id', { id: '123' }); // ✅
+navigate('/users/:id', {}); // ❌ 缺少 id
+navigate('/posts/:id/comments', { id: '1' }); // ✅
 ```
 
 这个例子综合运用了：Template Literal Types、infer、Conditional Types、Mapped Types。
@@ -300,6 +304,7 @@ navigate('/posts/:id/comments', { id: '1' });// ✅
 3. **编译速度是否可接受？** 复杂泛型可能让 tsc 慢 10 倍以上。
 
 实际项目里，80% 的场景只需要：
+
 - 简单的泛型函数
 - `Pick` / `Omit` / `Partial` / `Readonly` 等内置工具
 - 给 API 响应定义 interface
@@ -318,4 +323,3 @@ navigate('/posts/:id/comments', { id: '1' });// ✅
 类型体操的真正价值，不在于写出炫酷的 `extends` 链，而在于**让类型系统替你捕捉 bug**。当你能写出一个"使用方必须提供正确参数类型，否则编译失败"的函数时，整个团队的开发体验都会上一个台阶。
 
 掌握 Conditional Types、Mapped Types、Template Literal Types、infer 这四大金刚，你就掌握了类型体操 90% 的能力。剩下的 10%，是阅读 type-fest 源码、刷 type-challenges 时自然获得的肌肉记忆。
-

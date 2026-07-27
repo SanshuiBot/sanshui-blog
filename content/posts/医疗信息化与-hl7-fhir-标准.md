@@ -15,11 +15,11 @@ HL7（Health Level 7）组织制定了一系列国际标准来解决这个问题
 
 ### 1.1 三代标准
 
-| 代 | 标准 | 数据模型 | 协议 |
-|----|------|----------|------|
-| 1 | HL7 v2 | 段-字段-组件，分隔符 | MLLP / TCP |
-| 2 | HL7 v3 + CDA | RIM（Reference Information Model） | XML / SOAP |
-| 3 | HL7 FHIR | Resources + REST | HTTP / JSON |
+| 代  | 标准         | 数据模型                           | 协议        |
+| --- | ------------ | ---------------------------------- | ----------- |
+| 1   | HL7 v2       | 段-字段-组件，分隔符               | MLLP / TCP  |
+| 2   | HL7 v3 + CDA | RIM（Reference Information Model） | XML / SOAP  |
+| 3   | HL7 FHIR     | Resources + REST                   | HTTP / JSON |
 
 **HL7 v2** 至今仍是医院内部系统集成的事实标准。它"零配置、几乎能容纳任何东西"，但也意味着**实现兼容性差**——同一段 ADT（Admit/Discharge/Transfer）在不同医院可能含义不同。
 
@@ -59,17 +59,17 @@ PV1|1|I|ICU^101^1
 
 逐字段解读 MSH：
 
-| 位置 | 含义 | 示例 |
-|------|------|------|
-| MSH-1 | Field Separator | `|` |
-| MSH-2 | Encoding Characters | `^~\&` |
-| MSH-3 | Sending Application | `HIS` |
-| MSH-4 | Sending Facility | `HOSPITAL` |
-| MSH-5 | Receiving Application | `LIS` |
-| MSH-6 | Receiving Facility | `LAB` |
-| MSH-7 | DateTime | `20260721143000` |
-| MSH-9 | Message Type | `ADT^A04`（注册患者） |
-| MSH-12 | Version ID | `2.5` |
+| 位置   | 含义                  | 示例                  |
+| ------ | --------------------- | --------------------- |
+| MSH-1  | Field Separator       | `                     | `   |
+| MSH-2  | Encoding Characters   | `^~\&`                |
+| MSH-3  | Sending Application   | `HIS`                 |
+| MSH-4  | Sending Facility      | `HOSPITAL`            |
+| MSH-5  | Receiving Application | `LIS`                 |
+| MSH-6  | Receiving Facility    | `LAB`                 |
+| MSH-7  | DateTime              | `20260721143000`      |
+| MSH-9  | Message Type          | `ADT^A04`（注册患者） |
+| MSH-12 | Version ID            | `2.5`                 |
 
 ### 2.2 常见消息类型
 
@@ -132,13 +132,13 @@ FHIR 的核心是 **Resource**——一种标准化的数据结构。所有 Reso
 
 ### 3.2 主要 Resource 类别
 
-| 类别 | 示例 Resource |
-|------|--------------|
-| 基础 | Patient、Practitioner、Organization、RelatedPerson |
-| 临床 | Observation、Condition、MedicationRequest、DiagnosticReport |
-| 工作流 | Encounter、Appointment、Task、CarePlan |
-| 财务 | Coverage、Claim、ExplanationOfBenefit |
-| 术语 | CodeSystem、ValueSet、ConceptMap |
+| 类别   | 示例 Resource                                               |
+| ------ | ----------------------------------------------------------- |
+| 基础   | Patient、Practitioner、Organization、RelatedPerson          |
+| 临床   | Observation、Condition、MedicationRequest、DiagnosticReport |
+| 工作流 | Encounter、Appointment、Task、CarePlan                      |
+| 财务   | Coverage、Claim、ExplanationOfBenefit                       |
+| 术语   | CodeSystem、ValueSet、ConceptMap                            |
 
 ### 3.3 Patient Resource 示例
 
@@ -178,14 +178,14 @@ FHIR 的核心是 **Resource**——一种标准化的数据结构。所有 Reso
 
 FHIR 把每个 Resource 当成 RESTful 端点：
 
-| 操作 | HTTP | URL |
-|------|------|-----|
-| 创建 | POST | `/Patient` |
-| 读取 | GET | `/Patient/123` |
-| 更新 | PUT | `/Patient/123` |
-| 删除 | DELETE | `/Patient/123` |
-| 搜索 | GET | `/Patient?name=张` |
-| 历史版本 | GET | `/Patient/123/_history` |
+| 操作     | HTTP   | URL                     |
+| -------- | ------ | ----------------------- |
+| 创建     | POST   | `/Patient`              |
+| 读取     | GET    | `/Patient/123`          |
+| 更新     | PUT    | `/Patient/123`          |
+| 删除     | DELETE | `/Patient/123`          |
+| 搜索     | GET    | `/Patient?name=张`      |
+| 历史版本 | GET    | `/Patient/123/_history` |
 
 **搜索能力非常强大**：
 
@@ -309,13 +309,13 @@ def get_backend_token(client_id, private_key, fhir_url):
 
 ### 6.1 开源服务器对比
 
-| 服务器 | 语言 | 数据库 | 特点 |
-|--------|------|--------|------|
-| HAPI FHIR | Java | JPA / ElasticSearch | 最完整，符合性高 |
-| Vonk / Firely | .NET | MongoDB / SQL | 商业级，支持好 |
-| IBM FHIR Server | Java | PostgreSQL | IBM 支持 |
-| Microsoft FHIR | .NET | Cosmos DB / SQL | Azure 集成 |
-| fhir-server-go | Go | PostgreSQL | 轻量、性能好 |
+| 服务器          | 语言 | 数据库              | 特点             |
+| --------------- | ---- | ------------------- | ---------------- |
+| HAPI FHIR       | Java | JPA / ElasticSearch | 最完整，符合性高 |
+| Vonk / Firely   | .NET | MongoDB / SQL       | 商业级，支持好   |
+| IBM FHIR Server | Java | PostgreSQL          | IBM 支持         |
+| Microsoft FHIR  | .NET | Cosmos DB / SQL     | Azure 集成       |
+| fhir-server-go  | Go   | PostgreSQL          | 轻量、性能好     |
 
 ### 6.2 HAPI FHIR JPA 启动示例
 
@@ -324,7 +324,7 @@ def get_backend_token(client_id, private_key, fhir_url):
 services:
   fhir:
     image: hapiproject/hapi:latest
-    ports: ["8080:8080"]
+    ports: ['8080:8080']
     environment:
       HAPI_FHIR_SERVER_ADDRESS: http://localhost:8080/fhir
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hapi
@@ -531,4 +531,3 @@ FHIR 正在扩展 **Genomics** 领域（如 MolecularSequence、GenomicsReport R
 3. **集成引擎是核心**：Mirth、Rhapsody 这些工具的配置质量决定项目成败
 
 医疗 IT 是一个慢工出细活的领域，但每一行正确流转的数据，最终都可能挽救一条生命。
-

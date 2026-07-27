@@ -26,6 +26,7 @@ excerpt: 一篇文章打通 LoRaWAN 物联网全栈：节点硬件、网关、NS
 ```
 
 LoRaWAN 适合：
+
 - 每天传几个字节的小数据包
 - 电池要撑 5-10 年
 - 单基站覆盖数公里（城市 2-5km，郊区 15km）
@@ -69,11 +70,11 @@ LoRaWAN 适合：
 
 ### 2.1 端设备的 Class
 
-| Class | 含义 | 适用 |
-|-------|------|------|
-| Class A | 上行后开两个下行窗口 | 默认，最省电 |
+| Class   | 含义                      | 适用               |
+| ------- | ------------------------- | ------------------ |
+| Class A | 上行后开两个下行窗口      | 默认，最省电       |
 | Class B | 周期性下行（Beacon 同步） | 需要主动下行的场景 |
-| Class C | 持续监听下行 | 有常供电的场景 |
+| Class C | 持续监听下行              | 有常供电的场景     |
 
 ### 2.2 OTAA 入网流程
 
@@ -98,6 +99,7 @@ OTAA 更安全、更灵活，是生产首选。
 ### 3.1 节点（End Device）
 
 典型 BOM：
+
 - MCU：STM32L0 系列（低功耗）
 - LoRa 芯片：Semtech SX1262（性能比 SX1276 好）
 - 传感器：SHT3x（温湿度）、TSL2591（光照）、 capacitance soil moisture
@@ -111,12 +113,12 @@ OTAA 更安全、更灵活，是生产首选。
 void setup() {
   Serial.begin(9600);
   while (!Serial);
-  
+
   if (!LoRa.begin(915E6)) {  // 北美 915MHz，中国 470MHz
     Serial.println("LoRa init failed");
     while (1);
   }
-  
+
   LoRa.setSpreadingFactor(12);   // SF12：最远距离，最低速率
   LoRa.setSignalBandwidth(125E3);
   LoRa.setCodingRate4(5);
@@ -127,15 +129,15 @@ void loop() {
   // 从传感器读数
   float temp = readTemperature();
   float humidity = readHumidity();
-  
+
   // 打包 payload
   String payload = String(temp) + "," + String(humidity);
-  
+
   // 发送
   LoRa.beginPacket();
   LoRa.print(payload);
   LoRa.endPacket();
-  
+
   // Deep Sleep（用 RTC 唤醒，省电）
   lowPowerSleep(600);  // 10 分钟
 }
@@ -146,10 +148,12 @@ void loop() {
 网关不是普通 LoRa 节点，它是**多通道收发器**，能同时监听 8-16 个频率 + SF 组合。
 
 主流网关芯片：
+
 - **SX1301**：第一代，10 通道
 - **SX1302 / SX1308**：第二代，功耗低，性能强
 
 商用网关推荐：
+
 - **MikroTik KNOT LR8**：性价比高，户外防水
 - **RAK Wireless RAK7289**：开发者友好，文档完善
 - **Kerlink Wirnet Station**：电信级
@@ -190,26 +194,26 @@ version: '3.8'
 services:
   chirpstack:
     image: chirpstack/chirpstack:4
-    ports: ["8080:8080"]
+    ports: ['8080:8080']
     environment:
       MQTT_BROKER_HOST: mosquitto
       POSTGRES_DSN: postgres://chirpstack:cs@db/chirpstack?sslmode=disable
       REDIS_URL: redis://redis
     depends_on: [db, redis, mosquitto]
-  
+
   db:
     image: postgres:16
     environment:
       POSTGRES_DB: chirpstack
       POSTGRES_USER: chirpstack
       POSTGRES_PASSWORD: cs
-  
+
   redis:
     image: redis:7-alpine
-  
+
   mosquitto:
     image: eclipse-mosquitto:2
-    ports: ["1883:1883"]
+    ports: ['1883:1883']
 ```
 
 启动后访问 `http://localhost:8080`，配置 Service Profile、Device Profile，就可以开始添加设备了。
@@ -250,22 +254,22 @@ LoRa 带宽宝贵，必须用最紧凑的二进制格式。ChirpStack 通过 Jav
 // decodeUplink.js
 function decodeUplend(input) {
   var bytes = input.bytes;
-  
+
   switch (input.fPort) {
-    case 1:  // 气象数据
+    case 1: // 气象数据
       return {
         data: {
-          temperature: (bytes[0] << 8 | bytes[1]) / 10,
+          temperature: ((bytes[0] << 8) | bytes[1]) / 10,
           humidity: bytes[2],
-          pressure: (bytes[3] << 16 | bytes[4] << 8 | bytes[5]) / 100,
+          pressure: ((bytes[3] << 16) | (bytes[4] << 8) | bytes[5]) / 100,
           battery: bytes[6] / 10,
         },
       };
-    case 2:  // 土壤数据
+    case 2: // 土壤数据
       return {
         data: {
           soilMoisture: bytes[0],
-          soilTemperature: (bytes[1] << 8 | bytes[2]) / 10,
+          soilTemperature: ((bytes[1] << 8) | bytes[2]) / 10,
         },
       };
     default:
@@ -279,13 +283,13 @@ function decodeUplend(input) {
 ```javascript
 function encodeDownlink(input) {
   var bytes = [];
-  
+
   if (input.data.command === 'setInterval') {
     bytes[0] = 0x01;
-    bytes[1] = (input.data.interval >> 8) & 0xFF;
-    bytes[2] = input.data.interval & 0xFF;
+    bytes[1] = (input.data.interval >> 8) & 0xff;
+    bytes[2] = input.data.interval & 0xff;
   }
-  
+
   return {
     bytes: bytes,
     fPort: 1,
@@ -316,16 +320,16 @@ TimeOnAir 与 SF、BW、payload 长度有关。SF12、125kHz、20B 的 TimeOnAir
 void loop() {
   readSensors();
   transmitLora();
-  
+
   // 关闭外设电源（传感器）
   HAL_GPIO_WritePin(SENSOR_PWR_GPIO_Port, SENSOR_PWR_Pin, GPIO_PIN_RESET);
-  
+
   // 关闭 LoRa 模块（除晶振）
   SX126x_SetSleep();
-  
+
   // 进入 STOP2 模式（功耗 ~3μA，RAM 保留）
   HAL_PWREx_EnterSTOP2Mode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
-  
+
   // RTC Wakeup 触发重启
   // ...继续循环
 }
@@ -365,12 +369,12 @@ Daily = (Active Time × Active Current) + (Sleep Time × Sleep Current)
 
 ### 7.2 实测覆盖范围
 
-| 环境 | 距离 |
-|------|------|
-| 城市密集 | 1-2 km |
-| 城市一般 | 2-5 km |
-| 郊区 | 5-10 km |
-| 开阔地 | 10-15 km |
+| 环境     | 距离     |
+| -------- | -------- |
+| 城市密集 | 1-2 km   |
+| 城市一般 | 2-5 km   |
+| 郊区     | 5-10 km  |
+| 开阔地   | 10-15 km |
 
 **覆盖盲区解决**：
 
@@ -544,4 +548,3 @@ LoRaWAN 看起来简单，但要做好一个覆盖数千节点、可靠运行多
 - 业务：每个垂直领域都有不同的协议和数据模型
 
 智慧农业是 LoRaWAN 最典型的应用场景之一。一块块田地的传感器数据，汇成粮食安全的数字底座——这就是物联网工程师的工作价值所在。
-

@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import LinksContent from "@/components/Links/LinksContent";
+import type { Metadata } from 'next';
+import LinksContent from '@/components/Links/LinksContent';
 
 export const metadata: Metadata = {
-  title: "友链",
-  description: "友情链接",
+  title: '友链',
+  description: '友情链接',
 };
 
 export default function LinksPage() {

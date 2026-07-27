@@ -1,19 +1,20 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * ConsoleNinja 兼容脚本
  * ConsoleNinja VS Code 扩展在 dev 模式下会尝试读取
  * .next/routes-manifest.json, 但 next dev 不会生成它。
  * 这个脚本在启动 dev 前生成一个最小有效版本。
  */
-const fs = require("fs");
-const path = require("path");
+const fs = require('node:fs');
+const path = require('node:path');
 
-const manifestPath = path.resolve(__dirname, "..", ".next", "routes-manifest.json");
+const manifestPath = path.resolve(__dirname, '..', '.next', 'routes-manifest.json');
 
 if (!fs.existsSync(manifestPath)) {
   const minimal = {
     version: 3,
     caseSensitive: false,
-    basePath: "",
+    basePath: '',
     rewrites: { beforeFiles: [], afterFiles: [], fallback: [] },
     redirects: [],
     headers: [],
@@ -21,10 +22,10 @@ if (!fs.existsSync(manifestPath)) {
     staticRoutes: [],
     dataRoutes: [],
     i18n: null,
-    rsc: { basePath: "", nav: true },
+    rsc: { basePath: '', nav: true },
   };
 
   fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
   fs.writeFileSync(manifestPath, JSON.stringify(minimal));
-  console.log("✓ 已生成 .next/routes-manifest.json (ConsoleNinja 兼容)");
+  console.log('✓ 已生成 .next/routes-manifest.json (ConsoleNinja 兼容)');
 }
