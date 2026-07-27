@@ -12,22 +12,28 @@
       <stop offset="0%" stop-color="#141420"/>
       <stop offset="100%" stop-color="#05050a"/>
     </radialGradient>
+    <!-- 圆角裁切：让波纹超出部分被干净切掉 -->
+    <clipPath id="roundClip">
+      <rect width="100" height="100" rx="24"/>
+    </clipPath>
   </defs>
 
   <!-- 深色圆角方底 -->
   <rect width="100" height="100" rx="24" fill="url(#bgGlow)"/>
 
-  <!-- 三条流动水波：从左下到右上，y 递增错落 -->
-  <!-- 水波 1（顶，最细最亮） -->
-  <path d="M 12 34 C 32 34, 42 46, 62 46 S 88 38, 88 38"
-        fill="none" stroke="url(#aurora)" stroke-width="6"
-        stroke-linecap="round" opacity="0.95"/>
-  <!-- 水波 2（中，主视觉） -->
-  <path d="M 12 50 C 32 50, 42 62, 62 62 S 88 54, 88 54"
-        fill="none" stroke="url(#aurora)" stroke-width="7"
-        stroke-linecap="round" opacity="1"/>
-  <!-- 水波 3（底，稍淡） -->
-  <path d="M 12 66 C 32 66, 42 78, 62 78 S 88 70, 88 70"
-        fill="none" stroke="url(#aurora)" stroke-width="6"
-        stroke-linecap="round" opacity="0.85"/>
+  <!-- 三条流动水波（内缩留白，确保圆头不被裁切） -->
+  <g clip-path="url(#roundClip)">
+    <!-- 水波 1（顶，紫粉） -->
+    <path d="M 20 38 C 36 38, 44 48, 60 48 S 80 42, 80 42"
+          fill="none" stroke="url(#aurora)" stroke-width="5.5"
+          stroke-linecap="round" opacity="0.95"/>
+    <!-- 水波 2（中，粉青，主视觉） -->
+    <path d="M 20 52 C 36 52, 44 62, 60 62 S 80 56, 80 56"
+          fill="none" stroke="url(#aurora)" stroke-width="6.5"
+          stroke-linecap="round" opacity="1"/>
+    <!-- 水波 3（底，紫青） -->
+    <path d="M 20 66 C 36 66, 44 76, 60 76 S 80 70, 80 70"
+          fill="none" stroke="url(#aurora)" stroke-width="5.5"
+          stroke-linecap="round" opacity="0.85"/>
+  </g>
 </svg>
