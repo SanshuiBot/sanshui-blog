@@ -5,11 +5,11 @@
 <h1 align="center">三水博客</h1>
 
 <p align="center">
-  暗色玻璃态 · 极光渐变 · 粒子动效 · 全静态个人博客
+  暗色玻璃态 · 极光渐变 · 物理动效 · 全静态个人博客
 </p>
 
 <p align="center">
-  <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-15-black?logo=nextdotjs&logoColor=white" /></a>
+  <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-15.5-black?logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind-v4-06B6D4?logo=tailwindcss&logoColor=white" /></a>
   <a href="https://www.framer.com/motion"><img src="https://img.shields.io/badge/Framer_Motion-12-0055FF?logo=framer&logoColor=white" /></a>
@@ -39,14 +39,14 @@
 | ---------------------- | -------------------------------------------------- |
 | 🎨 **暗色玻璃态**      | `backdrop-filter: blur(20px)` 半透明卡片，微光边框 |
 | 🌈 **极光渐变文字**    | 多色渐变 + `background-clip: text` 动画            |
-| ⚛️ **Canvas 粒子网络** | Three.js 60 节点粒子系统，动态连线                 |
 | 🖱️ **自定义鼠标光晕**  | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点      |
 | 📐 **渐隐网格背景**    | `radial-gradient` mask 从中心向四周淡出            |
 | 💫 **中心极光光晕**    | 三层极光色径向渐变叠加动画                         |
 | 🃏 **3D 倾斜卡片**     | `useMotionValue` + spring 物理模拟鼠标视差         |
-| 🔍 **⌘K 全局搜索**     | Pagefind 驱动 + 模糊匹配快捷键                     |
+| 🔍 **⌘K 全局搜索**     | Pagefind 驱动 + 运行时 fetch 轻量索引              |
 | 📜 **阅读进度条**      | 滚动驱动的渐变进度指示器                           |
 | 🧭 **自动目录**        | 文章 h2/h3 自动提取 + 滚动高亮锚点                 |
+| 🎯 **三水极光 favicon**| 三条流动水波 + 极光渐变，呼应「三水」之名          |
 
 ---
 
@@ -54,12 +54,11 @@
 
 | 类别     | 技术                                                             |
 | -------- | ---------------------------------------------------------------- |
-| **框架** | Next.js 15 (App Router, SSG 静态导出)                            |
-| **语言** | TypeScript 5 (strict 模式 + 额外严格检查)                        |
+| **框架** | Next.js 15.5 (App Router, SSG 静态导出)                          |
+| **语言** | TypeScript 5 (strict 模式 + `noUncheckedIndexedAccess`)          |
 | **样式** | Tailwind CSS v4 (`@theme` 自定义设计令牌，无 tailwind.config.js) |
 | **动画** | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                |
-| **3D**   | Three.js + `@react-three/fiber` + `@react-three/drei`            |
-| **图标** | Lucide React + React Icons                                       |
+| **图标** | Lucide React + 自定义 SVG 图标（无 react-icons 整包依赖）        |
 | **内容** | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)      |
 | **搜索** | Pagefind (静态全文搜索，构建时自动索引)                          |
 | **部署** | GitHub Pages + GitHub Actions 自动 CI/CD                         |
@@ -77,7 +76,7 @@ sanshui-blog/
 ├── src/
 │   ├── app/                    # Next.js App Router 页面
 │   │   ├── page.tsx            # 首页 (Hero + Stats + Featured + PostList)
-│   │   ├── layout.tsx          # 根布局 (Provider 包裹)
+│   │   ├── layout.tsx          # 根布局 (Provider 包裹，favicon metadata)
 │   │   ├── globals.css         # Tailwind v4 + 自定义设计系统
 │   │   ├── fonts.ts            # Inter + JetBrains Mono 字体配置
 │   │   ├── not-found.tsx       # 404 页面 (粒子动画)
@@ -91,15 +90,17 @@ sanshui-blog/
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
 │   │   ├── Home/               # HeroScene · StatsGrid · FeaturedPost
 │   │   ├── Post/               # PostCard · PostContent · PostMeta · TOC
-│   │   └── UI/                 # CursorGlow · SearchModal · ThemeToggle
+│   │   └── UI/                 # CursorGlow · GithubIcon · SearchModal · ThemeToggle · NavigationLoading
 │   └── lib/
 │       ├── types.ts            # Post 类型定义
 │       ├── posts.ts            # 文章读取 (FS 缓存 + 签名)
-│       └── toc.ts              # Markdown 标题提取
+│       ├── toc.ts              # Markdown 标题提取
+│       └── basePath.ts         # 构建时 basePath 中心定义
 ├── scripts/
-│   └── predev.js               # ConsoleNinja 兼容脚本
+│   ├── predev.js               # ConsoleNinja 兼容脚本
+│   └── gen-posts-index.js      # 生成轻量文章索引 (SearchModal 运行时 fetch)
 ├── .github/workflows/deploy.yml # GitHub Actions 自动部署
-└── public/                     # 静态资源
+└── public/                     # 静态资源 (favicon.svg/ico · posts-index.json · _headers)
 ```
 
 ---
@@ -123,13 +124,15 @@ npx serve out
 
 ### 可用命令
 
-| 命令             | 作用                                            |
-| ---------------- | ----------------------------------------------- |
-| `npm run dev`    | 开发模式，`predev` 自动生成路由清单兼容文件     |
-| `npm run build`  | 静态导出 + Pagefind 索引，需设置 `NEXT_BUILD=1` |
-| `npm run start`  | Next.js 生产服务器 (非静态导出)                 |
-| `npm run lint`   | ESLint 检查 (flat config)                       |
-| `npm run format` | Prettier 格式化                                 |
+| 命令             | 作用                                                                              |
+| ---------------- | --------------------------------------------------------------------------------- |
+| `npm run dev`    | 开发模式，`predev` 自动生成路由清单兼容文件 + 文章索引                            |
+| `npm run build`  | 静态导出 + Pagefind 索引，需设置 `NEXT_BUILD=1` 环境变量                          |
+| `npm run start`  | Next.js 生产服务器 (非静态导出，本项目通常不用)                                   |
+| `npm run lint`   | ESLint 检查 (flat config，只报告不修改)                                           |
+| `npm run lint:fix` | 运行 ESLint 并自动修复可修复的问题                                              |
+| `npm run format` | 用 Prettier 原地格式化全项目文件                                                  |
+| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                        |
 
 ---
 
@@ -161,6 +164,8 @@ excerpt: 一句话摘要（可选，不写则自动取正文前 160 字）
 | `tags`    | string[] | 可选，标签列表             |
 | `excerpt` | string   | 可选，摘要，不写则自动截取 |
 
+> 💡 新增/修改文章后，`predev` 或 `prebuild` 钩子会自动重新生成 `public/posts-index.json`，SearchModal 即可搜索到新文章。
+
 ---
 
 ## 📦 部署
@@ -171,11 +176,12 @@ excerpt: 一句话摘要（可选，不写则自动取正文前 160 字）
 graph LR
   A[git push] --> B[GitHub Actions]
   B --> C[npm install]
-  C --> D[npm run build]
-  D --> E[静态导出 out/]
-  E --> F[Pagefind 搜索索引]
-  F --> G[Upload Artifact]
-  G --> H[Deploy to Pages]
+  C --> D[prebuild: 生成文章索引]
+  D --> E[npm run build]
+  E --> F[静态导出 out/]
+  F --> G[Pagefind 搜索索引]
+  G --> H[Upload Artifact]
+  H --> I[Deploy to Pages]
 ```
 
 **部署特征：**
@@ -189,11 +195,22 @@ graph LR
 
 ## ⚠️ 开发注意事项
 
-- **纯暗色系统**：项目没有亮色模式，所有颜色基于暗色背景设计
-- **Tailwind v4 语法**：使用 `@import "tailwindcss"` / `@plugin` / `@theme`，而非 v3 的 `@tailwind` 指令
-- **TypeScript 严格**：`noUncheckedIndexedAccess` 启用，数组/对象索引访问需做 undefined 检查
-- **中文 Slug**：路径参数中的中文 slug 在查询时需 `decodeURIComponent`
-- **导航状态**：通过 `useNavigationLoading` hook 管理页面过渡动画
+- **纯暗色系统**：项目没有亮色模式，`globals.css` 只定义了暗色变量，`colorScheme: "dark"`
+- **Tailwind v4 语法**：使用 `@import "tailwindcss"` / `@plugin` / `@theme`，而非 v3 的 `@tailwind` 指令；PostCSS 插件是 `@tailwindcss/postcss`
+- **TypeScript 严格**：`strict: true` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters`，所有索引访问都需 undefined 检查
+- **中文 Slug**：`getPostBySlug()` 内部做了 `decodeURIComponent(slug)`，但 `generateStaticParams` 返回原始 slug，新增 slug 查询时必须一致地对中文做 decodeURIComponent
+- **导航状态**：通过 `useNavigationLoading` hook（来自 `@/components/UI/NavigationLoading`）管理页面过渡状态，所有 `<Link>` 应调用 `startNavigation` 触发加载指示器
+- **自定义 Easing 曲线**：Tailwind 主题预定义了 `--ease-out-expo`、`--ease-out-back`、`--ease-in-out-circ`，Framer Motion 动画大量使用 `[0.16, 1, 0.3, 1]` 等自定义曲线
+- **静态导出通过环境变量切换**：`next.config.ts` 中 `output: 'export'`、`basePath`、`assetPrefix` **仅**在 `NEXT_BUILD=1` 时生效。`npm run dev` 不会设置此变量，因此开发模式下没有 `basePath`、没有 `assetPrefix`。**不要手动设置 `output: 'export'`**，否则 HMR 会挂
+- **RSC payload 优化**：`getAllPosts()` 已从 `layout.tsx` 移除，文章数据通过 `public/posts-index.json`（~3KB）在 SearchModal 运行时 fetch，避免全量文章数据被序列化进根 layout 的 RSC payload
+- **重组件懒加载**：`CursorGlow`、`ScrollProgress` 等非首屏必需的 client 组件通过 `next/dynamic` 懒加载，避免被打进首屏 chunk 图
+- **sharp 依赖已排除**：静态导出 + `images.unoptimized: true` 场景下不需要 sharp，`package.json` 的 `overrides.sharp: false` 已将其从依赖树移除。若将来启用 Next.js 图片优化，需移除该 override
+
+---
+
+## 📄 License
+
+MIT © 三水
 
 ---
 
