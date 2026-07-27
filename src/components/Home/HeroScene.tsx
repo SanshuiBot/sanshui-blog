@@ -304,7 +304,7 @@ export default function HeroScene() {
                   <motion.span
                     className="relative text-xs font-medium"
                     style={{ color: '#78716c' }}
-                    whileHover={{ color: '#fff' }}
+                    whileHover={{ color }}
                     transition={{ type: 'spring', stiffness: 180, damping: 16 }}
                   >
                     {label}
