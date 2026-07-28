@@ -7,6 +7,7 @@ import { Search, Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import ThemeToggle from '@/components/UI/ThemeToggle';
 import SearchModal from '@/components/UI/SearchModal';
+import { withBase } from '@/lib/basePath';
 
 const links = [
   { href: '/', label: '首页' },
@@ -44,7 +45,7 @@ export default function Navbar() {
         <nav className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <Image
-              src="/logo.svg"
+              src={withBase('/logo.svg')}
               width={22}
               height={22}
               alt="三水"

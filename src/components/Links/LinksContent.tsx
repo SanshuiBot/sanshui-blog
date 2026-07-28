@@ -5,13 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { BASE_PATH } from '@/lib/basePath';
 
 export default function LinksContent() {
   const [imgLoaded, setImgLoaded] = useState<boolean | undefined>(undefined);
   const friend = {
     name: 'GitHub',
     url: 'https://github.com/SanshuiBot',
-    avatar: '/sanshui-blog/github.png',
+    avatar: `${BASE_PATH}/github.png`,
     desc: '个人开源项目托管平台',
   };
 
