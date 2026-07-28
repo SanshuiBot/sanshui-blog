@@ -7,12 +7,19 @@ import type { NextConfig } from 'next';
  * 因为静态 HTML 文件由托管平台（GitHub Pages）直接返回，不经过 Next。
  */
 
+const isBuild = process.env.NEXT_BUILD === '1';
+const BASE_PATH = isBuild ? '/sanshui-blog' : '';
+
 const nextConfig: NextConfig = {
   // `output: 'export'` / basePath / assetPrefix 仅在构建时启用。
   // dev 模式下不设置 NEXT_BUILD，避免 HMR 失败。
-  ...(process.env.NEXT_BUILD === '1'
+  ...(isBuild
     ? { output: 'export' as const, basePath: '/sanshui-blog', assetPrefix: '/sanshui-blog' }
     : {}),
+  // 把 basePath 通过 NEXT_PUBLIC_ 变量 inline 到客户端 bundle，
+  // 让 src/lib/basePath.ts 在 SSR 和客户端 hydration 时拿到一致的值。
+  // 否则客户端读不到 process.env.NEXT_BUILD，withBase() 退化为无前缀路径 → 线上 404。
+  env: { NEXT_PUBLIC_BASE_PATH: BASE_PATH },
   // 移除 X-Powered-By: Next.js 头（安全通过模糊化）。
   poweredByHeader: false,
   // React 严格模式在开发中暴露更多 bug。
