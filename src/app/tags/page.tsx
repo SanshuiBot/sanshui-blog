@@ -1,4 +1,16 @@
-﻿import { Hash, ArrowLeft } from 'lucide-react';
+/**
+ * 标签总览页（Tags Index / 全部标签）
+ * -----------------------------
+ * 作用：列出站点全部标签及其文章数量，提供按主题浏览的入口。
+ *
+ * 用法：
+ *  - 服务端组件，getAllTags() 聚合所有文章的 tags 字段并去重。
+ *  - 每个标签的 count 通过 getPostsByTag(tag).length 计算。
+ *  - 标签的颜色由 colors 数组提供，<TagList> 组件按索引循环取色。
+ *  - 点击单个标签跳转到 /tags/[tag] 动态页查看该标签下所有文章。
+ *  - 数据构建时静态化。
+ */
+import { Hash, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { getAllTags, getPostsByTag } from '@/lib/posts';
 import TagList from '@/components/TagList';

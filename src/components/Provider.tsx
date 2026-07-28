@@ -10,6 +10,7 @@ const CursorGlow = dynamic(() => import('@/components/UI/CursorGlow'), { ssr: fa
 const ScrollProgress = dynamic(() => import('@/components/Layout/ScrollProgress'), {
   ssr: false,
 });
+const ClickEffect = dynamic(() => import('@/components/UI/ClickEffect'), { ssr: false });
 
 export default function Provider({ children }: { children: React.ReactNode }) {
   return (
@@ -17,6 +18,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="aurora-theme">
         <CursorGlow />
         <ScrollProgress />
+        <ClickEffect />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />

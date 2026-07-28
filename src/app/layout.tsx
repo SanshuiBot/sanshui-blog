@@ -1,4 +1,16 @@
-﻿import type { Metadata, Viewport } from 'next';
+/**
+ * 根布局（Root Layout）
+ * -----------------------------
+ * 作用：Next.js App Router 的顶层布局，所有页面（包括 404）都会被它包裹。
+ *       在此处注入全局字体、Provider（主题/光标/导航加载等）以及 SEO metadata。
+ *
+ * 用法：
+ *  - 这是服务端组件，仅在服务端运行一次；客户端交互能力由 <Provider> 下的子组件提供。
+ *  - 全站字体（sans / mono）通过 CSS 变量挂到 <html>，globals.css 中的 font-family 引用这些变量。
+ *  - metadata 与 viewport 在此集中导出，子页面通过自己的 `export const metadata` 覆盖标题等字段。
+ *  - 切勿在此处引入任何客户端专用逻辑或 'use client' 组件本体，应统一交给 <Provider>。
+ */
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { sans, mono } from './fonts';
 import Provider from '@/components/Provider';

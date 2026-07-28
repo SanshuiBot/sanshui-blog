@@ -1,4 +1,15 @@
-﻿import { getAllPosts } from '@/lib/posts';
+/**
+ * 归档页（Archive / 全部文章）
+ * -----------------------------
+ * 作用：按年份分组列出站点全部文章，提供时间线式的浏览入口。
+ *
+ * 用法：
+ *  - 服务端组件，getAllPosts() 返回的文章按 date 的年份分组，年份降序排列。
+ *  - 每个年份分组复用 <PostCard> 渲染卡片网格（1/2/3 列响应式）。
+ *  - 顶部提供"返回首页"链接，使用 lucide-react 的 ArrowLeft 图标。
+ *  - 数据在构建时静态化，无运行时开销。
+ */
+import { getAllPosts } from '@/lib/posts';
 import PostCard from '@/components/Post/PostCard';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen } from 'lucide-react';

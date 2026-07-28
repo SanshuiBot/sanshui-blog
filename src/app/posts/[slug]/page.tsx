@@ -1,3 +1,17 @@
+/**
+ * 文章详情页（Post Detail / 动态路由 [slug]）
+ * -----------------------------
+ * 作用：渲染单篇 markdown 文章的完整内容页，包含元信息、正文、目录、上下篇导航。
+ *
+ * 用法：
+ *  - 动态路由，slug 即文章文件名（可能含中文）。generateStaticParams() 在构建时
+ *    为每篇文章预生成静态 HTML，实现全静态导出。
+ *  - generateMetadata() 根据文章 frontmatter 动态生成 title / description / keywords / OG。
+ *  - 中文 slug 注意：getPostBySlug() 内部已做 decodeURIComponent，但本层拿到的 slug
+ *    仍可能是 URL 编码的，必要时需自行 decode（参见 AGENTS.md 陷阱 #5）。
+ *  - 组件为 async 服务端组件，params 为 Promise（Next 15+ 行为）。
+ *  - 文章不存在时调用 notFound() 触发 404 页面。
+ */
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getPostBySlug, getAllPosts, getAdjacentPosts } from '@/lib/posts';

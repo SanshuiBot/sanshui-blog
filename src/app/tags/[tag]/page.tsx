@@ -1,3 +1,17 @@
+/**
+ * 标签详情页（Tag Detail / 动态路由 [tag]）
+ * -----------------------------
+ * 作用：展示某个标签下的全部文章，按 PostCard 网格呈现。
+ *
+ * 用法：
+ *  - 动态路由，tag 即标签名（可能含中文 / 空格）。generateStaticParams() 在构建时
+ *    为每个标签预生成静态 HTML。
+ *  - 中文 tag 注意：URL 中的 tag 是 encodeURIComponent 编码的，必须 decodeURIComponent
+ *    后再传给 getPostsByTag()（参见 AGENTS.md 陷阱 #5）。
+ *  - generateMetadata() 动态生成 "#<标签>" 标题。
+ *  - 若该标签下无文章，调用 notFound() 触发 404。
+ *  - 组件为 async 服务端组件，params 为 Promise（Next 15+ 行为）。
+ */
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getPostsByTag, getAllTags } from '@/lib/posts';

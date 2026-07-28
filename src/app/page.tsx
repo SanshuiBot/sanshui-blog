@@ -1,4 +1,16 @@
-﻿import { getAllPosts } from '@/lib/posts';
+/**
+ * 首页（Home / 落地页）
+ * -----------------------------
+ * 作用：站点入口页。展示 Hero 场景、站点统计、置顶精选文章，以及"最新文章"列表网格。
+ *
+ * 用法：
+ *  - 服务端组件，构建时通过 getAllPosts() 从文件系统读取所有 .md 文章。
+ *  - 第一篇文章作为 Featured（精选）单独渲染，其余进入 3 列网格。
+ *  - <head> 内对每篇文章插入 <link rel="prefetch" as="document">，
+ *    低优先级、空闲时预取文章页 HTML，使点击卡片时几乎秒开。
+ *  - 原生 <link> 不走 Next <Link> 的 basePath 自动注入，必须用 withBase() 手动拼前缀。
+ */
+import { getAllPosts } from '@/lib/posts';
 import { withBase } from '@/lib/basePath';
 import PostCard from '@/components/Post/PostCard';
 import HeroScene from '@/components/Home/HeroScene';

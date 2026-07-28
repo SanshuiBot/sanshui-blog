@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Menu, X } from 'lucide-react';
+import Image from 'next/image';
 import ThemeToggle from '@/components/UI/ThemeToggle';
 import SearchModal from '@/components/UI/SearchModal';
 
@@ -42,6 +43,14 @@ export default function Navbar() {
       >
         <nav className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <Link href="/" className="flex items-center gap-2 shrink-0">
+            <Image
+              src="/logo.svg"
+              width={22}
+              height={22}
+              alt="三水"
+              className="shrink-0"
+              priority
+            />
             <span className="text-lg font-bold tracking-tight text-aurora">三水</span>
           </Link>
 

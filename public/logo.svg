@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 三水个人 logo：与 favicon.svg 同源的极光三水波纹，针对导航栏小尺寸优化
+     - 描边略加粗（顶 6 / 中 7 / 底 6），保证 22px 渲染下波纹线条仍清晰
+     - 去掉圆角方底，让 logo 在透明导航栏背景上自然融入
+     - 整体上移 2px（y 坐标 -2），让视觉重心在 22px 小尺寸下更居中平衡 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="三水">
+  <defs>
+    <linearGradient id="auroraLogo" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="50%" stop-color="#ff6ec7"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 水波 1（顶，紫粉） -->
+  <path d="M 20 33 C 36 33, 44 43, 60 43 S 80 37, 80 37"
+        fill="none" stroke="url(#auroraLogo)" stroke-width="6"
+        stroke-linecap="round" opacity="0.95"/>
+  <!-- 水波 2（中，粉青，主视觉） -->
+  <path d="M 20 47 C 36 47, 44 57, 60 57 S 80 51, 80 51"
+        fill="none" stroke="url(#auroraLogo)" stroke-width="7"
+        stroke-linecap="round" opacity="1"/>
+  <!-- 水波 3（底，紫青） -->
+  <path d="M 20 61 C 36 61, 44 71, 60 71 S 80 65, 80 65"
+        fill="none" stroke="url(#auroraLogo)" stroke-width="6"
+        stroke-linecap="round" opacity="0.85"/>
+</svg>
