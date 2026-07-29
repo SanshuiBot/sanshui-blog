@@ -30,7 +30,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tag } = await params;
   const decoded = decodeURIComponent(tag);
-  return { title: `#${decoded}`, description: `${decoded} - Tag page` };
+  return { title: `#${decoded}`, description: `${decoded} - 标签页` };
 }
 
 export default async function TagPage({ params }: Props) {
@@ -45,15 +45,15 @@ export default async function TagPage({ params }: Props) {
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white transition-colors mb-8 group/back"
       >
         <ArrowLeft size={14} className="transition-transform group/back:-translate-x-1" />
-        Back to tags
+        返回标签
       </Link>
       <div className="mb-12">
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent-violet uppercase tracking-widest mb-4">
           <Hash size={12} />
-          Tag
+          标签
         </span>
         <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">#{decoded}</h1>
-        <p className="mt-3 text-gray-500">{posts.length} posts</p>
+        <p className="mt-3 text-gray-500">共 {posts.length} 篇文章</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
         {posts.map((p, i) => (
