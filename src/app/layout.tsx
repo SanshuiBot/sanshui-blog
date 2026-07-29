@@ -22,14 +22,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(base),
   title: { default: '三水 | 个人博客', template: '%s | 三水' },
   description: '记录技术思考、生活感悟与创作灵感',
-  keywords: [
-    '三水',
-    '个人博客',
-    '技术博客',
-    'Next.js',
-    'React',
-    'TypeScript',
-  ],
+  keywords: ['三水', '个人博客', '技术博客', 'Next.js', 'React', 'TypeScript'],
   authors: [{ name: '三水', url: `${base}/about` }],
   openGraph: {
     title: '三水 | 个人博客',
