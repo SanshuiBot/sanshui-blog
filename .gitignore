@@ -10,8 +10,8 @@
 !.yarn/releases
 !.yarn/versions
 
-# lock file — 不锁定，每次 npm install 解析最新满足版本
-package-lock.json
+# lock file 已纳入版本控制，保证多人协作与 CI 依赖版本一致
+
 
 # testing
 /coverage
