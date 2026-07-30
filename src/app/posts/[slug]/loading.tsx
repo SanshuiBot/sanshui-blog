@@ -35,9 +35,9 @@ export default function PostLoading() {
           </circle>
           <defs>
             <linearGradient id="post-spin-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#a855f7" />
-              <stop offset="50%" stopColor="#ff6ec7" />
-              <stop offset="100%" stopColor="#38bdf8" />
+              <stop offset="0%" className="stop-accent-violet" />
+              <stop offset="50%" className="stop-accent-pink" />
+              <stop offset="100%" className="stop-accent-blue" />
             </linearGradient>
           </defs>
         </svg>

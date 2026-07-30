@@ -27,6 +27,7 @@
 - [快速开始](#-快速开始)
 - [添加文章](#-添加文章)
 - [📄 个人简历模块](#-个人简历模块)
+- [🎨 Accent 主题强调色系统](#-accent-主题强调色系统)
 - [部署](#-部署)
 - [开发注意事项](#-开发注意事项)
 
@@ -36,19 +37,20 @@
 
 **Aurora 暗色主题** — 全暗色玻璃态设计系统，极光渐变与物理动效深度融合。
 
-|                         |                                                     |
-| ----------------------- | --------------------------------------------------- |
-| 🎨 **暗色玻璃态**       | `backdrop-filter: blur(20px)` 半透明卡片，微光边框  |
-| 🌈 **极光渐变文字**     | 多色渐变 + `background-clip: text` 动画             |
-| 🖱️ **自定义鼠标光晕**   | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点       |
-| 📐 **渐隐网格背景**     | `radial-gradient` mask 从中心向四周淡出             |
-| 💫 **中心极光光晕**     | 三层极光色径向渐变叠加动画                          |
-| 🃏 **3D 倾斜卡片**      | `useMotionValue` + spring 物理模拟鼠标视差          |
-| 🔍 **⌘K 全局搜索**      | Pagefind 驱动 + 运行时 fetch 轻量索引               |
-| 📜 **阅读进度条**       | 滚动驱动的渐变进度指示器                            |
-| 🧭 **自动目录**         | 文章 h2/h3 自动提取 + 滚动高亮锚点                  |
-| 🎯 **三水极光 favicon** | 三条流动水波 + 极光渐变，呼应「三水」之名           |
-| 📜 **流式打印简历**     | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配 |
+|                          |                                                       |
+| ------------------------ | ----------------------------------------------------- |
+| 🎨 **暗色玻璃态**        | `backdrop-filter: blur(20px)` 半透明卡片，微光边框    |
+| 🌈 **极光渐变文字**      | 多色渐变 + `background-clip: text` 动画               |
+| 🖱️ **自定义鼠标光晕**    | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点         |
+| 📐 **渐隐网格背景**      | `radial-gradient` mask 从中心向四周淡出               |
+| 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                            |
+| 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差            |
+| 🔍 **⌘K 全局搜索**       | Pagefind 驱动 + 运行时 fetch 轻量索引                 |
+| 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                              |
+| 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点                    |
+| 🎯 **三水极光 favicon**  | 三条流动水波 + 极光渐变，呼应「三水」之名             |
+| 📜 **流式打印简历**      | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配   |
+| 🎨 **Accent 主题强调色** | 5 个预设调色板 + 6 通道自定义色板，运行时换色全站联动 |
 
 ---
 
@@ -239,6 +241,37 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 
 ---
 
+## 🎨 Accent 主题强调色系统
+
+全站 6 个 accent 色（pink/violet/blue/teal/gold/rose）通过 CSS 变量 `--accent-*-rgb`（空格分隔 RGB 三元组，如 `168 85 247`）驱动。所有阴影、glow、hljs 高亮、prose-article 链接、resume-terminal、Aurora 文字渐变均经由 `rgb(var(--accent-xxx-rgb) / α)` 引用——**改这 6 个变量 = 全站联动**。
+
+### 机制链路
+
+| 层      | 文件                                 | 职责                                                                                                |
+| ------- | ------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| 数据    | `src/lib/accents.ts`                 | 5 个预设（极光/翡翠/落日/深海/樱影）+ 自定义预设 + `applyAccent()`/`hexToRgb()`/`getCustomPreset()` |
+| UI      | `src/components/UI/AccentPicker.tsx` | Navbar 上的 🎨 图标，Popover 上半列 5 个预设，下半「自定义」区 6 个 `<input type="color">`          |
+| 防 FOUC | `src/app/layout.tsx`                 | `<head>` 内联 `accentBootstrap` script，首屏前同步读 `aurora-accent`，写 6 个 `--accent-*-rgb`      |
+
+### 持久化
+
+- `aurora-accent`：存当前激活预设 id（`aurora`/`emerald`/`sunset`/`ocean`/`sakura`/`custom`）
+- `aurora-accent-custom`：存自定义预设 JSON（6 个通道的 RGB 三元组）
+
+### 新增需要 accent 色的代码
+
+| 场景                         | 做法                                                                                                                                      |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 新增 CSS 用 accent 色        | `rgb(var(--accent-xxx-rgb) / α)`，**不要**写死 `rgba(168, 85, 247, ...)` 或 `#a855f7`                                                     |
+| 新增 hover 变色              | **用纯 CSS**（自定义类 + `:hover`），**不要走 Framer Motion** `whileHover`（详见开发注意事项）                                            |
+| 新增需要联动 accent 的 hover | **不要用 Tailwind utility**（`group-hover/link:text-accent-violet`），改用自定义 CSS 类，`html.dark` / `html:not(.dark)` 双前缀提升特异性 |
+| 新增预设                     | 在 `ACCENT_PRESETS`（`src/lib/accents.ts`）追加一项，inline script 已内联全部预设无需改 layout                                            |
+| 改默认预设                   | 改 `DEFAULT_ACCENT_ID`，inline script 的 `def` 也会跟着走                                                                                 |
+
+> ⚠️ inline script 里 `presets` JSON 是构建期固化的，**新增预设后必须重新 `npm run build`** 才能被防 FOUC script 识别。
+
+---
+
 ## 📦 部署
 
 每次推送到 `main` 分支，GitHub Actions 自动执行：
@@ -291,6 +324,8 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
   - `'server-only'` 标记：`posts.ts` / `toc.ts` / `types.ts` 顶部都有 `import 'server-only'`，这些 lib **只能在 RSC / Server Component 里调用**，不能 import 进 client 组件。客户端需要文章数据时 fetch `public/posts-index.json`
   - mtime 签名缓存：`getAllPosts()` 用 `computeSignature()`（文件名 + `mtimeMs` 拼接）做缓存键，文件未改动时直接返回内存缓存。**不要在运行时修改 `content/posts/` 下的文件**——签名会变但 SSG 已固化，只能通过重新 `build` 生效
   - excerpt 兜底：未写 `excerpt` 时取正文前 160 字并 `replace(/[#*`\[\]]/g,'')`去掉 markdown 符号，注意这个正则会**误删反引号围栏代码块的内容**，含代码开头的文章建议显式写`excerpt`
+- **hover 变色不要走 Framer Motion**：`whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}` 会把动画后的 `color` 写成 **inline style**，CSS 变量在 inline style 中被解析成具体值（如 `rgb(168 85 247)`）后就**不再响应** `--accent-*-rgb` 的变化——切 Accent 主题色、切亮/暗模式时，标题会卡在动画那一刻的颜色上，看起来像「变白/变黑不响应主题」。**正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统；位移动画也一并迁到 CSS `transform`。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore` + `.post-card-link:hover`）就是这么改的
+- **Tailwind v4 utility 的 layer 优先级坑**：Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-violet` 等）注入到 `@layer utilities` 里。而 `globals.css` 中那些 `html:not(.dark) .text-gray-500 { color: #78716c }` 亮色覆盖规则是**裸 CSS**（不在任何 `@layer` 内）。**裸 CSS 优先级高于任何 `@layer` 内的同特异性规则**，所以亮色模式下 `group-hover/link:text-accent-violet` 这类 utility hover 会被裸覆盖规则持续压制，hover 不变色。**正确做法**：需要响应 Accent 主题色联动的 hover 变色，**不要用 Tailwind utility**，改用自定义 CSS 类，`html.dark` / `html:not(.dark)` 双前缀提升特异性到 (0,3,1)，稳压裸覆盖规则
 
 ---
 

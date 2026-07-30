@@ -185,6 +185,36 @@ sanshui-blog/
 
 `package.json` 的 `overrides` 锁定 `sharp: "^0.35.3"` 与 `postcss: "^8.5.20"`，保证静态导出 + `images.unoptimized: true` 场景下依赖树稳定。**升级这些包时要同步检查 overrides**，否则可能出现版本漂移导致构建失败。
 
+### 21. Accent 主题强调色系统（运行时换色）
+
+全站 6 个 accent 色（pink/violet/blue/teal/gold/rose）通过 CSS 变量 `--accent-*-rgb`（空格分隔 RGB 三元组，如 `168 85 247`）驱动，所有阴影、glow、hljs 高亮、prose-article 链接、resume-terminal、Aurora 文字渐变均经由 `rgb(var(--accent-xxx-rgb) / α)` 引用。**改 accent = 改这 6 个变量，全站联动。**
+
+机制链路：
+
+- `src/lib/accents.ts`：5 个预设调色板（Aurora/Emerald/Sunset/Ocean/Sakura）+ `CUSTOM_ACCENT_ID='custom'` + `getPreset()`/`applyAccent()`/`hexToRgb()`/`rgbToHex()`/`getCustomPreset()`/`saveCustomPreset()`。storage key 为 `aurora-accent`（存当前激活预设 id），自定义预设 JSON 存 `aurora-accent-custom`。
+- `src/components/UI/AccentPicker.tsx`：Navbar 上的 🎨 图标，Popover 上半列 5 个预设，下半「自定义」区有 6 个 `<input type="color">`，任一改变即生成 `custom` 预设 → `saveCustomPreset` + `applyAccent` + 写 `aurora-accent='custom'`。
+- `src/app/layout.tsx`：`<head>` 内联 `accentBootstrap` script 防 FOUC，首屏前同步读 `aurora-accent`，若为 `custom` 再读 `aurora-accent-custom` JSON，写 6 个 `--accent-*-rgb` 到 `documentElement.style`。
+
+约定：
+
+- **新增需要 accent 色的 CSS**：用 `rgb(var(--accent-xxx-rgb) / α)`，**不要**写死 `rgba(168, 85, 247, ...)` 或 `#a855f7`，否则换色不联动。
+- **新增预设**：在 `ACCENT_PRESETS`（`src/lib/accents.ts`）追加一项，同步更新 `layout.tsx` inline script 已内联全部预设无需改。但 inline script 里 `presets` JSON 是构建期固化的，**新增预设后必须重新 build** 才能被防 FOUC script 识别。
+- **改默认预设**：改 `DEFAULT_ACCENT_ID`，inline script 的 `def` 也会跟着走。
+- **亮/暗主题与 accent 正交**：next-themes 管 `.dark` 类，AccentPicker 管 `--accent-*-rgb`，两者互不干扰。亮色 resume-terminal 原用更深紫（`#7c3aed`）提升对比度，现统一回主 accent 变量，亮模式下中等紫对比度略弱但行为一致。
+- **`noUncheckedIndexedAccess` 注意**：`hexToRgb` 里 `m[1]` 需先判 `!m[1]` 再用，否则 TS 报 `possibly undefined`。
+
+### 22. hover 变色不要走 Framer Motion，用纯 CSS
+
+Framer Motion 的 `whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}` 会把动画后的 `color` 写成 **inline style**。CSS 变量在 inline style 中被解析成具体值（如 `rgb(168 85 247)`）后就**不再响应** `--accent-*-rgb` 的变化——切 Accent 主题色、切亮/暗模式时，标题会卡在动画那一刻的颜色上，看起来像「变白/变黑不响应主题」。
+
+**正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore` + `.post-card-link:hover`）就是这么改的。位移动画也一并迁到 CSS `transform`。
+
+### 23. Tailwind v4 utility 的 layer 优先级坑
+
+Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-violet` 等）注入到 `@layer utilities` 里。而 `globals.css` 中那些 `html:not(.dark) .text-gray-500 { color: #78716c }` 亮色覆盖规则是**裸 CSS**（不在任何 `@layer` 内）。**裸 CSS 优先级高于任何 `@layer` 内的同特异性规则**，所以亮色模式下 `group-hover/link:text-accent-violet` 这类 utility hover 会被裸覆盖规则持续压制，hover 不变色。
+
+**正确做法**：需要响应 Accent 主题色联动的 hover 变色，**不要用 Tailwind utility**（`group-hover/link:text-accent-violet`），改用自定义 CSS 类（如 `.post-card-readmore`），用 `html.dark` / `html:not(.dark)` 双前缀提升特异性到 (0,3,1)，稳压裸覆盖规则。
+
 ---
 
 ## 内容编辑约定

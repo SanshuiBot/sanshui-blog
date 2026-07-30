@@ -15,6 +15,13 @@ import './globals.css';
 import { sans, mono } from './fonts';
 import Provider from '@/components/Provider';
 import { BASE_PATH } from '@/lib/basePath';
+import {
+  ACCENT_STORAGE_KEY,
+  CUSTOM_ACCENT_ID,
+  CUSTOM_ACCENT_STORAGE_KEY,
+  DEFAULT_ACCENT_ID,
+  ACCENT_PRESETS,
+} from '@/lib/accents';
 
 const base = 'https://sanshuibot.github.io/sanshui-blog';
 
@@ -48,9 +55,42 @@ export const viewport: Viewport = {
   colorScheme: 'light',
 };
 
+// 防 FOUC：在首屏前同步读 localStorage['aurora-accent'] 并写 CSS 变量。
+// 必须内联且不依赖任何模块，否则首屏会闪一下默认 Aurora 配色。
+// 支持两种来源：
+//  1. 预设 id（aurora/emerald/sunset/ocean/sakura）→ 从 ACCENT_PRESETS 取
+//  2. 'custom' → 从 'aurora-accent-custom' 读保存的自定义预设 JSON
+const accentBootstrap = `(function(){
+  try {
+    var id = window.localStorage.getItem('${ACCENT_STORAGE_KEY}');
+    var presets = ${JSON.stringify(
+      ACCENT_PRESETS.map((p) => ({ id: p.id, colors: p.colors })),
+    )};
+    var def = presets.find(function(p){return p.id==='${DEFAULT_ACCENT_ID}';});
+    var target;
+    if (id === '${CUSTOM_ACCENT_ID}') {
+      try {
+        var raw = window.localStorage.getItem('${CUSTOM_ACCENT_STORAGE_KEY}');
+        if (raw) target = JSON.parse(raw);
+      } catch (e2) {}
+    }
+    if (!target) {
+      target = presets.find(function(p){return p.id===id;}) || def;
+    }
+    if (!target || !target.colors) return;
+    var root = document.documentElement;
+    Object.keys(target.colors).forEach(function(ch){
+      root.style.setProperty('--accent-' + ch + '-rgb', target.colors[ch]);
+    });
+  } catch (e) {}
+})();`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: accentBootstrap }} />
+      </head>
       <body className="min-h-dvh flex flex-col bg-ink text-fg antialiased relative">
         <Provider>{children}</Provider>
       </body>

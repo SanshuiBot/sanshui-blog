@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Menu, X } from 'lucide-react';
 import Image from 'next/image';
 import ThemeToggle from '@/components/UI/ThemeToggle';
+import AccentPicker from '@/components/UI/AccentPicker';
+import Tooltip from '@/components/UI/Tooltip';
 import SearchModal from '@/components/UI/SearchModal';
 import { withBase } from '@/lib/basePath';
 
@@ -55,41 +57,55 @@ export default function Navbar() {
             <span className="text-lg font-bold tracking-tight text-aurora">三水</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-6">
             {links.map((l) => {
               const active = pathname === l.href || (l.href !== '/' && pathname.startsWith(l.href));
               return (
                 <Link
                   key={l.href}
                   href={l.href}
-                  className={`relative px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`group relative py-1 text-sm transition-colors duration-200 cursor-pointer ${
                     active
-                      ? 'text-white bg-white/10'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      ? 'text-white font-semibold'
+                      : 'text-gray-400 hover:text-white font-normal'
                   }`}
                 >
                   {l.label}
+                  {/* 激活态：一道短色线指示当前位置，spring 滑动 */}
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active-line"
+                      className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full"
+                      style={{ background: 'rgb(var(--accent-violet-rgb))' }}
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
                 </Link>
               );
             })}
           </div>
 
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
-              aria-label="搜索"
-            >
-              <Search size={16} />
-            </button>
+            <Tooltip label="搜索 (⌘K)">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                aria-label="搜索"
+              >
+                <Search size={16} />
+              </button>
+            </Tooltip>
             <ThemeToggle />
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all md:hidden"
-              aria-label="菜单"
-            >
-              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
+            <AccentPicker />
+            <Tooltip label="菜单">
+              <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="p-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all md:hidden"
+                aria-label="菜单"
+              >
+                {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+            </Tooltip>
           </div>
         </nav>
       </motion.header>

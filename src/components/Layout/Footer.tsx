@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { Mail, ArrowUp, Rss } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
+import Tooltip from '@/components/UI/Tooltip';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useState } from 'react';
 
@@ -24,7 +25,7 @@ export default function Footer() {
         <motion.div
           className="h-full w-[200%]"
           style={{
-            background: 'linear-gradient(90deg,transparent,#a855f7,#ff6ec7,#38bdf8,transparent)',
+            background: 'linear-gradient(90deg,transparent,rgb(var(--accent-violet-rgb)),rgb(var(--accent-pink-rgb)),rgb(var(--accent-blue-rgb)),transparent)',
             backgroundSize: '50% 100%',
           }}
           animate={{ x: ['0%', '-50%'] }}
@@ -33,15 +34,21 @@ export default function Footer() {
       </div>
 
       {showTop && (
-        <motion.button
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="absolute -top-5 left-1/2 -translate-x-1/2 z-10 p-2.5 rounded-full bg-surface border border-white/10 text-gray-400 hover:text-white hover:glow-violet transition-all active:scale-95"
-          aria-label="回到顶部"
+          className="absolute -top-5 left-1/2 -translate-x-1/2 z-10"
         >
-          <ArrowUp size={16} />
-        </motion.button>
+          <Tooltip label="回到顶部">
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="p-2.5 rounded-full bg-surface border border-white/10 text-gray-400 hover:text-white hover:glow-violet transition-all active:scale-95"
+              aria-label="回到顶部"
+            >
+              <ArrowUp size={16} />
+            </button>
+          </Tooltip>
+        </motion.div>
       )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -63,14 +70,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm"
-                    style={{ color: '#78716c', textDecoration: 'none' }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = '#a855f7';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = '#78716c';
-                    }}
+                    className="footer-link text-sm"
                   >
                     {link.label}
                   </Link>
@@ -87,14 +87,7 @@ export default function Footer() {
                 href="https://github.com/SanshuiBot"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm"
-                style={{ color: '#78716c', textDecoration: 'none' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#a855f7';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#78716c';
-                }}
+                className="footer-link inline-flex items-center gap-2 text-sm"
               >
                 <Github size={14} />
                 GitHub
@@ -102,14 +95,7 @@ export default function Footer() {
               <br />
               <a
                 href="mailto:localhost6@foxmail.com"
-                className="inline-flex items-center gap-2 text-sm"
-                style={{ color: '#78716c', textDecoration: 'none' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#a855f7';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#78716c';
-                }}
+                className="footer-link inline-flex items-center gap-2 text-sm"
               >
                 <Mail size={14} />
                 Email

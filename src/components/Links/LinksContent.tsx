@@ -47,8 +47,8 @@ export default function LinksContent() {
       >
         <motion.div
           className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-white/5 relative"
-          style={{ boxShadow: '0 0 0px rgba(168,85,247,0)' }}
-          whileHover={{ boxShadow: '0 0 24px rgba(168,85,247,0.25)' }}
+          style={{ boxShadow: '0 0 0px rgb(var(--accent-violet-rgb) / 0)' }}
+          whileHover={{ boxShadow: '0 0 24px rgb(var(--accent-violet-rgb) / 0.25)' }}
           transition={{ type: 'spring', stiffness: 180, damping: 15 }}
         >
           {imgLoaded === undefined || imgLoaded === false ? (
@@ -70,7 +70,7 @@ export default function LinksContent() {
           <div className="flex items-center gap-2">
             <motion.span
               className="font-semibold text-white truncate"
-              whileHover={{ color: '#a855f7' }}
+              whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}
               transition={{ type: 'spring', stiffness: 180, damping: 16 }}
             >
               {friend.name}

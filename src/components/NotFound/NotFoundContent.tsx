@@ -15,8 +15,8 @@ export default function NotFoundContent() {
               top: `${10 + ((i * 13) % 80)}%`,
               width: `${2 + (i % 3) * 3}px`,
               height: `${2 + (i % 3) * 3}px`,
-              background: ['#ff6ec7', '#a855f7', '#38bdf8', '#2dd4bf'][i % 4],
-              boxShadow: `0 0 ${4 + (i % 3) * 4}px ${['#ff6ec7', '#a855f7', '#38bdf8', '#2dd4bf'][i % 4]}`,
+              background: ['rgb(var(--accent-pink-rgb))', 'rgb(var(--accent-violet-rgb))', 'rgb(var(--accent-blue-rgb))', 'rgb(var(--accent-teal-rgb))'][i % 4]!,
+              boxShadow: `0 0 ${4 + (i % 3) * 4}px ${['rgb(var(--accent-pink-rgb))', 'rgb(var(--accent-violet-rgb))', 'rgb(var(--accent-blue-rgb))', 'rgb(var(--accent-teal-rgb))'][i % 4]}`,
               animationDelay: `${i * 0.5}s`,
               animationDuration: `${3 + i * 0.7}s`,
             }}

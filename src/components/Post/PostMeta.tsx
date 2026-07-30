@@ -3,6 +3,7 @@ import { useMemo, useEffect, useState } from 'react';
 import { ArrowLeft, Clock, Tag, Calendar, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
 import readingTime from 'reading-time';
+import Tooltip from '@/components/UI/Tooltip';
 import CodeCopyInjector from './CodeCopyInjector';
 
 interface Props {
@@ -90,13 +91,17 @@ export default function PostMeta({ post }: Props) {
       </div>
 
       {showTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 left-6 z-40 p-3 rounded-full glass border border-white/5 text-gray-400 hover:text-white transition-all active:scale-95"
-          aria-label="回到顶部"
-        >
-          <ArrowUp size={16} />
-        </button>
+        <div className="fixed bottom-6 left-6 z-40">
+          <Tooltip label="回到顶部">
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="p-3 rounded-full glass border border-white/5 text-gray-400 hover:text-white transition-all active:scale-95"
+              aria-label="回到顶部"
+            >
+              <ArrowUp size={16} />
+            </button>
+          </Tooltip>
+        </div>
       )}
     </>
   );

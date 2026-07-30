@@ -17,7 +17,14 @@ import TagList from '@/components/TagList';
 
 export default function TagsPage() {
   const tags = getAllTags().map((t) => ({ name: t, count: getPostsByTag(t).length }));
-  const colors = ['#ff6ec7', '#a855f7', '#38bdf8', '#2dd4bf', '#fbbf24', '#fb7185'];
+  const colors = [
+    'rgb(var(--accent-pink-rgb))',
+    'rgb(var(--accent-violet-rgb))',
+    'rgb(var(--accent-blue-rgb))',
+    'rgb(var(--accent-teal-rgb))',
+    'rgb(var(--accent-gold-rgb))',
+    'rgb(var(--accent-rose-rgb))',
+  ];
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24">

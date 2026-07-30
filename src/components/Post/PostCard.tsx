@@ -37,7 +37,7 @@ export default function PostCard({ post, index }: { post: Post; index: number })
   const spotlight = useTransform(
     [sx, sy],
     ([x, y]) =>
-      `radial-gradient(280px circle at ${x}% ${y}%, rgba(168,85,247,0.22), rgba(255,110,199,0.12) 30%, transparent 60%)`,
+      `radial-gradient(280px circle at ${x}% ${y}%, rgb(var(--accent-violet-rgb) / 0.22), rgb(var(--accent-pink-rgb) / 0.12) 30%, transparent 60%)`,
   );
 
   // 3D tilt values
@@ -104,7 +104,7 @@ export default function PostCard({ post, index }: { post: Post; index: number })
             className="absolute -inset-[1px] rounded-2xl pointer-events-none"
             style={{
               background:
-                'linear-gradient(135deg, rgba(255,110,199,0.4), rgba(168,85,247,0.3), rgba(56,189,248,0.2))',
+                'linear-gradient(135deg, rgb(var(--accent-pink-rgb) / 0.4), rgb(var(--accent-violet-rgb) / 0.3), rgb(var(--accent-blue-rgb) / 0.2))',
               opacity: 0,
             }}
             whileHover={{ opacity: 1 }}
@@ -157,16 +157,12 @@ export default function PostCard({ post, index }: { post: Post; index: number })
                 prefetch={false}
                 onClick={startNavigation}
                 onMouseEnter={onCardMouseEnter}
-                className="flex-1 flex flex-col group/link"
+                className="post-card-link flex-1 flex flex-col"
               >
-                {/* Title */}
-                <motion.h2
-                  className="text-lg font-bold text-white mb-2 line-clamp-2 overflow-hidden min-h-[2.75rem] tracking-tight leading-snug shrink-0"
-                  whileHover={{ color: '#a855f7', x: 2 }}
-                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                >
+                {/* Title — hover 变色走 CSS，避免 Framer Motion inline style 残留导致主题切换后失响应 */}
+                <h2 className="post-card-title text-lg font-bold mb-2 line-clamp-2 overflow-hidden min-h-[2.75rem] tracking-tight leading-snug shrink-0">
                   {post.title}
-                </motion.h2>
+                </h2>
 
                 {/* Excerpt */}
                 <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1 min-h-0">
@@ -184,7 +180,7 @@ export default function PostCard({ post, index }: { post: Post; index: number })
                     {fmt(post.date)}
                   </span>
                   <motion.span
-                    className="inline-flex items-center gap-1 text-sm font-medium text-gray-500 group-hover/link:text-accent-violet transition-colors"
+                    className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium transition-colors"
                     variants={{
                       idle: { x: 0 },
                       hovered: { x: 3 },

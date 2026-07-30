@@ -51,6 +51,14 @@ export default function HeroScene() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    // 读取 Accent 主题色 CSS 变量，用于 Canvas strokeStyle（Canvas 无法直接用 CSS 变量）
+    const accentViolet = getComputedStyle(document.documentElement)
+      .getPropertyValue('--accent-violet-rgb')
+      .trim();
+    const parts = accentViolet.split(/\s+/).map(Number);
+    const vr = parts[0] ?? 168;
+    const vg = parts[1] ?? 85;
+    const vb = parts[2] ?? 247;
     let w = 0,
       h = 0;
     const particles: {
@@ -104,7 +112,7 @@ export default function HeroScene() {
             ctx.beginPath();
             ctx.moveTo(particles[i]!.x, particles[i]!.y);
             ctx.lineTo(particles[j]!.x, particles[j]!.y);
-            ctx.strokeStyle = `rgba(168,85,247,${0.04 * (1 - dist / 120)})`;
+            ctx.strokeStyle = `rgba(${vr},${vg},${vb},${0.04 * (1 - dist / 120)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -213,10 +221,10 @@ export default function HeroScene() {
                 style={{
                   background:
                     ctaDir === 'left'
-                      ? 'linear-gradient(135deg,rgba(168,85,247,0.15),transparent 60%)'
+                      ? 'linear-gradient(135deg,rgb(var(--accent-violet-rgb) / 0.15),transparent 60%)'
                       : ctaDir === 'right'
-                        ? 'linear-gradient(225deg,rgba(255,110,199,0.15),transparent 60%)'
-                        : 'linear-gradient(180deg,rgba(168,85,247,0.1),transparent 60%)',
+                        ? 'linear-gradient(225deg,rgb(var(--accent-pink-rgb) / 0.15),transparent 60%)'
+                        : 'linear-gradient(180deg,rgb(var(--accent-violet-rgb) / 0.1),transparent 60%)',
                 }}
               />
               <span className="relative z-10">浏览文章</span>
@@ -268,9 +276,9 @@ export default function HeroScene() {
             className="flex flex-wrap items-center justify-center gap-3"
           >
             {[
-              { href: '/tags', icon: Hash, label: '标签导航', color: '#a855f7' },
-              { href: '/archive', icon: Archive, label: '文章归档', color: '#38bdf8' },
-              { href: '/about', icon: User, label: '关于我', color: '#2dd4bf' },
+              { href: '/tags', icon: Hash, label: '标签导航', color: 'rgb(var(--accent-violet-rgb))' },
+              { href: '/archive', icon: Archive, label: '文章归档', color: 'rgb(var(--accent-blue-rgb))' },
+              { href: '/about', icon: User, label: '关于我', color: 'rgb(var(--accent-teal-rgb))' },
             ].map(({ href, icon: Icon, label, color }) => (
               <motion.div
                 key={label}
@@ -288,7 +296,7 @@ export default function HeroScene() {
                     whileHover={{ opacity: 1 }}
                     transition={{ type: 'spring', stiffness: 150, damping: 18 }}
                     style={{
-                      background: `radial-gradient(80px circle at center, ${color}18, transparent 70%)`,
+                      background: `radial-gradient(80px circle at center, color-mix(in srgb, ${color} 9%, transparent), transparent 70%)`,
                     }}
                   />
                   {/* Icon */}

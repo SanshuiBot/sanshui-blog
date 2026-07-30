@@ -16,7 +16,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
   const sy = useSpring(my, { stiffness: 120, damping: 20 });
   const spotlight = useTransform(
     [sx, sy],
-    ([x, y]) => `radial-gradient(180px circle at ${x}% ${y}%, ${color}28, transparent 70%)`,
+    ([x, y]) => `radial-gradient(180px circle at ${x}% ${y}%, color-mix(in srgb, ${color} 16%, transparent), transparent 70%)`,
   );
 
   // 3D tilt
@@ -91,8 +91,8 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
                 transition={{ duration: 0.9, ease: 'easeOut' }}
                 className="absolute inset-0 rounded-full pointer-events-none"
                 style={{
-                  border: `1.5px solid ${color}80`,
-                  boxShadow: `0 0 12px ${color}50`,
+                  border: `1.5px solid color-mix(in srgb, ${color} 50%, transparent)`,
+                  boxShadow: `0 0 12px color-mix(in srgb, ${color} 31%, transparent)`,
                 }}
               />
             )}
@@ -104,8 +104,8 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
             animate={{
               rotate: isHovered ? 360 : 0,
               filter: isHovered
-                ? `drop-shadow(0 0 6px ${color}90)`
-                : `drop-shadow(0 0 2px ${color}40)`,
+                ? `drop-shadow(0 0 6px color-mix(in srgb, ${color} 56%, transparent))`
+                : `drop-shadow(0 0 2px color-mix(in srgb, ${color} 25%, transparent))`,
             }}
             transition={{ type: 'spring', stiffness: 100, damping: 12 }}
           >
@@ -133,7 +133,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
                 <motion.span
                   className="absolute inset-0"
                   style={{
-                    background: `linear-gradient(90deg, transparent 0%, ${color}12 45%, ${color}18 50%, ${color}12 55%, transparent 100%)`,
+                    background: `linear-gradient(90deg, transparent 0%, color-mix(in srgb, ${color} 7%, transparent) 45%, color-mix(in srgb, ${color} 9%, transparent) 50%, color-mix(in srgb, ${color} 7%, transparent) 55%, transparent 100%)`,
                   }}
                   initial={{ x: '-100%' }}
                   animate={{ x: ['-100%', '200%'] }}

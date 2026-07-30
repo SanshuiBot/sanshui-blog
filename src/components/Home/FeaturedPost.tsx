@@ -18,7 +18,7 @@ export default function FeaturedPost({ post }: Props) {
   const bg = useTransform(
     [smx, smy],
     ([x, y]: number[]) =>
-      `radial-gradient(350px circle at ${x}% ${y}%,rgba(168,85,247,0.1),rgba(255,110,199,0.05) 50%,transparent 70%)`,
+      `radial-gradient(350px circle at ${x}% ${y}%,rgb(var(--accent-violet-rgb) / 0.1),rgb(var(--accent-pink-rgb) / 0.05) 50%,transparent 70%)`,
   );
 
   if (!post) return null;
