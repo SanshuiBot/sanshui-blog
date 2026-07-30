@@ -132,13 +132,15 @@ npx serve out
 
 | 命令                | 作用                                                                                              |
 | ------------------- | ------------------------------------------------------------------------------------------------- |
-| `npm run dev`       | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引                                |
-| `npm run build`     | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                                         |
-| `npm run start`     | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）                |
-| `npm run lint`      | ESLint v9 flat config，只报告不修改                                                               |
-| `npm run lint:fix`  | 运行 ESLint 并自动修复可修复的问题                                                                |
-| `npm run format`    | 用 Prettier 原地格式化全项目文件                                                                  |
-| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                          |
+| `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引                              |
+| `npm run build`        | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                                       |
+| `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）              |
+| `npm run lint`         | ESLint v9 flat config，只报告不修改                                                              |
+| `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                               |
+| `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                 |
+| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                            |
+| `npx tsc --noEmit`     | 类型检查（构建脚本带 `--no-lint`，CI/本地须单独跑 lint + tsc）                                   |
+| `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                            |
 
 ### 构建脚本流程
 
@@ -157,14 +159,14 @@ npm run build
 
 ## 📝 添加文章
 
-在 `content/posts/` 下新建 `.md` 文件即可。文件名中的中文会自动作为 slug。
+在 `content/posts/` 下新建 `.md`（或 `.mdx`）文件即可。文件名即 slug，建议中文+连字符命名以保持 URL 可读性（如 `深入理解-react-19-并发渲染机制.md`）。TOC 自动从 `##` / `###` 提取，rehype-highlight 自动代码高亮，`CodeCopyInjector` 在客户端给代码块注入复制按钮。
 
 ```markdown
 ---
 title: 文章标题
 date: 2026-01-01
 tags: [前端, TypeScript]
-excerpt: 一句话摘要（可选，不写则自动取正文前 160 字）
+excerpt: 一句话摘要（可选，不写则自动取正文前 160 字；含代码块开头的文章建议显式写）
 ---
 
 ## 章节标题（自动生成目录锚点）
@@ -176,14 +178,16 @@ excerpt: 一句话摘要（可选，不写则自动取正文前 160 字）
 
 **Frontmatter 字段：**
 
-| 字段      | 类型     | 说明                       |
-| --------- | -------- | -------------------------- |
-| `title`   | string   | 必填，文章标题             |
-| `date`    | string   | 必填，YYYY-MM-DD 格式      |
-| `tags`    | string[] | 可选，标签列表             |
-| `excerpt` | string   | 可选，摘要，不写则自动截取 |
+| 字段      | 类型     | 必填 | 说明                       |
+| --------- | -------- | ---- | -------------------------- |
+| `title`   | string   | ✅   | 文章标题                   |
+| `date`    | string   | ✅   | `YYYY-MM-DD`，用于排序     |
+| `tags`    | string[] | ❌   | 标签列表，驱动 `/tags` 页  |
+| `excerpt` | string   | ❌   | 摘要，不写则自动截取       |
 
-> 💡 新增/修改文章后，`predev` 或 `prebuild` 钩子会自动重新生成 `public/posts-index.json`，SearchModal 即可搜索到新文章。
+> 💡 新增/修改文章后，`predev` 或 `prebuild` 钩子会自动重新生成 `public/posts-index.json`，SearchModal 即可搜索到新文章。但**线上 HTML 只在重新 `npm run build` 后更新**。
+
+> ⚠️ 文章排版样式走 `globals.css` 里手写的 `.prose-article` 类（h1/h2/h3 字号颜色、`a` 紫粉渐变、`code` 紫底、`blockquote` 紫边等），**未用 Tailwind Typography 的 `prose` 类**。改文章样式就改 `.prose-article` 这段 CSS。
 
 ---
 
@@ -241,28 +245,30 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 
 ```mermaid
 graph LR
-  A["git push"] --> B["GitHub Actions"]
-  B --> C["npm install"]
+  A["git push main"] --> B["GitHub Actions"]
+  B --> C["Node 24 + npm ci"]
   C --> D["prebuild: 生成文章索引"]
   D --> E["npm run build"]
   E --> F["静态导出 out/"]
   F --> G["Pagefind 搜索索引"]
-  G --> H["Upload Artifact"]
-  H --> I["Deploy to Pages"]
+  G --> H["Upload ./out Artifact"]
+  H --> I["Deploy to GitHub Pages"]
 ```
+
+CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、`npm run build` 静态导出、`actions/upload-pages-artifact@v3` 上传 `./out`、`actions/deploy-pages@v4` 部署。`concurrency.group: "pages"` + `cancel-in-progress: false` 保证部署串行不中断。
 
 **部署特征：**
 
 - 纯静态 HTML 输出（`output: 'export'`），无需 Node.js 服务器
 - Pagefind 在构建后自动索引全文搜索
-- 安全响应头全开（HSTS、X-Frame-Options、Permissions-Policy）
-- 静态资源一年长缓存（immutable）
+- 安全响应头走 `public/_headers`（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）；`output: 'export'` 下 `next.config.ts` 的 `headers()` 不生效
+- 静态资源一年长缓存（`/_next/static/*` 与 `/pagefind/*`，`immutable`）
 
 ---
 
 ## ⚠️ 开发注意事项
 
-- **纯暗色系统**：项目没有亮色模式，`globals.css` 只定义了暗色变量，`colorScheme: "dark"`
+- **亮色为主、暗色可选**：默认 **亮色主题**。`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA（滚动条/表单控件/地址栏）与默认主题一致。**改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱
 - **Tailwind v4 语法**：使用 `@import "tailwindcss"` / `@plugin` / `@theme`，而非 v3 的 `@tailwind` 指令；PostCSS 插件是 `@tailwindcss/postcss`
 - **TypeScript 严格**：`strict: true` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters`，所有索引访问都需 undefined 检查
 - **中文 Slug**：`getPostBySlug()` 内部做了 `decodeURIComponent(slug)`，但 `generateStaticParams` 返回原始 slug，新增 slug 查询时必须一致地对中文做 decodeURIComponent
@@ -279,7 +285,7 @@ graph LR
   - `trailingSlash: true`：所有路由以 `/` 结尾（如 `/posts/xxx/`），`generateStaticParams` 与内部链接拼接都必须遵守，否则线上 404
   - `experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']`：让大库按需引入，**不要再自定义 `splitChunks`**——会与 Next 15 SWC 内置 chunk 策略冲突，反而拆出更多碎 chunk
   - `reactStrictMode: true`：开发模式下 effects 会执行两次（mount → unmount → mount），副作用清理逻辑必须幂等
-- **安全头走 `public/_headers`**：`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（HSTS、X-Frame-Options、Permissions-Policy 等）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。新增响应头改 `public/_headers`，不要改 `next.config.ts`
+- **安全头走 `public/_headers`**：`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。新增响应头改 `public/_headers`，不要改 `next.config.ts`
 - **TOC 只提取 h2/h3，标题锚点保留中文**：`src/lib/toc.ts` 的 `extractHeadings()` 只匹配 `^#{2,3}\s+`（即 `##` 和 `###`），`#`（h1）和 `####`（h4）不会进目录。生成的 `id` 用正则 `[\w\u4e00-\u9fff\s-]` 过滤，**保留中文字符**，所以中文标题会得到中文锚点（如 `## 章节标题` → `id="章节标题"`）。rehype-slug 在 MDX 渲染侧也会生成 id，两边规则需保持一致。新增需要进目录的标题，必须用 `##` 或 `###`
 - **`posts.ts` 读取层契约**：
   - `'server-only'` 标记：`posts.ts` / `toc.ts` / `types.ts` 顶部都有 `import 'server-only'`，这些 lib **只能在 RSC / Server Component 里调用**，不能 import 进 client 组件。客户端需要文章数据时 fetch `public/posts-index.json`
