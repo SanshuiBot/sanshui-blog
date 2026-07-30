@@ -52,10 +52,12 @@
     /* ── Shadow Design System ── */
     /* B · 彩色霓虹辉光 — 正文卡片 */
     --shadow-neon:
-      0 4px 12px rgb(var(--accent-violet-rgb) / 0.08), 0 12px 32px rgb(var(--accent-violet-rgb) / 0.06),
+      0 4px 12px rgb(var(--accent-violet-rgb) / 0.08),
+      0 12px 32px rgb(var(--accent-violet-rgb) / 0.06),
       0 0 0 1px rgb(var(--accent-violet-rgb) / 0.04);
     --shadow-neon-hover:
-      0 4px 16px rgb(var(--accent-violet-rgb) / 0.15), 0 16px 40px rgb(var(--accent-violet-rgb) / 0.1),
+      0 4px 16px rgb(var(--accent-violet-rgb) / 0.15),
+      0 16px 40px rgb(var(--accent-violet-rgb) / 0.1),
       0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08);
 
     /* C · 内发光微浮雕 — 导航/模态 */
@@ -76,16 +78,17 @@
       0 8px 32px rgba(0, 0, 0, 0.04), 0 24px 64px rgba(0, 0, 0, 0.03),
       0 48px 120px rgba(0, 0, 0, 0.02);
     --shadow-soft-hover:
-      0 8px 40px rgb(var(--accent-violet-rgb) / 0.06), 0 32px 80px rgb(var(--accent-violet-rgb) / 0.04),
+      0 8px 40px rgb(var(--accent-violet-rgb) / 0.06),
+      0 32px 80px rgb(var(--accent-violet-rgb) / 0.04),
       0 64px 160px rgb(var(--accent-violet-rgb) / 0.03);
 
     /* E · 双色对撞 — 精选/特选卡片 */
     --shadow-dual:
-      6px 6px 16px rgb(var(--accent-violet-rgb) / 0.08), -6px -6px 16px rgb(var(--accent-blue-rgb) / 0.06),
-      0 1px 2px rgba(0, 0, 0, 0.15);
+      6px 6px 16px rgb(var(--accent-violet-rgb) / 0.08),
+      -6px -6px 16px rgb(var(--accent-blue-rgb) / 0.06), 0 1px 2px rgba(0, 0, 0, 0.15);
     --shadow-dual-hover:
-      8px 8px 24px rgb(var(--accent-violet-rgb) / 0.14), -8px -8px 24px rgb(var(--accent-blue-rgb) / 0.1),
-      0 2px 4px rgba(0, 0, 0, 0.15);
+      8px 8px 24px rgb(var(--accent-violet-rgb) / 0.14),
+      -8px -8px 24px rgb(var(--accent-blue-rgb) / 0.1), 0 2px 4px rgba(0, 0, 0, 0.15);
   }
   *,
   *::before,
@@ -233,7 +236,9 @@
   }
   .post-card-title {
     color: #ffffff;
-    transition: color 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+      color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
   html:not(.dark) .post-card-title {
     color: #1c1917;
@@ -303,7 +308,7 @@
     border-radius: 5px;
     font-size: 0.875em;
     font-family: var(--font-mono);
-    color: #c084fc;
+    color: var(--color-fg);
     border: 1px solid rgb(var(--accent-violet-rgb) / 0.15);
   }
   .prose-article pre {
@@ -367,6 +372,29 @@
   .prose-article hr {
     border-color: rgba(255, 255, 255, 0.06);
     margin: 2em 0;
+  }
+  .prose-article table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    font-size: 0.95em;
+  }
+  .prose-article th,
+  .prose-article td {
+    padding: 0.6em 0.9em;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: left;
+  }
+  .prose-article thead th {
+    background: rgb(var(--accent-violet-rgb) / 0.1);
+    font-weight: 600;
+    color: var(--color-fg);
+  }
+  .prose-article tbody tr:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.02);
   }
 }
 
@@ -516,7 +544,6 @@ html:not(.dark) .resume-terminal {
 
 .hljs {
   color: #d4d4d8;
-  background: #0a0a16;
 }
 .hljs-comment,
 .hljs-quote {
@@ -582,9 +609,21 @@ body::after {
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 45% at 50% 28%, rgb(var(--accent-violet-rgb) / 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 65% 48%, rgb(var(--accent-pink-rgb) / 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 25% at 35% 55%, rgb(var(--accent-blue-rgb) / 0.06) 0%, transparent 60%);
+    radial-gradient(
+      ellipse 55% 45% at 50% 28%,
+      rgb(var(--accent-violet-rgb) / 0.12) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 65% 48%,
+      rgb(var(--accent-pink-rgb) / 0.08) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 35% 25% at 35% 55%,
+      rgb(var(--accent-blue-rgb) / 0.06) 0%,
+      transparent 60%
+    );
   animation: glow-breathe 8s ease-in-out infinite;
 }
 
@@ -620,12 +659,24 @@ body::after {
 }
 
 /* ── SVG stop-color accent theme classes ── */
-.stop-accent-pink { stop-color: rgb(var(--accent-pink-rgb)); }
-.stop-accent-violet { stop-color: rgb(var(--accent-violet-rgb)); }
-.stop-accent-blue { stop-color: rgb(var(--accent-blue-rgb)); }
-.stop-accent-teal { stop-color: rgb(var(--accent-teal-rgb)); }
-.stop-accent-gold { stop-color: rgb(var(--accent-gold-rgb)); }
-.stop-accent-rose { stop-color: rgb(var(--accent-rose-rgb)); }
+.stop-accent-pink {
+  stop-color: rgb(var(--accent-pink-rgb));
+}
+.stop-accent-violet {
+  stop-color: rgb(var(--accent-violet-rgb));
+}
+.stop-accent-blue {
+  stop-color: rgb(var(--accent-blue-rgb));
+}
+.stop-accent-teal {
+  stop-color: rgb(var(--accent-teal-rgb));
+}
+.stop-accent-gold {
+  stop-color: rgb(var(--accent-gold-rgb));
+}
+.stop-accent-rose {
+  stop-color: rgb(var(--accent-rose-rgb));
+}
 
 /* Light mode grid and glow */
 html:not(.dark) body::before {
@@ -635,9 +686,21 @@ html:not(.dark) body::before {
 }
 html:not(.dark) body::after {
   background:
-    radial-gradient(ellipse 50% 40% at 50% 30%, rgb(var(--accent-violet-rgb) / 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 65% 50%, rgb(var(--accent-pink-rgb) / 0.05) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 25% at 35% 55%, rgb(var(--accent-blue-rgb) / 0.05) 0%, transparent 60%);
+    radial-gradient(
+      ellipse 50% 40% at 50% 30%,
+      rgb(var(--accent-violet-rgb) / 0.08) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 65% 50%,
+      rgb(var(--accent-pink-rgb) / 0.05) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 35% 25% at 35% 55%,
+      rgb(var(--accent-blue-rgb) / 0.05) 0%,
+      transparent 60%
+    );
 }
 
 /* Light mode overrides for components */
@@ -662,11 +725,11 @@ html:not(.dark) .glass-heavy {
 /* Shadow overrides — light mode */
 html:not(.dark) {
   --shadow-neon:
-    0 4px 12px rgb(var(--accent-violet-rgb) / 0.06), 0 12px 24px rgb(var(--accent-violet-rgb) / 0.04),
-    0 0 0 1px rgb(var(--accent-violet-rgb) / 0.03);
+    0 4px 12px rgb(var(--accent-violet-rgb) / 0.06),
+    0 12px 24px rgb(var(--accent-violet-rgb) / 0.04), 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.03);
   --shadow-neon-hover:
-    0 6px 20px rgb(var(--accent-violet-rgb) / 0.12), 0 20px 48px rgb(var(--accent-violet-rgb) / 0.08),
-    0 0 0 1px rgb(var(--accent-violet-rgb) / 0.06);
+    0 6px 20px rgb(var(--accent-violet-rgb) / 0.12),
+    0 20px 48px rgb(var(--accent-violet-rgb) / 0.08), 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.06);
   --shadow-emboss:
     inset 0 0 0 1px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
@@ -676,14 +739,15 @@ html:not(.dark) {
   --shadow-soft:
     0 4px 16px rgba(0, 0, 0, 0.02), 0 16px 48px rgba(0, 0, 0, 0.02), 0 32px 80px rgba(0, 0, 0, 0.01);
   --shadow-soft-hover:
-    0 6px 24px rgb(var(--accent-violet-rgb) / 0.04), 0 24px 64px rgb(var(--accent-violet-rgb) / 0.03),
+    0 6px 24px rgb(var(--accent-violet-rgb) / 0.04),
+    0 24px 64px rgb(var(--accent-violet-rgb) / 0.03),
     0 48px 120px rgb(var(--accent-violet-rgb) / 0.02);
   --shadow-dual:
-    4px 4px 12px rgb(var(--accent-violet-rgb) / 0.05), -4px -4px 12px rgb(var(--accent-blue-rgb) / 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.06);
+    4px 4px 12px rgb(var(--accent-violet-rgb) / 0.05),
+    -4px -4px 12px rgb(var(--accent-blue-rgb) / 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-dual-hover:
-    6px 6px 20px rgb(var(--accent-violet-rgb) / 0.1), -6px -6px 20px rgb(var(--accent-blue-rgb) / 0.08),
-    0 2px 4px rgba(0, 0, 0, 0.06);
+    6px 6px 20px rgb(var(--accent-violet-rgb) / 0.1),
+    -6px -6px 20px rgb(var(--accent-blue-rgb) / 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
   --shadow-nav:
     inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 1px 3px rgb(var(--accent-violet-rgb) / 0.03), 0 2px 6px rgba(0, 0, 0, 0.04);
@@ -747,6 +811,18 @@ html:not(.dark) .prose-article pre code {
   color: #d4d4d8;
 }
 html:not(.dark) .prose-article code {
-  background: rgb(var(--accent-violet-rgb) / 0.08);
   border-color: rgb(var(--accent-violet-rgb) / 0.1);
+  color: #6d28d9;
+}
+html:not(.dark) .prose-article table,
+html:not(.dark) .prose-article th,
+html:not(.dark) .prose-article td {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+html:not(.dark) .prose-article tbody tr:nth-child(odd) {
+  background: rgba(0, 0, 0, 0.02);
+}
+html:not(.dark) .prose-article thead th {
+  background: rgb(var(--accent-violet-rgb) / 0.12);
+  color: #1c1917;
 }

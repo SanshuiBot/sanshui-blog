@@ -3,3 +3,12 @@ declare module '*.css' {
   const content: Record<string, string>;
   export default content;
 }
+
+// highlightjs-solidity 没有官方类型，这里声明其结构
+declare module 'highlightjs-solidity' {
+  import type { LanguageFn } from 'highlight.js';
+  const solidity: LanguageFn;
+  const yul: LanguageFn;
+  export { solidity, yul };
+  export default { solidity, yul };
+}
