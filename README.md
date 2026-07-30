@@ -130,15 +130,28 @@ npx serve out
 
 ### 可用命令
 
-| 命令             | 作用                                                                              |
-| ---------------- | --------------------------------------------------------------------------------- |
-| `npm run dev`    | 开发模式，`predev` 自动生成路由清单兼容文件 + 文章索引                            |
-| `npm run build`  | 静态导出 + Pagefind 索引，需设置 `NEXT_BUILD=1` 环境变量                          |
-| `npm run start`  | Next.js 生产服务器 (非静态导出，本项目通常不用)                                   |
-| `npm run lint`   | ESLint 检查 (flat config，只报告不修改)                                           |
-| `npm run lint:fix` | 运行 ESLint 并自动修复可修复的问题                                              |
-| `npm run format` | 用 Prettier 原地格式化全项目文件                                                  |
-| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                        |
+| 命令                | 作用                                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| `npm run dev`       | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引                                |
+| `npm run build`     | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                                         |
+| `npm run start`     | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）                |
+| `npm run lint`      | ESLint v9 flat config，只报告不修改                                                               |
+| `npm run lint:fix`  | 运行 ESLint 并自动修复可修复的问题                                                                |
+| `npm run format`    | 用 Prettier 原地格式化全项目文件                                                                  |
+| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                          |
+
+### 构建脚本流程
+
+```
+npm run dev
+  └─ predev → 生成 .next/routes-manifest.json (ConsoleNinja 兼容)
+  └─ next dev (HMR，无 basePath/assetPrefix)
+
+npm run build
+  └─ prebuild → 生成 public/posts-index.json (~3KB)
+  └─ cross-env NEXT_BUILD=1 next build --no-lint → 静态导出 out/
+  └─ pagefind --site out → 全文搜索索引
+```
 
 ---
 
@@ -257,8 +270,8 @@ graph LR
 - **自定义 Easing 曲线**：Tailwind 主题预定义了 `--ease-out-expo`、`--ease-out-back`、`--ease-in-out-circ`，Framer Motion 动画大量使用 `[0.16, 1, 0.3, 1]` 等自定义曲线
 - **静态导出通过环境变量切换**：`next.config.ts` 中 `output: 'export'`、`basePath`、`assetPrefix` **仅**在 `NEXT_BUILD=1` 时生效。`npm run dev` 不会设置此变量，因此开发模式下没有 `basePath`、没有 `assetPrefix`。**不要手动设置 `output: 'export'`**，否则 HMR 会挂
 - **RSC payload 优化**：`getAllPosts()` 已从 `layout.tsx` 移除，文章数据通过 `public/posts-index.json`（~3KB）在 SearchModal 运行时 fetch，避免全量文章数据被序列化进根 layout 的 RSC payload
-- **重组件懒加载**：`CursorGlow`、`ScrollProgress` 等非首屏必需的 client 组件通过 `next/dynamic` 懒加载，避免被打进首屏 chunk 图
-- **sharp 依赖已排除**：静态导出 + `images.unoptimized: true` 场景下不需要 sharp，`package.json` 的 `overrides.sharp: false` 已将其从依赖树移除。若将来启用 Next.js 图片优化，需移除该 override
+- **重组件懒加载**：`CursorGlow`、`ScrollProgress`、`ClickEffect` 等非首屏必需的 client 组件通过 `next/dynamic` 懒加载，避免被打进首屏 chunk 图
+- **sharp 依赖**：`package.json` 的 `overrides` 锁定 `sharp: "^0.35.3"` 与 `postcss: "^8.5.20"`，保证静态导出 + `images.unoptimized: true` 场景下依赖树稳定
 
 ---
 
