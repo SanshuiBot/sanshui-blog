@@ -36,19 +36,19 @@
 
 **Aurora 暗色主题** — 全暗色玻璃态设计系统，极光渐变与物理动效深度融合。
 
-|                        |                                                    |
-| ---------------------- | -------------------------------------------------- |
-| 🎨 **暗色玻璃态**      | `backdrop-filter: blur(20px)` 半透明卡片，微光边框 |
-| 🌈 **极光渐变文字**    | 多色渐变 + `background-clip: text` 动画            |
-| 🖱️ **自定义鼠标光晕**  | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点      |
-| 📐 **渐隐网格背景**    | `radial-gradient` mask 从中心向四周淡出            |
-| 💫 **中心极光光晕**    | 三层极光色径向渐变叠加动画                         |
-| 🃏 **3D 倾斜卡片**     | `useMotionValue` + spring 物理模拟鼠标视差         |
-| 🔍 **⌘K 全局搜索**     | Pagefind 驱动 + 运行时 fetch 轻量索引              |
-| 📜 **阅读进度条**      | 滚动驱动的渐变进度指示器                           |
-| 🧭 **自动目录**        | 文章 h2/h3 自动提取 + 滚动高亮锚点                 |
-| 🎯 **三水极光 favicon**| 三条流动水波 + 极光渐变，呼应「三水」之名          |
-| 📜 **流式打印简历**   | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配 |
+|                         |                                                     |
+| ----------------------- | --------------------------------------------------- |
+| 🎨 **暗色玻璃态**       | `backdrop-filter: blur(20px)` 半透明卡片，微光边框  |
+| 🌈 **极光渐变文字**     | 多色渐变 + `background-clip: text` 动画             |
+| 🖱️ **自定义鼠标光晕**   | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点       |
+| 📐 **渐隐网格背景**     | `radial-gradient` mask 从中心向四周淡出             |
+| 💫 **中心极光光晕**     | 三层极光色径向渐变叠加动画                          |
+| 🃏 **3D 倾斜卡片**      | `useMotionValue` + spring 物理模拟鼠标视差          |
+| 🔍 **⌘K 全局搜索**      | Pagefind 驱动 + 运行时 fetch 轻量索引               |
+| 📜 **阅读进度条**       | 滚动驱动的渐变进度指示器                            |
+| 🧭 **自动目录**         | 文章 h2/h3 自动提取 + 滚动高亮锚点                  |
+| 🎯 **三水极光 favicon** | 三条流动水波 + 极光渐变，呼应「三水」之名           |
+| 📜 **流式打印简历**     | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配 |
 
 ---
 
@@ -130,17 +130,17 @@ npx serve out
 
 ### 可用命令
 
-| 命令                | 作用                                                                                              |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引                              |
-| `npm run build`        | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                                       |
-| `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）              |
-| `npm run lint`         | ESLint v9 flat config，只报告不修改                                                              |
-| `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                               |
-| `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                 |
-| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                            |
-| `npx tsc --noEmit`     | 类型检查（构建脚本带 `--no-lint`，CI/本地须单独跑 lint + tsc）                                   |
-| `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                            |
+| 命令                   | 作用                                                                               |
+| ---------------------- | ---------------------------------------------------------------------------------- |
+| `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引                 |
+| `npm run build`        | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                         |
+| `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可） |
+| `npm run lint`         | ESLint v9 flat config，只报告不修改                                                |
+| `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                 |
+| `npm run format`       | 用 Prettier 原地格式化全项目文件                                                   |
+| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                              |
+| `npx tsc --noEmit`     | 类型检查（构建脚本带 `--no-lint`，CI/本地须单独跑 lint + tsc）                     |
+| `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                             |
 
 ### 构建脚本流程
 
@@ -178,12 +178,12 @@ excerpt: 一句话摘要（可选，不写则自动取正文前 160 字；含代
 
 **Frontmatter 字段：**
 
-| 字段      | 类型     | 必填 | 说明                       |
-| --------- | -------- | ---- | -------------------------- |
-| `title`   | string   | ✅   | 文章标题                   |
-| `date`    | string   | ✅   | `YYYY-MM-DD`，用于排序     |
-| `tags`    | string[] | ❌   | 标签列表，驱动 `/tags` 页  |
-| `excerpt` | string   | ❌   | 摘要，不写则自动截取       |
+| 字段      | 类型     | 必填 | 说明                      |
+| --------- | -------- | ---- | ------------------------- |
+| `title`   | string   | ✅   | 文章标题                  |
+| `date`    | string   | ✅   | `YYYY-MM-DD`，用于排序    |
+| `tags`    | string[] | ❌   | 标签列表，驱动 `/tags` 页 |
+| `excerpt` | string   | ❌   | 摘要，不写则自动截取      |
 
 > 💡 新增/修改文章后，`predev` 或 `prebuild` 钩子会自动重新生成 `public/posts-index.json`，SearchModal 即可搜索到新文章。但**线上 HTML 只在重新 `npm run build` 后更新**。
 
@@ -217,14 +217,14 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 
 ### 渲染能力
 
-| Markdown 语法 | 渲染效果 |
-|---------------|----------|
-| `# / ## / ###` | 紫色高亮标题，层级决定字号 |
-| `- xxx` | 青色圆点列表项 |
-| `> xxx` | 粉色左边框引用块 |
-| `---` | 灰色分隔线 |
-| `**粗体**` | 加粗白色文字 |
-| `` `代码` `` | 浅紫底 + 紫色文字的行内代码 |
+| Markdown 语法  | 渲染效果                    |
+| -------------- | --------------------------- |
+| `# / ## / ###` | 紫色高亮标题，层级决定字号  |
+| `- xxx`        | 青色圆点列表项              |
+| `> xxx`        | 粉色左边框引用块            |
+| `---`          | 灰色分隔线                  |
+| `**粗体**`     | 加粗白色文字                |
+| `` `代码` ``   | 浅紫底 + 紫色文字的行内代码 |
 
 ### 性能特征
 
@@ -290,7 +290,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
 - **`posts.ts` 读取层契约**：
   - `'server-only'` 标记：`posts.ts` / `toc.ts` / `types.ts` 顶部都有 `import 'server-only'`，这些 lib **只能在 RSC / Server Component 里调用**，不能 import 进 client 组件。客户端需要文章数据时 fetch `public/posts-index.json`
   - mtime 签名缓存：`getAllPosts()` 用 `computeSignature()`（文件名 + `mtimeMs` 拼接）做缓存键，文件未改动时直接返回内存缓存。**不要在运行时修改 `content/posts/` 下的文件**——签名会变但 SSG 已固化，只能通过重新 `build` 生效
-  - excerpt 兜底：未写 `excerpt` 时取正文前 160 字并 `replace(/[#*`\[\]]/g,'')` 去掉 markdown 符号，注意这个正则会**误删反引号围栏代码块的内容**，含代码开头的文章建议显式写 `excerpt`
+  - excerpt 兜底：未写 `excerpt` 时取正文前 160 字并 `replace(/[#*`\[\]]/g,'')`去掉 markdown 符号，注意这个正则会**误删反引号围栏代码块的内容**，含代码开头的文章建议显式写`excerpt`
 
 ---
 
