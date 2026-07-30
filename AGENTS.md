@@ -94,6 +94,36 @@ Tailwind 主题预定义了 `--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1)`、`
 
 `scripts/gen-posts-index.js` 在 `predev` 和 `prebuild` 两个钩子触发。新增/修改文章后，下次 `npm run dev` 或 `npm run build` 自动重新生成 `public/posts-index.json`，SearchModal 即可搜索到新文章。
 
+### 12. `out/` 是构建产物，不要被它误导
+
+`out/` 在 `.gitignore` 中、未被 git 跟踪，是 `npm run build` 的静态导出产物。`out/en/` 等陈旧子树可能是早期英文版 / `[locale]` i18n 路由的构建残留，**源码里已无对应路由**。排查路由时以 `src/app/` 为准，不要把 `out/` 的旧产物当成当前结构。也不要手动清理 `out/`——下次 `build` 会整体覆盖。
+
+### 13. `next.config.ts` 的几个隐式约定
+
+- `images.unoptimized: true`：静态导出无服务端图像优化器，`next/image` 退化为原图直出，新增图片需自行压缩。
+- `trailingSlash: true`：所有路由以 `/` 结尾（如 `/posts/xxx/`），`generateStaticParams` 与内部链接拼接都必须遵守，否则线上 404。
+- `experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']`：让大库按需引入，**不要再自定义 `splitChunks`**——会与 Next 15 SWC 内置 chunk 策略冲突，反而拆出更多碎 chunk。
+- `reactStrictMode: true`：开发模式下 effects 会执行两次（mount → unmount → mount），副作用清理逻辑必须幂等。
+
+### 14. 安全头走 `public/_headers`，不在 `next.config.ts` 里配
+
+`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（HSTS、X-Frame-Options、Permissions-Policy 等）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。新增响应头改 `public/_headers`，不要改 `next.config.ts`。
+
+### 15. TOC 只提取 h2/h3，标题锚点保留中文
+
+`src/lib/toc.ts` 的 `extractHeadings()` 只匹配 `^#{2,3}\s+`（即 `##` 和 `###`），`#`（h1）和 `####`（h4）不会进目录。生成的 `id` 用正则 `[\w\u4e00-\u9fff\s-]` 过滤，**保留中文字符**，所以中文标题会得到中文锚点（如 `## 章节标题` → `id="章节标题"`）。rehype-slug 在 MDX 渲染侧也会生成 id，两边规则需保持一致。新增需要进目录的标题，必须用 `##` 或 `###`。
+
+### 16. `posts.ts` 的读取层契约
+
+- `'server-only'` 标记：`posts.ts` / `toc.ts` / `types.ts` 顶部都有 `import 'server-only'`，这些 lib **只能在 RSC / Server Component 里调用**，不能 import 进 client 组件。客户端需要文章数据时 fetch `public/posts-index.json`。
+- mtime 签名缓存：`getAllPosts()` 用 `computeSignature()`（文件名 + `mtimeMs` 拼接）做缓存键，文件未改动时直接返回内存缓存。**不要在运行时修改 `content/posts/` 下的文件**——签名会变但 SSG 已固化，只能通过重新 `build` 生效。
+- `getPostBySlug()` 内部 `decodeURIComponent(slug)` 后再 `find`；`getAdjacentPosts()` 同样 decode。新增 slug 相关查询时保持这个 decode 约定。
+- excerpt 兜底：未写 `excerpt` 时取正文前 160 字并 `replace(/[#*`\[\]]/g,'')` 去掉 markdown 符号，注意这个正则会**误删反引号围栏代码块的内容**，含代码开头的文章建议显式写 `excerpt`。
+
+### 17. `package.json` overrides 锁定关键依赖
+
+`overrides` 字段锁定 `postcss: "^8.5.20"` 和 `sharp: "^0.35.3"`。原因：`@tailwindcss/postcss` 依赖的 postcss 版本需稳定，避免 v4 编译管线被 postcss 小版本回归打断；sharp 锁定是为了 `images.unoptimized: true` 场景下依赖树稳定（next 15 的 image pipeline 在 unoptimized 模式下不实际调用 sharp，但 npm install 仍会解析它）。升级 Tailwind v4 或 next 时，要同步检查这两个 override 是否还需要。
+
 ## 已清理的历史残留
 
 - ~~`src/app/[locale]/` 空目录树~~ — 废弃 i18n 路由残留，已删除
