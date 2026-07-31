@@ -52,12 +52,12 @@ export default function Home() {
           </div>
           <Link
             href="/archive"
-            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-white transition-colors group/link"
+            className="link-more hidden sm:inline-flex items-center gap-1.5 text-sm font-medium "
           >
             查看全部
             <ArrowRight
               size={14}
-              className="transition-transform group-hover/link:translate-x-0.5"
+              className="link-arrow"
             />
           </Link>
         </div>
@@ -73,10 +73,10 @@ export default function Home() {
         <div className="sm:hidden mt-8 text-center">
           <Link
             href="/archive"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-white"
+            className="link-more inline-flex items-center gap-1.5 text-sm font-medium "
           >
             查看全部文章
-            <ArrowRight size={14} />
+            <ArrowRight size={14} className="link-arrow" />
           </Link>
         </div>
       </section>

@@ -42,9 +42,9 @@ export default async function TagPage({ params }: Props) {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <Link
         href="/tags"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white transition-colors mb-8 group/back"
+        className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
       >
-        <ArrowLeft size={14} className="transition-transform group/back:-translate-x-1" />
+        <ArrowLeft size={14} className="link-arrow" />
         返回标签
       </Link>
       <div className="mb-12">

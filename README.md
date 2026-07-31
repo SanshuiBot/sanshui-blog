@@ -47,7 +47,7 @@
 | 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差            |
 | 🔍 **⌘K 全局搜索**       | Pagefind 驱动 + 运行时 fetch 轻量索引                 |
 | 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                              |
-| 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点                    |
+| 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条 |
 | 🎯 **三水极光 favicon**  | 三条流动水波 + 极光渐变，呼应「三水」之名             |
 | 📜 **流式打印简历**      | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配   |
 | 🎨 **Accent 主题强调色** | 5 个预设调色板 + 6 通道自定义色板，运行时换色全站联动 |
@@ -319,7 +319,8 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
   - `experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']`：让大库按需引入，**不要再自定义 `splitChunks`**——会与 Next 15 SWC 内置 chunk 策略冲突，反而拆出更多碎 chunk
   - `reactStrictMode: true`：开发模式下 effects 会执行两次（mount → unmount → mount），副作用清理逻辑必须幂等
 - **安全头走 `public/_headers`**：`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。新增响应头改 `public/_headers`，不要改 `next.config.ts`
-- **TOC 只提取 h2/h3，标题锚点保留中文**：`src/lib/toc.ts` 的 `extractHeadings()` 只匹配 `^#{2,3}\s+`（即 `##` 和 `###`），`#`（h1）和 `####`（h4）不会进目录。生成的 `id` 用正则 `[\w\u4e00-\u9fff\s-]` 过滤，**保留中文字符**，所以中文标题会得到中文锚点（如 `## 章节标题` → `id="章节标题"`）。rehype-slug 在 MDX 渲染侧也会生成 id，两边规则需保持一致。新增需要进目录的标题，必须用 `##` 或 `###`
+- **TOC 只提取 h2/h3，标题锚点保留中文**：`src/lib/toc.ts` 的 `extractHeadings()` 只匹配 `^#{2,3}\s+`（即 `##` 和 `###`），`#`（h1）和 `####`（h4）不会进目录。生成的 `id` 用正则 `[\w\u4e00-\u9fff\s-]` 过滤，**保留中文字符**，所以中文标题会得到中文锚点（如 `## 章节标题` → `id="章节标题"`）。rehype-slug 在 MDX 渲染侧也会生成 id，两边规则需保持一致。新增需要进目录的标题，必须用 `##` 或 `###`。TOC 组件实现：桌面端目录 sticky 在正文**右边**（`page.tsx` 正文在前、TOC 在后），移动端抽屉式目录在正文上方；`IntersectionObserver` 监测视口上 30% 带取最靠上标题高亮、首屏高亮首项；点击 `scrollIntoView` 平滚 + `history.replaceState` 写 URL hash；`.prose-article h2/h3 { scroll-margin-top: 6rem }` 兜锚点不被 sticky Navbar 遮挡；**淡入淡出滚动条**——`.toc-scroll` 藏原生滚动条，浮 `.toc-thumb` 绝对定位指示条按滚动比例算 `top`/`height`，显隐只由 hover 控制（`mouseenter` 显示 / `mouseleave` 隐藏），`opacity transition` 淡入淡出，浮层 `absolute` 不占文档流不挤压文字；几何用 `ResizeObserver` + `requestAnimationFrame` 延迟算准 + `document.fonts.ready` 兜底。颜色联 Accent 主题用自定义 `.toc-link` / `.toc-link-active` 类（见下 utility layer 坑），不用 Tailwind utility `text-accent-violet`
+- **globals.css 同元素规则集中**：同一元素的暗色基与亮色覆盖（`html:not(.dark) ...`）必须相邻写，不散乱到文件两极；不写重复样式。`prose-article` / `glass` / `glass-heavy` / `::-webkit-scrollbar` 的亮色覆盖均已并入暗色基旁，Tailwind utility 亮色覆盖单独分组于文件尾。新增元素的亮色覆盖紧贴其暗色基写
 - **`posts.ts` 读取层契约**：
   - `'server-only'` 标记：`posts.ts` / `toc.ts` / `types.ts` 顶部都有 `import 'server-only'`，这些 lib **只能在 RSC / Server Component 里调用**，不能 import 进 client 组件。客户端需要文章数据时 fetch `public/posts-index.json`
   - mtime 签名缓存：`getAllPosts()` 用 `computeSignature()`（文件名 + `mtimeMs` 拼接）做缓存键，文件未改动时直接返回内存缓存。**不要在运行时修改 `content/posts/` 下的文件**——签名会变但 SSG 已固化，只能通过重新 `build` 生效

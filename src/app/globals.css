@@ -150,6 +150,13 @@
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.15);
   }
+  /* ── ::-webkit-scrollbar 亮色覆盖 —— 同元素集中 ── */
+  html:not(.dark) ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+  }
+  html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
 }
 
 @layer utilities {
@@ -167,6 +174,219 @@
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-emboss);
   }
+  /* ── glass / glass-heavy 亮色覆盖 —— 同元素集中 ── */
+  html:not(.dark) .glass {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+  html:not(.dark) .glass-heavy {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  /* ── archive-filter：归档页标题右侧筛选按钮 + 下拉浮层 ──
+     双前缀 html.dark / html:not(.dark) 提特异性到 (0,3,1)，
+     稳压裸 CSS 亮色覆盖（AGENTS.md 约定 #25）。颜色联 accent 变量。 */
+  html.dark .archive-filter-btn {
+    color: rgb(168 162 158);
+  }
+  html.dark .archive-filter-btn:hover {
+    color: #fff;
+    border-color: rgb(var(--accent-violet-rgb) / 0.4);
+  }
+  html:not(.dark) .archive-filter-btn {
+    color: rgb(87 83 78);
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+  html:not(.dark) .archive-filter-btn:hover {
+    color: rgb(28 25 23);
+    border-color: rgb(var(--accent-violet-rgb) / 0.4);
+  }
+
+  /* 按钮内「筛选」文字 + 数字：默认灰色，hover/open 联 accent 主题色 */
+  /* 暗色基 */
+  html.dark .archive-filter-btn-label {
+    color: rgb(168 162 158);
+  }
+  html.dark .archive-filter-btn-count {
+    color: rgb(120 113 108);
+  }
+  /* 暗色 hover + open 高亮 */
+  html.dark .archive-filter-btn:hover .archive-filter-btn-label,
+  html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  html.dark .archive-filter-btn:hover .archive-filter-btn-count,
+  html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-count {
+    color: rgb(var(--accent-violet-rgb) / 0.85);
+  }
+
+  /* 亮色覆盖：默认深灰保可读，hover/open 联 accent */
+  html:not(.dark) .archive-filter-btn-label {
+    color: rgb(87 83 78);
+  }
+  html:not(.dark) .archive-filter-btn-count {
+    color: rgb(120 113 108);
+  }
+  /* 亮色 hover + open 高亮 */
+  html:not(.dark) .archive-filter-btn:hover .archive-filter-btn-label,
+  html:not(.dark) .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  html:not(.dark) .archive-filter-btn:hover .archive-filter-btn-count,
+  html:not(.dark) .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-count {
+    color: rgb(var(--accent-violet-rgb) / 0.85);
+  }
+
+  /* chip：暗色基 */
+  html.dark .archive-filter-chip {
+    color: rgb(214 211 209);
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+  }
+  html.dark .archive-filter-chip:hover {
+    color: #fff;
+    border-color: rgb(var(--accent-violet-rgb) / 0.4);
+    background: rgb(var(--accent-violet-rgb) / 0.08);
+  }
+  /* chip：亮色覆盖 */
+  html:not(.dark) .archive-filter-chip {
+    color: rgb(68 64 60);
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+  html:not(.dark) .archive-filter-chip:hover {
+    color: rgb(28 25 23);
+    border-color: rgb(var(--accent-violet-rgb) / 0.4);
+    background: rgb(var(--accent-violet-rgb) / 0.06);
+  }
+
+  /* chip 内文字元素：标签名 + 计数 + hash 图标
+     hover 时联 accent 主题色（rgb(var(--accent-violet-rgb))）。
+     双前缀 html.dark / html:not(.dark) 提特异性到 (0,3,1)。 */
+  /* 暗色基：默认 stone-300，hover 联 violet */
+  html.dark .archive-filter-chip-name-text {
+    color: rgb(214 211 209);
+  }
+  html.dark .archive-filter-chip:hover .archive-filter-chip-name-text {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  /* 计数：暗色默认 gray-500，hover 联 violet 高亮 */
+  html.dark .archive-filter-chip-count-text {
+    color: rgb(120 113 108);
+  }
+  html.dark .archive-filter-chip:hover .archive-filter-chip-count-text {
+    color: rgb(var(--accent-violet-rgb) / 0.85);
+  }
+  /* hash 图标：暗色基 violet/70，hover 全亮 */
+  html.dark .archive-filter-chip-hash {
+    color: rgb(var(--accent-violet-rgb) / 0.7);
+  }
+  html.dark .archive-filter-chip:hover .archive-filter-chip-hash {
+    color: rgb(var(--accent-violet-rgb));
+  }
+
+  /* 亮色覆盖：默认 stone-600 偏深保可读，hover 联 violet */
+  html:not(.dark) .archive-filter-chip-name-text {
+    color: rgb(87 83 78);
+  }
+  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-name-text {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  html:not(.dark) .archive-filter-chip-count-text {
+    color: rgb(120 113 108);
+  }
+  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-count-text {
+    color: rgb(var(--accent-violet-rgb) / 0.85);
+  }
+  html:not(.dark) .archive-filter-chip-hash {
+    color: rgb(var(--accent-violet-rgb) / 0.75);
+  }
+  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-hash {
+    color: rgb(var(--accent-violet-rgb));
+  }
+
+  /* 浮层标题与底部「查看全部」链接 */
+  html.dark .archive-filter-panel {
+    color: rgb(214 211 209);
+  }
+  html:not(.dark) .archive-filter-panel {
+    color: rgb(68 64 60);
+  }
+  html.dark .archive-filter-close {
+    color: rgb(168 162 158);
+  }
+  html:not(.dark) .archive-filter-close {
+    color: rgb(87 83 78);
+  }
+
+  /* 关闭按钮 hover：联 accent 主题色 */
+  html.dark .archive-filter-close:hover {
+    color: rgb(var(--accent-violet-rgb));
+    background: rgb(var(--accent-violet-rgb) / 0.08);
+  }
+  html:not(.dark) .archive-filter-close:hover {
+    color: rgb(var(--accent-violet-rgb));
+    background: rgb(var(--accent-violet-rgb) / 0.06);
+  }
+
+  /* 「查看全部标签 →」链接：默认灰，hover 联 accent */
+  html.dark .archive-filter-all {
+    color: rgb(120 113 108);
+  }
+  html.dark .archive-filter-all:hover {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  html:not(.dark) .archive-filter-all {
+    color: rgb(87 83 78);
+  }
+  html:not(.dark) .archive-filter-all:hover {
+    color: rgb(var(--accent-violet-rgb));
+  }
+
+  /* ── 通用「返回 / 查看全部」链接 ──
+     .link-back：ArrowLeft「返回 X」（箭头左移）
+     .link-more：ArrowRight「查看全部 X」（箭头右移）
+     默认灰色，hover 联 accent 主题色。
+     双前缀 html.dark / html:not(.dark) 提特异性到 (0,3,1)，
+     稳压 Tailwind utility 裸覆盖（AGENTS.md 约定 #25）。 */
+  /* 暗色基 */
+  html.dark .link-back,
+  html.dark .link-more {
+    color: rgb(120 113 108);
+  }
+  html.dark .link-back:hover,
+  html.dark .link-more:hover {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  /* 亮色覆盖 */
+  html:not(.dark) .link-back,
+  html:not(.dark) .link-more {
+    color: rgb(87 83 78);
+  }
+  html:not(.dark) .link-back:hover,
+  html:not(.dark) .link-more:hover {
+    color: rgb(var(--accent-violet-rgb));
+  }
+
+  /* 箭头位移：hover 时左箭头左移 / 右箭头右移
+     用 ease-out-back（带回弹）+ 稍长时长，让位移有「弹一下」的弹性感。
+     显式拆分 transition-* 各属性，避免被 Tailwind 的 transition-* utility 覆盖。
+     !important 防止 Tailwind utility（如 transition-colors）意外覆盖 transform 过渡。 */
+  .link-back .link-arrow,
+  .link-more .link-arrow {
+    transition-property: transform, color !important;
+    transition-duration: 0.4s, 0.3s !important;
+    transition-timing-function: var(--ease-out-back), var(--ease-out-expo) !important;
+  }
+  .link-back:hover .link-arrow {
+    transform: translateX(-5px);
+  }
+  .link-more:hover .link-arrow {
+    transform: translateX(5px);
+  }
+
   .shadow-neon {
     box-shadow: var(--shadow-neon);
   }
@@ -365,8 +585,8 @@
     border: 1px solid rgb(var(--accent-violet-rgb) / 0.15);
   }
   .prose-article pre {
-    background: #0d0d1a;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--color-ink);
+    border: 1px solid rgb(var(--accent-violet-rgb) / 0.12);
     border-radius: 1rem;
     padding: 1.25rem 1.5rem;
     overflow-x: auto;
@@ -449,6 +669,40 @@
   .prose-article tbody tr:nth-child(odd) {
     background: rgba(255, 255, 255, 0.02);
   }
+
+  /* ── prose-article 亮色覆盖（html:not(.dark)）—— 同元素集中，避免散乱 ── */
+  html:not(.dark) .prose-article {
+    color: #57534e;
+  }
+  html:not(.dark) .prose-article h1,
+  html:not(.dark) .prose-article h2,
+  html:not(.dark) .prose-article h3,
+  html:not(.dark) .prose-article strong {
+    color: #1c1917;
+  }
+  html:not(.dark) .prose-article pre {
+    background: var(--color-ink);
+    border-color: rgb(var(--accent-violet-rgb) / 0.1);
+  }
+  html:not(.dark) .prose-article pre code {
+    color: #d4d4d8;
+  }
+  html:not(.dark) .prose-article code {
+    border-color: rgb(var(--accent-violet-rgb) / 0.1);
+    color: #6d28d9;
+  }
+  html:not(.dark) .prose-article table,
+  html:not(.dark) .prose-article th,
+  html:not(.dark) .prose-article td {
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+  html:not(.dark) .prose-article tbody tr:nth-child(odd) {
+    background: rgba(0, 0, 0, 0.02);
+  }
+  html:not(.dark) .prose-article thead th {
+    background: rgb(var(--accent-violet-rgb) / 0.12);
+    color: #1c1917;
+  }
 }
 
 /* ── Resume Terminal：流式打印简历模块 ── 暗/亮双主题 ── */
@@ -469,7 +723,7 @@
   --rt-list-text: #d4d4d8;
   --rt-bold: #ffffff;
   --rt-code-bg: rgb(var(--accent-violet-rgb) / 0.12);
-  --rt-code-text: #c084fc;
+  --rt-code-text: rgb(var(--accent-violet-rgb));
   --rt-code-border: rgb(var(--accent-violet-rgb) / 0.2);
   --rt-cursor: rgb(var(--accent-violet-rgb));
   --rt-cursor-done-opacity: 0.3;
@@ -761,20 +1015,6 @@ html:not(.dark) body {
   background: #fafaf9;
   color: #1c1917;
 }
-html:not(.dark) ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
-}
-html:not(.dark) ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
-html:not(.dark) .glass {
-  background: rgba(255, 255, 255, 0.7);
-  border-color: rgba(0, 0, 0, 0.06);
-}
-html:not(.dark) .glass-heavy {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(0, 0, 0, 0.08);
-}
 /* Shadow overrides — light mode */
 html:not(.dark) {
   --shadow-neon:
@@ -805,6 +1045,7 @@ html:not(.dark) {
     inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 1px 3px rgb(var(--accent-violet-rgb) / 0.03), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
+/* ── Tailwind utility 亮色覆盖（裸 CSS 压制 utility 层特异性，见 AGENTS.md #23）── */
 html:not(.dark) .border-white\/5 {
   border-color: rgba(0, 0, 0, 0.06);
 }
@@ -846,36 +1087,4 @@ html:not(.dark) .text-gray-800 {
 }
 html:not(.dark) .bg-surface {
   background: #ffffff;
-}
-html:not(.dark) .prose-article {
-  color: #57534e;
-}
-html:not(.dark) .prose-article h1,
-html:not(.dark) .prose-article h2,
-html:not(.dark) .prose-article h3,
-html:not(.dark) .prose-article strong {
-  color: #1c1917;
-}
-html:not(.dark) .prose-article pre {
-  background: #0a0a16;
-  border-color: rgba(255, 255, 255, 0.06);
-}
-html:not(.dark) .prose-article pre code {
-  color: #d4d4d8;
-}
-html:not(.dark) .prose-article code {
-  border-color: rgb(var(--accent-violet-rgb) / 0.1);
-  color: #6d28d9;
-}
-html:not(.dark) .prose-article table,
-html:not(.dark) .prose-article th,
-html:not(.dark) .prose-article td {
-  border-color: rgba(0, 0, 0, 0.12);
-}
-html:not(.dark) .prose-article tbody tr:nth-child(odd) {
-  background: rgba(0, 0, 0, 0.02);
-}
-html:not(.dark) .prose-article thead th {
-  background: rgb(var(--accent-violet-rgb) / 0.12);
-  color: #1c1917;
 }

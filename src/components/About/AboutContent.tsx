@@ -63,9 +63,9 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
     <>
       <Link
         href="/"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white transition-colors mb-8 group/back"
+        className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
       >
-        <ArrowLeft size={14} />
+        <ArrowLeft size={14} className="link-arrow" />
         返回首页
       </Link>
       <div className="relative mb-10">

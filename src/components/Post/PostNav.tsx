@@ -2,6 +2,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 interface Props {
   prev: { slug: string; title: string } | null;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function PostNav({ prev, next }: Props) {
+  const { startNavigation } = useNavigationLoading();
   if (!prev && !next) return null;
 
   return (
@@ -21,6 +23,7 @@ export default function PostNav({ prev, next }: Props) {
           <Link
             href={`/posts/${prev.slug}`}
             prefetch={false}
+            onClick={startNavigation}
             className="group flex items-start gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"
           >
             <motion.span
@@ -52,6 +55,7 @@ export default function PostNav({ prev, next }: Props) {
           <Link
             href={`/posts/${next.slug}`}
             prefetch={false}
+            onClick={startNavigation}
             className="group flex items-start justify-end gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"
           >
             <div className="min-w-0 text-right">

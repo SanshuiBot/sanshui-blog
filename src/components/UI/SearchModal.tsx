@@ -28,8 +28,14 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
   }, [open, posts]);
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 100);
-    else setQ('');
+    if (!open) {
+      setQ('');
+      return;
+    }
+    // 延迟聚焦等 DOM 就位；StrictMode 下 effect 会跑两次，
+    // 用 ref 持有定时器在 cleanup 中清，避免重复触发/卸载后回调
+    const t = setTimeout(() => inputRef.current?.focus(), 100);
+    return () => clearTimeout(t);
   }, [open]);
   useEffect(() => {
     const h = (e: KeyboardEvent) => {

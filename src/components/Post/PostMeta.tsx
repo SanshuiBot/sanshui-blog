@@ -40,9 +40,9 @@ export default function PostMeta({ post }: Props) {
       <div className="mb-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-white transition-colors group/back"
+          className="link-back inline-flex items-center gap-1.5 text-sm transition-colors duration-200 group/back"
         >
-          <ArrowLeft size={14} className="transition-transform group/back:-translate-x-1" />
+          <ArrowLeft size={14} className="link-arrow" />
           返回首页
         </Link>
       </div>
@@ -75,20 +75,6 @@ export default function PostMeta({ post }: Props) {
           </span>
         </div>
       </header>
-
-      <div className="mt-16 pt-8 border-t border-white/5">
-        <div className="flex flex-wrap gap-2">
-          {(post.tags ?? []).map((t: string) => (
-            <Link
-              key={t}
-              href={`/tags/${encodeURIComponent(t)}`}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white/5 text-gray-400 hover:bg-accent-violet/10 hover:text-accent-violet transition-all"
-            >
-              #{t}
-            </Link>
-          ))}
-        </div>
-      </div>
 
       {showTop && (
         <div className="fixed bottom-6 left-6 z-40">

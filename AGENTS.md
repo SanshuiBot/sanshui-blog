@@ -126,42 +126,52 @@ sanshui-blog/
 
 `Provider.tsx` 用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect`，避免打进首屏 chunk。新增仅客户端、非首屏必需的动效组件，照此模式。`experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']` 让大库按需引入——**不要再自定义 `splitChunks`**，会与 Next 15 SWC 内置 chunk 策略冲突，反而拆出更多碎 chunk。
 
-### 11b. 亮色为主、暗色可选
+### 12. 亮色为主、暗色可选
 
 默认 **亮色主题**。机制：`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA（滚动条/表单控件/地址栏）与默认主题一致。
 
 **改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱。
 
-### 12. 导航加载状态
+### 13. 导航加载状态
 
-`NavigationLoadingProvider`（`src/components/UI/NavigationLoading.tsx`）提供 `useNavigationLoading()` hook，返回 `{ startNavigation, done }`。`startNavigation` 延迟 300ms 显示全屏旋转加载覆盖层（快跳转根本看不到），`done` 隐藏。兜底 5 秒自动 clear。所有触发路由跳转的 `<Link>` 应调用 `startNavigation` 触发加载指示器（PostPage 挂载时 `done()`）。
+`NavigationLoadingProvider`（`src/components/UI/NavigationLoading.tsx`）提供 `useNavigationLoading()` hook，返回 `{ startNavigation, done }`。`startNavigation` 延迟 300ms 显示全屏旋转加载覆盖层（快跳转根本看不到），`done` 隐藏。兜底 5 秒自动 clear。**所有触发路由跳转的 `<Link>` 必须调用 `startNavigation`** 触发加载指示器（`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link 都加了 `onClick={startNavigation}`；`PostPage` 挂载时 `done()`）。漏加的跳转会看不到加载覆盖层，体感「卡死」。
 
-### 13. 全局搜索（⌘K）
+### 14. 全局搜索（⌘K）
 
 - 入口：`Navbar` 右上角 Search 按钮 + 全局 `⌘K` / `Ctrl+K` 快捷键。
 - 数据：`SearchModal` 首次打开时 `fetch(withBase('/posts-index.json'))`，拉取轻量索引（~10KB，只含 slug/title/date/excerpt/tags，剔除正文）。**这是刻意设计**：避免全量文章数据被序列化进根 layout 的 RSC payload。
 - 索引生成：`scripts/gen-posts-index.js` 在 `predev` / `prebuild` 时跑。
 - 全文搜索另由 Pagefind 在 build 后扫描 `out/` 生成索引（与 ⌘K 是两套机制）。
 
-### 14. MDX 渲染管线
+### 15. MDX 渲染管线
 
 `PostContent.tsx` 用 `next-mdx-remote/rsc`（服务端 MDX）+ `remark-gfm`（GFM 表格/任务列表）+ `rehype-slug`（标题锚点）+ `rehype-highlight`（代码高亮）。文章正文是 `gray-matter` 解析后的 `content` 字符串。**不要在文章 MDX 里用 React 组件**——`next-mdx-remote/rsc` 默认不注入自定义组件，要用需在 `MDXRemote` 的 `components` prop 显式传入。`CodeCopyInjector` 在客户端给代码块注入复制按钮。
 
-### 14b. 文章样式走 `.prose-article`，不是 Tailwind Typography
+### 16. 文章样式走 `.prose-article`，不是 Tailwind Typography
 
 `PostContent` / `AboutContent` 用 `<div className="prose-article">` 包裹，文章排版样式全部在 `globals.css` 的 `.prose-article` 自定义（h1/h2/h3 字号颜色、`a` 紫粉渐变、`code` 紫底、`pre` 圆角边框、`blockquote` 紫边、`li::marker` 紫色等）。`@tailwindcss/typography` 插件虽 `@plugin` 引入，但**文章页未用 `prose` 类**——`prose-article` 是手写的，改文章样式就改 `.prose-article` 这一段 CSS。
 
-### 15. TOC 只提取 h2/h3，锚点保留中文
+### 17. TOC 只提取 h2/h3，锚点保留中文
 
 `src/lib/toc.ts` 的 `extractHeadings()` 只匹配 `^#{2,3}\s+`（即 `##` 和 `###`），`#`（h1）和 `####`（h4）不会进目录。生成的 `id` 用正则 `[\w\u4e00-\u9fff\s-]` 过滤，**保留中文字符**，所以中文标题会得到中文锚点（如 `## 章节标题` → `id="章节标题"`）。rehype-slug 在 MDX 渲染侧也会生成 id，两边规则需保持一致。**新增需要进目录的标题，必须用 `##` 或 `###`。**
 
-### 16. `posts.ts` 读取层契约
+TOC 组件（`src/components/Post/TableOfContents.tsx`）的实现约定：
+
+- **桌面端**：目录 sticky 在正文**右边**（`page.tsx` 中正文在前、`TableOfContents` 在后，`lg:flex` 横排下视觉即右栏）。
+- **移动端**：抽屉式目录在正文上方（`lg:hidden` 按钮 + 浮层），屏幕窄不摆 sticky 右栏。
+- **高亮当前章节**：`IntersectionObserver` 监测视口上 30% 带（`rootMargin: '-80px 0px -70% 0px'`），回调里收集所有 intersecting entries 后按 `boundingClientRect.top` 排序取最靠上那个——解决「多标题同时进视口时高亮乱跳」与反向滚动判断。首屏默认高亮首项（`items[0]!.id`）。
+- **点击跳转**：`e.preventDefault()` + `el.scrollIntoView({behavior:'smooth'})` 平滚；`history.replaceState(null,'','#id')` 写 URL hash（刷新/分享可还原位置）但不触发原生锚点跳转。
+- **锚点不被 Navbar 遮挡**：`globals.css` 给 `.prose-article h2, .prose-article h3 { scroll-margin-top: 6rem; }`，TOC 点击 / URL hash 共用此缓冲。
+- **淡入淡出滚动条**：`.toc-scroll` 藏原生滚动条（`scrollbar-width:none` + `::-webkit-scrollbar width:0`），浮一个 `.toc-thumb` 绝对定位指示条，按滚动比例算 `top`/`height`。显隐**只**由 hover 控制（`mouseenter` 显示 / `mouseleave` 隐藏），`opacity transition` 淡入淡出；浮层 `absolute` 不占文档流 → 不挤压文字布局。几何用 `ResizeObserver` + `requestAnimationFrame` 延迟算准布局，`document.fonts.ready` 兜底等字体加载后重算。
+- **颜色联 Accent 主题**：用自定义 `.toc-link` / `.toc-link-active` 类（双前缀 `html.dark` / `html:not(.dark)` 提特异性到 (0,3,1)，见约定 #25），**不用** Tailwind utility `text-accent-violet`。`.toc-thumb` 也走 `rgb(var(--accent-violet-rgb) / α)`。
+
+### 18. `posts.ts` 读取层契约
 
 - **mtime 签名缓存**：`getAllPosts()` 用 `computeSignature()`（文件名 + `mtimeMs` 拼接）做缓存键，文件未改动时直接返回内存缓存。**不要在运行时修改 `content/posts/` 下的文件**——签名会变但 SSG 已固化，只能通过重新 `build` 生效。
 - **excerpt 兜底**：未写 `excerpt` 时取正文前 160 字并 `replace(/[#*`\[\]]/g,'')`去掉 markdown 符号。注意这个正则会**误删反引号围栏代码块的内容**，含代码开头的文章建议显式写`excerpt`。
 - **日期格式**：`data.date` 被 `new Date(data.date).toISOString().split('T')[0]` 规整成 `YYYY-MM-DD`。frontmatter 里 `date` 写 `2026-01-01` 即可，时区差异由 `toISOString()` 处理。
 
-### 17. 简历流式打印模块
+### 19. 简历流式打印模块
 
 `/about` 页内置终端式流式打印简历：
 
@@ -173,19 +183,19 @@ sanshui-blog/
 - 支持的 Markdown 语法：`#/##/###` 标题、`- xxx` 列表、`> xxx` 引用、`---` 分隔线、`**粗体**`、`` `代码` ``。**不支持完整 Markdown**（如表格、图片），仅上述行内语法。
 - 修改简历直接编辑 `content/resume.md`，无需改代码。
 
-### 18. `reactStrictMode: true` 的副作用
+### 20. `reactStrictMode: true` 的副作用
 
-开发模式下 effects 会执行两次（mount → unmount → mount）。`ResumeTerminal` 用 `startedRef` 守卫避免重复启动打印，`NavigationLoadingProvider` 用 `showTimerRef` / `fallbackRef` 守卫定时器。**新增带副作用的 client 组件时，务必做幂等清理**，否则 StrictMode 下会出现重复触发或定时器泄漏。
+开发模式下 effects 会执行两次（mount → unmount → mount）。`ResumeTerminal` 用 `startedRef` 守卫避免重复启动打印，`NavigationLoadingProvider` 用 `showTimerRef` / `fallbackRef` 守卫定时器，`SearchModal` 的延迟聚焦 `setTimeout` 用 `const t = setTimeout(...)` + `return () => clearTimeout(t)` 在 cleanup 中清。**新增带副作用的 client 组件时，务必做幂等清理**，否则 StrictMode 下会出现重复触发或定时器泄漏。
 
-### 19. `trailingSlash: true`
+### 21. `trailingSlash: true`
 
 所有路由以 `/` 结尾（如 `/posts/xxx/`）。`generateStaticParams` 与内部链接拼接都必须遵守，否则线上 404。Next `<Link>` 会自动处理，手拼 URL 时注意。
 
-### 20. sharp / postcss overrides
+### 22. sharp / postcss overrides
 
 `package.json` 的 `overrides` 锁定 `sharp: "^0.35.3"` 与 `postcss: "^8.5.20"`，保证静态导出 + `images.unoptimized: true` 场景下依赖树稳定。**升级这些包时要同步检查 overrides**，否则可能出现版本漂移导致构建失败。
 
-### 21. Accent 主题强调色系统（运行时换色）
+### 23. Accent 主题强调色系统（运行时换色）
 
 全站 6 个 accent 色（pink/violet/blue/teal/gold/rose）通过 CSS 变量 `--accent-*-rgb`（空格分隔 RGB 三元组，如 `168 85 247`）驱动，所有阴影、glow、hljs 高亮、prose-article 链接、resume-terminal、Aurora 文字渐变均经由 `rgb(var(--accent-xxx-rgb) / α)` 引用。**改 accent = 改这 6 个变量，全站联动。**
 
@@ -197,23 +207,35 @@ sanshui-blog/
 
 约定：
 
-- **新增需要 accent 色的 CSS**：用 `rgb(var(--accent-xxx-rgb) / α)`，**不要**写死 `rgba(168, 85, 247, ...)` 或 `#a855f7`，否则换色不联动。
+- **新增需要 accent 色的 CSS**：用 `rgb(var(--accent-xxx-rgb) / α)`，**不要**写死 `rgba(168, 85, 247, ...)` 或 `#a855f7`，否则换色不联动。曾有的死紫色已清：`prose-article pre` 背景 `#0d0d1a`/`#0a0a16` → `var(--color-ink)` + accent 联动 border；`resume-terminal --rt-code-text: #c084fc` → `rgb(var(--accent-violet-rgb))`。
 - **新增预设**：在 `ACCENT_PRESETS`（`src/lib/accents.ts`）追加一项，同步更新 `layout.tsx` inline script 已内联全部预设无需改。但 inline script 里 `presets` JSON 是构建期固化的，**新增预设后必须重新 build** 才能被防 FOUC script 识别。
 - **改默认预设**：改 `DEFAULT_ACCENT_ID`，inline script 的 `def` 也会跟着走。
 - **亮/暗主题与 accent 正交**：next-themes 管 `.dark` 类，AccentPicker 管 `--accent-*-rgb`，两者互不干扰。亮色 resume-terminal 原用更深紫（`#7c3aed`）提升对比度，现统一回主 accent 变量，亮模式下中等紫对比度略弱但行为一致。
 - **`noUncheckedIndexedAccess` 注意**：`hexToRgb` 里 `m[1]` 需先判 `!m[1]` 再用，否则 TS 报 `possibly undefined`。
 
-### 22. hover 变色不要走 Framer Motion，用纯 CSS
+### 24. hover 变色不要走 Framer Motion，用纯 CSS
 
 Framer Motion 的 `whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}` 会把动画后的 `color` 写成 **inline style**。CSS 变量在 inline style 中被解析成具体值（如 `rgb(168 85 247)`）后就**不再响应** `--accent-*-rgb` 的变化——切 Accent 主题色、切亮/暗模式时，标题会卡在动画那一刻的颜色上，看起来像「变白/变黑不响应主题」。
 
 **正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore` + `.post-card-link:hover`）就是这么改的。位移动画也一并迁到 CSS `transform`。
 
-### 23. Tailwind v4 utility 的 layer 优先级坑
+### 25. Tailwind v4 utility 的 layer 优先级坑
 
 Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-violet` 等）注入到 `@layer utilities` 里。而 `globals.css` 中那些 `html:not(.dark) .text-gray-500 { color: #78716c }` 亮色覆盖规则是**裸 CSS**（不在任何 `@layer` 内）。**裸 CSS 优先级高于任何 `@layer` 内的同特异性规则**，所以亮色模式下 `group-hover/link:text-accent-violet` 这类 utility hover 会被裸覆盖规则持续压制，hover 不变色。
 
 **正确做法**：需要响应 Accent 主题色联动的 hover 变色，**不要用 Tailwind utility**（`group-hover/link:text-accent-violet`），改用自定义 CSS 类（如 `.post-card-readmore`），用 `html.dark` / `html:not(.dark)` 双前缀提升特异性到 (0,3,1)，稳压裸覆盖规则。
+
+### 26. globals.css 内同一元素的规则要集中，不要散乱
+
+同一元素的暗色基与亮色覆盖（`html:not(.dark) ...`）必须写在相邻位置，避免「暗色基在文件头、亮色覆盖在文件尾」式的散乱——查样式要两头翻。**不写重复样式**：同一规则不得字面出现两次。
+
+具体已集中的块：
+
+- `::-webkit-scrollbar-thumb` / `.glass` / `.glass-heavy`：亮色覆盖并入 `@layer base` / `@layer utilities` 内暗色基旁。
+- `.prose-article` 全系列（h1/h2/h3/p/a/code/pre/blockquote/table 等）：亮色覆盖并入 prose-article 块尾。
+- Tailwind utility 亮色覆盖（`border-white/5` / `bg-white/5` / `text-gray-*` / `bg-surface` 等）：单独分组于文件尾，加「Tailwind utility 亮色覆盖」标题。
+
+**新增元素的亮色覆盖**：紧贴其暗色基写，不要另起一处散到文件尾。
 
 ---
 

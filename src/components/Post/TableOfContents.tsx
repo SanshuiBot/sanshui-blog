@@ -24,8 +24,8 @@ interface Props {
  *    不用 Tailwind utility text-accent-violet。
  *  - 淡入淡出滚动条：原生滚动条藏起来（.toc-scroll 用 scrollbar-width:none +
  *    ::-webkit-scrollbar width:0），浮一个 .toc-thumb 绝对定位指示条，按滚动比例
- *    定高度/位置；opacity transition 在「滚动中 / hover」淡入，「静止」淡出。
- *    浮层 absolute 不占文档流 → 不挤压文字布局。
+ *    定高度/位置；显隐「只」由 hover 控制（mouseenter 显示 / mouseleave 隐藏），opacity
+ *    transition 淡入淡出。浮层 absolute 不占文档流 → 不挤压文字布局。
  */
 export default function TableOfContents({ items }: Props) {
   const [activeId, setActiveId] = useState<string>(items[0]?.id ?? '');
