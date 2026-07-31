@@ -52,7 +52,8 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
-      <div className="flex gap-10">
+      {/* 桌面端：正文左、目录 sticky 右；移动端：目录抽屉在正文上方 */}
+      <div className="lg:flex lg:gap-10">
         <div className="flex-1 min-w-0 max-w-3xl">
           <PostMeta post={post} />
           <PostContent content={post.content} />

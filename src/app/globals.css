@@ -256,6 +256,54 @@
   html:not(.dark) .post-card-link:hover .post-card-readmore {
     color: rgb(var(--accent-violet-rgb));
   }
+  /* TOC 链接 —— hover/active 变色走纯 CSS + accent 变量（AGENTS.md #22/#23）
+     双前缀 html.dark / html:not(.dark) 提特异性到 (0,3,1)，稳压亮色裸覆盖规则 */
+  .toc-link {
+    color: #78716c;
+    transition: color 0.2s;
+  }
+  html.dark .toc-link:hover,
+  html:not(.dark) .toc-link:hover {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  html.dark .toc-link-active,
+  html:not(.dark) .toc-link-active {
+    color: rgb(var(--accent-violet-rgb));
+    font-weight: 600;
+  }
+  html.dark .toc-link-active::before,
+  html:not(.dark) .toc-link-active::before {
+    background: rgb(var(--accent-violet-rgb));
+  }
+  /* 淡入淡出滚动条 —— 藏原生滚动条，浮一个 .toc-thumb 绝对定位指示条
+     浮层不占文档流 → 不挤压文字布局；opacity transition 淡入淡出 */
+  .toc-scroll {
+    scrollbar-width: none; /* Firefox */
+  }
+  .toc-scroll::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chrome/Safari/Edge */
+  }
+  .toc-thumb {
+    position: absolute;
+    right: 0;
+    width: 3px;
+    border-radius: 3px;
+    background: rgb(var(--accent-violet-rgb) / 0.5);
+    opacity: 0;
+    transition:
+      opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      top 0.12s ease-out,
+      height 0.12s ease-out;
+    pointer-events: none;
+  }
+  .toc-thumb-visible {
+    opacity: 1;
+  }
+  html:not(.dark) .toc-thumb {
+    background: rgb(var(--accent-violet-rgb) / 0.7);
+  }
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
@@ -289,6 +337,11 @@
     font-weight: 600;
     color: var(--color-fg);
     margin: 2rem 0 0.75rem;
+  }
+  /* 锚点跳转后标题不被 sticky Navbar 遮挡（TOC 点击 / URL hash 共用） */
+  .prose-article h2,
+  .prose-article h3 {
+    scroll-margin-top: 6rem;
   }
   .prose-article p {
     margin-bottom: 1.25em;

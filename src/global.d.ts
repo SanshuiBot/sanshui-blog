@@ -9,6 +9,7 @@ declare module 'highlightjs-solidity' {
   import type { LanguageFn } from 'highlight.js';
   const solidity: LanguageFn;
   const yul: LanguageFn;
+  const languages = { solidity, yul };
   export { solidity, yul };
-  export default { solidity, yul };
+  export default languages;
 }
