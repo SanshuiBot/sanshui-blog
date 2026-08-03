@@ -11,13 +11,14 @@ import Tooltip from '@/components/UI/Tooltip';
 import SearchModal from '@/components/UI/SearchModal';
 import { withBase } from '@/lib/basePath';
 import { siteConfig } from '@/lib/site';
+import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 const links = [
   { href: '/', label: '首页' },
-  { href: '/archive', label: '归档' },
-  { href: '/tags', label: '标签' },
-  { href: '/about', label: '关于' },
-  { href: '/links', label: '友链' },
+  { href: '/archive/', label: '归档' },
+  { href: '/tags/', label: '标签' },
+  { href: '/about/', label: '关于' },
+  { href: '/links/', label: '友链' },
 ];
 
 export default function Navbar() {
@@ -25,6 +26,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const { startNavigation } = useNavigationLoading();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -46,7 +48,7 @@ export default function Navbar() {
         }`}
       >
         <nav className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <Link href="/" className="flex items-center gap-2 shrink-0">
+          <Link href="/" onClick={startNavigation} className="flex items-center gap-2 shrink-0">
             <Image
               src={withBase('/logo.svg')}
               width={22}
@@ -60,11 +62,15 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-6">
             {links.map((l) => {
-              const active = pathname === l.href || (l.href !== '/' && pathname.startsWith(l.href));
+              const active =
+                pathname === l.href ||
+                pathname === l.href.replace(/\/$/, '') ||
+                (l.href !== '/' && pathname.startsWith(l.href));
               return (
                 <Link
                   key={l.href}
                   href={l.href}
+                  onClick={startNavigation}
                   className={`group relative py-1 text-sm transition-colors duration-200 cursor-pointer ${
                     active
                       ? 'text-white font-semibold'
@@ -134,9 +140,16 @@ export default function Navbar() {
                 >
                   <Link
                     href={l.href}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() => {
+                      setMobileOpen(false);
+                      startNavigation();
+                    }}
                     className={`text-3xl font-bold tracking-tight transition-all ${
-                      pathname === l.href ? 'text-aurora' : 'text-gray-400 hover:text-white'
+                      pathname === l.href ||
+                      pathname === l.href.replace(/\/$/, '') ||
+                      (l.href !== '/' && pathname.startsWith(l.href))
+                        ? 'text-aurora'
+                        : 'text-gray-400 hover:text-white'
                     }`}
                   >
                     {l.label}

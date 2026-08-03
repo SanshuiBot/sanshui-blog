@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { withBase } from '@/lib/basePath';
+import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 interface SearchPost {
   slug: string;
@@ -17,6 +18,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
   const [q, setQ] = useState('');
   const [posts, setPosts] = useState<SearchPost[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { startNavigation } = useNavigationLoading();
 
   // 首次打开时拉取轻量索引（~10KB），不再走 RSC payload
   useEffect(() => {
@@ -115,8 +117,11 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                     transition={{ delay: i * 0.03 }}
                   >
                     <Link
-                      href={`/posts/${p.slug}`}
-                      onClick={onClose}
+                      href={`/posts/${p.slug}/`}
+                      onClick={() => {
+                        onClose();
+                        startNavigation();
+                      }}
                       className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors group"
                     >
                       <div className="flex-1 min-w-0">

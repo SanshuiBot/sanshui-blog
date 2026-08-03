@@ -41,7 +41,7 @@ export default async function TagPage({ params }: Props) {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
       <Link
-        href="/tags"
+        href="/tags/"
         className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
       >
         <ArrowLeft size={14} className="link-arrow" />

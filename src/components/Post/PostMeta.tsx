@@ -5,6 +5,7 @@ import Link from 'next/link';
 import readingTime from 'reading-time';
 import Tooltip from '@/components/UI/Tooltip';
 import CodeCopyInjector from './CodeCopyInjector';
+import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 interface Props {
   post: {
@@ -23,6 +24,7 @@ export default function PostMeta({ post }: Props) {
     [post.content],
   );
   const [showTop, setShowTop] = useState(false);
+  const { startNavigation } = useNavigationLoading();
 
   useEffect(() => {
     const h = () => setShowTop(window.scrollY > 400);
@@ -52,7 +54,8 @@ export default function PostMeta({ post }: Props) {
           {(post.tags ?? []).map((t: string) => (
             <Link
               key={t}
-              href={`/tags/${encodeURIComponent(t)}`}
+              href={`/tags/${encodeURIComponent(t)}/`}
+              onClick={startNavigation}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-violet/10 text-gray-400 hover:bg-accent-violet/20 transition-colors"
             >
               <Tag size={10} />

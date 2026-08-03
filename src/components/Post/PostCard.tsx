@@ -20,7 +20,7 @@ export default function PostCard({ post, index }: { post: Post; index: number })
   const { startNavigation } = useNavigationLoading();
   const router = useRouter();
   // 不用 withBase()：next/link 的 <Link> 和 router.prefetch 都会自动注入 basePath
-  const postHref = `/posts/${post.slug}`;
+  const postHref = `/posts/${post.slug}/`;
   const prefetchedRef = useRef(false);
 
   const onCardMouseEnter = () => {
@@ -141,7 +141,8 @@ export default function PostCard({ post, index }: { post: Post; index: number })
                     transition={{ type: 'spring', stiffness: 200, damping: 15, delay: i * 0.03 }}
                   >
                     <Link
-                      href={`/tags/${encodeURIComponent(t)}`}
+                      href={`/tags/${encodeURIComponent(t)}/`}
+                      onClick={startNavigation}
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-gray-400 hover:text-white transition-colors`}
                     >
                       <Tag size={9} />

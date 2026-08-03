@@ -21,7 +21,7 @@ export default function PostNav({ prev, next }: Props) {
           transition={{ type: 'spring', stiffness: 200, damping: 15 }}
         >
           <Link
-            href={`/posts/${prev.slug}`}
+            href={`/posts/${prev.slug}/`}
             prefetch={false}
             onClick={startNavigation}
             className="group flex items-start gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"
@@ -53,7 +53,7 @@ export default function PostNav({ prev, next }: Props) {
           className="sm:col-start-2"
         >
           <Link
-            href={`/posts/${next.slug}`}
+            href={`/posts/${next.slug}/`}
             prefetch={false}
             onClick={startNavigation}
             className="group flex items-start justify-end gap-3 p-4 rounded-xl glass border border-white/5 hover:border-white/20"

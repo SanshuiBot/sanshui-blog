@@ -3,11 +3,13 @@ import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from
 import { Hash } from 'lucide-react';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
+import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 function TagItem({ name, count, color }: { name: string; count: number; color: string }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [showRipple, setShowRipple] = useState(false);
+  const { startNavigation } = useNavigationLoading();
 
   // Mouse-following spotlight
   const mx = useMotionValue(50);
@@ -59,7 +61,8 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
       <div style={{ perspective: '600px' }}>
         <Link
           ref={ref}
-          href={`/tags/${encodeURIComponent(name)}`}
+          href={`/tags/${encodeURIComponent(name)}/`}
+          onClick={startNavigation}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
           className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass border border-white/5 overflow-hidden"
