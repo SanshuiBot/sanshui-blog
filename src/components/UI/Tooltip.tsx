@@ -19,7 +19,7 @@ import { useState, useRef, type ReactNode } from 'react';
  *  - 玻璃态背景 + accent 描边，带淡入 + 上浮动画
  *  - hover/focus 显示，延迟 80ms 显示 / 60ms 隐藏，避免快速划过闪烁
  */
-export interface TooltipProps {
+interface TooltipProps {
   /** 提示文本 */
   label: string;
   /** 子元素（被包裹的按钮） */

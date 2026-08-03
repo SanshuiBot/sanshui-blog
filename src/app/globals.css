@@ -975,15 +975,6 @@ body::after {
 .stop-accent-blue {
   stop-color: rgb(var(--accent-blue-rgb));
 }
-.stop-accent-teal {
-  stop-color: rgb(var(--accent-teal-rgb));
-}
-.stop-accent-gold {
-  stop-color: rgb(var(--accent-gold-rgb));
-}
-.stop-accent-rose {
-  stop-color: rgb(var(--accent-rose-rgb));
-}
 
 /* Light mode grid and glow */
 html:not(.dark) body::before {
@@ -1081,9 +1072,6 @@ html:not(.dark) .text-gray-600 {
 }
 html:not(.dark) .text-gray-700 {
   color: #d6d3d1;
-}
-html:not(.dark) .text-gray-800 {
-  color: #e7e5e4;
 }
 html:not(.dark) .bg-surface {
   background: #ffffff;
