@@ -4,6 +4,7 @@ import Github from '@/components/UI/GithubIcon';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import ResumeTerminal from './ResumeTerminal';
+import { siteConfig } from '@/lib/site';
 
 const skills = [
   { label: 'Next.js', level: 90, color: 'from-accent-pink to-accent-rose' },
@@ -74,7 +75,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
           关于
         </span>
         <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
-          你好，我是<span className="text-aurora">三水</span>
+          你好，我是<span className="text-aurora">{siteConfig.name}</span>
         </h1>
       </div>
       <div className="prose-article mb-16">
@@ -206,7 +207,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
         <p className="text-gray-400 mb-6">如果你有任何问题或想法，欢迎通过以下方式联系我。</p>
         <div className="flex flex-wrap gap-3">
           <motion.a
-            href="https://github.com/SanshuiBot"
+            href={siteConfig.github}
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
@@ -217,7 +218,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
             GitHub
           </motion.a>
           <motion.a
-            href="mailto:localhost6@foxmail.com"
+            href={`mailto:${siteConfig.email}`}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className={`${btnClass} bg-white/5 text-gray-300 border border-white/10 hover:border-accent-violet/40`}

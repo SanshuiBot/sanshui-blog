@@ -15,6 +15,7 @@ import './globals.css';
 import { sans, mono } from './fonts';
 import Provider from '@/components/Provider';
 import { BASE_PATH } from '@/lib/basePath';
+import { siteConfig } from '@/lib/site';
 import {
   ACCENT_STORAGE_KEY,
   CUSTOM_ACCENT_ID,
@@ -23,19 +24,17 @@ import {
   ACCENT_PRESETS,
 } from '@/lib/accents';
 
-const base = 'https://sanshuibot.github.io/sanshui-blog';
-
 export const metadata: Metadata = {
-  metadataBase: new URL(base),
-  title: { default: '三水 | 个人博客', template: '%s | 三水' },
-  description: '记录技术思考、生活感悟与创作灵感',
-  keywords: ['三水', '个人博客', '技术博客', 'Next.js', 'React', 'TypeScript'],
-  authors: [{ name: '三水', url: `${base}/about` }],
+  metadataBase: new URL(siteConfig.url),
+  title: { default: siteConfig.title, template: `%s | ${siteConfig.name}` },
+  description: siteConfig.description,
+  keywords: [siteConfig.name, '个人博客', '技术博客', 'Next.js', 'React', 'TypeScript'],
+  authors: [{ name: siteConfig.name, url: `${siteConfig.url}/about` }],
   openGraph: {
-    title: '三水 | 个人博客',
-    description: '记录技术思考、生活感悟与创作灵感',
-    url: base,
-    siteName: '三水博客',
+    title: siteConfig.title,
+    description: siteConfig.description,
+    url: siteConfig.url,
+    siteName: siteConfig.blogName,
     locale: 'zh_CN',
   },
   twitter: { card: 'summary_large_image' },

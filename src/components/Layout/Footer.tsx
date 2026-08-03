@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Mail, ArrowUp, Rss } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
 import Tooltip from '@/components/UI/Tooltip';
+import { siteConfig } from '@/lib/site';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useState } from 'react';
 
@@ -55,7 +56,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-12">
           <div>
             <Link href="/" className="text-xl font-bold tracking-tight text-aurora">
-              三水
+              {siteConfig.name}
             </Link>
             <p className="mt-3 text-sm text-gray-500 leading-relaxed max-w-xs">
               记录技术思考与创作灵感。
@@ -84,7 +85,7 @@ export default function Footer() {
             </h3>
             <div className="space-y-3">
               <a
-                href="https://github.com/SanshuiBot"
+                href={siteConfig.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="footer-link inline-flex items-center gap-2 text-sm"
@@ -94,7 +95,7 @@ export default function Footer() {
               </a>
               <br />
               <a
-                href="mailto:localhost6@foxmail.com"
+                href={`mailto:${siteConfig.email}`}
                 className="footer-link inline-flex items-center gap-2 text-sm"
               >
                 <Mail size={14} />
@@ -105,7 +106,7 @@ export default function Footer() {
         </div>
         <div className="mt-14 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-600">
-            &copy; {new Date().getFullYear()} 三水. All rights reserved.
+            &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
           </p>
           <p className="text-xs text-gray-600 flex items-center gap-1">
             Next.js &bull; MDX &bull; Tailwind CSS <Rss size={12} className="opacity-40" />

@@ -12,10 +12,11 @@
 import type { Metadata } from 'next';
 import AboutContent from '@/components/About/AboutContent';
 import { getResumeMarkdown } from '@/lib/resume';
+import { siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: '关于',
-  description: '关于三水个人博客',
+  description: `关于${siteConfig.name}个人博客`,
 };
 
 export default function AboutPage() {

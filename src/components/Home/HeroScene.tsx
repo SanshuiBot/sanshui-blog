@@ -3,12 +3,13 @@ import { useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { ArrowDown, Mail, Hash, Archive, User, Terminal, Atom, Database } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
+import { siteConfig } from '@/lib/site';
 import { useState } from 'react';
 import Link from 'next/link';
 
 const social = [
-  { icon: Github, href: 'https://github.com/SanshuiBot', label: 'GitHub' },
-  { icon: Mail, href: 'mailto:localhost6@foxmail.com', label: 'Email' },
+  { icon: Github, href: siteConfig.github, label: 'GitHub' },
+  { icon: Mail, href: `mailto:${siteConfig.email}`, label: 'Email' },
 ];
 
 const techStack = [
@@ -163,7 +164,7 @@ export default function HeroScene() {
           {/* Title */}
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05] mb-6">
             <span className="block text-white">你好，我是</span>
-            <span className="block mt-3 text-aurora">三水</span>
+            <span className="block mt-3 text-aurora">{siteConfig.name}</span>
           </h1>
 
           {/* Subtitle */}

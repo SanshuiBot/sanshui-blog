@@ -6,12 +6,13 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { BASE_PATH } from '@/lib/basePath';
+import { siteConfig } from '@/lib/site';
 
 export default function LinksContent() {
   const [imgLoaded, setImgLoaded] = useState<boolean | undefined>(undefined);
   const friend = {
     name: 'GitHub',
-    url: 'https://github.com/SanshuiBot',
+    url: siteConfig.github,
     avatar: `${BASE_PATH}/github.png`,
     desc: '个人开源项目托管平台',
   };
@@ -97,7 +98,7 @@ export default function LinksContent() {
         <p className="text-gray-400 mb-5">欢迎在 GitHub 仓库提 Issue 或发邮件给我。</p>
         <div className="flex flex-wrap gap-3">
           <motion.a
-            href="mailto:localhost6@foxmail.com"
+            href={`mailto:${siteConfig.email}`}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-sm font-medium"
@@ -106,7 +107,7 @@ export default function LinksContent() {
             联系我
           </motion.a>
           <motion.a
-            href="https://github.com/SanshuiBot"
+            href={siteConfig.github}
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}

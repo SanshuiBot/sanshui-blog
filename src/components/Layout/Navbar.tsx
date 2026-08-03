@@ -10,6 +10,7 @@ import AccentPicker from '@/components/UI/AccentPicker';
 import Tooltip from '@/components/UI/Tooltip';
 import SearchModal from '@/components/UI/SearchModal';
 import { withBase } from '@/lib/basePath';
+import { siteConfig } from '@/lib/site';
 
 const links = [
   { href: '/', label: '首页' },
@@ -50,11 +51,11 @@ export default function Navbar() {
               src={withBase('/logo.svg')}
               width={22}
               height={22}
-              alt="三水"
+              alt={siteConfig.name}
               className="shrink-0"
               priority
             />
-            <span className="text-lg font-bold tracking-tight text-aurora">三水</span>
+            <span className="text-lg font-bold tracking-tight text-aurora">{siteConfig.name}</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
