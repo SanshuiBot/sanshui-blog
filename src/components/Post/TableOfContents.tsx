@@ -188,9 +188,9 @@ export default function TableOfContents({ items }: Props) {
 
   return (
     <>
-      {/* 桌面端 sticky 目录 */}
+      {/* 桌面端 sticky 目录（lg:order-2：正文在 DOM 前置后，用它恢复右栏位置） */}
       <nav
-        className="hidden lg:block sticky top-28 w-56 shrink-0 self-start ml-8"
+        className="hidden lg:block lg:order-2 sticky top-28 w-56 shrink-0 self-start ml-8"
         aria-label="目录"
       >
         <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">

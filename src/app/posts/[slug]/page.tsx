@@ -52,9 +52,11 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
-      {/* 桌面端：正文左、目录 sticky 右；移动端：目录抽屉在正文上方 */}
+      {/* 桌面端：正文左、目录 sticky 右；移动端：目录抽屉在正文上方。
+          TOC 在 DOM 中置前，lg 下用 order 恢复「正文左、目录右」 */}
       <div className="lg:flex lg:gap-10">
-        <div className="flex-1 min-w-0 max-w-3xl">
+        <TableOfContents items={headings} />
+        <div className="flex-1 min-w-0 max-w-3xl lg:order-1">
           <PostMeta post={post} />
           <PostContent content={post.content} />
           <PostNav
@@ -62,7 +64,6 @@ export default async function PostPage({ params }: Props) {
             next={next ? { slug: next.slug, title: next.title } : null}
           />
         </div>
-        <TableOfContents items={headings} />
       </div>
       <PostDone />
     </div>
