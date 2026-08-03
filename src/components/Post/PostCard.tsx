@@ -142,7 +142,6 @@ export default function PostCard({ post, index }: { post: Post; index: number })
                   >
                     <Link
                       href={`/tags/${encodeURIComponent(t)}/`}
-                      onClick={startNavigation}
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-gray-400 hover:text-white transition-colors`}
                     >
                       <Tag size={9} />

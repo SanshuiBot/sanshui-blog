@@ -6,7 +6,6 @@ import Tooltip from '@/components/UI/Tooltip';
 import { siteConfig } from '@/lib/site';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useState } from 'react';
-import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 const navLinks = [
   { href: '/', label: '首页' },
@@ -18,7 +17,6 @@ const navLinks = [
 
 export default function Footer() {
   const [showTop, setShowTop] = useState(false);
-  const { startNavigation } = useNavigationLoading();
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, 'change', (v) => setShowTop(v > 500));
 
@@ -57,7 +55,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-12">
           <div>
-            <Link href="/" onClick={startNavigation} className="text-xl font-bold tracking-tight text-aurora">
+            <Link href="/" className="text-xl font-bold tracking-tight text-aurora">
               {siteConfig.name}
             </Link>
             <p className="mt-3 text-sm text-gray-500 leading-relaxed max-w-xs">
@@ -73,7 +71,6 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    onClick={startNavigation}
                     className="footer-link text-sm"
                   >
                     {link.label}

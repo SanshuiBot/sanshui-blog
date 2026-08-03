@@ -32,12 +32,11 @@ sanshui-blog/
 │   │   ├── page.tsx         # 首页：Hero + Stats + Featured + 文章网格 + 预取 <link>
 │   │   ├── globals.css      # Tailwind v4 @theme 设计令牌 + 各模块样式
 │   │   ├── fonts.ts         # Inter (sans) + JetBrains Mono (mono)，next/font
-│   │   ├── loading.tsx      # 全局骨架屏
 │   │   ├── not-found.tsx    # 404（粒子动画）
 │   │   ├── about/           # 关于页（简历流式打印）
 │   │   ├── archive/         # 归档（按年份分组）
 │   │   ├── tags/[tag]/      # 标签云 + 按标签筛选
-│   │   ├── posts/[slug]/    # 文章详情：generateStaticParams + generateMetadata
+│   │   ├── posts/[slug]/    # 文章详情：generateStaticParams + generateMetadata（唯一保留 loading.tsx 骨架屏的路由）
 │   │   └── links/           # 友链
 │   ├── components/
 │   │   ├── Layout/          # Navbar · Footer · ScrollProgress
@@ -134,7 +133,7 @@ sanshui-blog/
 
 ### 13. 导航加载状态
 
-`NavigationLoadingProvider`（`src/components/UI/NavigationLoading.tsx`）提供 `useNavigationLoading()` hook，返回 `{ startNavigation, done }`。`startNavigation` 延迟 300ms 显示全屏旋转加载覆盖层（快跳转根本看不到），`done` 隐藏。兜底 5 秒自动 clear。**所有触发路由跳转的 `<Link>` 必须调用 `startNavigation`** 触发加载指示器（`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link 都加了 `onClick={startNavigation}`；`PostPage` 挂载时 `done()`）。漏加的跳转会看不到加载覆盖层，体感「卡死」。
+`NavigationLoadingProvider`（`src/components/UI/NavigationLoading.tsx`）提供 `useNavigationLoading()` hook，返回 `{ startNavigation, done }`。`startNavigation` 延迟 300ms 显示全屏旋转加载覆盖层（快跳转根本看不到），`done` 隐藏。兜底 5 秒自动 clear。**只有跳转到文章详情页（`/posts/...`）的 `<Link>` 才调用 `startNavigation`**（`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link、`SearchModal` 的搜索结果 Link、`FeaturedPost` 的标题/阅读全文 Link；`PostPage` 挂载时 `done()`）。**导航、标签、归档、友链等其他入口一律不加**——非文章详情跳转出现 loading 覆盖层会严重影响体验。新增文章详情跳转时记得补 `onClick={startNavigation}`，漏加的跳转会看不到加载覆盖层，体感「卡死」。
 
 ### 14. 全局搜索（⌘K）
 

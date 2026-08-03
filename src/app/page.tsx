@@ -16,7 +16,7 @@ import PostCard from '@/components/Post/PostCard';
 import HeroScene from '@/components/Home/HeroScene';
 import StatsGrid from '@/components/Home/StatsGrid';
 import FeaturedPost from '@/components/Home/FeaturedPost';
-import ViewAllLink from '@/components/Home/ViewAllLink';
+import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 export default function Home() {
@@ -50,7 +50,7 @@ export default function Home() {
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">最新文章</h2>
             <p className="mt-2 text-gray-500 text-sm">共 {posts.length} 篇文章</p>
           </div>
-          <ViewAllLink
+          <Link
             href="/archive/"
             className="link-more hidden sm:inline-flex items-center gap-1.5 text-sm font-medium "
           >
@@ -59,7 +59,7 @@ export default function Home() {
               size={14}
               className="link-arrow"
             />
-          </ViewAllLink>
+          </Link>
         </div>
         {remaining.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -71,13 +71,13 @@ export default function Home() {
           <div className="text-center py-20 text-gray-600">暂无更多文章</div>
         )}
         <div className="sm:hidden mt-8 text-center">
-          <ViewAllLink
+          <Link
             href="/archive/"
             className="link-more inline-flex items-center gap-1.5 text-sm font-medium "
           >
             查看全部文章
             <ArrowRight size={14} className="link-arrow" />
-          </ViewAllLink>
+          </Link>
         </div>
       </section>
     </>

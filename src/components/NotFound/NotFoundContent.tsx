@@ -1,10 +1,8 @@
 'use client';
 import { Home, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 export default function NotFoundContent() {
-  const { startNavigation } = useNavigationLoading();
   return (
     <div className="min-h-[80dvh] flex items-center justify-center px-4 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
@@ -34,7 +32,6 @@ export default function NotFoundContent() {
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Link
             href="/"
-            onClick={startNavigation}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
           >
             <Home size={16} />
@@ -42,7 +39,6 @@ export default function NotFoundContent() {
           </Link>
           <Link
             href="/archive/"
-            onClick={startNavigation}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 text-gray-300 text-sm font-medium border border-white/10 hover:scale-105 active:scale-95 transition-transform hover:border-accent-violet/40"
           >
             <ArrowLeft size={16} />

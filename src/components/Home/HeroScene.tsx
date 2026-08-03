@@ -6,7 +6,6 @@ import Github from '@/components/UI/GithubIcon';
 import { siteConfig } from '@/lib/site';
 import { useState } from 'react';
 import Link from 'next/link';
-import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 const social = [
   { icon: Github, href: siteConfig.github, label: 'GitHub' },
@@ -26,7 +25,6 @@ export default function HeroScene() {
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
   const y = useTransform(scrollY, [0, 400], [0, 80]);
   const [ctaDir, setCtaDir] = useState<'left' | 'right' | 'center'>('center');
-  const { startNavigation } = useNavigationLoading();
   const btnRef = useRef<HTMLAnchorElement>(null);
   const btnX = useMotionValue(0);
   const btnY = useMotionValue(0);
@@ -290,7 +288,6 @@ export default function HeroScene() {
               >
                 <Link
                   href={href}
-                  onClick={startNavigation}
                   className="group relative inline-flex items-center gap-2 px-5 py-2 rounded-full glass border border-white/5 overflow-hidden"
                 >
                   {/* Hover glow backdrop */}

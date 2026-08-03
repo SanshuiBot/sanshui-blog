@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useRef } from 'react';
 import type { Post } from '@/lib/types';
+import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 interface Props {
   post: Post;
@@ -11,6 +12,7 @@ interface Props {
 
 export default function FeaturedPost({ post }: Props) {
   const ref = useRef<HTMLDivElement>(null);
+  const { startNavigation } = useNavigationLoading();
   const mx = useMotionValue(50);
   const my = useMotionValue(50);
   const smx = useSpring(mx, { stiffness: 100, damping: 20 });
@@ -62,6 +64,7 @@ export default function FeaturedPost({ post }: Props) {
           <Link
             href={`/posts/${post.slug}/`}
             prefetch={false}
+            onClick={startNavigation}
             className="hover:text-accent-violet transition-colors"
           >
             {post.title}
@@ -71,6 +74,7 @@ export default function FeaturedPost({ post }: Props) {
         <Link
           href={`/posts/${post.slug}/`}
           prefetch={false}
+          onClick={startNavigation}
           className="inline-flex items-center gap-2 text-sm font-medium text-accent-violet hover:gap-3 transition-all hover:text-accent-pink"
         >
           阅读全文

@@ -12,7 +12,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Filter, Hash, X } from 'lucide-react';
-import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 interface TagItem {
   name: string;
@@ -21,7 +20,6 @@ interface TagItem {
 
 export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
   const [open, setOpen] = useState(false);
-  const { startNavigation } = useNavigationLoading();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 点击外部关闭
@@ -91,10 +89,7 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
               <Link
                 key={t.name}
                 href={`/tags/${encodeURIComponent(t.name)}/`}
-                onClick={() => {
-                  setOpen(false);
-                  startNavigation();
-                }}
+                onClick={() => setOpen(false)}
                 className="archive-filter-chip archive-filter-chip-name archive-filter-chip-count group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs glass border border-white/5 hover:border-accent-violet/40 transition-colors duration-200"
               >
                 <Hash
@@ -114,10 +109,7 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
           <div className="mt-3 pt-3 border-t border-white/10">
             <Link
               href="/tags/"
-              onClick={() => {
-                setOpen(false);
-                startNavigation();
-              }}
+              onClick={() => setOpen(false)}
               className="archive-filter-all block text-center text-xs transition-colors duration-200"
             >
               查看全部标签 →
