@@ -9,7 +9,7 @@
 | 用途     | 命令                                      | 备注                                                                                                                                                                                                                                              |
 | -------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 开发     | `npm run dev`                             | `predev` 先跑 `scripts/predev.js`（生成 ConsoleNinja 兼容的 `.next/routes-manifest.json`）+ `scripts/gen-posts-index.js`（生成 `public/posts-index.json`）。开发模式 **不设** `NEXT_BUILD`，因此无 `basePath` / `assetPrefix` / `output:export`。 |
-| 生产构建 | `npm run build`                           | `prebuild` 重新生成 `posts-index.json` → `cross-env NEXT_BUILD=1 next build --no-lint`（静态导出到 `out/`）→ `pagefind --site out`（生成全文搜索索引）。                                                                                          |
+| 生产构建 | `npm run build`                           | `prebuild` 重新生成 `posts-index.json` → `cross-env NEXT_BUILD=1 next build --no-lint`（静态导出到 `out/`）→ `pagefind --site out`（生成全文搜索索引）→ `scripts/gen-dotted-tag-payloads.js`（为含点号标签如 `Next.js` 补 RSC payload 副本，见约定 #27）。 |
 | Lint     | `npm run lint` / `npm run lint:fix`       | ESLint v9 flat config（`eslint.config.mjs`，通过 `FlatCompat` 继承 `next/core-web-vitals` + `next/typescript`）。构建脚本带 `--no-lint`，CI/本地须单独跑。                                                                                        |
 | 格式化   | `npm run format` / `npm run format:check` | Prettier：2 空格、单引号、`printWidth: 100`、`trailingComma: "all"`、`endOfLine: "lf"`（见 `.prettierrc`）。                                                                                                                                      |
 | 预览产物 | `npx serve out`                           | 本地起 HTTP 服务器看构建结果。                                                                                                                                                                                                                    |
@@ -235,6 +235,12 @@ Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-vi
 - Tailwind utility 亮色覆盖（`border-white/5` / `bg-white/5` / `text-gray-*` / `bg-surface` 等）：单独分组于文件尾，加「Tailwind utility 亮色覆盖」标题。
 
 **新增元素的亮色覆盖**：紧贴其暗色基写，不要另起一处散到文件尾。
+
+### 27. 含点号标签（如 `Next.js`）的 RSC payload 路径坑
+
+Next `<Link>` 对含 `.` 的路径段（如 `/tags/Next.js/`）按「文件路径」处理，**渲染时会剥离尾斜杠**（`/tags/Next.js/` → `/tags/Next.js`），其他标签（如 `/tags/前端/`）不受影响。这导致客户端软导航请求 RSC payload 走 `/tags/Next.js.txt`，而静态导出实际生成在 `/tags/Next.js/index.txt` → 线上 404（页面能打开，但控制台报错、软导航降级）。
+
+**修复**：`scripts/gen-dotted-tag-payloads.js` 在 build 流水线末尾（`pagefind` 之后）扫描 `out/tags/`，把含点号目录的 `index.txt` 复制为 `<名字>.txt`，补齐客户端实际请求的路径。**新增含点号标签后无需改代码**——脚本自动处理；但必须重新 `npm run build` 才生效。
 
 ---
 
