@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { ArrowDown, Mail, Hash, Archive, User, Terminal, Atom, Database } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
@@ -20,7 +20,6 @@ const techStack = [
 
 export default function HeroScene() {
   const sectionRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const { scrollY } = useScroll();
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
   const y = useTransform(scrollY, [0, 400], [0, 80]);
@@ -47,94 +46,12 @@ export default function HeroScene() {
     setCtaDir('center');
   };
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    // 读取 Accent 主题色 CSS 变量，用于 Canvas strokeStyle（Canvas 无法直接用 CSS 变量）
-    const accentViolet = getComputedStyle(document.documentElement)
-      .getPropertyValue('--accent-violet-rgb')
-      .trim();
-    const parts = accentViolet.split(/\s+/).map(Number);
-    const vr = parts[0] ?? 168;
-    const vg = parts[1] ?? 85;
-    const vb = parts[2] ?? 247;
-    let w = 0,
-      h = 0;
-    const particles: {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      r: number;
-      alpha: number;
-      hue: number;
-    }[] = [];
-    const resize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-    const count = Math.min(60, Math.floor((w * h) / 15000));
-    for (let i = 0; i < count; i++) {
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        r: Math.random() * 1.5 + 0.5,
-        alpha: Math.random() * 0.4 + 0.1,
-        hue: [280, 320, 200, 170, 40][Math.floor(Math.random() * 5)]!,
-      });
-    }
-    let raf: number;
-    const draw = () => {
-      ctx.clearRect(0, 0, w, h);
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0) p.x = w;
-        if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h;
-        if (p.y > h) p.y = 0;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},70%,65%,${p.alpha})`;
-        ctx.fill();
-      }
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i]!.x - particles[j]!.x;
-          const dy = particles[i]!.y - particles[j]!.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i]!.x, particles[i]!.y);
-            ctx.lineTo(particles[j]!.x, particles[j]!.y);
-            ctx.strokeStyle = `rgba(${vr},${vg},${vb},${0.04 * (1 - dist / 120)})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        }
-      }
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
-
   return (
     <motion.section
       ref={sectionRef}
       style={{ opacity, y }}
       className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden"
     >
-      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" aria-hidden="true" />
       <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full bg-accent-violet/5 blur-[150px] animate-float pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] rounded-full bg-accent-pink/4 blur-[130px] animate-float-delayed pointer-events-none" />
       <div

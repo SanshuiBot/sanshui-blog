@@ -11,6 +11,7 @@ const ScrollProgress = dynamic(() => import('@/components/Layout/ScrollProgress'
   ssr: false,
 });
 const ClickEffect = dynamic(() => import('@/components/UI/ClickEffect'), { ssr: false });
+const ParticleField = dynamic(() => import('@/components/UI/ParticleField'), { ssr: false });
 
 export default function Provider({ children }: { children: React.ReactNode }) {
   return (
@@ -19,6 +20,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
         <CursorGlow />
         <ScrollProgress />
         <ClickEffect />
+        <ParticleField />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />
