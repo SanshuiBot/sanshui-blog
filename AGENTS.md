@@ -259,3 +259,19 @@ Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-vi
 ## 排查路由 / 结构时以 `src/app/` 为准
 
 `out/` 是 `npm run build` 的静态导出产物，在 `.gitignore` 中、未被 git 跟踪。排查路由时以 `src/app/` 为准，不要把 `out/` 的旧产物当成当前结构，也不要手动清理 `out/`——下次 `build` 会整体覆盖。
+
+---
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs live as GitHub issues, operated via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical triage labels, each equal to its role name: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
