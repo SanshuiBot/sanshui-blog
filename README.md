@@ -65,6 +65,7 @@
 | **图标** | Lucide React + 自定义 SVG 图标（无 react-icons 整包依赖）        |
 | **内容** | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)      |
 | **搜索** | Pagefind (静态全文搜索，构建时自动索引)                          |
+| **测试** | Vitest 4（lib 层纯函数与契约单测，`tests/`）                     |
 | **部署** | GitHub Pages + GitHub Actions 自动 CI/CD                         |
 
 ---
@@ -82,31 +83,41 @@ sanshui-blog/
 ├── src/
 │   ├── app/                    # Next.js App Router 页面
 │   │   ├── page.tsx            # 首页 (Hero + Stats + Featured + PostList)
-│   │   ├── layout.tsx          # 根布局 (Provider 包裹，favicon metadata)
+│   │   ├── layout.tsx          # 根布局 (Providers/AmbientEffects/AppShell + favicon metadata + 防 FOUC accent 脚本)
 │   │   ├── globals.css         # Tailwind v4 + 自定义设计系统 + 简历模块双主题
 │   │   ├── fonts.ts            # Inter + JetBrains Mono 字体配置
 │   │   ├── not-found.tsx       # 404 页面 (粒子动画)
-│   │   ├── loading.tsx         # 全局骨架屏
 │   │   ├── about/              # 关于页 (技能条 + 技术栈 + 流式简历)
 │   │   ├── archive/            # 归档 (按年份分组)
 │   │   ├── tags/               # 标签云 + 按标签筛选
-│   │   ├── posts/[slug]/       # 文章详情 (RSC MDX 渲染)
+│   │   ├── posts/[slug]/       # 文章详情 (RSC MDX 渲染，含 loading.tsx 骨架屏)
 │   │   └── links/              # 友链
 │   ├── components/
+│   │   ├── Providers.tsx       # 纯 Context 组合 (next-themes + 导航加载)
+│   │   ├── AmbientEffects.tsx  # 全局动效注册表 (懒加载 + reduced-motion 兜底)
+│   │   ├── AppShell.tsx        # 布局壳 (Navbar + main + Footer)
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
 │   │   ├── Home/               # HeroScene · StatsGrid · FeaturedPost
-│   │   ├── Post/               # PostCard · PostContent · PostMeta · TOC
-│   │   ├── About/              # ResumeTerminal (流式打印简历)
-│   │   └── UI/                 # CursorGlow · GithubIcon · SearchModal · ThemeToggle · NavigationLoading
+│   │   ├── Post/               # PostCard · PostContent · PostMeta · PostNav · PostDone · TableOfContents · CodeCopyInjector
+│   │   ├── About/              # AboutContent · ResumeTerminal (流式打印简历)
+│   │   ├── Links/ · NotFound/
+│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · GithubIcon · useDismiss
 │   └── lib/
 │       ├── types.ts            # Post 类型定义（server-only）
-│       ├── posts.ts            # 文章读取 (mtime 签名缓存 + decodeURIComponent)
-│       ├── toc.ts              # Markdown h2/h3 提取（保留中文锚点）
-│       ├── resume.ts           # 简历读取 (构建期 fs.readFileSync)
-│       └── basePath.ts         # 构建时 basePath 中心定义
+│       ├── posts.ts            # 文章读取（单次装载，无 mtime 缓存；slug 解码统一兜底）
+│       ├── parse-post.mjs      # 文章解析契约唯一实现（posts.ts 与索引脚本共用）
+│       ├── toc.ts              # h2/h3 提取（github-slugger 与渲染侧 rehype-slug 同源）
+│       ├── resume.ts           # 简历读取（构建期 fs.readFileSync，含 node:fs）
+│       ├── resumeLines.ts      # 简历行切分纯函数（客户端安全）
+│       ├── accents.ts          # Accent 预设/解析/应用 + 防 FOUC 脚本生成
+│       ├── site.ts             # 站点身份配置（url/emailHref 等派生字段）
+│       ├── basePath.ts         # basePath 中心定义 + withBase()
+│       ├── thumbGeometry.ts    # TOC 滚动指示条几何纯函数
+│       └── clickParticles.ts   # 点击特效粒子物理纯函数
+├── tests/                      # Vitest 单测（lib 层纯函数与契约）
 ├── scripts/
 │   ├── predev.js               # ConsoleNinja 兼容脚本
-│   └── gen-posts-index.js      # 生成轻量文章索引 (SearchModal 运行时 fetch)
+│   └── gen-posts-index.js      # 生成轻量文章索引 (解析契约来自 parse-post.mjs)
 ├── .github/workflows/deploy.yml # GitHub Actions 自动部署
 └── public/                     # 静态资源 (favicon.svg/ico · posts-index.json · _headers)
 ```
@@ -132,17 +143,20 @@ npx serve out
 
 ### 可用命令
 
-| 命令                   | 作用                                                                               |
-| ---------------------- | ---------------------------------------------------------------------------------- |
-| `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引                 |
-| `npm run build`        | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                         |
-| `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可） |
-| `npm run lint`         | ESLint v9 flat config，只报告不修改                                                |
-| `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                 |
-| `npm run format`       | 用 Prettier 原地格式化全项目文件                                                   |
-| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                              |
-| `npx tsc --noEmit`     | 类型检查（构建脚本带 `--no-lint`，CI/本地须单独跑 lint + tsc）                     |
-| `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                             |
+| 命令                   | 作用                                                                                |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引                  |
+| `npm run build`        | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                          |
+| `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）  |
+| `npm run lint`         | ESLint v9 flat config，只报告不修改                                                 |
+| `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                  |
+| `npm run format`       | 用 Prettier 原地格式化全项目文件                                                    |
+| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                               |
+| `npm run typecheck`    | `tsc --noEmit` 类型检查（构建脚本带 `--no-lint`，CI/本地须单独跑 lint + typecheck） |
+| `npm run test`         | Vitest 跑 lib 层单测（纯函数与契约，当前 75 个）                                    |
+| `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                              |
+
+> 🔒 **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`。
 
 ### 构建脚本流程
 
@@ -155,6 +169,7 @@ npm run build
   └─ prebuild → 生成 public/posts-index.json (~3KB)
   └─ cross-env NEXT_BUILD=1 next build --no-lint → 静态导出 out/
   └─ pagefind --site out → 全文搜索索引
+  └─ gen-dotted-tag-payloads → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
 ```
 
 ---
@@ -211,7 +226,8 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 ```
 
 - **数据源**：`content/resume.md`（纯 Markdown，约 4KB）
-- **读取时机**：构建期同步读取，注入 `AboutContent` 作为 `resumeMarkdown` prop
+- **读取时机**：构建期同步读取（`src/lib/resume.ts`，含 `node:fs`，客户端组件勿 import），注入 `AboutContent` 作为 `resumeMarkdown` prop
+- **行切分**：`splitResumeLines` 在 `src/lib/resumeLines.ts`（无 fs、客户端安全），`ResumeTerminal` 逐行打印用它
 - **动画触发**：`IntersectionObserver` 监听组件进入视口（threshold 0.2），首次进入即启动打印
 - **打印节奏**：`setTimeout` 调度，空行 0.4×、标题行 2.4×、普通行 1×（默认 `lineDelay = 60ms`）
 - **自动滚动**：每打印一行自动 `scrollTop = scrollHeight`，模拟终端追加
@@ -247,11 +263,11 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 
 ### 机制链路
 
-| 层      | 文件                                 | 职责                                                                                                |
-| ------- | ------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| 数据    | `src/lib/accents.ts`                 | 5 个预设（极光/翡翠/落日/深海/樱影）+ 自定义预设 + `applyAccent()`/`hexToRgb()`/`getCustomPreset()` |
-| UI      | `src/components/UI/AccentPicker.tsx` | Navbar 上的 🎨 图标，Popover 上半列 5 个预设，下半「自定义」区 6 个 `<input type="color">`          |
-| 防 FOUC | `src/app/layout.tsx`                 | `<head>` 内联 `accentBootstrap` script，首屏前同步读 `aurora-accent`，写 6 个 `--accent-*-rgb`      |
+| 层      | 文件                                                  | 职责                                                                                                |
+| ------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| 数据    | `src/lib/accents.ts`                                  | 5 个预设（极光/翡翠/落日/深海/樱影）+ 自定义预设 + `applyAccent()`/`hexToRgb()`/`getCustomPreset()` |
+| UI      | `src/components/UI/AccentPicker.tsx`                  | Navbar 上的 🎨 图标，Popover 上半列 5 个预设，下半「自定义」区 6 个 `<input type="color">`          |
+| 防 FOUC | `src/lib/accents.ts` 生成 + `src/app/layout.tsx` 内联 | `<head>` 内联 `accentBootstrapScript`，首屏前同步读 `aurora-accent`，写 6 个 `--accent-*-rgb`       |
 
 ### 持久化
 
@@ -304,13 +320,13 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
 - **亮色为主、暗色可选**：默认 **亮色主题**。`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA（滚动条/表单控件/地址栏）与默认主题一致。**改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱
 - **Tailwind v4 语法**：使用 `@import "tailwindcss"` / `@plugin` / `@theme`，而非 v3 的 `@tailwind` 指令；PostCSS 插件是 `@tailwindcss/postcss`
 - **TypeScript 严格**：`strict: true` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters`，所有索引访问都需 undefined 检查
-- **中文 Slug**：`getPostBySlug()` 内部做了 `decodeURIComponent(slug)`，但 `generateStaticParams` 返回原始 slug，新增 slug 查询时必须一致地对中文做 decodeURIComponent
+- **中文 Slug**：`getPostBySlug()` / `getAdjacentPosts()` 内部经 `decodeSlug()` 统一做 `decodeURIComponent`（非法编码按原样查找、不抛异常）；`generateStaticParams` 返回原始 slug，新增 slug 查询时保持一致
 - **导航状态**：通过 `useNavigationLoading` hook（来自 `@/components/UI/NavigationLoading`）管理页面过渡状态，所有 `<Link>` 应调用 `startNavigation` 触发加载指示器
 - **自定义 Easing 曲线**：Tailwind 主题预定义了 `--ease-out-expo`、`--ease-out-back`、`--ease-in-out-circ`，Framer Motion 动画大量使用 `[0.16, 1, 0.3, 1]` 等自定义曲线
 - **静态导出通过环境变量切换**：`next.config.ts` 中 `output: 'export'`、`basePath`、`assetPrefix` **仅**在 `NEXT_BUILD=1` 时生效。`npm run dev` 不会设置此变量，因此开发模式下没有 `basePath`、没有 `assetPrefix`。**不要手动设置 `output: 'export'`**，否则 HMR 会挂
 - **basePath 双边一致**：`process.env.NEXT_BUILD` 没有 `NEXT_PUBLIC_` 前缀，Next.js 不会把它 inline 到客户端 bundle。`next.config.ts` 通过 `env: { NEXT_PUBLIC_BASE_PATH: BASE_PATH }` 把 basePath 注入 `NEXT_PUBLIC_BASE_PATH`，Next.js 会 inline 到 SSR + 客户端 bundle 两边，`src/lib/basePath.ts` 读取此变量。新增需要 basePath 的客户端代码时，**必须**走 `withBase()`，不要自己拼 `process.env.NEXT_BUILD`
 - **RSC payload 优化**：`getAllPosts()` 已从 `layout.tsx` 移除，文章数据通过 `public/posts-index.json`（~3KB）在 SearchModal 运行时 fetch，避免全量文章数据被序列化进根 layout 的 RSC payload
-- **重组件懒加载**：`CursorGlow`、`ScrollProgress`、`ClickEffect` 等非首屏必需的 client 组件通过 `next/dynamic` 懒加载，避免被打进首屏 chunk 图
+- **重组件懒加载**：`CursorGlow`、`ScrollProgress`、`ClickEffect`、`ParticleField` 等非首屏必需的 client 组件由 `AmbientEffects.tsx` 通过 `next/dynamic` 统一懒加载（并对 `prefers-reduced-motion` 用户跳过装饰性动效），避免被打进首屏 chunk
 - **sharp 依赖**：`package.json` 的 `overrides` 锁定 `sharp: "^0.35.3"` 与 `postcss: "^8.5.20"`，保证静态导出 + `images.unoptimized: true` 场景下依赖树稳定
 - **`out/` 是构建产物**：`out/` 在 `.gitignore` 中、未被 git 跟踪，是 `npm run build` 的静态导出产物。`out/en/` 等陈旧子树可能是早期英文版 / `[locale]` i18n 路由的构建残留，**源码里已无对应路由**。排查路由时以 `src/app/` 为准，不要把 `out/` 的旧产物当成当前结构，也不要手动清理 `out/`——下次 `build` 会整体覆盖
 - **`next.config.ts` 隐式约定**：
@@ -319,12 +335,15 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
   - `experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']`：让大库按需引入，**不要再自定义 `splitChunks`**——会与 Next 15 SWC 内置 chunk 策略冲突，反而拆出更多碎 chunk
   - `reactStrictMode: true`：开发模式下 effects 会执行两次（mount → unmount → mount），副作用清理逻辑必须幂等
 - **安全头走 `public/_headers`**：`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。新增响应头改 `public/_headers`，不要改 `next.config.ts`
-- **TOC 只提取 h2/h3，标题锚点保留中文**：`src/lib/toc.ts` 的 `extractHeadings()` 只匹配 `^#{2,3}\s+`（即 `##` 和 `###`），`#`（h1）和 `####`（h4）不会进目录。生成的 `id` 用正则 `[\w\u4e00-\u9fff\s-]` 过滤，**保留中文字符**，所以中文标题会得到中文锚点（如 `## 章节标题` → `id="章节标题"`）。rehype-slug 在 MDX 渲染侧也会生成 id，两边规则需保持一致。新增需要进目录的标题，必须用 `##` 或 `###`。TOC 组件实现：桌面端目录 sticky 在正文**右边**（`page.tsx` 正文在前、TOC 在后），移动端抽屉式目录在正文上方；`IntersectionObserver` 监测视口上 30% 带取最靠上标题高亮、首屏高亮首项；点击 `scrollIntoView` 平滚 + `history.replaceState` 写 URL hash；`.prose-article h2/h3 { scroll-margin-top: 6rem }` 兜锚点不被 sticky Navbar 遮挡；**淡入淡出滚动条**——`.toc-scroll` 藏原生滚动条，浮 `.toc-thumb` 绝对定位指示条按滚动比例算 `top`/`height`，显隐只由 hover 控制（`mouseenter` 显示 / `mouseleave` 隐藏），`opacity transition` 淡入淡出，浮层 `absolute` 不占文档流不挤压文字；几何用 `ResizeObserver` + `requestAnimationFrame` 延迟算准 + `document.fonts.ready` 兜底。颜色联 Accent 主题用自定义 `.toc-link` / `.toc-link-active` 类（见下 utility layer 坑），不用 Tailwind utility `text-accent-violet`
+- **TOC 只提取 h2/h3，锚点与渲染侧同源**：`src/lib/toc.ts` 的 `extractHeadings()` 逐行扫描，只把 `##` / `###` 放进目录，`#` 与 `####` 不进目录；id 与渲染侧 rehype-slug 共用同一个 `github-slugger`（先剥 HTML 再 `slug()`，h1~h6 全部推进状态，重复标题自动 `-1/-2` 后缀，中文/重音/假名都保留，且**不**折叠重复连字符——与渲染侧严格一致），并跳过代码围栏内的假标题。新增需要进目录的标题，必须用 `##` 或 `###`。TOC 组件实现：桌面端目录 sticky 在正文**右边**（`page.tsx` 正文在前、TOC 在后），移动端抽屉式目录在正文上方；`IntersectionObserver` 监测视口上 30% 带取最靠上标题高亮、首屏高亮首项；点击 `scrollIntoView` 平滚 + `history.replaceState` 写 URL hash；`.prose-article h2/h3 { scroll-margin-top: 6rem }` 兜锚点不被 sticky Navbar 遮挡；**淡入淡出滚动条**——`.toc-scroll` 藏原生滚动条，浮 `.toc-thumb` 绝对定位指示条按滚动比例算 `top`/`height`（几何在 `src/lib/thumbGeometry.ts` 纯函数，可单测），显隐只由 hover 控制（`mouseenter` 显示 / `mouseleave` 隐藏），`opacity transition` 淡入淡出，浮层 `absolute` 不占文档流不挤压文字；几何用 `ResizeObserver` + `requestAnimationFrame` 延迟算准 + `document.fonts.ready` 兜底。颜色联 Accent 主题用自定义 `.toc-link` / `.toc-link-active` 类（见下 utility layer 坑），不用 Tailwind utility `text-accent-violet`
 - **globals.css 同元素规则集中**：同一元素的暗色基与亮色覆盖（`html:not(.dark) ...`）必须相邻写，不散乱到文件两极；不写重复样式。`prose-article` / `glass` / `glass-heavy` / `::-webkit-scrollbar` 的亮色覆盖均已并入暗色基旁，Tailwind utility 亮色覆盖单独分组于文件尾。新增元素的亮色覆盖紧贴其暗色基写
 - **`posts.ts` 读取层契约**：
   - `'server-only'` 标记：`posts.ts` / `toc.ts` / `types.ts` 顶部都有 `import 'server-only'`，这些 lib **只能在 RSC / Server Component 里调用**，不能 import 进 client 组件。客户端需要文章数据时 fetch `public/posts-index.json`
-  - mtime 签名缓存：`getAllPosts()` 用 `computeSignature()`（文件名 + `mtimeMs` 拼接）做缓存键，文件未改动时直接返回内存缓存。**不要在运行时修改 `content/posts/` 下的文件**——签名会变但 SSG 已固化，只能通过重新 `build` 生效
+  - 共享解析契约：解析规则唯一实现在 `src/lib/parse-post.mjs`（纯 ESM、无 fs），`posts.ts` 与 `scripts/gen-posts-index.js` 共用，改解析只改这一处
+  - 单次装载：`getAllPosts()` 首次调用时读目录 → 解析 → 排序，模块级 memo 缓存，**无 mtime 签名缓存**。不要在运行时修改 `content/posts/` 下的文件——修改需重新 `build`（或 dev 重启）才生效
   - excerpt 兜底：未写 `excerpt` 时取正文前 160 字并 `replace(/[#*`\[\]]/g,'')`去掉 markdown 符号，注意这个正则会**误删反引号围栏代码块的内容**，含代码开头的文章建议显式写`excerpt`
+- **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`；`public/posts-index.json` 是构建产物，已在 `.prettierignore` 忽略，不要手动格式化它
+- **弹层关闭统一走 `useDismiss`**：外点（mousedown + 延迟绑定避开「触发弹层的同一次点击」）/ Esc 关闭收口在 `src/components/UI/useDismiss.ts`；ref 须包裹「开关按钮 + 浮层」，Navbar 移动菜单用 `{ outside: false }` 只启用 Esc（开关按钮在浮层外）
 - **hover 变色不要走 Framer Motion**：`whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}` 会把动画后的 `color` 写成 **inline style**，CSS 变量在 inline style 中被解析成具体值（如 `rgb(168 85 247)`）后就**不再响应** `--accent-*-rgb` 的变化——切 Accent 主题色、切亮/暗模式时，标题会卡在动画那一刻的颜色上，看起来像「变白/变黑不响应主题」。**正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统；位移动画也一并迁到 CSS `transform`。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore` + `.post-card-link:hover`）就是这么改的
 - **Tailwind v4 utility 的 layer 优先级坑**：Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-violet` 等）注入到 `@layer utilities` 里。而 `globals.css` 中那些 `html:not(.dark) .text-gray-500 { color: #78716c }` 亮色覆盖规则是**裸 CSS**（不在任何 `@layer` 内）。**裸 CSS 优先级高于任何 `@layer` 内的同特异性规则**，所以亮色模式下 `group-hover/link:text-accent-violet` 这类 utility hover 会被裸覆盖规则持续压制，hover 不变色。**正确做法**：需要响应 Accent 主题色联动的 hover 变色，**不要用 Tailwind utility**，改用自定义 CSS 类，`html.dark` / `html:not(.dark)` 双前缀提升特异性到 (0,3,1)，稳压裸覆盖规则
 
