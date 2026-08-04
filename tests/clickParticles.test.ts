@@ -3,7 +3,6 @@ import {
   easeOutCubic,
   easeOutQuad,
   easeInQuad,
-  easeLinear,
   makeHeartStyle,
   makeExplosionStyle,
   makeRocketStyle,
@@ -30,10 +29,6 @@ describe('easing 曲线', () => {
     expect(easeInQuad(0)).toBe(0);
     expect(easeInQuad(1)).toBe(1);
     expect(easeInQuad(0.3)).toBeLessThan(0.3);
-  });
-
-  it('easeLinear: t 不变', () => {
-    expect(easeLinear(0.5)).toBe(0.5);
   });
 });
 

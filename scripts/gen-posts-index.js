@@ -22,9 +22,9 @@ async function build() {
     console.warn('! content/posts 不存在，跳过索引生成');
     return;
   }
-  const files = fs.readdirSync(postsDir).filter((fn) => fn.endsWith('.md') || fn.endsWith('.mdx'));
-
-  const { parsePostFile } = await import('../src/lib/parse-post.mjs');
+  const { parsePostFile, isPostFile, sortPostsByDateDesc } =
+    await import('../src/lib/parse-post.mjs');
+  const files = fs.readdirSync(postsDir).filter(isPostFile);
 
   const posts = files
     .map((fn) => {
@@ -32,7 +32,7 @@ async function build() {
       // 索引只保留轻量字段，剔除 content
       return { slug: p.slug, title: p.title, date: p.date, excerpt: p.excerpt, tags: p.tags };
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort(sortPostsByDateDesc);
 
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(posts));

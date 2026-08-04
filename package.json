@@ -23,7 +23,7 @@
     "start": "启动 Next.js 生产服务器（next start）。本项目为纯静态导出，通常不用此命令，静态托管在任意 HTTP 服务器即可",
     "lint": "运行 ESLint v9（flat config）检查全项目代码质量与规范，只报告不修改",
     "lint:fix": "运行 ESLint 并自动修复可修复的问题（如未使用变量、格式问题等）",
-    "test": "运行 vitest 测试（tests/ 目录），当前覆盖 accents 与 toc 两个 lib 模块",
+    "test": "运行 vitest 测试（tests/ 目录），覆盖 8 个 lib 模块（accents/toc/posts/basePath/resume/parsePost/thumbGeometry/clickParticles），当前 75 个用例",
     "typecheck": "用 tsc --noEmit 做全项目类型检查（strict + noUncheckedIndexedAccess 等）",
     "format": "用 Prettier 原地格式化全项目文件，配置见 .prettierrc",
     "format:check": "用 Prettier 只检查不修改（CI 中常用），若发现未格式化文件则以非零码退出"

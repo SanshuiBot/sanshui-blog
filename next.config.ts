@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
   // Next 内置的 chunk 策略已经合理，不再自定义 splitChunks
   // （自定义会与内置策略冲突，反而拆出更多碎 chunk）。
   experimental: {
-    optimizePackageImports: ['framer-motion', 'lucide-react', 'react-icons'],
+    optimizePackageImports: ['framer-motion', 'lucide-react'],
   },
 };
 

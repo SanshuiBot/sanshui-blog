@@ -117,7 +117,8 @@ export default function TableOfContents({ items }: Props) {
     ro.observe(container);
     ro.observe(container.firstElementChild ?? container);
 
-    // scroll 时只同步 top（height 不变），hover 显隐由下面 mouseenter/leave 管
+    // scroll 时重算 thumb 几何（thumbGeometry 纯函数，见 src/lib/thumbGeometry.ts），
+    // 显隐由下面 mouseenter/leave 管
     const onScroll = () => {
       if (!thumbVisibleRef.current) return;
       const g = thumbGeometry(container.clientHeight, container.scrollHeight, container.scrollTop);

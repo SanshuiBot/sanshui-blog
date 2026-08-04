@@ -1,7 +1,7 @@
 import 'server-only';
 import fs from 'fs';
 import path from 'path';
-import { parsePostFile } from './parse-post.mjs';
+import { isPostFile, parsePostFile, sortPostsByDateDesc } from './parse-post.mjs';
 import type { Post } from './types';
 
 const postsDirectory = path.join(process.cwd(), 'content/posts');
@@ -18,9 +18,9 @@ function loadPosts(): Post[] {
   if (loaded) return loaded;
   loaded = fs
     .readdirSync(postsDirectory)
-    .filter((fn) => fn.endsWith('.md') || fn.endsWith('.mdx'))
+    .filter(isPostFile)
     .map(readPostFile)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort(sortPostsByDateDesc);
   return loaded;
 }
 

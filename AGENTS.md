@@ -10,7 +10,7 @@
 | -------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 开发     | `npm run dev`                             | `predev` 先跑 `scripts/predev.js`（生成 ConsoleNinja 兼容的 `.next/routes-manifest.json`）+ `scripts/gen-posts-index.js`（生成 `public/posts-index.json`）。开发模式 **不设** `NEXT_BUILD`，因此无 `basePath` / `assetPrefix` / `output:export`；dev 用 `next dev --webpack`（Turbopack 无法解析 Tailwind v4.3 生成 CSS，见约定 #30）。                     |
 | 生产构建 | `npm run build`                           | `prebuild` 重新生成 `posts-index.json` → `cross-env NEXT_BUILD=1 next build --webpack`（静态导出到 `out/`；Next 16 构建不再执行 lint，`--webpack` 绕开 Turbopack 的 Tailwind v4.3 CSS 解析问题，见约定 #30）→ `pagefind --site out`（生成全文搜索索引）→ `scripts/gen-dotted-tag-payloads.js`（为含点号标签如 `Next.js` 补 RSC payload 副本，见约定 #27）。 |
-| Lint     | `npm run lint` / `npm run lint:fix`       | ESLint v9 flat config（`eslint.config.mjs`，通过 `FlatCompat` 继承 `next/core-web-vitals` + `next/typescript`）。Next 16 构建不跑 lint，CI/本地须单独跑。                                                                                                                                                                                                   |
+| Lint     | `npm run lint` / `npm run lint:fix`       | ESLint v9 flat config（`eslint.config.mjs` 直接 spread eslint-config-next 16 的 flat config：`next/core-web-vitals` + `next/typescript`）。Next 16 构建不跑 lint，CI/本地须单独跑。                                                                                                                                                                         |
 | 格式化   | `npm run format` / `npm run format:check` | Prettier：2 空格、单引号、`printWidth: 100`、`trailingComma: "all"`、`endOfLine: "lf"`（见 `.prettierrc`）。                                                                                                                                                                                                                                                |
 | 预览产物 | `npx serve out`                           | 本地起 HTTP 服务器看构建结果。                                                                                                                                                                                                                                                                                                                              |
 | 类型检查 | `npm run typecheck`                       | `tsc --noEmit`（`tsconfig.json` 开 `strict` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters` + `noImplicitOverride`）。                                                                                                                                                                                                               |
@@ -206,7 +206,7 @@ TOC 组件（`src/components/Post/TableOfContents.tsx`）的实现约定：
 
 ### 22. sharp / postcss overrides
 
-`package.json` 的 `overrides` 锁定 `sharp: "^0.35.3"` 与 `postcss: "^8.5.20"`，保证静态导出 + `images.unoptimized: true` 场景下依赖树稳定。**升级这些包时要同步检查 overrides**，否则可能出现版本漂移导致构建失败。
+`package.json` 的 `overrides` 锁定 `sharp: "^0.35.3"` 与 `postcss: "^8.5.25"`，保证静态导出 + `images.unoptimized: true` 场景下依赖树稳定。**升级这些包时要同步检查 overrides**，否则可能出现版本漂移导致构建失败。
 
 ### 23. Accent 主题强调色系统（运行时换色）
 

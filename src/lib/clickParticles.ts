@@ -36,10 +36,6 @@ export function easeInQuad(t: number): number {
   return t * t;
 }
 
-export function easeLinear(t: number): number {
-  return t;
-}
-
 /* ---------- 各效果的状态推导函数（纯） ---------- */
 
 /** 爱心喷射：向上飘 + 缩小 + 淡出 */

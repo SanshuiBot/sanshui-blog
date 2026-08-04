@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parsePostFile } from '@/lib/parse-post.mjs';
+import { isPostFile, parsePostFile, sortPostsByDateDesc } from '@/lib/parse-post.mjs';
 
 const md = (fm: string, body = '正文') => `---\n${fm}\n---\n${body}`;
 
@@ -26,6 +26,13 @@ describe('parsePostFile（posts.ts 与 gen-posts-index.js 的共享解析契约�
     expect(parsePostFile('a.md', md('title: T')).date).toBe('');
   });
 
+  it('非法 date（不可解析的字符串）返回空串而非抛 RangeError', () => {
+    // 注意：JS Date 对 2026-13-45 这类溢出值是宽松解析（进位成合法日期），
+    // 只有真正不可解析的字符串才是 Invalid Date，无守卫时会抛 RangeError
+    expect(() => parsePostFile('a.md', md('date: not-a-date'))).not.toThrow();
+    expect(parsePostFile('a.md', md('date: not-a-date')).date).toBe('');
+  });
+
   it('excerpt 缺省时取正文前 160 字并剥掉 markdown 符号', () => {
     const body = '### 标题\n\n**加粗** 与 `代码` [链接](x) 尾部文本';
     const p = parsePostFile('a.md', md('date: 2026-01-01', body));
@@ -39,5 +46,29 @@ describe('parsePostFile（posts.ts 与 gen-posts-index.js 的共享解析契约�
 
   it('支持 .mdx 扩展名', () => {
     expect(parsePostFile('a.mdx', md('title: T')).slug).toBe('a');
+  });
+});
+
+describe('isPostFile / sortPostsByDateDesc（过滤与排序共享契约）', () => {
+  it('isPostFile 只认 .md / .mdx', () => {
+    expect(isPostFile('a.md')).toBe(true);
+    expect(isPostFile('a.mdx')).toBe(true);
+    expect(isPostFile('a.txt')).toBe(false);
+  });
+
+  it('sortPostsByDateDesc 按日期降序', () => {
+    const posts = [{ date: '2026-01-01' }, { date: '2026-01-03' }, { date: '2026-01-02' }];
+    expect([...posts].sort(sortPostsByDateDesc).map((p) => p.date)).toEqual([
+      '2026-01-03',
+      '2026-01-02',
+      '2026-01-01',
+    ]);
+  });
+
+  it('空/非法 date 排到最后且不产生 NaN 破坏排序', () => {
+    const posts = [{ date: '' }, { date: '2026-01-01' }, { date: 'not-a-date' }];
+    const sorted = [...posts].sort(sortPostsByDateDesc);
+    // 两个无效日期都按 0 处理，稳定排序保持其原始相对顺序
+    expect(sorted.map((p) => p.date)).toEqual(['2026-01-01', '', 'not-a-date']);
   });
 });
