@@ -30,8 +30,9 @@ const nextConfig: NextConfig = {
   },
   trailingSlash: true,
   // optimizePackageImports: 让 framer-motion、lucide-react 等大库按需引入，
-  // 减少首屏 JS 体积。Next 15 内置的 chunk 策略已经合理，不再自定义 splitChunks
-  // （自定义会与 SWC 内置策略冲突，反而拆出更多碎 chunk）。
+  // 减少首屏 JS 体积。Next 16 仍保留在 experimental 下（顶层不存在该键）。
+  // Next 内置的 chunk 策略已经合理，不再自定义 splitChunks
+  // （自定义会与内置策略冲突，反而拆出更多碎 chunk）。
   experimental: {
     optimizePackageImports: ['framer-motion', 'lucide-react', 'react-icons'],
   },

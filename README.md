@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-15.5-black?logo=nextdotjs&logoColor=white" /></a>
+  <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-16.3-black?logo=nextdotjs&logoColor=white" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind-v4-06B6D4?logo=tailwindcss&logoColor=white" /></a>
   <a href="https://www.framer.com/motion"><img src="https://img.shields.io/badge/Framer_Motion-12-0055FF?logo=framer&logoColor=white" /></a>
@@ -58,7 +58,7 @@
 
 | 类别     | 技术                                                             |
 | -------- | ---------------------------------------------------------------- |
-| **框架** | Next.js 15.5 (App Router, SSG 静态导出)                          |
+| **框架** | Next.js 16.3 (App Router, SSG 静态导出)                          |
 | **语言** | TypeScript 5 (strict 模式 + `noUncheckedIndexedAccess`)          |
 | **样式** | Tailwind CSS v4 (`@theme` 自定义设计令牌，无 tailwind.config.js) |
 | **动画** | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                |
@@ -143,18 +143,18 @@ npx serve out
 
 ### 可用命令
 
-| 命令                   | 作用                                                                                |
-| ---------------------- | ----------------------------------------------------------------------------------- |
-| `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引                  |
-| `npm run build`        | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                          |
-| `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）  |
-| `npm run lint`         | ESLint v9 flat config，只报告不修改                                                 |
-| `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                  |
-| `npm run format`       | 用 Prettier 原地格式化全项目文件                                                    |
-| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                               |
-| `npm run typecheck`    | `tsc --noEmit` 类型检查（构建脚本带 `--no-lint`，CI/本地须单独跑 lint + typecheck） |
-| `npm run test`         | Vitest 跑 lib 层单测（纯函数与契约，当前 75 个）                                    |
-| `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                              |
+| 命令                   | 作用                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引（`--webpack` 绕开 Turbopack 的 Tailwind v4.3 CSS 解析问题） |
+| `npm run build`        | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                                                                     |
+| `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）                                             |
+| `npm run lint`         | ESLint v9 flat config，只报告不修改                                                                                            |
+| `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                                                             |
+| `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                                               |
+| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                                                          |
+| `npm run typecheck`    | `tsc --noEmit` 类型检查（Next 16 构建不跑 lint，CI/本地须单独跑 lint + typecheck）                                             |
+| `npm run test`         | Vitest 跑 lib 层单测（纯函数与契约，当前 75 个）                                                                               |
+| `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                                                         |
 
 > 🔒 **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`。
 
@@ -167,7 +167,7 @@ npm run dev
 
 npm run build
   └─ prebuild → 生成 public/posts-index.json (~3KB)
-  └─ cross-env NEXT_BUILD=1 next build --no-lint → 静态导出 out/
+  └─ cross-env NEXT_BUILD=1 next build --webpack → 静态导出 out/
   └─ pagefind --site out → 全文搜索索引
   └─ gen-dotted-tag-payloads → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
 ```
@@ -327,12 +327,13 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
 - **basePath 双边一致**：`process.env.NEXT_BUILD` 没有 `NEXT_PUBLIC_` 前缀，Next.js 不会把它 inline 到客户端 bundle。`next.config.ts` 通过 `env: { NEXT_PUBLIC_BASE_PATH: BASE_PATH }` 把 basePath 注入 `NEXT_PUBLIC_BASE_PATH`，Next.js 会 inline 到 SSR + 客户端 bundle 两边，`src/lib/basePath.ts` 读取此变量。新增需要 basePath 的客户端代码时，**必须**走 `withBase()`，不要自己拼 `process.env.NEXT_BUILD`
 - **RSC payload 优化**：`getAllPosts()` 已从 `layout.tsx` 移除，文章数据通过 `public/posts-index.json`（~3KB）在 SearchModal 运行时 fetch，避免全量文章数据被序列化进根 layout 的 RSC payload
 - **重组件懒加载**：`CursorGlow`、`ScrollProgress`、`ClickEffect`、`ParticleField` 等非首屏必需的 client 组件由 `AmbientEffects.tsx` 通过 `next/dynamic` 统一懒加载（并对 `prefers-reduced-motion` 用户跳过装饰性动效），避免被打进首屏 chunk
+- **Turbopack + Tailwind v4.3 不兼容**：Next 16 默认 Turbopack 无法解析 Tailwind v4.3 生成的 `@layer properties` 选择器（`Invalid dangling combinator in selector`），dev/build 脚本已显式加 `--webpack`，不要移除
 - **sharp 依赖**：`package.json` 的 `overrides` 锁定 `sharp: "^0.35.3"` 与 `postcss: "^8.5.20"`，保证静态导出 + `images.unoptimized: true` 场景下依赖树稳定
 - **`out/` 是构建产物**：`out/` 在 `.gitignore` 中、未被 git 跟踪，是 `npm run build` 的静态导出产物。`out/en/` 等陈旧子树可能是早期英文版 / `[locale]` i18n 路由的构建残留，**源码里已无对应路由**。排查路由时以 `src/app/` 为准，不要把 `out/` 的旧产物当成当前结构，也不要手动清理 `out/`——下次 `build` 会整体覆盖
 - **`next.config.ts` 隐式约定**：
   - `images.unoptimized: true`：静态导出无服务端图像优化器，`next/image` 退化为原图直出，新增图片需自行压缩
   - `trailingSlash: true`：所有路由以 `/` 结尾（如 `/posts/xxx/`），`generateStaticParams` 与内部链接拼接都必须遵守，否则线上 404
-  - `experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']`：让大库按需引入，**不要再自定义 `splitChunks`**——会与 Next 15 SWC 内置 chunk 策略冲突，反而拆出更多碎 chunk
+  - `experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']`：让大库按需引入，**不要再自定义 `splitChunks`**——会与内置 chunk 策略冲突，反而拆出更多碎 chunk
   - `reactStrictMode: true`：开发模式下 effects 会执行两次（mount → unmount → mount），副作用清理逻辑必须幂等
 - **安全头走 `public/_headers`**：`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。新增响应头改 `public/_headers`，不要改 `next.config.ts`
 - **TOC 只提取 h2/h3，锚点与渲染侧同源**：`src/lib/toc.ts` 的 `extractHeadings()` 逐行扫描，只把 `##` / `###` 放进目录，`#` 与 `####` 不进目录；id 与渲染侧 rehype-slug 共用同一个 `github-slugger`（先剥 HTML 再 `slug()`，h1~h6 全部推进状态，重复标题自动 `-1/-2` 后缀，中文/重音/假名都保留，且**不**折叠重复连字符——与渲染侧严格一致），并跳过代码围栏内的假标题。新增需要进目录的标题，必须用 `##` 或 `###`。TOC 组件实现：桌面端目录 sticky 在正文**右边**（`page.tsx` 正文在前、TOC 在后），移动端抽屉式目录在正文上方；`IntersectionObserver` 监测视口上 30% 带取最靠上标题高亮、首屏高亮首项；点击 `scrollIntoView` 平滚 + `history.replaceState` 写 URL hash；`.prose-article h2/h3 { scroll-margin-top: 6rem }` 兜锚点不被 sticky Navbar 遮挡；**淡入淡出滚动条**——`.toc-scroll` 藏原生滚动条，浮 `.toc-thumb` 绝对定位指示条按滚动比例算 `top`/`height`（几何在 `src/lib/thumbGeometry.ts` 纯函数，可单测），显隐只由 hover 控制（`mouseenter` 显示 / `mouseleave` 隐藏），`opacity transition` 淡入淡出，浮层 `absolute` 不占文档流不挤压文字；几何用 `ResizeObserver` + `requestAnimationFrame` 延迟算准 + `document.fonts.ready` 兜底。颜色联 Accent 主题用自定义 `.toc-link` / `.toc-link-active` 类（见下 utility layer 坑），不用 Tailwind utility `text-accent-violet`

@@ -1,21 +1,21 @@
 # AGENTS.md — sanshui-blog
 
-三水的个人博客。Next.js 15.5（App Router，纯静态导出 `output: 'export'`）+ TypeScript 5 strict + Tailwind CSS v4 + Framer Motion 12。托管在 GitHub Pages，basePath 为 `/sanshui-blog`，部署走 `.github/workflows/deploy.yml` 自动 CI/CD。全站暗色「Aurora 玻璃态」设计系统。
+三水的个人博客。Next.js 16.3（App Router，纯静态导出 `output: 'export'`）+ TypeScript 5 strict + Tailwind CSS v4 + Framer Motion 12。托管在 GitHub Pages，basePath 为 `/sanshui-blog`，部署走 `.github/workflows/deploy.yml` 自动 CI/CD。全站暗色「Aurora 玻璃态」设计系统。
 
 ---
 
 ## 命令
 
-| 用途     | 命令                                      | 备注                                                                                                                                                                                                                                                       |
-| -------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 开发     | `npm run dev`                             | `predev` 先跑 `scripts/predev.js`（生成 ConsoleNinja 兼容的 `.next/routes-manifest.json`）+ `scripts/gen-posts-index.js`（生成 `public/posts-index.json`）。开发模式 **不设** `NEXT_BUILD`，因此无 `basePath` / `assetPrefix` / `output:export`。          |
-| 生产构建 | `npm run build`                           | `prebuild` 重新生成 `posts-index.json` → `cross-env NEXT_BUILD=1 next build --no-lint`（静态导出到 `out/`）→ `pagefind --site out`（生成全文搜索索引）→ `scripts/gen-dotted-tag-payloads.js`（为含点号标签如 `Next.js` 补 RSC payload 副本，见约定 #27）。 |
-| Lint     | `npm run lint` / `npm run lint:fix`       | ESLint v9 flat config（`eslint.config.mjs`，通过 `FlatCompat` 继承 `next/core-web-vitals` + `next/typescript`）。构建脚本带 `--no-lint`，CI/本地须单独跑。                                                                                                 |
-| 格式化   | `npm run format` / `npm run format:check` | Prettier：2 空格、单引号、`printWidth: 100`、`trailingComma: "all"`、`endOfLine: "lf"`（见 `.prettierrc`）。                                                                                                                                               |
-| 预览产物 | `npx serve out`                           | 本地起 HTTP 服务器看构建结果。                                                                                                                                                                                                                             |
-| 类型检查 | `npm run typecheck`                       | `tsc --noEmit`（`tsconfig.json` 开 `strict` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters` + `noImplicitOverride`）。                                                                                                              |
-| 测试     | `npm run test`                            | Vitest（`vitest run`）：lib 层纯函数与契约测试，见 `tests/`（'server-only' 由 `tests/stubs/server-only.ts` 兜底）。                                                                                                                                        |
-| 提交门禁 | `git commit`                              | Husky pre-commit：lint-staged（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`（见 `.husky/pre-commit`）。                                                                                                                                 |
+| 用途     | 命令                                      | 备注                                                                                                                                                                                                                                                                                                                                                        |
+| -------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 开发     | `npm run dev`                             | `predev` 先跑 `scripts/predev.js`（生成 ConsoleNinja 兼容的 `.next/routes-manifest.json`）+ `scripts/gen-posts-index.js`（生成 `public/posts-index.json`）。开发模式 **不设** `NEXT_BUILD`，因此无 `basePath` / `assetPrefix` / `output:export`；dev 用 `next dev --webpack`（Turbopack 无法解析 Tailwind v4.3 生成 CSS，见约定 #30）。                     |
+| 生产构建 | `npm run build`                           | `prebuild` 重新生成 `posts-index.json` → `cross-env NEXT_BUILD=1 next build --webpack`（静态导出到 `out/`；Next 16 构建不再执行 lint，`--webpack` 绕开 Turbopack 的 Tailwind v4.3 CSS 解析问题，见约定 #30）→ `pagefind --site out`（生成全文搜索索引）→ `scripts/gen-dotted-tag-payloads.js`（为含点号标签如 `Next.js` 补 RSC payload 副本，见约定 #27）。 |
+| Lint     | `npm run lint` / `npm run lint:fix`       | ESLint v9 flat config（`eslint.config.mjs`，通过 `FlatCompat` 继承 `next/core-web-vitals` + `next/typescript`）。Next 16 构建不跑 lint，CI/本地须单独跑。                                                                                                                                                                                                   |
+| 格式化   | `npm run format` / `npm run format:check` | Prettier：2 空格、单引号、`printWidth: 100`、`trailingComma: "all"`、`endOfLine: "lf"`（见 `.prettierrc`）。                                                                                                                                                                                                                                                |
+| 预览产物 | `npx serve out`                           | 本地起 HTTP 服务器看构建结果。                                                                                                                                                                                                                                                                                                                              |
+| 类型检查 | `npm run typecheck`                       | `tsc --noEmit`（`tsconfig.json` 开 `strict` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters` + `noImplicitOverride`）。                                                                                                                                                                                                               |
+| 测试     | `npm run test`                            | Vitest（`vitest run`）：lib 层纯函数与契约测试，见 `tests/`（'server-only' 由 `tests/stubs/server-only.ts` 兜底）。                                                                                                                                                                                                                                         |
+| 提交门禁 | `git commit`                              | Husky pre-commit：lint-staged（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`（见 `.husky/pre-commit`）。                                                                                                                                                                                                                                  |
 
 > ⚠️ **不要用 `npm start`**：本项目是纯静态导出，`next start` 无意义，静态托管在任意 HTTP 服务器即可。
 
@@ -88,7 +88,7 @@ sanshui-blog/
 - 原生 `<link>` / `<a>` / `<img>` **不走** Next `<Link>` / `next/image` 的 basePath 自动注入，必须用 `withBase()` 手动拼前缀（见 `src/app/page.tsx` 的预取 `<link rel="prefetch">`）。
 - **不要手动设置 `output: 'export'`**：dev 模式下会导致 HMR 挂掉。
 
-### 2. Next 15 异步 `params` / `searchParams`
+### 2. 异步 `params` / `searchParams`（Next 15+，16 同样适用）
 
 动态路由页（`posts/[slug]`、`tags/[tag]`）的 `params` 是 `Promise`，必须 `const { slug } = await params;`。`generateMetadata` 同理。`generateStaticParams` 仍是同步。
 
@@ -116,9 +116,9 @@ sanshui-blog/
 
 `output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（HSTS、X-Frame-Options、Permissions-Policy 等）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。**新增响应头改 `public/_headers`，不要改 `next.config.ts`。** 同理 `public/_redirects`。
 
-### 8. 构建期 lint 跳过
+### 8. 构建期不执行 lint（Next 16 移除了 `--no-lint`）
 
-`build` 脚本用 `next build --no-lint`，lint 失败不会阻断 build。CI/本地须单独跑 `npm run lint`。`eslint.config.mjs` 把 `@next/next/no-img-element` 降为 `warn`（静态导出场景 `<img>` 可接受），但优先用 `next/image`。
+Next 16 的 `next build` **不再执行 lint**（`--no-lint` 选项已移除），lint 完全独立于构建：CI/本地须单独跑 `npm run lint`。`eslint.config.mjs` 把 `@next/next/no-img-element` 降为 `warn`（静态导出场景 `<img>` 可接受），但优先用 `next/image`。
 
 ### 9. 图片：`images.unoptimized: true`
 
@@ -134,7 +134,7 @@ sanshui-blog/
 
 ### 11. 客户端动效组件懒加载
 
-`AmbientEffects.tsx`（原 `Provider.tsx` 拆分出的动效注册表）用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect` / `ParticleField`，避免打进首屏 chunk；并对 `prefers-reduced-motion` 用户跳过装饰性动效（`CursorGlow` / `ClickEffect`）。新增仅客户端、非首屏必需的动效组件，在 `AmbientEffects` 加一行 `dynamic` 注册即可，照此模式。`experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']` 让大库按需引入——**不要再自定义 `splitChunks`**，会与 Next 15 SWC 内置 chunk 策略冲突，反而拆出更多碎 chunk。
+`AmbientEffects.tsx`（原 `Provider.tsx` 拆分出的动效注册表）用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect` / `ParticleField`，避免打进首屏 chunk；并对 `prefers-reduced-motion` 用户跳过装饰性动效（`CursorGlow` / `ClickEffect`）。新增仅客户端、非首屏必需的动效组件，在 `AmbientEffects` 加一行 `dynamic` 注册即可，照此模式。`experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']` 让大库按需引入（Next 16 仍保留在该配置下）——**不要再自定义 `splitChunks`**，会与内置 chunk 策略冲突，反而拆出更多碎 chunk。
 
 ### 12. 亮色为主、暗色可选
 
@@ -263,6 +263,10 @@ Next `<Link>` 对含 `.` 的路径段（如 `/tags/Next.js/`）按「文件路�
 ### 29. `posts-index.json` 是构建产物，已被 `.prettierignore` 忽略
 
 `public/posts-index.json` 由 `scripts/gen-posts-index.js` 用 `JSON.stringify` 生成（紧凑格式，与 Prettier 风格不一致），已在 `.prettierignore` 忽略——`format:check` / lint-staged 都会跳过它。**不要**手动格式化它，也不要把它从 `.prettierignore` 移除；改索引字段改 `parse-post.mjs` 或脚本的字段选取。
+
+### 30. Turbopack 无法解析 Tailwind v4.3 的生成 CSS，dev/build 用 `--webpack`
+
+Next 16 默认用 Turbopack（内置 lightningcss 解析器）构建，会对 Tailwind v4.3 生成的 `@layer properties{@supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) ...}` 报 **`Invalid dangling combinator in selector`**（Turbopack 解析器缺陷，非本站 CSS 问题）。因此 dev / build 脚本都显式加 `--webpack`（与 Next 15 时代的 webpack 管线一致，静态导出行为不变）。**不要**移除该 flag，也不要改 globals.css 去规避；升级 Tailwind 或等待 Turbopack 修复后再评估移除。
 
 ---
 

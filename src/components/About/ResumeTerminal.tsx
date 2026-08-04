@@ -35,7 +35,31 @@ export default function ResumeTerminal({
   const startedRef = useRef<boolean>(false);
   const scrollBodyRef = useRef<HTMLDivElement | null>(null);
 
-  // 进入视口后启动打印
+  // 进入视口后启动打印（startPrinting 声明提前：函数声明虽提升，但 react-hooks 规则
+  // 要求先声明后使用）
+  function startPrinting() {
+    let idx = 0;
+    const tick = () => {
+      idx += 1;
+      setPrintedLines(idx);
+      // 自动滚动到底部，模拟终端追加
+      if (scrollBodyRef.current) {
+        scrollBodyRef.current.scrollTop = scrollBodyRef.current.scrollHeight;
+      }
+      if (idx >= lines.length) {
+        setDone(true);
+        return;
+      }
+      // 空行稍快、标题行稍慢，营造节奏感
+      const current = lines[idx - 1] ?? '';
+      const isHeading = current.trimStart().startsWith('#');
+      const isEmpty = current.trim() === '';
+      const next = isEmpty ? lineDelay * 0.4 : isHeading ? lineDelay * 2.4 : lineDelay;
+      window.setTimeout(tick, next);
+    };
+    tick();
+  }
+
   useEffect(() => {
     if (!triggerOnView) {
       startPrinting();
@@ -60,29 +84,6 @@ export default function ResumeTerminal({
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [triggerOnView]);
-
-  function startPrinting() {
-    let idx = 0;
-    const tick = () => {
-      idx += 1;
-      setPrintedLines(idx);
-      // 自动滚动到底部，模拟终端追加
-      if (scrollBodyRef.current) {
-        scrollBodyRef.current.scrollTop = scrollBodyRef.current.scrollHeight;
-      }
-      if (idx >= lines.length) {
-        setDone(true);
-        return;
-      }
-      // 空行稍快、标题行稍慢，营造节奏感
-      const current = lines[idx - 1] ?? '';
-      const isHeading = current.trimStart().startsWith('#');
-      const isEmpty = current.trim() === '';
-      const next = isEmpty ? lineDelay * 0.4 : isHeading ? lineDelay * 2.4 : lineDelay;
-      window.setTimeout(tick, next);
-    };
-    tick();
-  }
 
   return (
     <motion.div

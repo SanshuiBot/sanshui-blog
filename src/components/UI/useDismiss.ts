@@ -24,7 +24,12 @@ export function useDismiss(
   { enabled = true, esc = true, outside = true }: UseDismissOptions = {},
 ) {
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+
+  // react-hooks/refs：渲染期写 ref 不被允许，改为 effect 中同步最新 onClose
+  // （事件回调在 effect 之后执行，读到的始终是最新值）
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     if (!enabled) return;

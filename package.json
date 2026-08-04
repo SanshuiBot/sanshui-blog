@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "predev": "node scripts/predev.js && node scripts/gen-posts-index.js",
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "prebuild": "node scripts/gen-posts-index.js",
-    "build": "cross-env NEXT_BUILD=1 next build --no-lint && pagefind --site out && node scripts/gen-dotted-tag-payloads.js",
+    "build": "cross-env NEXT_BUILD=1 next build --webpack && pagefind --site out && node scripts/gen-dotted-tag-payloads.js",
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -18,8 +18,8 @@
   },
   "scriptsDoc": {
     "predev": "npm run dev 前自动执行的钩子。运行 scripts/predev.js，生成 ConsoleNinja 兼容的 .next/routes-manifest.json",
-    "dev": "启动 Next.js 开发服务器（HMR）。注意：开发模式下不设置 NEXT_BUILD，因此没有 output:export、basePath、assetPrefix",
-    "build": "生产构建。通过 NEXT_BUILD=1 环境变量开启静态导出（output:export + basePath + assetPrefix），--no-lint 跳过构建期 lint，构建后用 pagefind 对 out/ 生成搜索索引",
+    "dev": "启动 Next.js 开发服务器（HMR）。注意：开发模式下不设置 NEXT_BUILD，因此没有 output:export、basePath、assetPrefix。加 --webpack 是因为 Turbopack 的 lightningcss 解析器无法解析 Tailwind v4.3 生成的 @layer properties 选择器（见 AGENTS.md 约定 #30）",
+    "build": "生产构建。通过 NEXT_BUILD=1 环境变量开启静态导出（output:export + basePath + assetPrefix）。Next 16 的 next build 不再执行 lint（--no-lint 选项已移除），lint 由 npm run lint 单独负责；加 --webpack 绕开 Turbopack 对 Tailwind v4.3 生成 CSS 的解析 bug。构建后用 pagefind 对 out/ 生成搜索索引",
     "start": "启动 Next.js 生产服务器（next start）。本项目为纯静态导出，通常不用此命令，静态托管在任意 HTTP 服务器即可",
     "lint": "运行 ESLint v9（flat config）检查全项目代码质量与规范，只报告不修改",
     "lint:fix": "运行 ESLint 并自动修复可修复的问题（如未使用变量、格式问题等）",
@@ -34,9 +34,11 @@
     "gray-matter": "^4.0.3",
     "highlightjs-solidity": "^2.0.6",
     "lucide-react": "^1.24.0",
-    "next": "^15.5.22",
+    "next": "^16.3.0",
     "next-mdx-remote": "^6.0.0",
     "next-themes": "^0.4.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "reading-time": "^1.5.0",
     "rehype-highlight": "^7.0.2",
     "rehype-slug": "^6.0.0",
@@ -50,7 +52,8 @@
     "@types/react-dom": "^19",
     "cross-env": "^10.1.0",
     "eslint": "^9",
-    "eslint-config-next": "^15.1.0",
+    "eslint-config-next": "^16.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "husky": "^9.1.7",
     "lint-staged": "^17.3.0",
     "pagefind": "^1.3.0",
@@ -60,7 +63,7 @@
     "vitest": "^4.1.10"
   },
   "overrides": {
-    "postcss": "^8.5.20",
+    "postcss": "^8.5.25",
     "sharp": "^0.35.3"
   }
 }
