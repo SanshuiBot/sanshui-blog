@@ -16,14 +16,3 @@ export function getResumeMarkdown(): string {
     return '';
   }
 }
-
-/**
- * 将 markdown 切成"逻辑行"用于流式输出。
- *
- * - 普通文本按行切分
- * - 列表项（- xxx）保留前导 `- `，作为可被渲染解析的标记
- * - 保留空行，作为打印节奏的间隔
- */
-export function splitResumeLines(markdown: string): string[] {
-  return markdown.replace(/\r\n/g, '\n').split('\n');
-}

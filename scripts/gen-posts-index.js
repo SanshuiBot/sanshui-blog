@@ -4,40 +4,33 @@
  * 只保留 slug/title/date/excerpt/tags，剔除 content（~72KB → ~10KB），
  * 让全量文章数据不再被序列化进 RSC payload。
  *
+ * 解析契约来自 src/lib/parse-post.mjs（与 posts.ts 共享同一实现，避免漂移）；
+ * 脚本是 CJS，通过 await import 动态加载 ESM 模块。
+ *
  * 触发点：
  *   - predev  (npm run dev 前)
  *   - prebuild (npm run build 前)
  */
 const fs = require('node:fs');
 const path = require('node:path');
-const matter = require('gray-matter');
 
 const postsDir = path.resolve(__dirname, '..', 'content', 'posts');
 const outPath = path.resolve(__dirname, '..', 'public', 'posts-index.json');
 
-function build() {
+async function build() {
   if (!fs.existsSync(postsDir)) {
     console.warn('! content/posts 不存在，跳过索引生成');
     return;
   }
   const files = fs.readdirSync(postsDir).filter((fn) => fn.endsWith('.md') || fn.endsWith('.mdx'));
 
+  const { parsePostFile } = await import('../src/lib/parse-post.mjs');
+
   const posts = files
     .map((fn) => {
-      const { data, content } = matter(fs.readFileSync(path.join(postsDir, fn), 'utf-8'));
-      const slug = fn.replace(/\.(mdx?)$/, '');
-      return {
-        slug,
-        title: data.title ?? slug,
-        date: data.date ? new Date(data.date).toISOString().split('T')[0] : '',
-        excerpt:
-          data.excerpt ??
-          content
-            .slice(0, 160)
-            .replace(/[#*`\[\]]/g, '')
-            .trim(),
-        tags: data.tags ?? [],
-      };
+      const p = parsePostFile(fn, fs.readFileSync(path.join(postsDir, fn), 'utf-8'));
+      // 索引只保留轻量字段，剔除 content
+      return { slug: p.slug, title: p.title, date: p.date, excerpt: p.excerpt, tags: p.tags };
     })
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -46,4 +39,7 @@ function build() {
   console.log(`✓ 已生成 public/posts-index.json (${posts.length} 篇)`);
 }
 
-build();
+build().catch((err) => {
+  console.error('生成 posts-index.json 失败:', err);
+  process.exit(1);
+});

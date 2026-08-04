@@ -9,9 +9,10 @@
  *    特异性 (0,3,1)，稳压 Tailwind utility 裸覆盖（AGENTS.md 约定 #25）。
  *  - 防御 React 18 StrictMode 双 mount：所有 effect 在 cleanup 里解绑，open 状态用函数式更新。
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { Filter, Hash, X } from 'lucide-react';
+import { useDismiss } from '@/components/UI/useDismiss';
 
 interface TagItem {
   name: string;
@@ -22,33 +23,8 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 点击外部关闭
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    // 延迟绑定，避免触发 Popover 的同一次点击
-    const timer = setTimeout(() => {
-      document.addEventListener('mousedown', handler);
-    }, 0);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('mousedown', handler);
-    };
-  }, [open]);
-
-  // Esc 关闭
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open]);
+  // 点击外部 / Esc 关闭（外点判定 + 延迟绑定统一收口在 useDismiss）
+  useDismiss(containerRef, () => setOpen(false), { enabled: open });
 
   return (
     <div className="relative shrink-0" ref={containerRef}>

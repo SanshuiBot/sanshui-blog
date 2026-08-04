@@ -4,18 +4,25 @@
  * 全局点击特效组件
  *
  * 监听 document 的 click 事件，在点击点随机释放一种特效：
- *  - 爱心喷射
- *  - 爆炸粒子
- *  - 烟花
- *  - 涟漪波纹
- *  - 星星飞溅
- *  - 樱花飘落
+ *  - 爱心喷射 / 爆炸粒子 / 烟花 / 涟漪波纹 / 星星飞溅 / 樱花飘落
  *
- * 特效由纯 CSS + JS 动画实现，不引入任何第三方依赖；元素在动画结束后自动移除。
- * 为了避免在不可点击的纯文本区域过于吵闹，特效整体保持小巧、克制的视觉风格。
+ * 分层约定：粒子物理（easing 曲线、位移/缩放/旋转/透明度推导）在
+ * src/lib/clickParticles.ts（纯函数，可脱离浏览器单测）；
+ * 本文件只保留 DOM 创建与 rAF 循环（副作用层）。
  */
 
 import { useEffect } from 'react';
+import {
+  makeHeartStyle,
+  makeExplosionStyle,
+  makeRocketStyle,
+  makeBurstStyle,
+  makeRippleStyle,
+  makeStarStyle,
+  makeSakuraStyle,
+  type ParticleState,
+  type ParticleStyleFn,
+} from '@/lib/clickParticles';
 
 type EffectName = 'hearts' | 'explosion' | 'firework' | 'ripple' | 'stars' | 'sakura';
 
@@ -32,6 +39,10 @@ const PALETTE = [
   '#ffadad',
   '#a0c4ff',
 ];
+
+const HEART_SYMBOLS = ['❤', '♥', '❥', '💖'];
+const STAR_SYMBOLS = ['✦', '✧', '⋆', '✨'];
+const PETAL_COLORS = ['#ffd1dc', '#ffb3c6', '#ff8fab', '#ffc2d1'];
 
 function rand(min: number, max: number): number {
   return Math.random() * (max - min) + min;
@@ -57,38 +68,60 @@ function createLayer(x: number, y: number): HTMLDivElement {
   return layer;
 }
 
-/* ----------------------------- 特效实现 ----------------------------- */
+/** 副作用层：把纯函数算出的粒子状态写入元素样式（位移含 -50% 居中基准） */
+function applyStyle(el: HTMLElement, s: ParticleState): void {
+  const parts = [`translate(calc(-50% + ${s.x}px), calc(-50% + ${s.y}px))`];
+  if (s.rotate !== 0) parts.push(`rotate(${s.rotate}deg)`);
+  if (s.scale !== 1) parts.push(`scale(${s.scale})`);
+  el.style.transform = parts.join(' ');
+  el.style.opacity = `${s.opacity}`;
+}
+
+/** 副作用层：rAF 循环，进度 t（ms）交给纯函数推导状态，到 duration 停止 */
+function animate(el: HTMLElement, styleFn: ParticleStyleFn, duration: number): void {
+  const start = performance.now();
+  const loop = (now: number) => {
+    const t = now - start;
+    applyStyle(el, styleFn(t));
+    if (t < duration) requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+
+/** 通用小圆点元素 */
+function makeDot(size: number, color: string): HTMLDivElement {
+  const el = document.createElement('div');
+  el.style.position = 'absolute';
+  el.style.width = `${size}px`;
+  el.style.height = `${size}px`;
+  el.style.borderRadius = '50%';
+  el.style.background = color;
+  el.style.willChange = 'transform, opacity';
+  return el;
+}
+
+/* ----------------------------- 特效实现（DOM 层） ----------------------------- */
 
 /** 爱心喷射：多个小心以不同角度向上飘 */
 function spawnHearts(layer: HTMLDivElement) {
   const count = 6;
   for (let i = 0; i < count; i++) {
     const heart = document.createElement('div');
-    heart.textContent = pick(['❤', '♥', '❥', '💖']);
-    heart.style.position = 'absolute';
+    heart.textContent = pick(HEART_SYMBOLS);
     heart.style.fontSize = `${rand(10, 16)}px`;
     heart.style.color = pick(PALETTE);
-    heart.style.opacity = '1';
-    heart.style.transform = 'translate(-50%, -50%)';
+    heart.style.position = 'absolute';
     heart.style.willChange = 'transform, opacity';
+    layer.appendChild(heart);
 
     const angle = rand(-Math.PI * 0.75, -Math.PI * 0.25); // 朝上
     const distance = rand(30, 60);
-    const dx = Math.cos(angle) * distance;
-    const dy = Math.sin(angle) * distance;
     const duration = rand(600, 1000);
-
-    layer.appendChild(heart);
-
-    const start = performance.now();
-    const animate = (now: number) => {
-      const t = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 3);
-      heart.style.transform = `translate(calc(-50% + ${dx * ease}px), calc(-50% + ${dy * ease}px)) scale(${1 - t * 0.5})`;
-      heart.style.opacity = `${1 - t}`;
-      if (t < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
+    animate(
+      heart,
+      makeHeartStyle(Math.cos(angle) * distance, Math.sin(angle) * distance, duration),
+      duration,
+    );
   }
 }
 
@@ -96,33 +129,17 @@ function spawnHearts(layer: HTMLDivElement) {
 function spawnExplosion(layer: HTMLDivElement) {
   const count = 14;
   for (let i = 0; i < count; i++) {
-    const dot = document.createElement('div');
-    const size = rand(3, 6);
-    dot.style.position = 'absolute';
-    dot.style.width = `${size}px`;
-    dot.style.height = `${size}px`;
-    dot.style.borderRadius = '50%';
-    dot.style.background = pick(PALETTE);
-    dot.style.transform = 'translate(-50%, -50%)';
-    dot.style.willChange = 'transform, opacity';
+    const dot = makeDot(rand(3, 6), pick(PALETTE));
+    layer.appendChild(dot);
 
     const angle = (i / count) * Math.PI * 2 + rand(-0.2, 0.2);
     const distance = rand(25, 55);
-    const dx = Math.cos(angle) * distance;
-    const dy = Math.sin(angle) * distance;
     const duration = rand(500, 800);
-
-    layer.appendChild(dot);
-
-    const start = performance.now();
-    const animate = (now: number) => {
-      const t = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 2);
-      dot.style.transform = `translate(calc(-50% + ${dx * ease}px), calc(-50% + ${dy * ease}px)) scale(${1 - t})`;
-      dot.style.opacity = `${1 - t}`;
-      if (t < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
+    animate(
+      dot,
+      makeExplosionStyle(Math.cos(angle) * distance, Math.sin(angle) * distance, duration),
+      duration,
+    );
   }
 }
 
@@ -133,59 +150,38 @@ function spawnFirework(layer: HTMLDivElement) {
   const burstHeight = rand(40, 60);
 
   // 上升的"引线"粒子
-  const rocket = document.createElement('div');
-  rocket.style.position = 'absolute';
-  rocket.style.width = '3px';
-  rocket.style.height = '3px';
-  rocket.style.borderRadius = '50%';
-  rocket.style.background = color;
+  const rocket = makeDot(3, color);
   rocket.style.boxShadow = `0 0 6px ${color}`;
-  rocket.style.transform = 'translate(-50%, -50%)';
-  rocket.style.willChange = 'transform, opacity';
   layer.appendChild(rocket);
 
   const riseStart = performance.now();
-  const riseAnimate = (now: number) => {
-    const t = Math.min((now - riseStart) / riseDuration, 1);
-    rocket.style.transform = `translate(-50%, calc(-50% - ${burstHeight * t}px))`;
-    rocket.style.opacity = `${1 - t * 0.5}`;
-    if (t < 1) {
-      requestAnimationFrame(riseAnimate);
-    } else {
-      rocket.remove();
-      // 爆开
-      const burst = 12;
-      for (let i = 0; i < burst; i++) {
-        const p = document.createElement('div');
-        p.style.position = 'absolute';
-        p.style.left = '0';
-        p.style.top = `${-burstHeight}px`;
-        p.style.width = '3px';
-        p.style.height = '3px';
-        p.style.borderRadius = '50%';
-        p.style.background = color;
-        p.style.boxShadow = `0 0 4px ${color}`;
-        p.style.transform = 'translate(-50%, -50%)';
-        p.style.willChange = 'transform, opacity';
-        layer.appendChild(p);
+  const riseLoop = (now: number) => {
+    const t = now - riseStart;
+    applyStyle(rocket, makeRocketStyle(burstHeight, riseDuration)(t));
+    if (t < riseDuration) {
+      requestAnimationFrame(riseLoop);
+      return;
+    }
+    rocket.remove();
+    // 爆开
+    const burst = 12;
+    for (let i = 0; i < burst; i++) {
+      const p = makeDot(3, color);
+      p.style.boxShadow = `0 0 4px ${color}`;
+      p.style.top = `${-burstHeight}px`;
+      layer.appendChild(p);
 
-        const angle = (i / burst) * Math.PI * 2;
-        const distance = rand(15, 30);
-        const dx = Math.cos(angle) * distance;
-        const dy = Math.sin(angle) * distance;
-        const duration = rand(400, 700);
-        const start = performance.now();
-        const animate = (now2: number) => {
-          const t2 = Math.min((now2 - start) / duration, 1);
-          p.style.transform = `translate(calc(-50% + ${dx * t2}px), calc(-50% + ${dy * t2}px)) scale(${1 - t2})`;
-          p.style.opacity = `${1 - t2}`;
-          if (t2 < 1) requestAnimationFrame(animate);
-        };
-        requestAnimationFrame(animate);
-      }
+      const angle = (i / burst) * Math.PI * 2;
+      const distance = rand(15, 30);
+      const duration = rand(400, 700);
+      animate(
+        p,
+        makeBurstStyle(Math.cos(angle) * distance, Math.sin(angle) * distance, duration),
+        duration,
+      );
     }
   };
-  requestAnimationFrame(riseAnimate);
+  requestAnimationFrame(riseLoop);
 }
 
 /** 涟漪：从点击点向外扩散的圆环 */
@@ -196,20 +192,10 @@ function spawnRipple(layer: HTMLDivElement) {
   ring.style.height = '10px';
   ring.style.border = `2px solid ${pick(PALETTE)}`;
   ring.style.borderRadius = '50%';
-  ring.style.transform = 'translate(-50%, -50%)';
   ring.style.willChange = 'transform, opacity';
   layer.appendChild(ring);
 
-  const duration = 600;
-  const start = performance.now();
-  const animate = (now: number) => {
-    const t = Math.min((now - start) / duration, 1);
-    const scale = 1 + t * 6;
-    ring.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    ring.style.opacity = `${1 - t}`;
-    if (t < 1) requestAnimationFrame(animate);
-  };
-  requestAnimationFrame(animate);
+  animate(ring, makeRippleStyle(600), 600);
 }
 
 /** 星星飞溅：小星星字符向四周扩散并淡出 */
@@ -217,28 +203,21 @@ function spawnStars(layer: HTMLDivElement) {
   const count = 7;
   for (let i = 0; i < count; i++) {
     const star = document.createElement('div');
-    star.textContent = pick(['✦', '✧', '⋆', '✨']);
-    star.style.position = 'absolute';
+    star.textContent = pick(STAR_SYMBOLS);
     star.style.fontSize = `${rand(9, 14)}px`;
     star.style.color = pick(PALETTE);
-    star.style.transform = 'translate(-50%, -50%)';
+    star.style.position = 'absolute';
     star.style.willChange = 'transform, opacity';
     layer.appendChild(star);
 
     const angle = (i / count) * Math.PI * 2 + rand(-0.3, 0.3);
     const distance = rand(20, 45);
-    const dx = Math.cos(angle) * distance;
-    const dy = Math.sin(angle) * distance;
     const duration = rand(500, 800);
-    const start = performance.now();
-    const animate = (now: number) => {
-      const t = Math.min((now - start) / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 2);
-      star.style.transform = `translate(calc(-50% + ${dx * ease}px), calc(-50% + ${dy * ease}px)) rotate(${t * 360}deg) scale(${1 - t * 0.5})`;
-      star.style.opacity = `${1 - t}`;
-      if (t < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
+    animate(
+      star,
+      makeStarStyle(Math.cos(angle) * distance, Math.sin(angle) * distance, duration),
+      duration,
+    );
   }
 }
 
@@ -246,31 +225,19 @@ function spawnStars(layer: HTMLDivElement) {
 function spawnSakura(layer: HTMLDivElement) {
   const count = 8;
   for (let i = 0; i < count; i++) {
-    const petal = document.createElement('div');
     const size = rand(6, 10);
+    const petal = document.createElement('div');
     petal.style.position = 'absolute';
     petal.style.width = `${size}px`;
     petal.style.height = `${size * 1.2}px`;
-    petal.style.background = pick(['#ffd1dc', '#ffb3c6', '#ff8fab', '#ffc2d1']);
+    petal.style.background = pick(PETAL_COLORS);
     petal.style.borderRadius = '150% 0 150% 0';
     petal.style.opacity = '0.9';
-    petal.style.transform = 'translate(-50%, -50%)';
     petal.style.willChange = 'transform, opacity';
     layer.appendChild(petal);
 
-    const startX = rand(-15, 15);
-    const drift = rand(-30, 30);
-    const fall = rand(40, 80);
     const duration = rand(900, 1400);
-    const start = performance.now();
-    const animate = (now: number) => {
-      const t = Math.min((now - start) / duration, 1);
-      const ease = t * t; // 加速下落
-      petal.style.transform = `translate(calc(-50% + ${startX + drift * t}px), calc(-50% + ${fall * ease}px)) rotate(${t * 540}deg)`;
-      petal.style.opacity = `${0.9 * (1 - t)}`;
-      if (t < 1) requestAnimationFrame(animate);
-    };
-    requestAnimationFrame(animate);
+    animate(petal, makeSakuraStyle(rand(-15, 15), rand(-30, 30), rand(40, 80), duration), duration);
   }
 }
 

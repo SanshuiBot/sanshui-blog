@@ -1,4 +1,5 @@
-﻿import 'server-only';
+import 'server-only';
+import Slugger from 'github-slugger';
 
 export interface TocItem {
   id: string;
@@ -6,21 +7,33 @@ export interface TocItem {
   level: number;
 }
 
+/**
+ * 提取 ## / ### 标题生成目录。
+ *
+ * 与渲染侧 rehype-slug 共用同一个 github-slugger（v2 语义：保留中文/重音/假名、
+ * 不去重连字符），保证目录锚点 id 与正文标题 id 严格一致：
+ *  - 先剥 HTML 标签再生成 id（rehype-slug 操作的是文本节点，等价于此）
+ *  - h1~h6 全部推进 slugger 状态（重复标题得到 -1/-2 后缀），只输出 h2/h3
+ *  - 行扫描跳过代码围栏（``` / ~~~）内的假标题，避免死锚点
+ */
 export function extractHeadings(content: string): TocItem[] {
-  const headingRegex = /^(#{2,3})\s+(.+)$/gm;
+  const slugger = new Slugger();
   const items: TocItem[] = [];
-  let match;
-  while ((match = headingRegex.exec(content)) !== null) {
-    const level = match[1]!.length;
-    const text = match[2]!.trim();
-    const id = text
-      .toLowerCase()
-      .replace(/<[^>]*>/g, '')
-      .replace(/[^\w\u4e00-\u9fff\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-    items.push({ id, text, level });
+  let inFence = false;
+
+  for (const rawLine of content.split('\n')) {
+    if (/^\s*(```|~~~)/.test(rawLine)) {
+      inFence = !inFence;
+      continue;
+    }
+    const m = /^(#{1,6})\s+(.+)$/.exec(rawLine);
+    if (!m || inFence) continue;
+    const level = m[1]!.length;
+    const text = m[2]!.trim();
+    const id = slugger.slug(text.replace(/<[^>]*>/g, ''));
+    if (level === 2 || level === 3) {
+      items.push({ id, text, level });
+    }
   }
   return items;
 }

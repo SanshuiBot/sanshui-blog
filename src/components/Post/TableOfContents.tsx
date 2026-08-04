@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Menu, X } from 'lucide-react';
 import type { TocItem } from '@/lib/toc';
+import { thumbGeometry } from '@/lib/thumbGeometry';
 
 interface Props {
   items: TocItem[];
@@ -99,19 +100,9 @@ export default function TableOfContents({ items }: Props) {
     const container = scrollRef.current;
     if (!container) return;
 
-    // thumb 几何：若内容不超出视高则卸载浮层；否则按可滚比例算 top/height
+    // thumb 几何：若内容不超出视高则卸载浮层；否则按可滚比例算 top/height（纯函数见 lib/thumbGeometry）
     const update = () => {
-      const viewport = container.clientHeight;
-      const total = container.scrollHeight;
-      if (total <= viewport) {
-        setThumb(null);
-        return;
-      }
-      const ratio = viewport / total;
-      const scrollTop = container.scrollTop;
-      const height = Math.max(viewport * ratio, 24);
-      const top = (scrollTop / (total - viewport)) * (viewport - height);
-      setThumb({ top, height });
+      setThumb(thumbGeometry(container.clientHeight, container.scrollHeight, container.scrollTop));
     };
 
     // 首次与字体加载后延延算准 —— rAF 等布局稳定，fonts.ready 兜底
@@ -129,14 +120,8 @@ export default function TableOfContents({ items }: Props) {
     // scroll 时只同步 top（height 不变），hover 显隐由下面 mouseenter/leave 管
     const onScroll = () => {
       if (!thumbVisibleRef.current) return;
-      const viewport = container.clientHeight;
-      const total = container.scrollHeight;
-      if (total <= viewport) return;
-      const scrollTop = container.scrollTop;
-      const ratio = viewport / total;
-      const height = Math.max(viewport * ratio, 24);
-      const top = (scrollTop / (total - viewport)) * (viewport - height);
-      setThumb({ top, height });
+      const g = thumbGeometry(container.clientHeight, container.scrollHeight, container.scrollTop);
+      if (g) setThumb(g);
     };
 
     // 显隐「只」由 hover 控制 —— 鼠标在目录里就显示，离开就隐藏

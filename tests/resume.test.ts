@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { getResumeMarkdown, splitResumeLines } from '@/lib/resume';
+import { getResumeMarkdown } from '@/lib/resume';
+import { splitResumeLines } from '@/lib/resumeLines';
 
 describe('splitResumeLines', () => {
   it('按换行切分普通文本', () => {

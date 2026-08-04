@@ -215,7 +215,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
             GitHub
           </motion.a>
           <motion.a
-            href={`mailto:${siteConfig.email}`}
+            href={siteConfig.emailHref}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             className={`${btnClass} bg-white/5 text-gray-300 border border-white/10 hover:border-accent-violet/40`}

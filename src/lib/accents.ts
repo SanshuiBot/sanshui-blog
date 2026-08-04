@@ -192,3 +192,58 @@ export function applyAccent(preset: AccentPreset): void {
     root.style.setProperty(`--accent-${ch}-rgb`, preset.colors[ch]);
   }
 }
+
+/**
+ * 防 FOUC 解析逻辑的纯函数版本（与 accentBootstrapScript 内的逻辑保持一致，可单测）：
+ * 读 storage id → custom 覆盖 → 预设查找 → 默认回退，返回要写入的 colors。
+ */
+export function resolveAccentColors(
+  id: string | null,
+  customRaw: string | null,
+): Record<AccentChannel, string> | null {
+  if (id === CUSTOM_ACCENT_ID) {
+    try {
+      if (customRaw) {
+        const parsed = JSON.parse(customRaw) as Partial<AccentPreset>;
+        if (
+          parsed.colors &&
+          ACCENT_CHANNELS.every((ch) => typeof parsed.colors![ch] === 'string')
+        ) {
+          return parsed.colors as Record<AccentChannel, string>;
+        }
+      }
+    } catch {
+      // 自定义 JSON 损坏时回退到预设
+    }
+  }
+  const preset = getPreset(id);
+  return preset.colors;
+}
+
+/**
+ * 防 FOUC inline script：首屏前同步读 localStorage 并写 CSS 变量。
+ * 由本模块生成（与 resolveAccentColors 共享数据源），逻辑嵌入在自执行函数中，
+ * 不依赖外部模块，可安全内联在 <head>。
+ */
+export const accentBootstrapScript = `(function(){
+  try {
+    var id = window.localStorage.getItem('${ACCENT_STORAGE_KEY}');
+    var presets = ${JSON.stringify(ACCENT_PRESETS.map((p) => ({ id: p.id, colors: p.colors })))};
+    var def = presets.find(function(p){return p.id==='${DEFAULT_ACCENT_ID}';});
+    var target;
+    if (id === '${CUSTOM_ACCENT_ID}') {
+      try {
+        var raw = window.localStorage.getItem('${CUSTOM_ACCENT_STORAGE_KEY}');
+        if (raw) target = JSON.parse(raw);
+      } catch (e2) {}
+    }
+    if (!target) {
+      target = presets.find(function(p){return p.id===id;}) || def;
+    }
+    if (!target || !target.colors) return;
+    var root = document.documentElement;
+    Object.keys(target.colors).forEach(function(ch){
+      root.style.setProperty('--accent-' + ch + '-rgb', target.colors[ch]);
+    });
+  } catch (e) {}
+})();`;

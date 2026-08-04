@@ -9,7 +9,7 @@ import Link from 'next/link';
 
 const social = [
   { icon: Github, href: siteConfig.github, label: 'GitHub' },
-  { icon: Mail, href: `mailto:${siteConfig.email}`, label: 'Email' },
+  { icon: Mail, href: siteConfig.emailHref, label: 'Email' },
 ];
 
 const techStack = [

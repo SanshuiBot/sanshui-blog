@@ -14,7 +14,7 @@ describe('extractHeadings', () => {
     expect(items[0]).toEqual({ id: '小节', text: '小节', level: 3 });
   });
 
-  it('ignores # h1 and #### h4 headings', () => {
+  it('ignores # h1 and #### h4 headings (but h1/h4 仍推进 slugger 状态)', () => {
     const items = extractHeadings('# 大标题\n\n## 真标题\n\n#### 不入目录');
     expect(items).toHaveLength(1);
     expect(items[0]).toEqual({ id: '真标题', text: '真标题', level: 2 });
@@ -31,9 +31,14 @@ describe('extractHeadings', () => {
     expect(items[0]!.id).toBe('react-并发渲染机制');
   });
 
-  it('lowercases Latin text and turns spaces into hyphens', () => {
-    const items = extractHeadings('## Hello, World! (2026)');
-    expect(items[0]!.id).toBe('hello-world-2026');
+  it('与渲染侧 github-slugger 一致：保留重音拉丁与日文假名', () => {
+    expect(extractHeadings('## Résumé')[0]!.id).toBe('résumé');
+    expect(extractHeadings('## 日本語のタイトル')[0]!.id).toBe('日本語のタイトル');
+  });
+
+  it('与渲染侧 github-slugger 一致：不去重连字符、不去边缘连字符', () => {
+    expect(extractHeadings('## A--B')[0]!.id).toBe('a--b');
+    expect(extractHeadings('## -Title-')[0]!.id).toBe('-title-');
   });
 
   it('strips inline HTML from the id but keeps it in text', () => {
@@ -42,9 +47,19 @@ describe('extractHeadings', () => {
     expect(items[0]!.id).toBe('install-npm');
   });
 
-  it('collapses repeated hyphens and trims edge hyphens', () => {
-    expect(extractHeadings('## A--B')[0]!.id).toBe('a-b');
-    expect(extractHeadings('## -Title-')[0]!.id).toBe('title');
+  it('重复标题获得 -1/-2 后缀（与渲染侧同一 slugger 实例语义）', () => {
+    const ids = extractHeadings('## 同标题\n## 同标题\n## 同标题').map((i) => i.id);
+    expect(ids).toEqual(['同标题', '同标题-1', '同标题-2']);
+  });
+
+  it('h1 与 h2 重名时 h2 让位（slugger 状态按文档顺序推进）', () => {
+    const items = extractHeadings('# 同标题\n## 同标题');
+    expect(items[0]!.id).toBe('同标题-1');
+  });
+
+  it('跳过代码围栏内的假标题，避免死锚点', () => {
+    const items = extractHeadings('```md\n## 围栏里的假标题\n```\n\n## 真标题');
+    expect(items.map((i) => i.text)).toEqual(['真标题']);
   });
 
   it('returns an empty array when there are no headings', () => {

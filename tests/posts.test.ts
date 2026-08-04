@@ -50,6 +50,12 @@ describe('getPostBySlug', () => {
   it('未知 slug 返回 undefined', () => {
     expect(getPostBySlug('不存在的文章-xyz')).toBeUndefined();
   });
+
+  it('非法 URL 编码的 slug 不抛异常，按未命中处理（错误语义统一）', () => {
+    expect(() => getPostBySlug('%E0%A4%A')).not.toThrow();
+    expect(getPostBySlug('%E0%A4%A')).toBeUndefined();
+    expect(getAdjacentPosts('%E0%A4%A')).toEqual({ prev: null, next: null });
+  });
 });
 
 describe('getAdjacentPosts（按日期降序：prev 更旧 / next 更新）', () => {

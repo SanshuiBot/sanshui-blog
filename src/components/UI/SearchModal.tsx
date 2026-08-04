@@ -5,6 +5,7 @@ import { Search, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { withBase } from '@/lib/basePath';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
+import { useDismiss } from '@/components/UI/useDismiss';
 
 interface SearchPost {
   slug: string;
@@ -18,7 +19,11 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
   const [q, setQ] = useState('');
   const [posts, setPosts] = useState<SearchPost[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
+
+  // 点击外部 / Esc 关闭（外点判定 + 延迟绑定统一收口在 useDismiss）
+  useDismiss(panelRef, onClose, { enabled: open });
 
   // 首次打开时拉取轻量索引（~10KB），不再走 RSC payload
   useEffect(() => {
@@ -43,13 +48,11 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     const h = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        return;
       }
-      if (e.key === 'Escape') onClose();
     };
     if (open) window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
-  }, [open, onClose]);
+  }, [open]);
 
   const results = useMemo(() => {
     if (!posts) return [];
@@ -77,9 +80,9 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
           />
           <motion.div
+            ref={panelRef}
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}

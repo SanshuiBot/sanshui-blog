@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,6 +9,7 @@ import ThemeToggle from '@/components/UI/ThemeToggle';
 import AccentPicker from '@/components/UI/AccentPicker';
 import Tooltip from '@/components/UI/Tooltip';
 import SearchModal from '@/components/UI/SearchModal';
+import { useDismiss } from '@/components/UI/useDismiss';
 import { withBase } from '@/lib/basePath';
 import { siteConfig } from '@/lib/site';
 
@@ -25,6 +26,11 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLElement>(null);
+
+  // 移动端菜单仅启用 Esc 关闭：开关按钮在 header（浮层外），mousedown 外点判定会误关，
+  // 与按钮 onClick 形成开关竞态；外点关闭继续由遮罩 onClick 负责
+  useDismiss(mobileMenuRef, () => setMobileOpen(false), { enabled: mobileOpen, outside: false });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -34,6 +40,19 @@ export default function Navbar() {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  // 全局 ⌘K / Ctrl+K 打开搜索：监听此前被 SearchModal 的 open 门控导致快捷键失效，
+  // 开关状态与快捷键收敛在同一模块（Navbar 持有 searchOpen）。
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   return (
     <>
@@ -126,7 +145,10 @@ export default function Navbar() {
               className="absolute inset-0 bg-ink/90 backdrop-blur-2xl"
               onClick={() => setMobileOpen(false)}
             />
-            <nav className="relative flex flex-col items-center justify-center h-full gap-8">
+            <nav
+              ref={mobileMenuRef}
+              className="relative flex flex-col items-center justify-center h-full gap-8"
+            >
               {links.map((l, i) => (
                 <motion.div
                   key={l.href}

@@ -7,6 +7,8 @@
  * 注意：本模块会被客户端组件（Navbar/Footer/HeroScene 等）引用，
  * 因此不能加 'server-only' 导入，与 basePath.ts 相同。
  */
+import { BASE_PATH } from './basePath';
+
 export const siteConfig = {
   /** 作者名（Navbar/Footer/首页 Hero 等显示用） */
   name: '三水',
@@ -16,10 +18,10 @@ export const siteConfig = {
   title: '三水 | 个人博客',
   /** 站点描述（metadata description / openGraph description） */
   description: '记录技术思考、生活感悟与创作灵感',
-  /** 线上站点根地址（GitHub Pages） */
-  url: 'https://sanshuibot.github.io/sanshui-blog',
+  /** 线上站点根地址（GitHub Pages）；由部署 basePath 派生，避免字面量重复 */
+  url: `https://sanshuibot.github.io${BASE_PATH}`,
   /** GitHub 主页 */
   github: 'https://github.com/SanshuiBot',
-  /** 联系邮箱（使用时需自行拼 mailto: 前缀） */
-  email: 'localhost6@foxmail.com',
+  /** mailto 链接（调用方直接使用，无需再拼前缀） */
+  emailHref: 'mailto:localhost6@foxmail.com',
 } as const;

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Palette, Check } from 'lucide-react';
 import Tooltip from '@/components/UI/Tooltip';
+import { useDismiss } from '@/components/UI/useDismiss';
 import {
   ACCENT_PRESETS,
   ACCENT_STORAGE_KEY,
@@ -54,33 +55,8 @@ export default function AccentPicker() {
     setCustomHex(initial);
   }, []);
 
-  // 点击外部关闭 Popover
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    // 延迟绑定，避免触发 Popover 的同一次点击
-    const timer = setTimeout(() => {
-      document.addEventListener('mousedown', handler);
-    }, 0);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('mousedown', handler);
-    };
-  }, [open]);
-
-  // Esc 关闭
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open]);
+  // 点击外部 / Esc 关闭（外点判定 + 延迟绑定统一收口在 useDismiss）
+  useDismiss(popoverRef, () => setOpen(false), { enabled: open });
 
   // 选中预设（预设或自定义）
   const handleSelect = (id: string) => {

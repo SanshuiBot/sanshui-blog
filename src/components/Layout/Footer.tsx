@@ -93,7 +93,7 @@ export default function Footer() {
               </a>
               <br />
               <a
-                href={`mailto:${siteConfig.email}`}
+                href={siteConfig.emailHref}
                 className="footer-link inline-flex items-center gap-2 text-sm"
               >
                 <Mail size={14} />

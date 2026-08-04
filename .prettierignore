@@ -1,0 +1,2 @@
+# 构建产物：由 scripts/gen-posts-index.js 生成的紧凑 JSON，每次构建都会重写
+public/posts-index.json

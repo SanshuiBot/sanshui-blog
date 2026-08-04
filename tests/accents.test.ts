@@ -1,5 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { hexToRgb, rgbToHex, getPreset, DEFAULT_ACCENT_ID } from '@/lib/accents';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  hexToRgb,
+  rgbToHex,
+  getPreset,
+  DEFAULT_ACCENT_ID,
+  ACCENT_PRESETS,
+  ACCENT_CHANNELS,
+  ACCENT_STORAGE_KEY,
+  CUSTOM_ACCENT_ID,
+  CUSTOM_ACCENT_STORAGE_KEY,
+  resolveAccentColors,
+  accentBootstrapScript,
+} from '@/lib/accents';
 
 describe('hexToRgb', () => {
   it('converts 6-digit hex with # to rgb triplet', () => {
@@ -52,5 +66,103 @@ describe('getPreset', () => {
   it('falls back to the default preset for null/undefined', () => {
     expect(getPreset(null).id).toBe(DEFAULT_ACCENT_ID);
     expect(getPreset(undefined).id).toBe(DEFAULT_ACCENT_ID);
+  });
+});
+
+describe('resolveAccentColors（防 FOUC 解析逻辑纯函数）', () => {
+  it('预设 id 返回对应 colors', () => {
+    expect(resolveAccentColors('sunset', null)).toEqual(getPreset('sunset').colors);
+  });
+
+  it('未知/空 id 回退到默认预设', () => {
+    expect(resolveAccentColors('nonexistent', null)).toEqual(getPreset(DEFAULT_ACCENT_ID).colors);
+    expect(resolveAccentColors(null, null)).toEqual(getPreset(DEFAULT_ACCENT_ID).colors);
+  });
+
+  it('custom id + 合法 JSON 返回自定义 colors', () => {
+    const custom = {
+      colors: {
+        pink: '1 2 3',
+        violet: '4 5 6',
+        blue: '7 8 9',
+        teal: '10 11 12',
+        gold: '13 14 15',
+        rose: '16 17 18',
+      },
+    };
+    const colors = resolveAccentColors(CUSTOM_ACCENT_ID, JSON.stringify(custom));
+    expect(colors?.violet).toBe('4 5 6');
+  });
+
+  it('custom id + 损坏 JSON 回退到默认预设', () => {
+    expect(resolveAccentColors(CUSTOM_ACCENT_ID, '{bad json')).toEqual(
+      getPreset(DEFAULT_ACCENT_ID).colors,
+    );
+  });
+});
+
+describe('accentBootstrapScript（防 FOUC 脚本与纯函数行为一致）', () => {
+  /** 用 stub 的 window/document 执行生成的脚本，返回写入的 CSS 变量 */
+  function runScript(store: Record<string, string | null>): Record<string, string> {
+    const vars: Record<string, string> = {};
+    const origWindow = globalThis.window;
+    const origDocument = globalThis.document;
+    (globalThis as { window?: unknown }).window = {
+      localStorage: { getItem: (k: string) => store[k] ?? null },
+    };
+    (globalThis as { document?: unknown }).document = {
+      documentElement: { style: { setProperty: (k: string, v: string) => void (vars[k] = v) } },
+    };
+    try {
+      new Function(accentBootstrapScript)();
+    } finally {
+      (globalThis as { window?: unknown }).window = origWindow;
+      (globalThis as { document?: unknown }).document = origDocument;
+    }
+    return vars;
+  }
+
+  it('预设 id：脚本写入的 CSS 变量与 resolveAccentColors 一致', () => {
+    const vars = runScript({ [ACCENT_STORAGE_KEY]: 'ocean' });
+    const expected = resolveAccentColors('ocean', null)!;
+    for (const ch of ACCENT_CHANNELS) {
+      expect(vars[`--accent-${ch}-rgb`]).toBe(expected[ch]);
+    }
+  });
+
+  it('custom id：脚本应用自定义 colors', () => {
+    const custom = {
+      id: CUSTOM_ACCENT_ID,
+      colors: {
+        pink: '11 12 13',
+        violet: '21 22 23',
+        blue: '31 32 33',
+        teal: '41 42 43',
+        gold: '51 52 53',
+        rose: '61 62 63',
+      },
+    };
+    const vars = runScript({
+      [ACCENT_STORAGE_KEY]: CUSTOM_ACCENT_ID,
+      [CUSTOM_ACCENT_STORAGE_KEY]: JSON.stringify(custom),
+    });
+    expect(vars['--accent-violet-rgb']).toBe('21 22 23');
+  });
+
+  it('未知 id：脚本回退到默认预设', () => {
+    const vars = runScript({ [ACCENT_STORAGE_KEY]: 'nonexistent' });
+    const expected = getPreset(DEFAULT_ACCENT_ID).colors;
+    expect(vars['--accent-violet-rgb']).toBe(expected.violet);
+  });
+});
+
+describe('globals.css :root 默认 accent 变量与 ACCENT_PRESETS 一致（跨语言契约）', () => {
+  it('六个通道值完全匹配 aurora 预设', () => {
+    const css = readFileSync(join(process.cwd(), 'src/app/globals.css'), 'utf-8');
+    const aurora = ACCENT_PRESETS[0]!;
+    for (const ch of ACCENT_CHANNELS) {
+      const m = new RegExp(`--accent-${ch}-rgb:\\s*([^;]+);`).exec(css);
+      expect(m?.[1]?.trim()).toBe(aurora.colors[ch]);
+    }
   });
 });

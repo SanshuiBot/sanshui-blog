@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { splitResumeLines } from '@/lib/resumeLines';
 
 interface ResumeTerminalProps {
   /** 完整简历文本（markdown，按行流式输出） */
@@ -25,7 +26,7 @@ export default function ResumeTerminal({
   lineDelay = 60,
   triggerOnView = true,
 }: ResumeTerminalProps) {
-  const lines = useMemo(() => source.replace(/\r\n/g, '\n').split('\n'), [source]);
+  const lines = useMemo(() => splitResumeLines(source), [source]);
 
   const [printedLines, setPrintedLines] = useState<number>(0);
   const [done, setDone] = useState<boolean>(false);
