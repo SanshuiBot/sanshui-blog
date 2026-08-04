@@ -55,10 +55,7 @@ export default function Home() {
             className="link-more hidden sm:inline-flex items-center gap-1.5 text-sm font-medium "
           >
             查看全部
-            <ArrowRight
-              size={14}
-              className="link-arrow"
-            />
+            <ArrowRight size={14} className="link-arrow" />
           </Link>
         </div>
         {remaining.length > 0 ? (

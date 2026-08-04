@@ -63,13 +63,13 @@ CMD ["/myservice"]
 
 ## 三、distroless vs scratch vs alpine
 
-| 基础镜像 | 大小 | 适合场景 | 限制 |
-| --- | --- | --- | --- |
-| `scratch` | 0 MB | 静态二进制 + 自带 CA | 无 shell，调试困难 |
-| `distroless/static` | 2 MB | Go / Rust 静态二进制 | 无 shell，无包管理器 |
-| `distroless/base` | 20 MB | C/C++ 动态链接二进制 | 需要 glibc |
-| `alpine` | 5 MB | 动态二进制 + musl libc | musl 与 glibc 不兼容 |
-| `ubuntu:22.04` | 80 MB | 通用场景 | 大 |
+| 基础镜像            | 大小  | 适合场景               | 限制                 |
+| ------------------- | ----- | ---------------------- | -------------------- |
+| `scratch`           | 0 MB  | 静态二进制 + 自带 CA   | 无 shell，调试困难   |
+| `distroless/static` | 2 MB  | Go / Rust 静态二进制   | 无 shell，无包管理器 |
+| `distroless/base`   | 20 MB | C/C++ 动态链接二进制   | 需要 glibc           |
+| `alpine`            | 5 MB  | 动态二进制 + musl libc | musl 与 glibc 不兼容 |
+| `ubuntu:22.04`      | 80 MB | 通用场景               | 大                   |
 
 **生产推荐**：`distroless/static-debian12`，安全且小。
 
@@ -338,12 +338,12 @@ ENTRYPOINT ["/myservice"]
 
 **优化效果**：
 
-| 指标 | 优化前 | 优化后 |
-| --- | --- | --- |
-| 镜像大小 | 1.2 GB | 18 MB |
-| 构建时间（无缓存） | 180 s | 90 s |
-| 构建时间（有缓存） | 90 s | 25 s |
-| 安全漏洞 | 47 个 | 0 个 |
+| 指标               | 优化前 | 优化后 |
+| ------------------ | ------ | ------ |
+| 镜像大小           | 1.2 GB | 18 MB  |
+| 构建时间（无缓存） | 180 s  | 90 s   |
+| 构建时间（有缓存） | 90 s   | 25 s   |
+| 安全漏洞           | 47 个  | 0 个   |
 
 ## 十五、CI/CD 集成
 

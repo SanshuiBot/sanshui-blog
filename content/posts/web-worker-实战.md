@@ -28,16 +28,16 @@ Worker 的核心限制是 **不能访问 DOM**。worker 里没有 `window`、`do
 ```ts
 // worker.ts
 self.onmessage = (e) => {
-  const result = heavyCompute(e.data)
-  self.postMessage(result)
-}
+  const result = heavyCompute(e.data);
+  self.postMessage(result);
+};
 ```
 
 ```ts
 // main.ts
-const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
-worker.onmessage = (e) => console.log(e.data)
-worker.postMessage(input)
+const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+worker.onmessage = (e) => console.log(e.data);
+worker.postMessage(input);
 ```
 
 ### 方式 2：Blob URL 内联
@@ -45,17 +45,17 @@ worker.postMessage(input)
 适合 worker 逻辑很小的场景：
 
 ```ts
-const code = `self.onmessage = e => self.postMessage(e.data * 2)`
-const blob = new Blob([code], { type: 'application/javascript' })
-const worker = new Worker(URL.createObjectURL(blob))
+const code = `self.onmessage = e => self.postMessage(e.data * 2)`;
+const blob = new Blob([code], { type: 'application/javascript' });
+const worker = new Worker(URL.createObjectURL(blob));
 ```
 
 ### 方式 3：Shared Worker（多 tab 共享）
 
 ```ts
-const shared = new SharedWorker(new URL('./worker.ts', import.meta.url))
-shared.port.onmessage = (e) => console.log(e.data)
-shared.port.postMessage(input)
+const shared = new SharedWorker(new URL('./worker.ts', import.meta.url));
+shared.port.onmessage = (e) => console.log(e.data);
+shared.port.postMessage(input);
 ```
 
 适合需要跨 tab 共享状态的应用（如多 tab 同步购物车）。
@@ -65,27 +65,27 @@ shared.port.postMessage(input)
 ```ts
 // sw.ts
 self.addEventListener('fetch', (e) => {
-  e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)))
-})
+  e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
+});
 ```
 
 ```ts
-navigator.serviceWorker.register(new URL('./sw.ts', import.meta.url))
+navigator.serviceWorker.register(new URL('./sw.ts', import.meta.url));
 ```
 
 ### 方式 5：Audio Worklet（音频处理）
 
 ```ts
-const ctx = new AudioContext()
-await ctx.audioWorklet.addModule(new URL('./processor.js', import.meta.url))
-const node = new AudioWorkletNode(ctx, 'my-processor')
+const ctx = new AudioContext();
+await ctx.audioWorklet.addModule(new URL('./processor.js', import.meta.url));
+const node = new AudioWorkletNode(ctx, 'my-processor');
 ```
 
 ### 方式 6：Vite 的 `?worker` 后缀
 
 ```ts
-import MyWorker from './worker?worker'
-const worker = new MyWorker()
+import MyWorker from './worker?worker';
+const worker = new MyWorker();
 ```
 
 这种方式的好处是 Vite 会自动处理 worker 的打包、URL、CORS 头。
@@ -106,29 +106,29 @@ Transferable 类型：
 
 ```ts
 // main.ts
-const buffer = new ArrayBuffer(1024 * 1024 * 100) // 100MB
-worker.postMessage(buffer, [buffer]) // 第二个参数是 transferable 列表
+const buffer = new ArrayBuffer(1024 * 1024 * 100); // 100MB
+worker.postMessage(buffer, [buffer]); // 第二个参数是 transferable 列表
 // 此后 buffer 在主线程里变成「detached」，不能再访问
 
 // worker.ts
 self.onmessage = (e) => {
-  const buffer = e.data
-  const view = new Uint8Array(buffer)
+  const buffer = e.data;
+  const view = new Uint8Array(buffer);
   // 处理 view
-  self.postMessage(buffer, [buffer]) // 转移回主线程
-}
+  self.postMessage(buffer, [buffer]); // 转移回主线程
+};
 ```
 
 ## 四、踩坑 1：postMessage 的 transferable 参数位置
 
 ```ts
-worker.postMessage(data, transfer)
+worker.postMessage(data, transfer);
 ```
 
 很多人误写成：
 
 ```ts
-worker.postMessage(data, { transfer }) // ❌ 这是 WorkerOptions 的形状
+worker.postMessage(data, { transfer }); // ❌ 这是 WorkerOptions 的形状
 ```
 
 `postMessage` 的第二个参数就是 transferable 数组本身。
@@ -136,14 +136,14 @@ worker.postMessage(data, { transfer }) // ❌ 这是 WorkerOptions 的形状
 ## 五、踩坑 2：Uint8Array 不能直接 transfer
 
 ```ts
-const arr = new Uint8Array(1024 * 1024)
-worker.postMessage(arr, [arr]) // ❌ 报错
+const arr = new Uint8Array(1024 * 1024);
+worker.postMessage(arr, [arr]); // ❌ 报错
 ```
 
 TypedArray 本身不是 Transferable。要 transfer 它的 `buffer`：
 
 ```ts
-worker.postMessage(arr, [arr.buffer])
+worker.postMessage(arr, [arr.buffer]);
 ```
 
 但 worker 里 `e.data` 拿到的还是 `Uint8Array`，因为 typed array 的构造信息（长度、offset）也会一起传过去。
@@ -154,32 +154,32 @@ worker.postMessage(arr, [arr.buffer])
 
 ```ts
 // main.ts
-const canvas = document.getElementById('canvas') as HTMLCanvasElement
-const offscreen = canvas.transferControlToOffscreen()
-const worker = new Worker(new URL('./render-worker.ts', import.meta.url), { type: 'module' })
-worker.postMessage({ canvas: offscreen }, [offscreen])
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const offscreen = canvas.transferControlToOffscreen();
+const worker = new Worker(new URL('./render-worker.ts', import.meta.url), { type: 'module' });
+worker.postMessage({ canvas: offscreen }, [offscreen]);
 ```
 
 ```ts
 // render-worker.ts
 self.onmessage = (e) => {
-  const canvas = (e.data as { canvas: OffscreenCanvas }).canvas
-  const ctx = canvas.getContext('2d')!
+  const canvas = (e.data as { canvas: OffscreenCanvas }).canvas;
+  const ctx = canvas.getContext('2d')!;
   // 现在 ctx 可以正常绘制了
-  renderLoop(ctx)
-}
+  renderLoop(ctx);
+};
 
 function renderLoop(ctx: OffscreenCanvasRenderingContext2D) {
-  ctx.fillStyle = '#000'
-  ctx.fillRect(0, 0, 1920, 1080)
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, 1920, 1080);
   // 绘制 50000 个点
   for (let i = 0; i < 50000; i++) {
-    const x = Math.random() * 1920
-    const y = Math.random() * 1080
-    ctx.fillStyle = `hsl(${i / 50000 * 360}, 100%, 50%)`
-    ctx.fillRect(x, y, 2, 2)
+    const x = Math.random() * 1920;
+    const y = Math.random() * 1080;
+    ctx.fillStyle = `hsl(${(i / 50000) * 360}, 100%, 50%)`;
+    ctx.fillRect(x, y, 2, 2);
   }
-  requestAnimationFrame(() => renderLoop(ctx))
+  requestAnimationFrame(() => renderLoop(ctx));
 }
 ```
 
@@ -198,8 +198,8 @@ OffscreenCanvas 方案：worker 里画，画完自动 blit 到主线程 canvas�
 ```ts
 // main.ts
 function tick() {
-  const positions = generatePositions() // Float32Array, 100k 项
-  worker.postMessage({ positions }, [positions.buffer])
+  const positions = generatePositions(); // Float32Array, 100k 项
+  worker.postMessage({ positions }, [positions.buffer]);
 }
 ```
 
@@ -209,10 +209,10 @@ function tick() {
 
 ```ts
 // main.ts
-const sab = new SharedArrayBuffer(4 * 100000)
-const positions = new Float32Array(sab)
+const sab = new SharedArrayBuffer(4 * 100000);
+const positions = new Float32Array(sab);
 
-worker.postMessage({ sab })
+worker.postMessage({ sab });
 // 主线程写 positions，worker 读 positions
 ```
 
@@ -243,25 +243,25 @@ Cross-Origin-Embedder-Policy: credentialless
 
 ```ts
 // worker.ts
-import { expose } from 'comlink'
+import { expose } from 'comlink';
 
 const api = {
   heavy(x: number) {
-    return x * x * x
+    return x * x * x;
   },
-}
+};
 
-expose(api)
+expose(api);
 ```
 
 ```ts
 // main.ts
-import * as Comlink from 'comlink'
+import * as Comlink from 'comlink';
 
-const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
-const api = Comlink.wrap<typeof import('./worker').api>(worker)
+const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' });
+const api = Comlink.wrap<typeof import('./worker').api>(worker);
 
-const result = await api.heavy(42)
+const result = await api.heavy(42);
 ```
 
 调用看起来像本地函数，实际是 RPC 到 worker。返回值自动包装为 Promise。
@@ -271,11 +271,14 @@ const result = await api.heavy(42)
 Comlink 默认会把函数参数序列化为「远程代理」。如果想让 worker 调用主线程函数：
 
 ```ts
-import { proxy } from 'comlink'
+import { proxy } from 'comlink';
 
-worker.api.process(data, Comlink.proxy((progress) => {
-  console.log(`${progress}%`)
-}))
+worker.api.process(
+  data,
+  Comlink.proxy((progress) => {
+    console.log(`${progress}%`);
+  }),
+);
 ```
 
 `Comlink.proxy` 把 callback 转为远程代理，worker 调用时实际是反向 RPC。
@@ -286,7 +289,7 @@ worker.api.process(data, Comlink.proxy((progress) => {
 
 ```ts
 // worker.ts
-import { foo } from './foo' // dev 模式直接 import，build 时被 inline
+import { foo } from './foo'; // dev 模式直接 import，build 时被 inline
 ```
 
 如果你的 worker 依赖一个大型库（如 d3），dev 模式下每次启动都重新解析 d3，慢。解决：把 d3 也打包成 worker bundle：
@@ -305,38 +308,38 @@ worker: {
 
 ```ts
 class WorkerPool<T, R> {
-  private workers: Worker[] = []
-  private queue: Array<{ task: T; resolve: (r: R) => void; reject: (e: any) => void }> = []
-  private idle: Worker[] = []
+  private workers: Worker[] = [];
+  private queue: Array<{ task: T; resolve: (r: R) => void; reject: (e: any) => void }> = [];
+  private idle: Worker[] = [];
 
   constructor(url: URL, size = navigator.hardwareConcurrency || 4) {
     for (let i = 0; i < size; i++) {
-      const w = new Worker(url, { type: 'module' })
-      this.workers.push(w)
-      this.idle.push(w)
+      const w = new Worker(url, { type: 'module' });
+      this.workers.push(w);
+      this.idle.push(w);
     }
   }
 
   async exec(task: T): Promise<R> {
     return new Promise((resolve, reject) => {
-      this.queue.push({ task, resolve, reject })
-      this.dispatch()
-    })
+      this.queue.push({ task, resolve, reject });
+      this.dispatch();
+    });
   }
 
   private dispatch() {
-    if (this.idle.length === 0 || this.queue.length === 0) return
-    const worker = this.idle.pop()!
-    const job = this.queue.shift()!
+    if (this.idle.length === 0 || this.queue.length === 0) return;
+    const worker = this.idle.pop()!;
+    const job = this.queue.shift()!;
 
     const onMessage = (e: MessageEvent) => {
-      worker.removeEventListener('message', onMessage)
-      this.idle.push(worker)
-      job.resolve(e.data as R)
-      this.dispatch()
-    }
-    worker.addEventListener('message', onMessage)
-    worker.postMessage(job.task)
+      worker.removeEventListener('message', onMessage);
+      this.idle.push(worker);
+      job.resolve(e.data as R);
+      this.dispatch();
+    };
+    worker.addEventListener('message', onMessage);
+    worker.postMessage(job.task);
   }
 }
 ```
@@ -349,9 +352,9 @@ class WorkerPool<T, R> {
 
 ```ts
 for (const file of files) {
-  const text = await file.text()
-  const data = JSON.parse(text) // 阻塞主线程 ~150ms
-  processData(data)
+  const text = await file.text();
+  const data = JSON.parse(text); // 阻塞主线程 ~150ms
+  processData(data);
 }
 ```
 
@@ -360,8 +363,8 @@ for (const file of files) {
 ### Worker 池方案
 
 ```ts
-const pool = new WorkerPool<File, any>(new URL('./json-parse-worker.ts', import.meta.url))
-const results = await Promise.all(files.map((f) => pool.exec(f)))
+const pool = new WorkerPool<File, any>(new URL('./json-parse-worker.ts', import.meta.url));
+const results = await Promise.all(files.map((f) => pool.exec(f)));
 ```
 
 总耗时：约 4000ms（8 核并行），主线程零阻塞。

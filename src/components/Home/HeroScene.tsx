@@ -194,9 +194,24 @@ export default function HeroScene() {
             className="flex flex-wrap items-center justify-center gap-3"
           >
             {[
-              { href: '/tags/', icon: Hash, label: '标签导航', color: 'rgb(var(--accent-violet-rgb))' },
-              { href: '/archive/', icon: Archive, label: '文章归档', color: 'rgb(var(--accent-blue-rgb))' },
-              { href: '/about/', icon: User, label: '关于我', color: 'rgb(var(--accent-teal-rgb))' },
+              {
+                href: '/tags/',
+                icon: Hash,
+                label: '标签导航',
+                color: 'rgb(var(--accent-violet-rgb))',
+              },
+              {
+                href: '/archive/',
+                icon: Archive,
+                label: '文章归档',
+                color: 'rgb(var(--accent-blue-rgb))',
+              },
+              {
+                href: '/about/',
+                icon: User,
+                label: '关于我',
+                color: 'rgb(var(--accent-teal-rgb))',
+              },
             ].map(({ href, icon: Icon, label, color }) => (
               <motion.div
                 key={label}

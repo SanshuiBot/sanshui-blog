@@ -361,13 +361,13 @@ UPDATE inventory SET count = count - 1
 
 ## 十三、选型决策
 
-| 场景 | 推荐方案 |
-| --- | --- |
-| 防重复提交 | Redis SET NX EX |
-| 库存扣减 | 乐观锁 / 数据库原子更新 |
-| 支付幂等 | Redis 锁 + 数据库唯一约束 |
-| 强一致性要求高 | Zookeeper / etcd |
-| 简单互斥 | Redis SET NX |
+| 场景           | 推荐方案                  |
+| -------------- | ------------------------- |
+| 防重复提交     | Redis SET NX EX           |
+| 库存扣减       | 乐观锁 / 数据库原子更新   |
+| 支付幂等       | Redis 锁 + 数据库唯一约束 |
+| 强一致性要求高 | Zookeeper / etcd          |
+| 简单互斥       | Redis SET NX              |
 
 ## 十四、总结
 

@@ -39,9 +39,7 @@ export default function AccentPicker() {
   // 初始化：从 localStorage 读上次的 accent + 已保存的自定义预设
   useEffect(() => {
     const stored =
-      typeof window !== 'undefined'
-        ? window.localStorage.getItem(ACCENT_STORAGE_KEY)
-        : null;
+      typeof window !== 'undefined' ? window.localStorage.getItem(ACCENT_STORAGE_KEY) : null;
     const custom = getCustomPreset();
     // 若激活的是 custom 且有保存的自定义预设，用自定义预设的色作为初始值
     let preset = getPreset(stored);
@@ -60,10 +58,7 @@ export default function AccentPicker() {
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (
-        popoverRef.current &&
-        !popoverRef.current.contains(e.target as Node)
-      ) {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -141,9 +136,7 @@ export default function AccentPicker() {
           aria-label="主题强调色"
           className="absolute right-0 mt-2 w-64 rounded-xl glass-heavy p-2 shadow-soft z-50"
         >
-          <div className="px-2 py-1.5 text-xs text-gray-500 font-medium">
-            主题强调色
-          </div>
+          <div className="px-2 py-1.5 text-xs text-gray-500 font-medium">主题强调色</div>
 
           {/* 预设列表 */}
           {ACCENT_PRESETS.map((preset) => {
@@ -225,10 +218,8 @@ export default function AccentPicker() {
  * 从 6 个 hex 值构造 custom AccentPreset。
  * 任一 hex 非法（hexToRgb 返回 null）返回 null。
  */
-function buildCustomPreset(
-  hexMap: Record<string, string>,
-): AccentPreset | null {
-  const colors: Partial<Record<typeof ACCENT_CHANNELS[number], string>> = {};
+function buildCustomPreset(hexMap: Record<string, string>): AccentPreset | null {
+  const colors: Partial<Record<(typeof ACCENT_CHANNELS)[number], string>> = {};
   for (const ch of ACCENT_CHANNELS) {
     const rgb = hexToRgb(hexMap[ch] || '');
     if (rgb === null) return null;

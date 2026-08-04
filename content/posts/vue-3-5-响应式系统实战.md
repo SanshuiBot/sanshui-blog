@@ -18,15 +18,15 @@ Vue 3.5（代号 "Tengen Toppa Gurren Lagann"，2024 年 9 月正式发布）对
 我们先从一个最小的例子开始，看看 Vue 3.5 的响应式到底在做什么：
 
 ```javascript
-import { ref, effect } from 'vue'
+import { ref, effect } from 'vue';
 
-const count = ref(0)
+const count = ref(0);
 
 effect(() => {
-  console.log('count is', count.value)
-})
+  console.log('count is', count.value);
+});
 
-count.value = 1
+count.value = 1;
 // 控制台输出：
 // count is 0
 // count is 1
@@ -47,51 +47,51 @@ Vue 3 的响应式基于 ES6 的 Proxy，这已经不是新闻。但很多人不
 function createReactiveObject(target, isShallow, isReadonly) {
   // 已经是响应式对象，直接返回
   if (target[ReactiveFlags.IS_REACTIVE]) {
-    return target
+    return target;
   }
 
   return new Proxy(target, {
     get(target, key, receiver) {
       // 处理 IS_REACTIVE 等内部标记
-      if (key === ReactiveFlags.IS_REACTIVE) return !isReadonly
-      if (key === ReactiveFlags.RAW) return target
+      if (key === ReactiveFlags.IS_REACTIVE) return !isReadonly;
+      if (key === ReactiveFlags.RAW) return target;
 
-      const res = Reflect.get(target, key, receiver)
+      const res = Reflect.get(target, key, receiver);
 
       // 浅层模式不转换
-      if (isShallow) return res
+      if (isShallow) return res;
 
       // ref 解包（数组整数索引除外）
       if (isRef(res)) {
-        return res.value
+        return res.value;
       }
 
       // 深层响应式：递归转换
       if (isObject(res)) {
-        return isReadonly ? readonly(res) : reactive(res)
+        return isReadonly ? readonly(res) : reactive(res);
       }
 
       // 收集依赖
-      track(target, key)
+      track(target, key);
 
-      return res
+      return res;
     },
     set(target, key, value, receiver) {
-      const oldValue = target[key]
-      const result = Reflect.set(target, key, value, receiver)
+      const oldValue = target[key];
+      const result = Reflect.set(target, key, value, receiver);
 
       // 值变化才触发（Vue 3.5 的优化之一：更精确的 hasChanged 判断）
       if (target === receiver[ReactiveFlags.RAW]) {
         if (!hadKey) {
-          trigger(target, TriggerOpTypes.ADD, key, value)
+          trigger(target, TriggerOpTypes.ADD, key, value);
         } else if (hasChanged(value, oldValue)) {
-          trigger(target, TriggerOpTypes.SET, key, value, oldValue)
+          trigger(target, TriggerOpTypes.SET, key, value, oldValue);
         }
       }
 
-      return result
-    }
-  })
+      return result;
+    },
+  });
 }
 ```
 
@@ -102,11 +102,11 @@ function createReactiveObject(target, isShallow, isReadonly) {
 第二，**reactive 对象内部会缓存 Proxy**。同一个原始对象第二次调用 `reactive()` 时，返回的是之前创建的同一个 Proxy。这就是为什么下面的代码不会出问题：
 
 ```javascript
-const raw = { count: 0 }
-const r1 = reactive(raw)
-const r2 = reactive(raw)
+const raw = { count: 0 };
+const r1 = reactive(raw);
+const r2 = reactive(raw);
 
-console.log(r1 === r2) // true，同一个 Proxy
+console.log(r1 === r2); // true，同一个 Proxy
 ```
 
 第三，**`hasChanged` 的判断比想象中严格**。Vue 3.5 用的是 `Object.is` 而不是 `===`。这意味着 `NaN` 和 `NaN` 不会触发更新（`Object.is(NaN, NaN) === true`），而 `+0` 和 `-0` 会触发更新（`Object.is(+0, -0) === false`）。在处理浮点数和特殊值时要小心。
@@ -116,45 +116,45 @@ console.log(r1 === r2) // true，同一个 Proxy
 `effect` 是整个响应式系统的发动机。`watch`、`watchEffect`、`computed`、组件的渲染函数，底层全部是 `effect`。理解了 effect，就理解了 Vue 响应式的 80%。
 
 ```javascript
-let activeEffect = null
-const targetMap = new WeakMap() // target -> (key -> Set<effect>)
+let activeEffect = null;
+const targetMap = new WeakMap(); // target -> (key -> Set<effect>)
 
 function effect(fn, options = {}) {
-  const _effect = new ReactiveEffect(fn, options.scheduler)
+  const _effect = new ReactiveEffect(fn, options.scheduler);
 
   if (!options.lazy) {
-    _effect.run() // 立即执行一次，触发依赖收集
+    _effect.run(); // 立即执行一次，触发依赖收集
   }
 
-  return _effect
+  return _effect;
 }
 
 function track(target, key) {
-  if (!activeEffect) return
+  if (!activeEffect) return;
 
-  let depsMap = targetMap.get(target)
+  let depsMap = targetMap.get(target);
   if (!depsMap) {
-    targetMap.set(target, (depsMap = new Map()))
+    targetMap.set(target, (depsMap = new Map()));
   }
 
-  let dep = depsMap.get(key)
+  let dep = depsMap.get(key);
   if (!dep) {
-    depsMap.set(key, (dep = new Set()))
+    depsMap.set(key, (dep = new Set()));
   }
 
-  dep.add(activeEffect)
-  activeEffect.deps.push(dep) // 反向引用，用于清理
+  dep.add(activeEffect);
+  activeEffect.deps.push(dep); // 反向引用，用于清理
 }
 
 function trigger(target, key) {
-  const depsMap = targetMap.get(target)
-  if (!depsMap) return
+  const depsMap = targetMap.get(target);
+  if (!depsMap) return;
 
-  const dep = depsMap.get(key)
+  const dep = depsMap.get(key);
   if (dep) {
     // 复制一份再遍历，避免 effect 执行过程中修改 Set 导致无限循环
-    const effects = [...dep]
-    effects.forEach(effect => effect.run())
+    const effects = [...dep];
+    effects.forEach((effect) => effect.run());
   }
 }
 ```
@@ -170,22 +170,22 @@ function trigger(target, key) {
 下面是一个实际跑得起来的 effect 示例，展示了依赖的动态收集：
 
 ```javascript
-import { ref, effect } from 'vue'
+import { ref, effect } from 'vue';
 
-const flag = ref(false)
-const a = ref('A')
-const b = ref('B')
+const flag = ref(false);
+const a = ref('A');
+const b = ref('B');
 
 effect(() => {
   // 当 flag 为 false 时，这个 effect 只依赖 flag 和 a
   // 当 flag 为 true 时，只依赖 flag 和 b
-  console.log(flag.value ? b.value : a.value)
-})
+  console.log(flag.value ? b.value : a.value);
+});
 
-a.value = 'A2'  // 触发更新，打印 A2
-flag.value = true  // 触发更新，打印 B
-a.value = 'A3'  // 不再触发，因为 effect 不再依赖 a
-b.value = 'B2'  // 触发更新，打印 B2
+a.value = 'A2'; // 触发更新，打印 A2
+flag.value = true; // 触发更新，打印 B
+a.value = 'A3'; // 不再触发，因为 effect 不再依赖 a
+b.value = 'B2'; // 触发更新，打印 B2
 ```
 
 这个「依赖动态变化」的行为是 Vue 3 响应式的一大特点。每次 effect 重新运行前，Vue 会先清理上一轮收集的依赖（通过前面提到的反向引用），然后重新运行收集新的依赖。这意味着 effect 的依赖集合总是反映「最近一次执行」的依赖。
@@ -198,15 +198,15 @@ b.value = 'B2'  // 触发更新，打印 B2
 
 `ref` 和 `reactive` 是两种不同的响应式抽象，理解它们的差异是避免踩坑的前提。
 
-| 特性 | ref | reactive |
-|------|-----|----------|
-| 适用类型 | 任意值（含原始类型） | 仅对象/数组 |
-| 访问方式 | `.value` | 直接属性访问 |
-| 模板中解包 | 自动解包 | 无需解包 |
-| 整体替换 | 直接赋新值 | 需 `Object.assign` 或逐属性 |
-| 解构响应性 | 解构后丢失 | 需 `toRefs` |
-| 深层响应 | 默认深层 | 默认深层 |
-| 内部实现 | RefImpl 类 + class accessor | Proxy |
+| 特性       | ref                         | reactive                    |
+| ---------- | --------------------------- | --------------------------- |
+| 适用类型   | 任意值（含原始类型）        | 仅对象/数组                 |
+| 访问方式   | `.value`                    | 直接属性访问                |
+| 模板中解包 | 自动解包                    | 无需解包                    |
+| 整体替换   | 直接赋新值                  | 需 `Object.assign` 或逐属性 |
+| 解构响应性 | 解构后丢失                  | 需 `toRefs`                 |
+| 深层响应   | 默认深层                    | 默认深层                    |
+| 内部实现   | RefImpl 类 + class accessor | Proxy                       |
 
 最常被问到的问题是：**到底该用 ref 还是 reactive？** 我个人的实战经验是：
 
@@ -218,15 +218,15 @@ b.value = 'B2'  // 触发更新，打印 B2
 下面这个例子展示了一个常见的误区——用 reactive 存原始类型：
 
 ```javascript
-import { reactive } from 'vue'
+import { reactive } from 'vue';
 
 // 错误：reactive 不能包裹原始类型
-const count = reactive(0)  // 警告：value should be an object
+const count = reactive(0); // 警告：value should be an object
 // 实际上 count 就是 0，没有任何响应式能力
 
 // 正确：用 ref
-const count = ref(0)
-count.value++  // 触发更新
+const count = ref(0);
+count.value++; // 触发更新
 ```
 
 ### ref 的 `.value` 魔法
@@ -260,24 +260,24 @@ class RefImpl {
 
 ```javascript
 // 写法一：reactive 包裹对象
-const state = reactive({ count: 0 })
-state.count++  // 触发更新
+const state = reactive({ count: 0 });
+state.count++; // 触发更新
 
 // 写法二：ref 包裹对象
-const state = ref({ count: 0 })
-state.value.count++  // 触发更新，因为 .value 是 reactive
+const state = ref({ count: 0 });
+state.value.count++; // 触发更新，因为 .value 是 reactive
 ```
 
 但有一个**关键陷阱**：如果你用 ref 存对象，然后整体替换 `.value`，新对象会被重新转成 reactive；如果你只改 `.value` 的属性，走的是 reactive 的 Proxy 拦截。这两种路径都正常工作，但如果你在 ref 外部直接持有原始对象的引用并修改它，是不会触发更新的——因为修改的不是 Proxy。
 
 ```javascript
-const state = ref({ count: 0 })
-const raw = state.value  // raw 是 reactive Proxy
-raw.count++  // 触发更新（走 Proxy）
+const state = ref({ count: 0 });
+const raw = state.value; // raw 是 reactive Proxy
+raw.count++; // 触发更新（走 Proxy）
 
 // 但如果你这么干：
-const realRaw = toRaw(state.value)  // 拿到原始对象
-realRaw.count++  // 不触发更新！绕过了 Proxy
+const realRaw = toRaw(state.value); // 拿到原始对象
+realRaw.count++; // 不触发更新！绕过了 Proxy
 ```
 
 ### 模板自动解包的边界
@@ -286,20 +286,23 @@ Vue 模板中，顶层的 ref 会自动解包，所以 `{{ count }}` 而不是 `
 
 ```vue
 <template>
-  {{ count }}        <!-- 自动解包，显示 0 -->
-  {{ state.count }}  <!-- state 是 reactive，正常显示 -->
-  {{ obj.nested }}   <!-- 不会解包，显示 RefImpl 对象 -->
+  {{ count }}
+  <!-- 自动解包，显示 0 -->
+  {{ state.count }}
+  <!-- state 是 reactive，正常显示 -->
+  {{ obj.nested }}
+  <!-- 不会解包，显示 RefImpl 对象 -->
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive } from 'vue';
 
-const count = ref(0)
-const state = reactive({ count: 0 })
+const count = ref(0);
+const state = reactive({ count: 0 });
 
 // 陷阱：把 ref 塞进 reactive 的属性
-const nested = ref(1)
-const obj = reactive({ nested })
+const nested = ref(1);
+const obj = reactive({ nested });
 // obj.nested 实际上会自动解包成 1（reactive 对 ref 属性有解包逻辑）
 // 所以 {{ obj.nested }} 显示 1，不是 RefImpl
 // 但如果你用 ref 包对象再嵌套，行为又不同
@@ -309,9 +312,9 @@ const obj = reactive({ nested })
 实际上，reactive 对 ref 类型的属性有专门的解包逻辑：当你访问 `obj.nested` 时，如果 `nested` 是 ref，会自动返回 `.value`。这就是上面注释里说的「自动解包成 1」。但这个行为有个例外：**如果 ref 是数组的元素，访问时不会解包**。
 
 ```javascript
-const arr = reactive([ref(0), ref(1)])
-console.log(arr[0])        // RefImpl，不解包
-console.log(arr[0].value)  // 0
+const arr = reactive([ref(0), ref(1)]);
+console.log(arr[0]); // RefImpl，不解包
+console.log(arr[0].value); // 0
 ```
 
 这个例外源于 Vue 团队的一个权衡：数组通常存的是同类型数据，如果对 ref 元素解包，会让 `arr[0]` 的类型变得不稳定。但这个权衡也导致了一个真实的踩坑场景（见后文）。
@@ -332,29 +335,29 @@ computed 的本质是一个「带缓存的 effect」。它内部维护两个东�
 这个设计的精妙之处在于：**computed 只在被访问时才计算**。如果一个 computed 依赖的数据变了，但没有任何 effect 在用这个 computed，那么它永远不会重新计算（只是 `_dirty` 被标记为 true 而已）。
 
 ```javascript
-import { ref, computed } from 'vue'
+import { ref, computed } from 'vue';
 
-const firstName = ref('张')
-const lastName = ref('三')
+const firstName = ref('张');
+const lastName = ref('三');
 
 const fullName = computed(() => {
-  console.log('computed 执行')
-  return firstName.value + lastName.value
-})
+  console.log('computed 执行');
+  return firstName.value + lastName.value;
+});
 
 // 场景一：没有任何 effect 访问 fullName
-firstName.value = '李'  // 不打印 "computed 执行"
-lastName.value = '王'   // 不打印
+firstName.value = '李'; // 不打印 "computed 执行"
+lastName.value = '王'; // 不打印
 
 // 场景二：有 effect 访问
 effect(() => {
-  console.log('全名:', fullName.value)
-})
+  console.log('全名:', fullName.value);
+});
 // 打印：
 // computed 执行
 // 全名: 王王  (注意：上一步已经把 lastName 改成 王了)
 
-firstName.value = '赵'
+firstName.value = '赵';
 // 打印：
 // computed 执行
 // 全名: 赵王
@@ -367,21 +370,21 @@ firstName.value = '赵'
 在 Vue 3.5 之前，computed 的缓存失效判断比较粗暴：只要任何依赖变了，`_dirty` 就设为 true。这导致一个常见问题——「computed 过度计算」：
 
 ```javascript
-const list = ref([1, 2, 3])
-const flag = ref(true)
+const list = ref([1, 2, 3]);
+const flag = ref(true);
 
 // 这个 computed 依赖 list，但只在 flag 为 true 时使用 list
 const display = computed(() => {
-  return flag.value ? list.value.join(',') : 'disabled'
-})
+  return flag.value ? list.value.join(',') : 'disabled';
+});
 
 effect(() => {
-  console.log(display.value)
-})
+  console.log(display.value);
+});
 
-flag.value = false  // display 变成 'disabled'
-list.value.push(4)   // 3.4 之前：display 重新计算（虽然结果还是 'disabled'）
-                     // 3.5：由于版本号链表，display 知道 list 变了但结果不变，跳过
+flag.value = false; // display 变成 'disabled'
+list.value.push(4); // 3.4 之前：display 重新计算（虽然结果还是 'disabled'）
+// 3.5：由于版本号链表，display 知道 list 变了但结果不变，跳过
 ```
 
 Vue 3.5 引入了基于版本号的更精细的失效判断。每个响应式对象有一个全局递增的版本号，computed 也维护一个版本号。当 computed 重新计算时，它会记录自己依赖的所有对象的版本号；下次访问时，如果所有依赖的版本号都没变，直接返回缓存，连「重新计算后结果是否一样」都不需要判断。
@@ -396,11 +399,11 @@ computed 默认是只读的，但可以提供 setter：
 const fullName = computed({
   get: () => firstName.value + ' ' + lastName.value,
   set: (newVal) => {
-    [firstName.value, lastName.value] = newVal.split(' ')
-  }
-})
+    [firstName.value, lastName.value] = newVal.split(' ');
+  },
+});
 
-fullName.value = '李 四'
+fullName.value = '李 四';
 // firstName 变成 '李'，lastName 变成 '四'
 ```
 
@@ -419,16 +422,16 @@ fullName.value = '李 四'
 ```javascript
 // 错误：在 computed 里发请求
 const userInfo = computed(() => {
-  fetch('/api/user/' + userId.value)  // 每次 userId 变都会发请求，但 computed 可能被跳过
-  return cachedUser
-})
+  fetch('/api/user/' + userId.value); // 每次 userId 变都会发请求，但 computed 可能被跳过
+  return cachedUser;
+});
 
 // 正确：用 watch
 watch(userId, (newId) => {
-  fetch('/api/user/' + newId).then(user => {
-    userInfo.value = user
-  })
-})
+  fetch('/api/user/' + newId).then((user) => {
+    userInfo.value = user;
+  });
+});
 ```
 
 ## shallowRef / shallowReactive：性能优化
@@ -451,15 +454,23 @@ watch(userId, (newId) => {
 下面是一个具体的性能对比：
 
 ```javascript
-import { ref, shallowRef, isProxy } from 'vue'
+import { ref, shallowRef, isProxy } from 'vue';
 
 // 1. 深层 ref：内部对象被 reactive 包裹
-const deep = ref({ list: Array(10000).fill(0).map((_, i) => ({ id: i })) })
-console.log(isProxy(deep.value.list[0]))  // true，每个元素都是 Proxy
+const deep = ref({
+  list: Array(10000)
+    .fill(0)
+    .map((_, i) => ({ id: i })),
+});
+console.log(isProxy(deep.value.list[0])); // true，每个元素都是 Proxy
 
 // 2. shallowRef：内部对象保持原始状态
-const shallow = shallowRef({ list: Array(10000).fill(0).map((_, i) => ({ id: i })) })
-console.log(isProxy(shallow.value.list[0]))  // false，原始对象
+const shallow = shallowRef({
+  list: Array(10000)
+    .fill(0)
+    .map((_, i) => ({ id: i })),
+});
+console.log(isProxy(shallow.value.list[0])); // false，原始对象
 ```
 
 对于 10000 个元素的对象，shallowRef 的初始化几乎瞬时，而深层 ref 需要递归创建大量 Proxy（虽然惰性，但首次访问全部元素时开销明显）。
@@ -469,32 +480,32 @@ console.log(isProxy(shallow.value.list[0]))  // false，原始对象
 shallowRef 的关键特性是：**修改 `.value` 的属性不会触发更新，只有替换 `.value` 才会**。这常常让初学者踩坑：
 
 ```javascript
-import { shallowRef, watchEffect } from 'vue'
+import { shallowRef, watchEffect } from 'vue';
 
-const state = shallowRef({ count: 0 })
+const state = shallowRef({ count: 0 });
 
 watchEffect(() => {
-  console.log('count:', state.value.count)
-})
+  console.log('count:', state.value.count);
+});
 // 打印：count: 0
 
-state.value.count = 1  // 不触发更新！shallowRef 不深层响应
-console.log(state.value.count)  // 1（数据改了，但视图没更新）
+state.value.count = 1; // 不触发更新！shallowRef 不深层响应
+console.log(state.value.count); // 1（数据改了，但视图没更新）
 
 // 正确的更新方式：整体替换
-state.value = { count: 2 }  // 触发更新，打印 count: 2
+state.value = { count: 2 }; // 触发更新，打印 count: 2
 ```
 
 如果你想「修改内部属性也触发更新」，但又不想用深层 ref（出于性能考虑），可以用 `triggerRef` 手动触发：
 
 ```javascript
-import { shallowRef, triggerRef } from 'vue'
+import { shallowRef, triggerRef } from 'vue';
 
-const state = shallowRef({ list: [] })
+const state = shallowRef({ list: [] });
 
 function addItem(item) {
-  state.value.list.push(item)  // 直接改内部
-  triggerRef(state)  // 手动通知 shallowRef 的依赖
+  state.value.list.push(item); // 直接改内部
+  triggerRef(state); // 手动通知 shallowRef 的依赖
 }
 ```
 
@@ -505,23 +516,23 @@ function addItem(item) {
 shallowReactive 的语义是「只有顶层属性是响应式的」。这意味着：
 
 ```javascript
-import { shallowReactive, watchEffect } from 'vue'
+import { shallowReactive, watchEffect } from 'vue';
 
 const state = shallowReactive({
   user: { name: '张三' },
-  count: 0
-})
+  count: 0,
+});
 
 watchEffect(() => {
-  console.log('user:', state.user.name, 'count:', state.count)
-})
+  console.log('user:', state.user.name, 'count:', state.count);
+});
 // 打印：user: 张三 count: 0
 
-state.count = 1  // 触发更新（count 是顶层属性）
-state.user.name = '李四'  // 不触发更新（user 是顶层属性，但 name 是嵌套）
+state.count = 1; // 触发更新（count 是顶层属性）
+state.user.name = '李四'; // 不触发更新（user 是顶层属性，但 name 是嵌套）
 
 // 替换顶层属性触发更新
-state.user = { name: '王五' }  // 触发更新
+state.user = { name: '王五' }; // 触发更新
 ```
 
 这里有个容易混淆的点：`state.user = {...}` 触发更新，是因为 `user` 是顶层属性，它的 set 被 Proxy 拦截；而 `state.user.name = '李四'` 不触发，因为 `state.user` 是原始对象（没被 reactive 包裹），它的属性修改不被拦截。
@@ -534,11 +545,11 @@ state.user = { name: '王五' }  // 触发更新
 
 Vue 3 提供了三个侦听器 API：`watch`、`watchEffect`、`watch` 配合 getter。它们的语义差异常被混淆，导致代码意图不清。
 
-| API | 触发时机 | 依赖收集 | 旧值访问 | 立即执行 |
-|-----|---------|---------|---------|---------|
-| watchEffect | 依赖变化 | 自动（运行时） | 无 | 默认立即 |
-| watch(ref) | ref.value 变化 | 显式（传入源） | 有 | 默认不立即 |
-| watch(getter) | getter 返回值变化 | 显式 | 有 | 默认不立即 |
+| API           | 触发时机          | 依赖收集       | 旧值访问 | 立即执行   |
+| ------------- | ----------------- | -------------- | -------- | ---------- |
+| watchEffect   | 依赖变化          | 自动（运行时） | 无       | 默认立即   |
+| watch(ref)    | ref.value 变化    | 显式（传入源） | 有       | 默认不立即 |
+| watch(getter) | getter 返回值变化 | 显式           | 有       | 默认不立即 |
 
 核心区别在于「依赖收集方式」：
 
@@ -546,25 +557,28 @@ Vue 3 提供了三个侦听器 API：`watch`、`watchEffect`、`watch` 配合 ge
 - `watch` 需要你显式传入「数据源」（一个 ref、一个返回值的 getter 函数，或它们的数组），它只侦听这些源。
 
 ```javascript
-import { ref, watch, watchEffect } from 'vue'
+import { ref, watch, watchEffect } from 'vue';
 
-const a = ref(0)
-const b = ref(0)
+const a = ref(0);
+const b = ref(0);
 
 // watchEffect：自动追踪 a 和 b
 watchEffect(() => {
-  console.log('a+b =', a.value + b.value)
-})
+  console.log('a+b =', a.value + b.value);
+});
 
 // watch：只侦听 a，不关心 b
 watch(a, (newVal, oldVal) => {
-  console.log('a changed:', oldVal, '->', newVal)
-})
+  console.log('a changed:', oldVal, '->', newVal);
+});
 
 // watch getter：侦听 a+b 的结果
-watch(() => a.value + b.value, (newVal, oldVal) => {
-  console.log('sum changed:', oldVal, '->', newVal)
-})
+watch(
+  () => a.value + b.value,
+  (newVal, oldVal) => {
+    console.log('sum changed:', oldVal, '->', newVal);
+  },
+);
 ```
 
 选择哪种？我的经验法则是：
@@ -580,21 +594,21 @@ watch(() => a.value + b.value, (newVal, oldVal) => {
 `deep: true` 让 watch 递归遍历侦听源的所有嵌套属性，任何一个变化都触发回调。这对 reactive 对象很有用，但有性能代价——每次都要深比较。
 
 ```javascript
-import { reactive, watch } from 'vue'
+import { reactive, watch } from 'vue';
 
 const state = reactive({
-  user: { profile: { name: '张三' } }
-})
+  user: { profile: { name: '张三' } },
+});
 
 // 不加 deep：只有 state.user = {...} 这种顶层替换才触发
 // 加 deep：state.user.profile.name = '李四' 也触发
 watch(
   () => state.user,
   (newVal, oldVal) => {
-    console.log('user changed')
+    console.log('user changed');
   },
-  { deep: true }
-)
+  { deep: true },
+);
 ```
 
 注意一个陷阱：**使用 deep 时，newVal 和 oldVal 指向同一个对象**（因为 reactive 是引用类型，修改内部属性不会创建新对象）。所以 `oldVal === newVal` 可能为 true，你拿不到「真正的旧值」。如果需要比较差异，得自己深拷贝或者用 JSON.stringify 快照。
@@ -602,18 +616,18 @@ watch(
 `immediate: true` 让 watch 在注册时立即执行一次回调。这常用于「初始化时也要执行逻辑」的场景，比如根据初始路由拉取数据：
 
 ```javascript
-import { watch, ref } from 'vue'
+import { watch, ref } from 'vue';
 
-const route = useRoute()
-const data = ref(null)
+const route = useRoute();
+const data = ref(null);
 
 watch(
   () => route.params.id,
   async (id) => {
-    data.value = await fetch(`/api/item/${id}`)
+    data.value = await fetch(`/api/item/${id}`);
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
 ```
 
 ### watchEffect 的清理逻辑
@@ -621,22 +635,24 @@ watch(
 watchEffect 内部可能注册一些异步任务、定时器、事件监听。当 effect 重新运行或被停止时，需要清理这些资源。Vue 提供了 `onCleanup` 函数来注册清理逻辑：
 
 ```javascript
-import { watchEffect, onCleanup } from 'vue'
+import { watchEffect, onCleanup } from 'vue';
 
 watchEffect(() => {
-  const controller = new AbortController()
-  
+  const controller = new AbortController();
+
   fetch(`/api/search?q=${keyword.value}`, {
-    signal: controller.signal
-  }).then(res => res.json()).then(data => {
-    results.value = data
+    signal: controller.signal,
   })
+    .then((res) => res.json())
+    .then((data) => {
+      results.value = data;
+    });
 
   // 当 effect 重新运行或被停止时，执行这个清理函数
   onCleanup(() => {
-    controller.abort()  // 取消未完成的请求
-  })
-})
+    controller.abort(); // 取消未完成的请求
+  });
+});
 ```
 
 这个模式在「自动完成搜索框」场景下几乎是必备的：用户输入时，watchEffect 触发搜索请求；如果用户继续输入导致 effect 重新运行，上一次的请求会被 abort 掉，避免过时结果覆盖最新结果。
@@ -652,20 +668,28 @@ watch 和 watchEffect 都接受 `flush` 选项，控制回调的执行时机：
 - `sync`：同步执行，不进入队列。
 
 ```javascript
-import { watch, ref } from 'vue'
+import { watch, ref } from 'vue';
 
-const count = ref(0)
+const count = ref(0);
 
 // pre：回调在 DOM 更新前运行，此时访问 DOM 是旧的
-watch(count, () => {
-  console.log('pre flush, DOM 未更新')
-}, { flush: 'pre' })
+watch(
+  count,
+  () => {
+    console.log('pre flush, DOM 未更新');
+  },
+  { flush: 'pre' },
+);
 
 // post：回调在 DOM 更新后运行，可以访问新 DOM
-watch(count, () => {
-  console.log('post flush, DOM 已更新')
-  // 这里可以安全地测量元素尺寸
-}, { flush: 'post' })
+watch(
+  count,
+  () => {
+    console.log('post flush, DOM 已更新');
+    // 这里可以安全地测量元素尺寸
+  },
+  { flush: 'post' },
+);
 ```
 
 实战中，`post` 常用于「数据变化后需要操作 DOM」的场景，比如根据列表长度计算滚动位置。`sync` 几乎不用，因为它会让更新失去批量合并的能力，容易导致性能问题。
@@ -679,11 +703,11 @@ watch(count, () => {
 **症状**：在 setup 中对 reactive 对象解构后，修改属性不再触发视图更新。
 
 ```javascript
-import { reactive } from 'vue'
+import { reactive } from 'vue';
 
 // 错误代码
-const state = reactive({ count: 0, name: 'test' })
-const { count, name } = state  // 解构
+const state = reactive({ count: 0, name: 'test' });
+const { count, name } = state; // 解构
 
 // 模板中使用 count 和 name
 // 修改 state.count 后，视图不更新
@@ -694,10 +718,10 @@ const { count, name } = state  // 解构
 **修复**：用 `toRefs` 把 reactive 的每个属性转成 ref，解构后保持响应性。
 
 ```javascript
-import { reactive, toRefs } from 'vue'
+import { reactive, toRefs } from 'vue';
 
-const state = reactive({ count: 0, name: 'test' })
-const { count, name } = toRefs(state)  // count 和 name 现在是 ref
+const state = reactive({ count: 0, name: 'test' });
+const { count, name } = toRefs(state); // count 和 name 现在是 ref
 
 // 修改 state.count 后，count.value 也变，视图更新
 // 或直接通过 state.count 修改
@@ -706,10 +730,10 @@ const { count, name } = toRefs(state)  // count 和 name 现在是 ref
 更推荐的做法是直接用 ref 替代 reactive，避免解构问题：
 
 ```javascript
-import { ref } from 'vue'
+import { ref } from 'vue';
 
-const count = ref(0)
-const name = ref('test')
+const count = ref(0);
+const name = ref('test');
 // 直接解构（其实没解构），都是独立的 ref
 ```
 
@@ -718,18 +742,18 @@ const name = ref('test')
 **症状**：监听一个 reactive 对象，修改其嵌套属性后回调不执行。
 
 ```javascript
-import { reactive, watch } from 'vue'
+import { reactive, watch } from 'vue';
 
 const state = reactive({
-  user: { name: '张三' }
-})
+  user: { name: '张三' },
+});
 
 watch(state, () => {
-  console.log('state changed')  // 永远不打印
-})
+  console.log('state changed'); // 永远不打印
+});
 
-state.user.name = '李四'  // 不触发
-state.user = { name: '王五' }  // 不触发
+state.user.name = '李四'; // 不触发
+state.user = { name: '王五' }; // 不触发
 ```
 
 **原因**：`watch(state, ...)` 把 `state` 作为源。但 reactive 对象作为 watch 源时，Vue 只在「整体引用变化」时触发，而 reactive 的整体引用永远不变（它是 Proxy 包裹的固定对象）。修改内部属性不会让「state 这个引用」发生变化。
@@ -740,10 +764,10 @@ state.user = { name: '王五' }  // 不触发
 watch(
   () => state.user,
   (newVal, oldVal) => {
-    console.log('user changed:', newVal)
+    console.log('user changed:', newVal);
   },
-  { deep: true }
-)
+  { deep: true },
+);
 ```
 
 或者直接监听具体属性：
@@ -752,9 +776,9 @@ watch(
 watch(
   () => state.user.name,
   (newVal, oldVal) => {
-    console.log('name changed:', oldVal, '->', newVal)
-  }
-)
+    console.log('name changed:', oldVal, '->', newVal);
+  },
+);
 ```
 
 ### 案例 3：ref 数组在 reactive 中的解包陷阱
@@ -762,21 +786,21 @@ watch(
 **症状**：把一个 ref 放进 reactive 数组，访问时拿到的不是原始值，导致后续逻辑出错。
 
 ```javascript
-import { ref, reactive } from 'vue'
+import { ref, reactive } from 'vue';
 
-const item1 = ref('a')
-const item2 = ref('b')
+const item1 = ref('a');
+const item2 = ref('b');
 
-const list = reactive([item1, item2])
+const list = reactive([item1, item2]);
 
 // 期望：list[0] 是字符串 'a'
 // 实际：list[0] 是 RefImpl 对象（数组元素不解包）
-console.log(list[0])        // RefImpl<'a'>
-console.log(list[0].value)  // 'a'
+console.log(list[0]); // RefImpl<'a'>
+console.log(list[0].value); // 'a'
 
 // 但如果 ref 是对象属性，会解包：
-const obj = reactive({ item: ref('c') })
-console.log(obj.item)  // 'c'，自动解包
+const obj = reactive({ item: ref('c') });
+console.log(obj.item); // 'c'，自动解包
 ```
 
 **原因**：Vue 的 reactive 解包逻辑对「数组元素中的 ref」不做解包。这是设计上的权衡（避免数组访问类型不稳定），但对使用者来说是个陷阱。
@@ -784,19 +808,19 @@ console.log(obj.item)  // 'c'，自动解包
 **修复**：避免在 reactive 数组中放 ref。如果确实需要每项都是独立的响应式单元，用 `shallowReactive` 包裹数组，自己管理每个元素的更新：
 
 ```javascript
-import { ref, shallowReactive } from 'vue'
+import { ref, shallowReactive } from 'vue';
 
 // 方案一：用普通数组，每项是 ref
-const list = shallowReactive([])
+const list = shallowReactive([]);
 function addItem(val) {
-  list.push(ref(val))
+  list.push(ref(val));
 }
 // 访问 list[0].value，修改也是 list[0].value = ...
 
 // 方案二：用对象数组，每个对象的属性是响应式
-const list = reactive([])
+const list = reactive([]);
 function addItem(val) {
-  list.push({ value: val })  // 整个对象都是响应式的
+  list.push({ value: val }); // 整个对象都是响应式的
 }
 ```
 
@@ -805,15 +829,15 @@ function addItem(val) {
 **症状**：computed 里用了 async/await 或 Promise，结果视图显示的是 Promise 对象，或者更新时序错乱。
 
 ```javascript
-import { ref, computed } from 'vue'
+import { ref, computed } from 'vue';
 
-const userId = ref(1)
+const userId = ref(1);
 
 // 错误：computed 里用 async
 const userInfo = computed(async () => {
-  const res = await fetch(`/api/user/${userId.value}`)
-  return res.json()
-})
+  const res = await fetch(`/api/user/${userId.value}`);
+  return res.json();
+});
 // userInfo.value 是一个 Promise，不是用户数据
 // 模板里显示 [object Promise]
 ```
@@ -823,35 +847,35 @@ const userInfo = computed(async () => {
 **修复**：用 `watch` + `ref` 处理异步，或者用第三方库如 `vueuse` 的 `useAsyncState`。
 
 ```javascript
-import { ref, watch } from 'vue'
+import { ref, watch } from 'vue';
 
-const userId = ref(1)
-const userInfo = ref(null)
-const loading = ref(false)
+const userId = ref(1);
+const userInfo = ref(null);
+const loading = ref(false);
 
 async function loadUser(id) {
-  loading.value = true
+  loading.value = true;
   try {
-    const res = await fetch(`/api/user/${id}`)
-    userInfo.value = await res.json()
+    const res = await fetch(`/api/user/${id}`);
+    userInfo.value = await res.json();
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-watch(userId, (id) => loadUser(id), { immediate: true })
+watch(userId, (id) => loadUser(id), { immediate: true });
 ```
 
 或者用 vueuse 的 `useAsyncState`，代码更简洁：
 
 ```javascript
-import { useAsyncState } from '@vueuse/core'
+import { useAsyncState } from '@vueuse/core';
 
 const { state: userInfo, isLoading } = useAsyncState(
-  (id) => fetch(`/api/user/${id}`).then(r => r.json()),
+  (id) => fetch(`/api/user/${id}`).then((r) => r.json()),
   null,
-  { immediate: true, initialData: null }
-)
+  { immediate: true, initialData: null },
+);
 ```
 
 ### 案例 5：shallowRef 修改内部属性不更新
@@ -859,19 +883,19 @@ const { state: userInfo, isLoading } = useAsyncState(
 **症状**：用 shallowRef 存了一个对象，修改对象的属性后视图不更新。
 
 ```javascript
-import { shallowRef, watchEffect } from 'vue'
+import { shallowRef, watchEffect } from 'vue';
 
 const form = shallowRef({
   username: '',
-  password: ''
-})
+  password: '',
+});
 
 watchEffect(() => {
-  console.log('form:', form.value)
-})
+  console.log('form:', form.value);
+});
 
 // 错误：直接修改内部属性
-form.value.username = 'admin'  // 数据变了，但 watchEffect 不触发
+form.value.username = 'admin'; // 数据变了，但 watchEffect 不触发
 
 // 用户在输入框输入，但表单状态一直显示初始值
 ```
@@ -882,16 +906,16 @@ form.value.username = 'admin'  // 数据变了，但 watchEffect 不触发
 
 ```javascript
 // 方案一：整体替换（推荐，符合 shallowRef 的设计意图）
-form.value = { ...form.value, username: 'admin' }
+form.value = { ...form.value, username: 'admin' };
 
 // 方案二：手动触发（适合批量修改后一次性更新）
-form.value.username = 'admin'
-form.value.password = '123456'
-triggerRef(form)  // 一次性触发
+form.value.username = 'admin';
+form.value.password = '123456';
+triggerRef(form); // 一次性触发
 
 // 方案三：改用 ref（如果对象很小，性能差异可忽略）
-const form = ref({ username: '', password: '' })
-form.value.username = 'admin'  // 正常触发，因为 ref 会把内部转 reactive
+const form = ref({ username: '', password: '' });
+form.value.username = 'admin'; // 正常触发，因为 ref 会把内部转 reactive
 ```
 
 实战中，我会根据「修改频率」选择方案：修改频繁且对象大 → shallowRef + 整体替换；修改不频繁但对象大 → shallowRef + triggerRef；对象小 → 普通 ref。
@@ -901,12 +925,12 @@ form.value.username = 'admin'  // 正常触发，因为 ref 会把内部转 reac
 **症状**：两个 computed 互相引用，控制台报 `Maximum recursive calls exceeded` 或页面卡死。
 
 ```javascript
-import { ref, computed } from 'vue'
+import { ref, computed } from 'vue';
 
-const a = computed(() => b.value + 1)  // a 依赖 b
-const b = computed(() => a.value + 1)  // b 依赖 a
+const a = computed(() => b.value + 1); // a 依赖 b
+const b = computed(() => a.value + 1); // b 依赖 a
 
-console.log(a.value)  // 无限递归：a 计算 -> 依赖 b -> b 计算 -> 依赖 a -> a 计算...
+console.log(a.value); // 无限递归：a 计算 -> 依赖 b -> b 计算 -> 依赖 a -> a 计算...
 ```
 
 **原因**：computed 之间形成循环依赖时，访问任意一个都会触发无限递归计算。Vue 内部没有针对 computed 循环依赖的检测（因为它在静态分析层面无法可靠检测）。
@@ -914,16 +938,16 @@ console.log(a.value)  // 无限递归：a 计算 -> 依赖 b -> b 计算 -> 依�
 **修复**：打破循环依赖。通常的做法是把「共享的状态」提取出来作为独立的 ref，让两个 computed 都依赖它而不是互相依赖。
 
 ```javascript
-import { ref, computed } from 'vue'
+import { ref, computed } from 'vue';
 
-const base = ref(0)
+const base = ref(0);
 
-const a = computed(() => base.value + 1)  // a 依赖 base
-const b = computed(() => base.value + 2)  // b 依赖 base
+const a = computed(() => base.value + 1); // a 依赖 base
+const b = computed(() => base.value + 2); // b 依赖 base
 
-console.log(a.value, b.value)  // 1 2，正常
-base.value = 10
-console.log(a.value, b.value)  // 11 12，正常更新
+console.log(a.value, b.value); // 1 2，正常
+base.value = 10;
+console.log(a.value, b.value); // 11 12，正常更新
 ```
 
 更复杂的场景下，可能需要重新审视数据模型——循环依赖往往意味着数据结构设计有问题。比如上面的 a、b 如果表示「彼此相关的两个值」，那应该用一个 reactive 对象统一管理，而不是两个独立的 computed 互相引用。

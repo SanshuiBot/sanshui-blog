@@ -11,13 +11,13 @@ excerpt: 同样是 CP 系统，etcd 用 Raft，Zookeeper 用 ZAB。本文讲两�
 
 ## 一、两种算法的根本差异
 
-| 维度 | Raft (etcd) | ZAB (Zookeeper) |
-| --- | --- | --- |
-| 主轴 | 日志复制 | 原子广播 |
-| leader 选举 | 随机超时 + term | epoch + 三阶段 |
-| 日志顺序 | 强一致索引 | ZXID 单调递增 |
-| 成员变更 | 联合一致 | 重配置 |
-| 易理解性 | 高 | 中 |
+| 维度        | Raft (etcd)     | ZAB (Zookeeper) |
+| ----------- | --------------- | --------------- |
+| 主轴        | 日志复制        | 原子广播        |
+| leader 选举 | 随机超时 + term | epoch + 三阶段  |
+| 日志顺序    | 强一致索引      | ZXID 单调递增   |
+| 成员变更    | 联合一致        | 重配置          |
+| 易理解性    | 高              | 中              |
 
 **核心共识**：两者都是 **CP 系统**（强一致性 + 分区容错），都通过 leader-based 协议保证所有副本状态一致。
 
@@ -200,12 +200,12 @@ ZAB 用 ZXID 保证新 leader 的 log 包含所有已 commit 事务：
 
 ## 五、性能对比
 
-| 指标 | Raft (etcd) | ZAB (Zookeeper) |
-| --- | --- | --- |
-| 写入吞吐 | 高 | 中 |
+| 指标     | Raft (etcd)       | ZAB (Zookeeper)     |
+| -------- | ----------------- | ------------------- |
+| 写入吞吐 | 高                | 中                  |
 | 读取延迟 | 中（leader only） | 低（follower 可读） |
-| 选举速度 | 慢（150-300ms） | 快（50-200ms） |
-| 故障恢复 | 5-10s | 2-5s |
+| 选举速度 | 慢（150-300ms）   | 快（50-200ms）      |
+| 故障恢复 | 5-10s             | 2-5s                |
 
 **Zookeeper 的优势**：
 
@@ -306,13 +306,13 @@ etcdctl defrag
 
 ## 九、选型决策
 
-| 场景 | 推荐 |
-| --- | --- |
-| Kubernetes 集群 | etcd |
-| Kafka 集群 | Zookeeper（或 KRaft 替代） |
-| 微服务配置中心 | etcd / Apollo |
-| 分布式锁 | Zookeeper（金融）/ etcd |
-| 服务发现 | etcd / Consul |
+| 场景            | 推荐                       |
+| --------------- | -------------------------- |
+| Kubernetes 集群 | etcd                       |
+| Kafka 集群      | Zookeeper（或 KRaft 替代） |
+| 微服务配置中心  | etcd / Apollo              |
+| 分布式锁        | Zookeeper（金融）/ etcd    |
+| 服务发现        | etcd / Consul              |
 
 ## 十、Raft vs ZAB：选哪个？
 

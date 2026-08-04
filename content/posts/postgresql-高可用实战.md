@@ -19,9 +19,9 @@ PG 流复制（Streaming Replication）：
 
 ### 物理复制 vs 逻辑复制
 
-| 类型 | 机制 | 优势 | 劣势 |
-| --- | --- | --- | --- |
-| 物理复制 | 字节级 WAL 复制 | 完全一致，简单 | 必须同版本同架构 |
+| 类型     | 机制              | 优势             | 劣势             |
+| -------- | ----------------- | ---------------- | ---------------- |
+| 物理复制 | 字节级 WAL 复制   | 完全一致，简单   | 必须同版本同架构 |
 | 逻辑复制 | 解码 WAL 转成 SQL | 支持异构、跨版本 | 复杂、可能丢数据 |
 
 **生产推荐**：物理复制 + Patroni 自动 failover。
@@ -167,7 +167,7 @@ bootstrap:
     ttl: 30
     loop_wait: 10
     retry_timeout: 10
-    maximum_lag_on_failover: 1048576  # 1MB
+    maximum_lag_on_failover: 1048576 # 1MB
     synchronous_mode: true
     postgresql:
       use_pg_rewind: true
@@ -315,13 +315,13 @@ Patroni (primary) -- etcd (DCS) -- Patroni (standby1) -- Patroni (standby2)
 
 ## 十二、监控指标
 
-| 指标 | 含义 | 告警 |
-| --- | --- | --- |
-| replication_lag_bytes | 备库 lag 字节数 | > 100MB |
-| replication_lag_seconds | 备库 lag 秒数 | > 30s |
-| Patroni leader | 是否为 leader | 0 个 leader |
-| pg_up | PG 进程是否存活 | 0 |
-| xact_commit_rate | 事务提交速率 | 突降 |
+| 指标                    | 含义            | 告警        |
+| ----------------------- | --------------- | ----------- |
+| replication_lag_bytes   | 备库 lag 字节数 | > 100MB     |
+| replication_lag_seconds | 备库 lag 秒数   | > 30s       |
+| Patroni leader          | 是否为 leader   | 0 个 leader |
+| pg_up                   | PG 进程是否存活 | 0           |
+| xact_commit_rate        | 事务提交速率    | 突降        |
 
 ## 十三、实战案例：40 分钟停摆
 

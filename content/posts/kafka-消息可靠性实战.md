@@ -11,21 +11,21 @@ excerpt: 一个 Kafka 消费者把同一笔订单处理了三次。本文讲 pro
 
 ## 一、Kafka 可靠性的三层保障
 
-| 层 | 关键配置 | 解决的问题 |
-| --- | --- | --- |
-| Producer | `acks=all`、`enable.idempotence=true`、`retries` | 不丢消息、不重消息 |
-| Broker | `replication.factor=3`、`min.insync.replicas=2`、`unclean.leader.election.enable=false` | 副本一致性、防止脑裂 |
-| Consumer | `enable.auto.commit=false`、手动提交 offset、幂等处理 | 防止重复消费、消息丢失 |
+| 层       | 关键配置                                                                                | 解决的问题             |
+| -------- | --------------------------------------------------------------------------------------- | ---------------------- |
+| Producer | `acks=all`、`enable.idempotence=true`、`retries`                                        | 不丢消息、不重消息     |
+| Broker   | `replication.factor=3`、`min.insync.replicas=2`、`unclean.leader.election.enable=false` | 副本一致性、防止脑裂   |
+| Consumer | `enable.auto.commit=false`、手动提交 offset、幂等处理                                   | 防止重复消费、消息丢失 |
 
 ## 二、Producer 的 acks 配置
 
 `acks` 决定 producer 多久才算「发送成功」：
 
-| acks | 含义 | 可靠性 | 吞吐 |
-| --- | --- | --- | --- |
-| 0 | 不等待任何响应 | 最低，会丢消息 | 最高 |
-| 1 | leader 写入即可 | 中等，leader 宕机会丢 | 中 |
-| all / -1 | ISR 所有副本都写入 | 最高 | 低 |
+| acks     | 含义               | 可靠性                | 吞吐 |
+| -------- | ------------------ | --------------------- | ---- |
+| 0        | 不等待任何响应     | 最低，会丢消息        | 最高 |
+| 1        | leader 写入即可    | 中等，leader 宕机会丢 | 中   |
+| all / -1 | ISR 所有副本都写入 | 最高                  | 低   |
 
 **生产推荐**：`acks=all`。
 
@@ -324,13 +324,13 @@ ON CONFLICT (order_id) DO NOTHING;
 
 Kafka 关键监控指标：
 
-| 指标 | 含义 | 告警阈值 |
-| --- | --- | --- |
-| under_replicated_partitions | ISR 不足的分区数 | > 0 |
-| offline_partitions | 没有 leader 的分区数 | > 0 |
-| consumer_lag | 消费者滞后 | > 10000 |
-| producer_request_latency | producer 请求延迟 | P99 > 100ms |
-| isr_shrinks_rate | ISR 缩减速率 | 突增 |
+| 指标                        | 含义                 | 告警阈值    |
+| --------------------------- | -------------------- | ----------- |
+| under_replicated_partitions | ISR 不足的分区数     | > 0         |
+| offline_partitions          | 没有 leader 的分区数 | > 0         |
+| consumer_lag                | 消费者滞后           | > 10000     |
+| producer_request_latency    | producer 请求延迟    | P99 > 100ms |
+| isr_shrinks_rate            | ISR 缩减速率         | 突增        |
 
 ## 十四、总结
 

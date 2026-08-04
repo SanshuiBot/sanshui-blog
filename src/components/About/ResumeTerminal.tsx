@@ -106,9 +106,7 @@ export default function ResumeTerminal({
         ref={scrollBodyRef}
         className="resume-body font-mono text-[13px] leading-relaxed p-5 h-[460px] overflow-y-auto"
       >
-        <div className="resume-prompt mb-2">
-          $ cat resume.md
-        </div>
+        <div className="resume-prompt mb-2">$ cat resume.md</div>
         <div className="space-y-0.5">
           {lines.slice(0, printedLines).map((line, i) => (
             <ResumeLine key={i} line={line} />

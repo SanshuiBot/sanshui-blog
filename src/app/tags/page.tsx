@@ -28,10 +28,7 @@ export default function TagsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-      <Link
-        href="/"
-        className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
-      >
+      <Link href="/" className="link-back inline-flex items-center gap-1.5 text-sm mb-8">
         <ArrowLeft size={14} className="link-arrow" />
         返回首页
       </Link>

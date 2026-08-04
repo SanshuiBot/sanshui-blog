@@ -75,20 +75,17 @@ export default function TableOfContents({ items }: Props) {
   }, [items]);
 
   // 点击跳转：平滑滚动 + 写 URL hash，但不触发原生锚点跳转 (P5)
-  const handleJump = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-      e.preventDefault();
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // 用 replaceState 不留 history 嗽迹，避免后退循环
-        history.replaceState(null, '', `#${id}`);
-        setActiveId(id);
-      }
-      setDrawerOpen(false);
-    },
-    [],
-  );
+  const handleJump = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // 用 replaceState 不留 history 嗽迹，避免后退循环
+      history.replaceState(null, '', `#${id}`);
+      setActiveId(id);
+    }
+    setDrawerOpen(false);
+  }, []);
 
   // 淡入淡出滚动条 —— 显隐「只」由 hover 控制：mouseenter → 显示，mouseleave → 隐藏。
   // 几何由 ResizeObserver + rAF 延迟算准（等布局稳定），scroll 时仅同步 top。
@@ -193,9 +190,7 @@ export default function TableOfContents({ items }: Props) {
         className="hidden lg:block lg:order-2 sticky top-28 w-56 shrink-0 self-start ml-8"
         aria-label="目录"
       >
-        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-          目录
-        </h4>
+        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">目录</h4>
         {/* 长文章目录自身可滚，不挤出视口 (P2 桌面端兜底)。
             .toc-scroll 藏原生滚动条；浮层 .toc-thumb 淡入淡出指示位置，不占文档流 → 不挤压文字 */}
         <div className="relative">

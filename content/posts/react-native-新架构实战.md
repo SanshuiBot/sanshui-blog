@@ -32,7 +32,7 @@ excerpt: RN 新架构（Fabric + TurboModules + JSI）相比旧架构性能提�
 
 ```js
 // JS
-NativeModules.Database.query('SELECT * FROM users')
+NativeModules.Database.query('SELECT * FROM users');
 // → Bridge 异步序列化 → Native 解析执行 → Bridge 异步回传 → Promise resolve
 ```
 
@@ -40,9 +40,9 @@ JSI 通信：
 
 ```js
 // JS
-import { Database } from 'react-native-db'  // TurboModule
-const db = new Database('app.db')  // 同步构造，直接持有 C++ 对象
-const result = db.querySync('SELECT * FROM users')  // 同步调用 C++ 方法
+import { Database } from 'react-native-db'; // TurboModule
+const db = new Database('app.db'); // 同步构造，直接持有 C++ 对象
+const result = db.querySync('SELECT * FROM users'); // 同步调用 C++ 方法
 ```
 
 **关键**：JS 直接调用 C++ 方法，没有序列化、没有异步等待。
@@ -82,15 +82,15 @@ project.ext.react = [
 
 ```ts
 // src/NativeCalculator.ts
-import type { TurboModule } from 'react-native/Libraries/TurboModule/RCTExport'
-import { TurboModuleRegistry } from 'react-native'
+import type { TurboModule } from 'react-native/Libraries/TurboModule/RCTExport';
+import { TurboModuleRegistry } from 'react-native';
 
 export interface Spec extends TurboModule {
-  add(a: number, b: number): Promise<number>
-  addSync(a: number, b: number): number  // 同步方法
+  add(a: number, b: number): Promise<number>;
+  addSync(a: number, b: number): number; // 同步方法
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('Calculator')
+export default TurboModuleRegistry.getEnforcing<Spec>('Calculator');
 ```
 
 ### 第二步：让库暴露这个规范
@@ -159,10 +159,10 @@ RCT_EXPORT_MODULE()
 JS 端直接调用：
 
 ```ts
-import NativeCalculator from './src/NativeCalculator'
+import NativeCalculator from './src/NativeCalculator';
 
-const sum = await NativeCalculator.add(1, 2)  // 异步 Promise
-const sync = NativeCalculator.addSync(1, 2)   // 同步，直接拿值
+const sum = await NativeCalculator.add(1, 2); // 异步 Promise
+const sync = NativeCalculator.addSync(1, 2); // 同步，直接拿值
 ```
 
 **对比旧 Bridge**：
@@ -176,25 +176,25 @@ const sync = NativeCalculator.addSync(1, 2)   // 同步，直接拿值
 
 ```ts
 // src/RNCustomViewNativeComponent.ts
-import type { ViewProps } from 'react-native/Libraries/Components/View/ViewPropTypes'
-import type { HostComponent } from 'react-native'
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent'
+import type { ViewProps } from 'react-native/Libraries/Components/View/ViewPropTypes';
+import type { HostComponent } from 'react-native';
+import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
 export interface NativeProps extends ViewProps {
-  color?: string
-  radius?: number
+  color?: string;
+  radius?: number;
 }
 
-export default codegenNativeComponent<NativeProps>('RNCustomView') as HostComponent<NativeProps>
+export default codegenNativeComponent<NativeProps>('RNCustomView') as HostComponent<NativeProps>;
 ```
 
 ### React 组件
 
 ```tsx
-import NativeCustomView from './src/RNCustomViewNativeComponent'
+import NativeCustomView from './src/RNCustomViewNativeComponent';
 
 function CustomView({ color, radius }: { color: string; radius: number }) {
-  return <NativeCustomView color={color} radius={radius} style={{ width: 100, height: 100 }} />
+  return <NativeCustomView color={color} radius={radius} style={{ width: 100, height: 100 }} />;
 }
 ```
 
@@ -241,16 +241,16 @@ Class<RCTComponentViewProtocol> RNCustomViewCls(void) {
 
 ```tsx
 // 新架构推荐写法
-import { useFrameCallback } from 'react-native-reanimated'
+import { useFrameCallback } from 'react-native-reanimated';
 
 function MyComponent() {
-  const sv = useSharedValue(0)
+  const sv = useSharedValue(0);
 
   useFrameCallback((info) => {
-    sv.value = info.timeSinceFirstFrame / 1000
-  })
+    sv.value = info.timeSinceFirstFrame / 1000;
+  });
 
-  return <Animated.View style={{ transform: [{ rotate: `${sv.value * 360}deg` }] }} />
+  return <Animated.View style={{ transform: [{ rotate: `${sv.value * 360}deg` }] }} />;
 }
 ```
 
@@ -298,12 +298,12 @@ RCT_NEW_ARCH_ENABLED=1 pod install
 
 ## 九、性能对比：旧 vs 新
 
-| 指标 | 旧架构 | 新架构 | 提升 |
-| --- | --- | --- | --- |
-| 冷启动时间 | 1.8s | 600ms | 3x |
-| 列表滚动 FPS | 35 | 60 | 1.7x |
-| Native 方法调用延迟 | 5-10ms | < 1ms | 10x |
-| JS Bundle 大小 | 4.2MB | 3.8MB | 10% |
+| 指标                | 旧架构 | 新架构 | 提升 |
+| ------------------- | ------ | ------ | ---- |
+| 冷启动时间          | 1.8s   | 600ms  | 3x   |
+| 列表滚动 FPS        | 35     | 60     | 1.7x |
+| Native 方法调用延迟 | 5-10ms | < 1ms  | 10x  |
+| JS Bundle 大小      | 4.2MB  | 3.8MB  | 10%  |
 
 ## 十、迁移路径：渐进式而非大爆炸
 
@@ -351,11 +351,11 @@ npx react-native config | grep newArch
 ### 2. 查看 JSI 调用统计
 
 ```ts
-import { performance } from 'perf_hooks'
+import { performance } from 'perf_hooks';
 
-const t0 = performance.now()
-NativeModule.method()
-console.log(`Call took ${performance.now() - t0}ms`)
+const t0 = performance.now();
+NativeModule.method();
+console.log(`Call took ${performance.now() - t0}ms`);
 ```
 
 如果耗时 < 1ms，说明走的是 JSI；如果 > 5ms，可能回退到 Bridge Compatibility。

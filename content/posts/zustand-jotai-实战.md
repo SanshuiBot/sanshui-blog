@@ -22,28 +22,28 @@ Zustand 和 Jotai 都是为了解决这些问题。
 ## 二、Zustand：极简 store
 
 ```ts
-import { create } from 'zustand'
+import { create } from 'zustand';
 
 interface CounterStore {
-  count: number
-  increment: () => void
-  decrement: () => void
+  count: number;
+  increment: () => void;
+  decrement: () => void;
 }
 
 export const useCounterStore = create<CounterStore>((set) => ({
   count: 0,
   increment: () => set((state) => ({ count: state.count + 1 })),
   decrement: () => set((state) => ({ count: state.count - 1 })),
-}))
+}));
 ```
 
 使用：
 
 ```tsx
 function Counter() {
-  const count = useCounterStore((s) => s.count)
-  const increment = useCounterStore((s) => s.increment)
-  return <button onClick={increment}>{count}</button>
+  const count = useCounterStore((s) => s.count);
+  const increment = useCounterStore((s) => s.increment);
+  return <button onClick={increment}>{count}</button>;
 }
 ```
 
@@ -53,15 +53,15 @@ function Counter() {
 
 ```tsx
 // ❌ 每次 render 都创建新对象 → 永远 re-render
-const { count, increment } = useCounterStore()
+const { count, increment } = useCounterStore();
 
 // ✅ 分别 subscribe
-const count = useCounterStore((s) => s.count)
-const increment = useCounterStore((s) => s.increment)
+const count = useCounterStore((s) => s.count);
+const increment = useCounterStore((s) => s.increment);
 
 // ✅ 或用 shallow 比较
-import { shallow } from 'zustand/shallow'
-const { count, increment } = useCounterStore(shallow)
+import { shallow } from 'zustand/shallow';
+const { count, increment } = useCounterStore(shallow);
 ```
 
 ## 四、Zustand 中间件：persist / immer / devtools
@@ -69,7 +69,7 @@ const { count, increment } = useCounterStore(shallow)
 ### persist（持久化）
 
 ```ts
-import { persist } from 'zustand/middleware'
+import { persist } from 'zustand/middleware';
 
 export const useAuthStore = create(
   persist<AuthStore>(
@@ -78,50 +78,43 @@ export const useAuthStore = create(
       setToken: (token) => set({ token }),
       logout: () => set({ token: null }),
     }),
-    { name: 'auth-storage' }  // localStorage key
-  )
-)
+    { name: 'auth-storage' }, // localStorage key
+  ),
+);
 ```
 
 ### immer（不可变更新）
 
 ```ts
-import { immer } from 'zustand/middleware/immer'
+import { immer } from 'zustand/middleware/immer';
 
 export const useUserStore = create(
   immer<UserStore>((set) => ({
     profile: { name: '', age: 0, address: { city: '' } },
     updateCity: (city) =>
       set((state) => {
-        state.profile.address.city = city  // 直接 mutate，immer 处理
+        state.profile.address.city = city; // 直接 mutate，immer 处理
       }),
-  }))
-)
+  })),
+);
 ```
 
 ### devtools（Redux DevTools 集成）
 
 ```ts
-export const useStore = create(
-  devtools(
-    (set) => ({
-      /* ... */
-    }),
-    { name: 'my-store' }
-  )
-)
+export const useStore = create(devtools((set) => ({/* ... */}), { name: 'my-store' }));
 ```
 
 ## 五、Jotai：原子化状态
 
 ```tsx
-import { atom, useAtom } from 'jotai'
+import { atom, useAtom } from 'jotai';
 
-const countAtom = atom(0)
+const countAtom = atom(0);
 
 function Counter() {
-  const [count, setCount] = useAtom(countAtom)
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
+  const [count, setCount] = useAtom(countAtom);
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
 }
 ```
 
@@ -130,22 +123,22 @@ function Counter() {
 ## 六、Jotai 的派生 atom
 
 ```tsx
-const todosAtom = atom<Todo[]>([])
-const filterAtom = atom<'all' | 'active' | 'completed'>('all')
+const todosAtom = atom<Todo[]>([]);
+const filterAtom = atom<'all' | 'active' | 'completed'>('all');
 
 // 派生 atom：依赖其他 atom，自动 memo
 const filteredTodosAtom = atom((get) => {
-  const todos = get(todosAtom)
-  const filter = get(filterAtom)
-  if (filter === 'all') return todos
-  return todos.filter((t) => t.completed === (filter === 'completed'))
-})
+  const todos = get(todosAtom);
+  const filter = get(filterAtom);
+  if (filter === 'all') return todos;
+  return todos.filter((t) => t.completed === (filter === 'completed'));
+});
 
 // 写入 atom：可以同时改多个上游 atom
 const addTodoAtom = atom(null, (get, set, text: string) => {
-  const todos = get(todosAtom)
-  set(todosAtom, [...todos, { id: Date.now(), text, completed: false }])
-})
+  const todos = get(todosAtom);
+  set(todosAtom, [...todos, { id: Date.now(), text, completed: false }]);
+});
 ```
 
 **派生 atom 的依赖关系是动态的**。`filteredTodosAtom` 在 `filter === 'all'` 时只依赖 `todosAtom`；在 `filter === 'completed'` 时同时依赖 `todosAtom` 和 `filterAtom`。
@@ -154,12 +147,10 @@ const addTodoAtom = atom(null, (get, set, text: string) => {
 
 ```tsx
 // 组件 A 只关心 todos 长度
-const count = useAtomValue(
-  atom((get) => get(todosAtom).length)
-)
+const count = useAtomValue(atom((get) => get(todosAtom).length));
 
 // 组件 B 关心 todos 内容
-const todos = useAtomValue(todosAtom)
+const todos = useAtomValue(todosAtom);
 ```
 
 当 todos 内容变但长度没变时，组件 A 不 re-render。这种**精确订阅**在 Zustand 里需要手写 selector，在 Jotai 里是 atom 的天然属性。
@@ -173,11 +164,11 @@ const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   token: null,
   login: async (email, password) => {
-    const { user, token } = await api.login(email, password)
-    set({ user, token })
+    const { user, token } = await api.login(email, password);
+    set({ user, token });
   },
   logout: () => set({ user: null, token: null }),
-}))
+}));
 ```
 
 理由：
@@ -195,21 +186,20 @@ const formAtom = atom({
   name: '',
   email: '',
   age: 0,
-})
+});
 
 const nameAtom = atom(
   (get) => get(formAtom).name,
-  (get, set, newName: string) =>
-    set(formAtom, { ...get(formAtom), name: newName })
-)
+  (get, set, newName: string) => set(formAtom, { ...get(formAtom), name: newName }),
+);
 
 // 字段级验证
 const nameErrorAtom = atom((get) => {
-  const name = get(nameAtom)
-  if (!name) return 'Name is required'
-  if (name.length < 2) return 'Name too short'
-  return null
-})
+  const name = get(nameAtom);
+  if (!name) return 'Name is required';
+  if (name.length < 2) return 'Name too short';
+  return null;
+});
 ```
 
 理由：
@@ -226,7 +216,7 @@ const nameErrorAtom = atom((get) => {
 const { data: posts } = useQuery({
   queryKey: ['posts'],
   queryFn: api.getPosts,
-})
+});
 ```
 
 理由：
@@ -243,10 +233,10 @@ const useFilterStore = create<FilterStore>((set, get) => ({
   search: '',
   tags: [],
   setSearch: (v) => {
-    set({ search: v })
-    syncUrl(get())
+    set({ search: v });
+    syncUrl(get());
   },
-}))
+}));
 ```
 
 Jotai 也能做，但 Zustand 的 store 概念更容易让 URL 和 store 双向同步。
@@ -256,22 +246,18 @@ Jotai 也能做，但 Zustand 的 store 概念更容易让 URL 和 store 双向�
 **选 Jotai 的 atomFamily**。
 
 ```tsx
-import { atomFamily } from 'jotai/utils'
+import { atomFamily } from 'jotai/utils';
 
 const todoCompletedAtom = atomFamily(
   (id: number) => atom(false),
-  (a, b) => a === b  // equality function for cache
-)
+  (a, b) => a === b, // equality function for cache
+);
 
 function TodoItem({ id }: { id: number }) {
-  const [completed, setCompleted] = useAtom(todoCompletedAtom(id))
+  const [completed, setCompleted] = useAtom(todoCompletedAtom(id));
   return (
-    <input
-      type="checkbox"
-      checked={completed}
-      onChange={(e) => setCompleted(e.target.checked)}
-    />
-  )
+    <input type="checkbox" checked={completed} onChange={(e) => setCompleted(e.target.checked)} />
+  );
 }
 ```
 
@@ -286,14 +272,14 @@ function TodoItem({ id }: { id: number }) {
 ```tsx
 // ❌ 每次 render 创建新 atom
 function Component({ initial }) {
-  const myAtom = atom(initial)
+  const myAtom = atom(initial);
   // ...
 }
 
 // ✅ 用 atomFamily 或 useCallback
-const myAtomFamily = atomFamily((initial) => atom(initial))
+const myAtomFamily = atomFamily((initial) => atom(initial));
 function Component({ initial }) {
-  const myAtom = useMemo(() => myAtomFamily(initial), [initial])
+  const myAtom = useMemo(() => myAtomFamily(initial), [initial]);
   // ...
 }
 ```
@@ -302,7 +288,7 @@ function Component({ initial }) {
 
 ```ts
 // ❌ 用 set 直接覆盖会丢失其他字段
-set({ count: 0 })  // 如果 store 还有 name 字段，name 会丢
+set({ count: 0 }); // 如果 store 还有 name 字段，name 会丢
 ```
 
 实际上 Zustand 的 `set` 默认是**浅合并**，类似 React 的 `setState`。上面的代码**不会丢其他字段**。
@@ -311,7 +297,7 @@ set({ count: 0 })  // 如果 store 还有 name 字段，name 会丢
 
 ```ts
 // ❌ 把函数放到 state 里
-set({ increment: () => set((s) => ({ count: s.count + 1 })) })
+set({ increment: () => set((s) => ({ count: s.count + 1 })) });
 ```
 
 increment 是函数，set 会浅合并 increment 字段。函数闭包里的 set 是初始的 set，**可能 stale**。
@@ -319,31 +305,31 @@ increment 是函数，set 会浅合并 increment 字段。函数闭包里的 set
 ## 十五、踩坑 3：Jotai 的 get 不能在 setter 外用
 
 ```tsx
-const myAtom = atom(0)
+const myAtom = atom(0);
 
 // ❌ 组件作用域直接 get
 function Component() {
-  const value = myAtom.get()  // 报错，atom 没有这个 API
+  const value = myAtom.get(); // 报错，atom 没有这个 API
 }
 
 // ✅ 通过 useAtomValue
 function Component() {
-  const value = useAtomValue(myAtom)
+  const value = useAtomValue(myAtom);
 }
 ```
 
 ## 十六、决策树
 
-| 场景 | 推荐 |
-| --- | --- |
-| 全局单例状态（auth、theme） | Zustand |
-| 大量联动派生状态 | Jotai |
-| 复杂表单 | Jotai |
-| 服务端数据缓存 | TanStack Query |
-| URL 同步状态 | Zustand |
-| 大量独立元素的瞬时状态 | Jotai atomFamily |
-| 简单计数 / toggle | 任意 |
-| 跨组件共享 + 性能敏感 | Jotai |
+| 场景                        | 推荐             |
+| --------------------------- | ---------------- |
+| 全局单例状态（auth、theme） | Zustand          |
+| 大量联动派生状态            | Jotai            |
+| 复杂表单                    | Jotai            |
+| 服务端数据缓存              | TanStack Query   |
+| URL 同步状态                | Zustand          |
+| 大量独立元素的瞬时状态      | Jotai atomFamily |
+| 简单计数 / toggle           | 任意             |
+| 跨组件共享 + 性能敏感       | Jotai            |
 
 ## 十七、混合方案实战
 
@@ -351,15 +337,15 @@ function Component() {
 
 ```tsx
 // 顶层
-const { user } = useAuthStore()
+const { user } = useAuthStore();
 const { data: posts } = useQuery({
   queryKey: ['posts', user?.id],
   queryFn: () => api.getPosts(user!.id),
   enabled: !!user,
-})
+});
 
 // 表单
-const [title, setTitle] = useAtom(titleAtom)
+const [title, setTitle] = useAtom(titleAtom);
 ```
 
 三种库职责清晰，互不干扰。

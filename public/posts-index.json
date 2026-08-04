@@ -1,1 +1,163 @@
-[{"slug":"css-容器查询实战","title":"CSS 容器查询实战：从媒体查询到组件级响应式","date":"2026-07-31","excerpt":"媒体查询基于视口，容器查询基于父容器。本文从 @container 语法讲到 polyfill 兼容方案，再给出 6 个真实组件的容器查询改造案例。","tags":["CSS","前端","技术"]},{"slug":"docker-多阶段构建优化","title":"Docker 多阶段构建与 BuildKit 缓存优化","date":"2026-07-30","excerpt":"一个 Go 服务镜像从 1.2GB 优化到 18MB，构建时间从 180s 降到 25s。本文讲多阶段构建、distroless / scratch 基础镜像、BuildKit cache mount、Buildx 多架构构建。","tags":["Docker","DevOps","后端","技术"]},{"slug":"etcd-zookeeper-一致性算法对比","title":"etcd 与 Zookeeper 一致性算法对比：Raft vs ZAB","date":"2026-07-29","excerpt":"同样是 CP 系统，etcd 用 Raft，Zookeeper 用 ZAB。本文讲两种算法的差异、leader 选举、日志复制、安全性证明，再到生产选型建议。","tags":["分布式","后端","etcd","Zookeeper","技术"]},{"slug":"go-1.24-泛型实战","title":"Go 1.24 泛型与 range-over-func 实战","date":"2026-07-28","excerpt":"Go 1.24 把 range 推广到函数和 int。本文讲 type parameters 实战、iter.Pull / iter.Seq 迭代器协议、generic slice / map 工具，再到 6 个泛型设计踩坑。","tags":["Go","后端","技术"]},{"slug":"grpc-实战","title":"gRPC 实战：从 Protobuf 到双向流","date":"2026-07-27","excerpt":"微服务间通信从 HTTP/JSON 换到 gRPC，吞吐量提升 5 倍。本文讲 Protobuf 编码、 unary vs stream、keepalive 心跳、拦截器链、metadata 透传，再到 6 个生产踩坑。","tags":["gRPC","后端","微服务","技术","踩坑"]},{"slug":"kafka-消息可靠性实战","title":"Kafka 消息可靠性实战：从 producer ack 到消费者幂等","date":"2026-07-26","excerpt":"一个 Kafka 消费者把同一笔订单处理了三次。本文讲 producer 的 acks/retries/idempotence、broker 的 ISR 与 min.insync.replicas、consumer 的手动提交与 exactly-once。","tags":["Kafka","后端","消息队列","技术","踩坑"]},{"slug":"nextjs-15-app-router-实战","title":"Next.js 15 App Router 实战：从 RSC 到 Route Handlers","date":"2026-07-25","excerpt":"Next.js 15 把 params / searchParams 都变成了 Promise。本文讲 App Router 的 6 层缓存、generateStaticParams 与 ISR、Route Handlers 的 streaming，再到 10 个迁移踩坑点。","tags":["Next.js","前端","技术","踩坑"]},{"slug":"postgresql-索引实战","title":"PostgreSQL 索引实战：从 B-tree 到 GIN 踩坑录","date":"2026-07-24","excerpt":"一张 800 万行的表 LIKE 查询要 12 秒。本文讲 B-tree / Hash / GIN / GiST / BRIN 五种索引选型、部分索引、表达式索引、覆盖索引，再到 7 个真实生产事故的根因。","tags":["PostgreSQL","后端","数据库","技术","踩坑"]},{"slug":"postgresql-高可用实战","title":"PostgreSQL 高可用实战：流复制与 Patroni","date":"2026-07-23","excerpt":"一次主库宕机，业务停了 40 分钟。本文讲流复制原理、同步级别选型、Patroni 自动故障转移，再到 6 个真实生产事故的根因。","tags":["PostgreSQL","高可用","后端","技术","踩坑"]},{"slug":"react-native-新架构实战","title":"React Native 新架构实战：Fabric 与 TurboModules","date":"2026-07-22","excerpt":"RN 新架构（Fabric + TurboModules + JSI）相比旧架构性能提升 3-5 倍。本文讲 JSI 直调 C++、Fabric 同步渲染、Codegen 类型生成，再到 5 个迁移踩坑点。","tags":["React Native","前端","技术"]},{"slug":"react-server-components-实战与踩坑","title":"React Server Components 实战与踩坑：从 RSC payload 到流式渲染","date":"2026-07-21","excerpt":"React Server Components 不是 SSR。本文从 RSC wire protocol 讲到 use client 边界划分，再列出 8 个生产环境踩过的坑，帮你避开 RSC 落地的所有暗礁。","tags":["React","前端","技术","踩坑"]},{"slug":"redis-分布式锁实战","title":"Redis 分布式锁实战：从 SET NX 到 Redlock 踩坑","date":"2026-07-20","excerpt":"一个支付系统的分布式锁写错了，导致同一笔订单被扣两次款。本文讲 SET NX EX 的正确姿势、锁续期看门狗、Redlock 算法的争议，再到 6 个真实生产事故。","tags":["Redis","后端","分布式","技术","踩坑"]},{"slug":"tailwind-v4-迁移实战","title":"Tailwind CSS v4 迁移实战：从 config 到 CSS-first","date":"2026-07-19","excerpt":"Tailwind v4 把配置从 JS 搬到 CSS。本文讲 @theme 令牌、@plugin、@custom-variant、@apply 的语义变化，再到 6 个真实迁移踩坑点。","tags":["Tailwind","CSS","前端","技术"]},{"slug":"typescript-5-装饰器实战","title":"TypeScript 5.x 装饰器实战：从元数据到依赖注入","date":"2026-07-18","excerpt":"TS 5.0 标准化装饰器，与旧 reflect-metadata 方案完全不同。本文讲新装饰器 API、metadata 提案、手写一个 IoC 容器，再到 NestJS 风格的路由装饰器实现。","tags":["TypeScript","前端","技术"]},{"slug":"vite-6-冷启动优化","title":"Vite 6 冷启动优化：从依赖预构建到插件缓存","date":"2026-07-17","excerpt":"大型项目 Vite 冷启动 40s → 3s 的真实优化过程。讲依赖预构建、按需 optimizeDeps、插件 cacheDir、worker 池调优，以及 8 个常见冷启动慢的根因。","tags":["Vite","前端","技术","性能"]},{"slug":"web-worker-实战","title":"Web Worker 实战：OffscreenCanvas 与 SharedArrayBuffer","date":"2026-07-16","excerpt":"主线程长任务 800ms → 12ms。本文讲 Worker 的 6 种创建方式、Transferable 对象、OffscreenCanvas 渲染、SharedArrayBuffer 多线程共享内存，再到 Comlink RPC 封装。","tags":["Web Worker","前端","技术","性能"]},{"slug":"web-性能监控实战","title":"Web 性能监控实战：从 PerformanceObserver 到 LCP 归因","date":"2026-07-15","excerpt":"LCP 1.2s 到 3.8s 的真实排查过程。本文讲 PerformanceObserver API、Web Vitals 指标体系、LCP 元素归因、CLS 预测布局偏移，再到 RUM 上报方案。","tags":["性能","前端","技术"]},{"slug":"zustand-jotai-实战","title":"Zustand 与 Jotai 实战：React 状态管理选型","date":"2026-07-14","excerpt":"Redux 时代结束了。本文讲 Zustand 的 store 模型、Jotai 的原子模型，再到 8 个真实场景下的选型决策树。","tags":["React","状态管理","前端","技术"]},{"slug":"微服务可观测性实战","title":"微服务可观测性实战：OpenTelemetry 三件套","date":"2026-07-13","excerpt":"12 个微服务，每天 2 亿次请求，一个 P99 延迟从 50ms 飙到 800ms 的排查。本文讲 OpenTelemetry Trace/Metrics/Logs 统一管线、Baggage 跨服务透传，再到 5 个生产踩坑。","tags":["可观测性","后端","微服务","技术"]},{"slug":"浏览器原生api-实战","title":"浏览器原生 API 实战：View Transitions 与 Container Queries","date":"2026-07-12","excerpt":"不用框架、不用 GSAP，浏览器原生就能做流畅过渡动画。本文讲 View Transitions API、scroll-driven animations、popover API，再到 5 个渐进增强实战。","tags":["浏览器API","前端","技术"]},{"slug":"vue-3-5-响应式系统实战","title":"Vue 3.5 响应式系统实战：从 ref 到 shallowReactive","date":"2026-07-11","excerpt":"Vue 3.5 的响应式系统经过多次重构，本文从 ref/reactive/computed 的底层实现讲到 effect 依赖追踪，再到 6 个生产环境踩坑点。","tags":["Vue","前端","技术","踩坑"]},{"slug":"vue-编译器优化实战","title":"Vue 编译器优化实战：从静态提升到 PatchFlag","date":"2026-07-10","excerpt":"Vue 编译器在编译期做了大量优化。本文讲静态提升、PatchFlag、Block Tree、缓存事件处理器，再到 5 个真实性能优化案例。","tags":["Vue","前端","技术","性能"]},{"slug":"vue-3-状态管理实战","title":"Vue 3 状态管理实战：Pinia 与组合式 API 的选型","date":"2026-07-09","excerpt":"Vue 3 时代 Pinia 取代了 Vuex。本文讲 Pinia 的 store 模型、组合式 store、跨 store 依赖，再到与 provide/inject、useState 模式的选型决策。","tags":["Vue","前端","状态管理","技术"]}]
+[
+  {
+    "slug": "css-容器查询实战",
+    "title": "CSS 容器查询实战：从媒体查询到组件级响应式",
+    "date": "2026-07-31",
+    "excerpt": "媒体查询基于视口，容器查询基于父容器。本文从 @container 语法讲到 polyfill 兼容方案，再给出 6 个真实组件的容器查询改造案例。",
+    "tags": ["CSS", "前端", "技术"]
+  },
+  {
+    "slug": "docker-多阶段构建优化",
+    "title": "Docker 多阶段构建与 BuildKit 缓存优化",
+    "date": "2026-07-30",
+    "excerpt": "一个 Go 服务镜像从 1.2GB 优化到 18MB，构建时间从 180s 降到 25s。本文讲多阶段构建、distroless / scratch 基础镜像、BuildKit cache mount、Buildx 多架构构建。",
+    "tags": ["Docker", "DevOps", "后端", "技术"]
+  },
+  {
+    "slug": "etcd-zookeeper-一致性算法对比",
+    "title": "etcd 与 Zookeeper 一致性算法对比：Raft vs ZAB",
+    "date": "2026-07-29",
+    "excerpt": "同样是 CP 系统，etcd 用 Raft，Zookeeper 用 ZAB。本文讲两种算法的差异、leader 选举、日志复制、安全性证明，再到生产选型建议。",
+    "tags": ["分布式", "后端", "etcd", "Zookeeper", "技术"]
+  },
+  {
+    "slug": "go-1.24-泛型实战",
+    "title": "Go 1.24 泛型与 range-over-func 实战",
+    "date": "2026-07-28",
+    "excerpt": "Go 1.24 把 range 推广到函数和 int。本文讲 type parameters 实战、iter.Pull / iter.Seq 迭代器协议、generic slice / map 工具，再到 6 个泛型设计踩坑。",
+    "tags": ["Go", "后端", "技术"]
+  },
+  {
+    "slug": "grpc-实战",
+    "title": "gRPC 实战：从 Protobuf 到双向流",
+    "date": "2026-07-27",
+    "excerpt": "微服务间通信从 HTTP/JSON 换到 gRPC，吞吐量提升 5 倍。本文讲 Protobuf 编码、 unary vs stream、keepalive 心跳、拦截器链、metadata 透传，再到 6 个生产踩坑。",
+    "tags": ["gRPC", "后端", "微服务", "技术", "踩坑"]
+  },
+  {
+    "slug": "kafka-消息可靠性实战",
+    "title": "Kafka 消息可靠性实战：从 producer ack 到消费者幂等",
+    "date": "2026-07-26",
+    "excerpt": "一个 Kafka 消费者把同一笔订单处理了三次。本文讲 producer 的 acks/retries/idempotence、broker 的 ISR 与 min.insync.replicas、consumer 的手动提交与 exactly-once。",
+    "tags": ["Kafka", "后端", "消息队列", "技术", "踩坑"]
+  },
+  {
+    "slug": "nextjs-15-app-router-实战",
+    "title": "Next.js 15 App Router 实战：从 RSC 到 Route Handlers",
+    "date": "2026-07-25",
+    "excerpt": "Next.js 15 把 params / searchParams 都变成了 Promise。本文讲 App Router 的 6 层缓存、generateStaticParams 与 ISR、Route Handlers 的 streaming，再到 10 个迁移踩坑点。",
+    "tags": ["Next.js", "前端", "技术", "踩坑"]
+  },
+  {
+    "slug": "postgresql-索引实战",
+    "title": "PostgreSQL 索引实战：从 B-tree 到 GIN 踩坑录",
+    "date": "2026-07-24",
+    "excerpt": "一张 800 万行的表 LIKE 查询要 12 秒。本文讲 B-tree / Hash / GIN / GiST / BRIN 五种索引选型、部分索引、表达式索引、覆盖索引，再到 7 个真实生产事故的根因。",
+    "tags": ["PostgreSQL", "后端", "数据库", "技术", "踩坑"]
+  },
+  {
+    "slug": "postgresql-高可用实战",
+    "title": "PostgreSQL 高可用实战：流复制与 Patroni",
+    "date": "2026-07-23",
+    "excerpt": "一次主库宕机，业务停了 40 分钟。本文讲流复制原理、同步级别选型、Patroni 自动故障转移，再到 6 个真实生产事故的根因。",
+    "tags": ["PostgreSQL", "高可用", "后端", "技术", "踩坑"]
+  },
+  {
+    "slug": "react-native-新架构实战",
+    "title": "React Native 新架构实战：Fabric 与 TurboModules",
+    "date": "2026-07-22",
+    "excerpt": "RN 新架构（Fabric + TurboModules + JSI）相比旧架构性能提升 3-5 倍。本文讲 JSI 直调 C++、Fabric 同步渲染、Codegen 类型生成，再到 5 个迁移踩坑点。",
+    "tags": ["React Native", "前端", "技术"]
+  },
+  {
+    "slug": "react-server-components-实战与踩坑",
+    "title": "React Server Components 实战与踩坑：从 RSC payload 到流式渲染",
+    "date": "2026-07-21",
+    "excerpt": "React Server Components 不是 SSR。本文从 RSC wire protocol 讲到 use client 边界划分，再列出 8 个生产环境踩过的坑，帮你避开 RSC 落地的所有暗礁。",
+    "tags": ["React", "前端", "技术", "踩坑"]
+  },
+  {
+    "slug": "redis-分布式锁实战",
+    "title": "Redis 分布式锁实战：从 SET NX 到 Redlock 踩坑",
+    "date": "2026-07-20",
+    "excerpt": "一个支付系统的分布式锁写错了，导致同一笔订单被扣两次款。本文讲 SET NX EX 的正确姿势、锁续期看门狗、Redlock 算法的争议，再到 6 个真实生产事故。",
+    "tags": ["Redis", "后端", "分布式", "技术", "踩坑"]
+  },
+  {
+    "slug": "tailwind-v4-迁移实战",
+    "title": "Tailwind CSS v4 迁移实战：从 config 到 CSS-first",
+    "date": "2026-07-19",
+    "excerpt": "Tailwind v4 把配置从 JS 搬到 CSS。本文讲 @theme 令牌、@plugin、@custom-variant、@apply 的语义变化，再到 6 个真实迁移踩坑点。",
+    "tags": ["Tailwind", "CSS", "前端", "技术"]
+  },
+  {
+    "slug": "typescript-5-装饰器实战",
+    "title": "TypeScript 5.x 装饰器实战：从元数据到依赖注入",
+    "date": "2026-07-18",
+    "excerpt": "TS 5.0 标准化装饰器，与旧 reflect-metadata 方案完全不同。本文讲新装饰器 API、metadata 提案、手写一个 IoC 容器，再到 NestJS 风格的路由装饰器实现。",
+    "tags": ["TypeScript", "前端", "技术"]
+  },
+  {
+    "slug": "vite-6-冷启动优化",
+    "title": "Vite 6 冷启动优化：从依赖预构建到插件缓存",
+    "date": "2026-07-17",
+    "excerpt": "大型项目 Vite 冷启动 40s → 3s 的真实优化过程。讲依赖预构建、按需 optimizeDeps、插件 cacheDir、worker 池调优，以及 8 个常见冷启动慢的根因。",
+    "tags": ["Vite", "前端", "技术", "性能"]
+  },
+  {
+    "slug": "web-worker-实战",
+    "title": "Web Worker 实战：OffscreenCanvas 与 SharedArrayBuffer",
+    "date": "2026-07-16",
+    "excerpt": "主线程长任务 800ms → 12ms。本文讲 Worker 的 6 种创建方式、Transferable 对象、OffscreenCanvas 渲染、SharedArrayBuffer 多线程共享内存，再到 Comlink RPC 封装。",
+    "tags": ["Web Worker", "前端", "技术", "性能"]
+  },
+  {
+    "slug": "web-性能监控实战",
+    "title": "Web 性能监控实战：从 PerformanceObserver 到 LCP 归因",
+    "date": "2026-07-15",
+    "excerpt": "LCP 1.2s 到 3.8s 的真实排查过程。本文讲 PerformanceObserver API、Web Vitals 指标体系、LCP 元素归因、CLS 预测布局偏移，再到 RUM 上报方案。",
+    "tags": ["性能", "前端", "技术"]
+  },
+  {
+    "slug": "zustand-jotai-实战",
+    "title": "Zustand 与 Jotai 实战：React 状态管理选型",
+    "date": "2026-07-14",
+    "excerpt": "Redux 时代结束了。本文讲 Zustand 的 store 模型、Jotai 的原子模型，再到 8 个真实场景下的选型决策树。",
+    "tags": ["React", "状态管理", "前端", "技术"]
+  },
+  {
+    "slug": "微服务可观测性实战",
+    "title": "微服务可观测性实战：OpenTelemetry 三件套",
+    "date": "2026-07-13",
+    "excerpt": "12 个微服务，每天 2 亿次请求，一个 P99 延迟从 50ms 飙到 800ms 的排查。本文讲 OpenTelemetry Trace/Metrics/Logs 统一管线、Baggage 跨服务透传，再到 5 个生产踩坑。",
+    "tags": ["可观测性", "后端", "微服务", "技术"]
+  },
+  {
+    "slug": "浏览器原生api-实战",
+    "title": "浏览器原生 API 实战：View Transitions 与 Container Queries",
+    "date": "2026-07-12",
+    "excerpt": "不用框架、不用 GSAP，浏览器原生就能做流畅过渡动画。本文讲 View Transitions API、scroll-driven animations、popover API，再到 5 个渐进增强实战。",
+    "tags": ["浏览器API", "前端", "技术"]
+  },
+  {
+    "slug": "vue-3-5-响应式系统实战",
+    "title": "Vue 3.5 响应式系统实战：从 ref 到 shallowReactive",
+    "date": "2026-07-11",
+    "excerpt": "Vue 3.5 的响应式系统经过多次重构，本文从 ref/reactive/computed 的底层实现讲到 effect 依赖追踪，再到 6 个生产环境踩坑点。",
+    "tags": ["Vue", "前端", "技术", "踩坑"]
+  },
+  {
+    "slug": "vue-编译器优化实战",
+    "title": "Vue 编译器优化实战：从静态提升到 PatchFlag",
+    "date": "2026-07-10",
+    "excerpt": "Vue 编译器在编译期做了大量优化。本文讲静态提升、PatchFlag、Block Tree、缓存事件处理器，再到 5 个真实性能优化案例。",
+    "tags": ["Vue", "前端", "技术", "性能"]
+  },
+  {
+    "slug": "vue-3-状态管理实战",
+    "title": "Vue 3 状态管理实战：Pinia 与组合式 API 的选型",
+    "date": "2026-07-09",
+    "excerpt": "Vue 3 时代 Pinia 取代了 Vuex。本文讲 Pinia 的 store 模型、组合式 store、跨 store 依赖，再到与 provide/inject、useState 模式的选型决策。",
+    "tags": ["Vue", "前端", "状态管理", "技术"]
+  }
+]

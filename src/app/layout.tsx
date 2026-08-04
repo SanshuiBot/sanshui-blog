@@ -62,9 +62,7 @@ export const viewport: Viewport = {
 const accentBootstrap = `(function(){
   try {
     var id = window.localStorage.getItem('${ACCENT_STORAGE_KEY}');
-    var presets = ${JSON.stringify(
-      ACCENT_PRESETS.map((p) => ({ id: p.id, colors: p.colors })),
-    )};
+    var presets = ${JSON.stringify(ACCENT_PRESETS.map((p) => ({ id: p.id, colors: p.colors })))};
     var def = presets.find(function(p){return p.id==='${DEFAULT_ACCENT_ID}';});
     var target;
     if (id === '${CUSTOM_ACCENT_ID}') {

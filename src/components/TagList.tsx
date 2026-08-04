@@ -16,7 +16,8 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
   const sy = useSpring(my, { stiffness: 120, damping: 20 });
   const spotlight = useTransform(
     [sx, sy],
-    ([x, y]) => `radial-gradient(180px circle at ${x}% ${y}%, color-mix(in srgb, ${color} 16%, transparent), transparent 70%)`,
+    ([x, y]) =>
+      `radial-gradient(180px circle at ${x}% ${y}%, color-mix(in srgb, ${color} 16%, transparent), transparent 70%)`,
   );
 
   // 3D tilt

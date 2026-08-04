@@ -13,11 +13,11 @@ excerpt: LCP 1.2s 到 3.8s 的真实排查过程。本文讲 PerformanceObserver
 
 Google 在 2020 年提出 Core Web Vitals 三大核心指标：
 
-| 指标 | 全称 | 含义 | 良好阈值 |
-| --- | --- | --- | --- |
-| LCP | Largest Contentful Paint | 最大内容绘制时间 | < 2.5s |
-| INP | Interaction to Next Paint | 交互到下次绘制 | < 200ms |
-| CLS | Cumulative Layout Shift | 累计布局偏移 | < 0.1 |
+| 指标 | 全称                      | 含义             | 良好阈值 |
+| ---- | ------------------------- | ---------------- | -------- |
+| LCP  | Largest Contentful Paint  | 最大内容绘制时间 | < 2.5s   |
+| INP  | Interaction to Next Paint | 交互到下次绘制   | < 200ms  |
+| CLS  | Cumulative Layout Shift   | 累计布局偏移     | < 0.1    |
 
 LCP 替代了旧的 FMP（First Meaningful Paint），因为 FMP 难以定义且实现复杂。LCP 由浏览器原生计算，稳定可靠。INP 在 2024 年 3 月正式替代 FID，更全面反映交互响应性。
 
@@ -28,10 +28,10 @@ LCP 替代了旧的 FMP（First Meaningful Paint），因为 FMP 难以定义且
 ```ts
 const po = new PerformanceObserver((list) => {
   for (const entry of list.getEntries()) {
-    console.log(entry.startTime, entry.entryType)
+    console.log(entry.startTime, entry.entryType);
   }
-})
-po.observe({ type: 'largest-contentful-paint', buffered: true })
+});
+po.observe({ type: 'largest-contentful-paint', buffered: true });
 ```
 
 `buffered: true` 表示「订阅时把已经发生的事件也回放给我」。这对 LCP 监控很关键——LCP 在页面加载过程中可能多次刷新，我们需要拿到最后一次的值。
@@ -41,19 +41,19 @@ po.observe({ type: 'largest-contentful-paint', buffered: true })
 LCP 不是单次事件。页面加载过程中，浏览器会不断重新计算「最大内容元素」，每次新元素比之前的大就刷新 LCP 时间戳。
 
 ```ts
-let lastLCP = 0
+let lastLCP = 0;
 new PerformanceObserver((list) => {
-  const entries = list.getEntries()
-  const lastEntry = entries[entries.length - 1]
-  lastLCP = lastEntry.startTime
-}).observe({ type: 'largest-contentful-paint', buffered: true })
+  const entries = list.getEntries();
+  const lastEntry = entries[entries.length - 1];
+  lastLCP = lastEntry.startTime;
+}).observe({ type: 'largest-contentful-paint', buffered: true });
 
 // 页面 unload 时上报
 window.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
-    reportRUM({ lcp: lastLCP })
+    reportRUM({ lcp: lastLCP });
   }
-})
+});
 ```
 
 **踩坑 1**：很多人用 `pagehide` 上报，但 iOS Safari 上 `pagehide` 在 bfcache 命中时不触发。**用 `visibilitychange` 配合 `hidden` 状态最稳**。
@@ -75,25 +75,25 @@ LCP 时间可以拆解为四段：
 
 ```ts
 new PerformanceObserver((list) => {
-  const entries = list.getEntries()
+  const entries = list.getEntries();
   const lastEntry = entries[entries.length - 1] as PerformanceEntry & {
-    element: Element
-    url: string
-    size: number
-    loadTime: number
-    renderTime: number
-    startTime: number
-  }
+    element: Element;
+    url: string;
+    size: number;
+    loadTime: number;
+    renderTime: number;
+    startTime: number;
+  };
 
   // 找到对应的 resource entry
-  const navEntry = performance.getEntriesByType('navigation')[0]
-  const resourceEntries = performance.getEntriesByType('resource')
-  const lcpRes = resourceEntries.find((r) => r.name === lastEntry.url)
+  const navEntry = performance.getEntriesByType('navigation')[0];
+  const resourceEntries = performance.getEntriesByType('resource');
+  const lcpRes = resourceEntries.find((r) => r.name === lastEntry.url);
 
-  const ttfb = navEntry.responseStart
-  const lcpResStart = lcpRes ? lcpRes.startTime : 0
-  const lcpResEnd = lcpRes ? lcpRes.responseEnd : 0
-  const lcpRenderTime = lastEntry.renderTime || lastEntry.loadTime
+  const ttfb = navEntry.responseStart;
+  const lcpResStart = lcpRes ? lcpRes.startTime : 0;
+  const lcpResEnd = lcpRes ? lcpRes.responseEnd : 0;
+  const lcpRenderTime = lastEntry.renderTime || lastEntry.loadTime;
 
   const attr = {
     lcp_time: lcpRenderTime,
@@ -104,10 +104,10 @@ new PerformanceObserver((list) => {
     url: lastEntry.url,
     tag: lastEntry.element.tagName,
     size: lastEntry.size,
-  }
+  };
 
-  reportRUM({ lcp_attribution: attr })
-}).observe({ type: 'largest-contentful-paint', buffered: true })
+  reportRUM({ lcp_attribution: attr });
+}).observe({ type: 'largest-contentful-paint', buffered: true });
 ```
 
 拿到归因后，就能针对性优化：
@@ -122,22 +122,22 @@ new PerformanceObserver((list) => {
 INP 测量用户交互到下一帧绘制的延迟。它在整个页面生命周期里记录所有交互，取最差值（P98）作为 INP。
 
 ```ts
-const inpMap = new Map<string, number>()
+const inpMap = new Map<string, number>();
 new PerformanceObserver((list) => {
   for (const entry of list.getEntries()) {
-    const e = entry as PerformanceEventTiming
-    if (!e.interactionId) continue
-    const key = String(e.interactionId)
-    inpMap.set(key, Math.max(inpMap.get(key) ?? 0, e.duration))
+    const e = entry as PerformanceEventTiming;
+    if (!e.interactionId) continue;
+    const key = String(e.interactionId);
+    inpMap.set(key, Math.max(inpMap.get(key) ?? 0, e.duration));
   }
-}).observe({ type: 'event', buffered: true })
+}).observe({ type: 'event', buffered: true });
 
 window.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'hidden') return
-  if (inpMap.size === 0) return
-  const worst = Math.max(...inpMap.values())
-  reportRUM({ inp: worst })
-})
+  if (document.visibilityState !== 'hidden') return;
+  if (inpMap.size === 0) return;
+  const worst = Math.max(...inpMap.values());
+  reportRUM({ inp: worst });
+});
 ```
 
 **踩坑**：`performance.getEntriesByType('event')` 在某些浏览器返回的不包含 `interactionId`。必须用 PerformanceObserver 并指定 `type: 'event'`。
@@ -153,14 +153,14 @@ window.addEventListener('visibilitychange', () => {
 CLS 是会话期间所有「意外布局偏移」的累计分数。
 
 ```ts
-let cls = 0
+let cls = 0;
 new PerformanceObserver((list) => {
   for (const entry of list.getEntries()) {
     if (!(entry as any).hadRecentInput) {
-      cls += (entry as any).value
+      cls += (entry as any).value;
     }
   }
-}).observe({ type: 'layout-shift', buffered: true })
+}).observe({ type: 'layout-shift', buffered: true });
 ```
 
 `hadRecentInput` 排除用户输入触发的偏移（点击展开手风琴不算意外偏移）。
@@ -174,8 +174,8 @@ new PerformanceObserver((list) => {
 ## 七、TTFB 监控：服务器响应时间
 
 ```ts
-const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
-const ttfb = navEntry.responseStart
+const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+const ttfb = navEntry.responseStart;
 ```
 
 TTFB 慢的常见原因：
@@ -189,9 +189,9 @@ TTFB 慢的常见原因：
 ```ts
 new PerformanceObserver((list) => {
   for (const entry of list.getEntries()) {
-    console.log('Long Task:', entry.duration, 'ms')
+    console.log('Long Task:', entry.duration, 'ms');
   }
-}).observe({ type: 'longtask', buffered: true })
+}).observe({ type: 'longtask', buffered: true });
 ```
 
 但 `longtask` 只告诉你有长任务，不告诉你哪个函数。Chrome 116+ 引入 `long-animation-frame`，可以拿到具体调用栈：
@@ -199,7 +199,7 @@ new PerformanceObserver((list) => {
 ```ts
 new PerformanceObserver((list) => {
   for (const entry of list.getEntries()) {
-    const e = entry as any
+    const e = entry as any;
     console.log({
       duration: e.duration,
       scripts: e.scripts.map((s: any) => ({
@@ -207,9 +207,9 @@ new PerformanceObserver((list) => {
         duration: s.duration,
         source: s.sourceURL,
       })),
-    })
+    });
   }
-}).observe({ type: 'long-animation-frame', buffered: true })
+}).observe({ type: 'long-animation-frame', buffered: true });
 ```
 
 ## 九、RUM 上报方案
@@ -220,8 +220,8 @@ new PerformanceObserver((list) => {
 function reportRUM(data: Record<string, unknown>) {
   const blob = new Blob([JSON.stringify(data)], {
     type: 'application/json',
-  })
-  navigator.sendBeacon('/api/rum', blob)
+  });
+  navigator.sendBeacon('/api/rum', blob);
 }
 ```
 
@@ -255,16 +255,24 @@ size: 1980000  // 1.8MB
 优化：
 
 ```html
-<link rel="preload" as="image" href="hero-2026.jpg"
-      imagesrcset="hero-480.webp 480w, hero-1024.webp 1024w, hero-1920.webp 1920w"
-      imagesizes="100vw" fetchpriority="high">
-<img src="hero-480.webp"
-     srcset="hero-480.webp 480w, hero-1024.webp 1024w, hero-1920.webp 1920w"
-     sizes="100vw"
-     width="1920" height="1080"
-     fetchpriority="high"
-     decoding="async"
-     alt="Hero">
+<link
+  rel="preload"
+  as="image"
+  href="hero-2026.jpg"
+  imagesrcset="hero-480.webp 480w, hero-1024.webp 1024w, hero-1920.webp 1920w"
+  imagesizes="100vw"
+  fetchpriority="high"
+/>
+<img
+  src="hero-480.webp"
+  srcset="hero-480.webp 480w, hero-1024.webp 1024w, hero-1920.webp 1920w"
+  sizes="100vw"
+  width="1920"
+  height="1080"
+  fetchpriority="high"
+  decoding="async"
+  alt="Hero"
+/>
 ```
 
 具体改动：

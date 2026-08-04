@@ -26,7 +26,8 @@ export default function Footer() {
         <motion.div
           className="h-full w-[200%]"
           style={{
-            background: 'linear-gradient(90deg,transparent,rgb(var(--accent-violet-rgb)),rgb(var(--accent-pink-rgb)),rgb(var(--accent-blue-rgb)),transparent)',
+            background:
+              'linear-gradient(90deg,transparent,rgb(var(--accent-violet-rgb)),rgb(var(--accent-pink-rgb)),rgb(var(--accent-blue-rgb)),transparent)',
             backgroundSize: '50% 100%',
           }}
           animate={{ x: ['0%', '-50%'] }}
@@ -69,10 +70,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {navLinks.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="footer-link text-sm"
-                  >
+                  <Link href={link.href} className="footer-link text-sm">
                     {link.label}
                   </Link>
                 </li>

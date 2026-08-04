@@ -58,8 +58,13 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
         aria-label="按标签筛选"
         aria-expanded={open}
       >
-        <Filter size={13} className="archive-filter-btn-icon text-accent-violet/80 group-hover:text-accent-violet transition-colors" />
-        <span className="archive-filter-btn-label hidden sm:inline transition-colors duration-200">筛选</span>
+        <Filter
+          size={13}
+          className="archive-filter-btn-icon text-accent-violet/80 group-hover:text-accent-violet transition-colors"
+        />
+        <span className="archive-filter-btn-label hidden sm:inline transition-colors duration-200">
+          筛选
+        </span>
         <span className="archive-filter-btn-count text-xs transition-colors duration-200">
           {tags.length}
         </span>

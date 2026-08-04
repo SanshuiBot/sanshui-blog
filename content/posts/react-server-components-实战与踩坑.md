@@ -27,7 +27,7 @@ RSC 的数据流完全不同：
 
 ```js
 // 服务端组件
-import ClientCounter from './ClientCounter' // 'use client'
+import ClientCounter from './ClientCounter'; // 'use client'
 
 export default function ServerComp() {
   return (
@@ -35,7 +35,7 @@ export default function ServerComp() {
       <h1>服务端渲染时间：{new Date().toISOString()}</h1>
       <ClientCounter initial={0} />
     </div>
-  )
+  );
 }
 ```
 
@@ -68,19 +68,19 @@ export default function ServerComp() {
 ```tsx
 // ❌ 错误：服务端组件把函数传给客户端组件
 // ServerComp.tsx
-'use server' // 实际上不需要这个，默认就是 server
-import ClientBtn from './ClientBtn'
+'use server'; // 实际上不需要这个，默认就是 server
+import ClientBtn from './ClientBtn';
 
 export default function ServerComp() {
-  return <ClientBtn onClick={() => console.log('clicked')} />
+  return <ClientBtn onClick={() => console.log('clicked')} />;
   // TypeError: Functions cannot be passed directly to Client Components
 }
 
 // ✅ 正确：客户端组件自己管理 onClick
 // ClientBtn.tsx
-'use client'
+('use client');
 export default function ClientBtn() {
-  return <button onClick={() => console.log('clicked')}>click</button>
+  return <button onClick={() => console.log('clicked')}>click</button>;
 }
 ```
 
@@ -120,15 +120,15 @@ RSC 的指令解析是基于文件顶部的字符串字面量，必须在所有 
 
 ```tsx
 // ClientLayout.tsx
-'use client'
-import ServerSidebar from './ServerSidebar' // ❌ 报错
+'use client';
+import ServerSidebar from './ServerSidebar'; // ❌ 报错
 
 export default function ClientLayout() {
   return (
     <div>
       <ServerSidebar />
     </div>
-  )
+  );
 }
 ```
 
@@ -140,21 +140,21 @@ export default function ClientLayout() {
 
 ```tsx
 // app/layout.tsx（服务端组件）
-import ClientLayout from './ClientLayout'
-import ServerSidebar from './ServerSidebar'
+import ClientLayout from './ClientLayout';
+import ServerSidebar from './ServerSidebar';
 
 export default function RootLayout() {
   return (
     <ClientLayout>
       <ServerSidebar />
     </ClientLayout>
-  )
+  );
 }
 
 // ClientLayout.tsx
-'use client'
+('use client');
 export default function ClientLayout({ children }) {
-  return <div>{children}</div>
+  return <div>{children}</div>;
 }
 ```
 
@@ -165,7 +165,7 @@ export default function ClientLayout({ children }) {
 在传统 Next.js 里：
 
 ```ts
-const Comp = dynamic(() => import('./Comp'), { ssr: false })
+const Comp = dynamic(() => import('./Comp'), { ssr: false });
 ```
 
 表示「这个组件只在客户端渲染，不参与 SSR」。
@@ -181,13 +181,13 @@ Please move it into a Client Component.
 
 ```tsx
 // ClientOnly.tsx
-'use client'
-import dynamic from 'next/dynamic'
+'use client';
+import dynamic from 'next/dynamic';
 
-const HeavyChart = dynamic(() => import('./HeavyChart'), { ssr: false })
+const HeavyChart = dynamic(() => import('./HeavyChart'), { ssr: false });
 
 export default function ClientOnly() {
-  return <HeavyChart />
+  return <HeavyChart />;
 }
 ```
 
@@ -196,8 +196,8 @@ export default function ClientOnly() {
 ```tsx
 // ServerComp.tsx
 export default function ServerComp() {
-  const now = new Date()
-  return <ClientComp time={now} />
+  const now = new Date();
+  return <ClientComp time={now} />;
 }
 ```
 
@@ -205,10 +205,10 @@ export default function ServerComp() {
 
 ```tsx
 // ClientComp.tsx
-'use client'
+'use client';
 export default function ClientComp({ time }: { time: Date }) {
   // time 实际上是 string，调用 time.getTime() 会失败
-  return <div>{time.toLocaleString()}</div>
+  return <div>{time.toLocaleString()}</div>;
 }
 ```
 
@@ -229,7 +229,7 @@ export default function Page() {
         <SlowList />
       </Suspense>
     </>
-  )
+  );
 }
 ```
 
@@ -263,12 +263,12 @@ Next.js App Router 的缓存分四层：
 
 ```tsx
 // app/posts/[slug]/page.tsx
-export const revalidate = 60 // 60 秒后重新生成
+export const revalidate = 60; // 60 秒后重新生成
 // 或
-export const dynamic = 'force-dynamic' // 每次请求都重新渲染
+export const dynamic = 'force-dynamic'; // 每次请求都重新渲染
 // 或主动触发
-import { revalidatePath } from 'next/cache'
-revalidatePath('/posts')
+import { revalidatePath } from 'next/cache';
+revalidatePath('/posts');
 ```
 
 对于个人博客这种纯静态场景，我倾向于 `revalidate = 3600`（1 小时）+ 发布后 webhook 调 `revalidatePath`。
@@ -279,8 +279,8 @@ Server Actions 是 RSC 配套的能力——客户端组件里可以直接调用
 
 ```tsx
 // ClientForm.tsx
-'use client'
-import { submitPost } from './actions' // 这个文件里是 'use server'
+'use client';
+import { submitPost } from './actions'; // 这个文件里是 'use server'
 
 export default function ClientForm() {
   return (
@@ -288,7 +288,7 @@ export default function ClientForm() {
       <input name="title" />
       <button type="submit">发布</button>
     </form>
-  )
+  );
 }
 ```
 

@@ -11,13 +11,13 @@ excerpt: 微服务间通信从 HTTP/JSON 换到 gRPC，吞吐量提升 5 倍。�
 
 ## 一、gRPC 相比 HTTP/JSON 的核心优势
 
-| 维度 | HTTP/JSON | gRPC |
-| --- | --- | --- |
-| 编码 | 文本 JSON | 二进制 Protobuf |
-| 多路复用 | HTTP/1.1 无 | HTTP/2 有 |
-| 流式 | 不支持 | 原生支持 |
-| 接口契约 | 文档 | .proto 文件 |
-| 性能 | 慢 | 5-10 倍快 |
+| 维度     | HTTP/JSON   | gRPC            |
+| -------- | ----------- | --------------- |
+| 编码     | 文本 JSON   | 二进制 Protobuf |
+| 多路复用 | HTTP/1.1 无 | HTTP/2 有       |
+| 流式     | 不支持      | 原生支持        |
+| 接口契约 | 文档        | .proto 文件     |
+| 性能     | 慢          | 5-10 倍快       |
 
 **Protobuf 编码示例**：
 
@@ -32,7 +32,7 @@ message User {
 JSON 编码（约 80 字节）：
 
 ```json
-{"id":1234567890,"name":"San Shui","tags":["dev","blog"]}
+{ "id": 1234567890, "name": "San Shui", "tags": ["dev", "blog"] }
 ```
 
 Protobuf 编码（约 35 字节）：
@@ -421,12 +421,12 @@ resp, err := client.GetUser(ctx, req)
 
 ## 十五、性能对比：HTTP/JSON vs gRPC
 
-| 指标 | HTTP/JSON | gRPC |
-| --- | --- | --- |
-| 1000 QPS CPU | 80% | 25% |
-| P99 延迟 | 45ms | 12ms |
-| 网络流量 | 100% | 30% |
-| 连接数 | 多 | 单连接复用 |
+| 指标         | HTTP/JSON | gRPC       |
+| ------------ | --------- | ---------- |
+| 1000 QPS CPU | 80%       | 25%        |
+| P99 延迟     | 45ms      | 12ms       |
+| 网络流量     | 100%      | 30%        |
+| 连接数       | 多        | 单连接复用 |
 
 **5 倍吞吐量提升**是真实数据。
 

@@ -20,9 +20,7 @@ function build() {
     console.warn('! content/posts 不存在，跳过索引生成');
     return;
   }
-  const files = fs
-    .readdirSync(postsDir)
-    .filter((fn) => fn.endsWith('.md') || fn.endsWith('.mdx'));
+  const files = fs.readdirSync(postsDir).filter((fn) => fn.endsWith('.md') || fn.endsWith('.mdx'));
 
   const posts = files
     .map((fn) => {

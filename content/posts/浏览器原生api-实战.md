@@ -22,7 +22,7 @@ excerpt: 不用框架、不用 GSAP，浏览器原生就能做流畅过渡动画
 document.startViewTransition(() => {
   // 在这里更新 DOM
   // 浏览器会自动捕获新旧状态，做过渡动画
-})
+});
 ```
 
 执行流程：
@@ -37,22 +37,22 @@ document.startViewTransition(() => {
 ```js
 async function navigate(url) {
   if (!document.startViewTransition) {
-    location.href = url
-    return
+    location.href = url;
+    return;
   }
 
   document.startViewTransition(async () => {
-    const html = await fetch(url).then((r) => r.text())
-    document.body.innerHTML = html
-  })
+    const html = await fetch(url).then((r) => r.text());
+    document.body.innerHTML = html;
+  });
 }
 
 document.querySelectorAll('a[data-spa]').forEach((a) => {
   a.addEventListener('click', (e) => {
-    e.preventDefault()
-    navigate(a.href)
-  })
-})
+    e.preventDefault();
+    navigate(a.href);
+  });
+});
 ```
 
 ### 跨文档 View Transitions（MPA 场景）
@@ -69,7 +69,9 @@ document.querySelectorAll('a[data-spa]').forEach((a) => {
 
 ```css
 @supports (view-transition-name: none) {
-  @view-transition { navigation: auto; }
+  @view-transition {
+    navigation: auto;
+  }
 }
 ```
 
@@ -123,8 +125,14 @@ function setTransitionNames() {
   animation: slide-in 0.4s forwards;
 }
 @keyframes slide-in {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 ```
 
@@ -133,7 +141,9 @@ function setTransitionNames() {
 ## 五、踩坑 3：view-transition-name 会触发重排
 
 ```css
-* { view-transition-name: none !important; }
+* {
+  view-transition-name: none !important;
+}
 ```
 
 如果一个元素意外有了 `view-transition-name`，会触发一次额外重排。**生产代码里只在需要动画的元素上加 `view-transition-name`，避免用通配符**。
@@ -146,11 +156,11 @@ function setTransitionNames() {
 const observer = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
-      entry.target.classList.add('visible')
+      entry.target.classList.add('visible');
     }
-  })
-})
-document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el))
+  });
+});
+document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
 ```
 
 缺点：每个元素都要 observe，回调里还要加 / 删 class。
@@ -165,8 +175,14 @@ document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el))
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(50px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 ```
 
@@ -188,12 +204,12 @@ document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el))
 window.addEventListener('pageshow', (e) => {
   if (e.persisted) {
     document.querySelectorAll('.fade-in').forEach((el) => {
-      el.style.animation = 'none'
-      void el.offsetWidth  // trigger reflow
-      el.style.animation = ''
-    })
+      el.style.animation = 'none';
+      void el.offsetWidth; // trigger reflow
+      el.style.animation = '';
+    });
   }
-})
+});
 ```
 
 ## 八、Popover API：原生浮层
@@ -202,10 +218,10 @@ window.addEventListener('pageshow', (e) => {
 
 ```js
 function showPopover(content) {
-  const el = document.createElement('div')
-  el.className = 'popover'
-  el.innerHTML = content
-  document.body.appendChild(el)
+  const el = document.createElement('div');
+  el.className = 'popover';
+  el.innerHTML = content;
+  document.body.appendChild(el);
   // 还要处理 backdrop、点击外部关闭、ESC 关闭、accessibility...
 }
 ```
@@ -253,7 +269,9 @@ function showPopover(content) {
 
 ```css
 @container (min-width: 600px) {
-  .post-card { flex-direction: row; }
+  .post-card {
+    flex-direction: row;
+  }
 }
 ```
 
@@ -330,7 +348,9 @@ Container Queries 控制**布局**，View Transitions 控制**状态切换**。�
   .fade-in.visible {
     opacity: 1;
     transform: translateY(0);
-    transition: opacity 0.4s, transform 0.4s;
+    transition:
+      opacity 0.4s,
+      transform 0.4s;
   }
 }
 ```
@@ -340,19 +360,19 @@ Container Queries 控制**布局**，View Transitions 控制**状态切换**。�
 if (!CSS.supports('animation-timeline: view()')) {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (entry.isIntersecting) entry.target.classList.add('visible')
-    })
-  })
-  document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el))
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  });
+  document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
 }
 ```
 
 ## 十三、性能对比
 
-| 方案 | 首屏 JS | 动画 FPS | 兼容性 |
-| --- | --- | --- | --- |
-| GSAP + React Transition | 80KB | 55-60 | 全平台 |
-| 浏览器原生 API | 0KB | 60 | Chrome / Safari TP |
+| 方案                    | 首屏 JS | 动画 FPS | 兼容性             |
+| ----------------------- | ------- | -------- | ------------------ |
+| GSAP + React Transition | 80KB    | 55-60    | 全平台             |
+| 浏览器原生 API          | 0KB     | 60       | Chrome / Safari TP |
 
 原生 API 的优势：
 

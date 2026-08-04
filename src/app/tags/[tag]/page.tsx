@@ -40,10 +40,7 @@ export default async function TagPage({ params }: Props) {
   if (posts.length === 0) notFound();
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-      <Link
-        href="/tags/"
-        className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
-      >
+      <Link href="/tags/" className="link-back inline-flex items-center gap-1.5 text-sm mb-8">
         <ArrowLeft size={14} className="link-arrow" />
         返回标签
       </Link>

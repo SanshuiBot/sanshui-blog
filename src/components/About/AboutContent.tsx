@@ -62,10 +62,7 @@ interface AboutContentProps {
 export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
   return (
     <>
-      <Link
-        href="/"
-        className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
-      >
+      <Link href="/" className="link-back inline-flex items-center gap-1.5 text-sm mb-8">
         <ArrowLeft size={14} className="link-arrow" />
         返回首页
       </Link>

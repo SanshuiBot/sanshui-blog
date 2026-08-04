@@ -17,22 +17,9 @@
 
 import { useEffect } from 'react';
 
-type EffectName =
-  | 'hearts'
-  | 'explosion'
-  | 'firework'
-  | 'ripple'
-  | 'stars'
-  | 'sakura';
+type EffectName = 'hearts' | 'explosion' | 'firework' | 'ripple' | 'stars' | 'sakura';
 
-const EFFECTS: EffectName[] = [
-  'hearts',
-  'explosion',
-  'firework',
-  'ripple',
-  'stars',
-  'sakura',
-];
+const EFFECTS: EffectName[] = ['hearts', 'explosion', 'firework', 'ripple', 'stars', 'sakura'];
 
 // 复用一组柔和但能在暗色背景上突出的颜色
 const PALETTE = [

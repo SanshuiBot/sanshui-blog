@@ -41,9 +41,9 @@ export default defineConfig({
       // monorepo workspace 包也要 include
       '@my-workspace/ui',
     ],
-    exclude: ['@vitejs/plugin-react'],  // 这些是 dev-only，不需要预构建
+    exclude: ['@vitejs/plugin-react'], // 这些是 dev-only，不需要预构建
   },
-})
+});
 ```
 
 ## 三、踩坑 2：每次启动都重建 deps cache
@@ -69,8 +69,8 @@ export default defineConfig({
 
 ```ts
 // vite.config.ts
-import react from '@vitejs/plugin-react'
-import { visualizer } from 'rollup-plugin-visualizer'
+import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
   plugins: [
@@ -78,7 +78,7 @@ export default defineConfig({
     myPlugin(), // 我自己写的插件
     visualizer(),
   ],
-})
+});
 ```
 
 每个插件默认在「正常阶段」执行。如果两个插件都拦截 `.js` 文件，可能导致同一文件被编译两次。
@@ -87,10 +87,10 @@ export default defineConfig({
 
 ```ts
 plugins: [
-  { ...react(), enforce: 'pre' },  // 在 vite 内部编译前先 transform JSX
+  { ...react(), enforce: 'pre' }, // 在 vite 内部编译前先 transform JSX
   { ...myPlugin(), enforce: 'post' }, // 在 vite 编译后再处理
   { ...visualizer(), apply: 'build' }, // 只在 build 时启用
-]
+];
 ```
 
 `enforce: 'pre'` 让插件在 Vite 内置 transform 之前运行。`enforce: 'post'` 相反。
@@ -133,7 +133,7 @@ export default defineConfig({
       optimizeDeps: { include: ['comlink'] },
     },
   },
-})
+});
 ```
 
 每个 environment 有独立的 deps cache，避免「客户端依赖被预构建进 SSR 缓存」这种交叉污染。
@@ -167,7 +167,7 @@ export default defineConfig({
   optimizeDeps: {
     entries: ['src/main.tsx'], // 只扫描主应用入口
   },
-})
+});
 ```
 
 降到了 18s。
@@ -198,7 +198,7 @@ plugins: [
   process.env.NODE_ENV === 'production' && visualizer(),
   // SVG 插件只在 src 范围生效
   svgr({ include: '**/icons/*.svg' }),
-].filter(Boolean)
+].filter(Boolean);
 ```
 
 降到 8s。
@@ -208,7 +208,7 @@ plugins: [
 `@vitejs/plugin-react` 默认用 babel。改用 `@vitejs/plugin-react-swc`：
 
 ```ts
-import react from '@vitejs/plugin-react-swc'
+import react from '@vitejs/plugin-react-swc';
 ```
 
 SWC 用 Rust 实现，比 babel 快 10-20 倍。降到 5s。
@@ -278,19 +278,19 @@ build: {
 更轻量的方式：在 `vite.config.ts` 里打点：
 
 ```ts
-const start = Date.now()
+const start = Date.now();
 export default defineConfig({
   plugins: [
     {
       name: 'startup-timer',
       configureServer(server) {
         server.httpServer?.once('listening', () => {
-          console.log(`Vite started in ${Date.now() - start}ms`)
-        })
+          console.log(`Vite started in ${Date.now() - start}ms`);
+        });
       },
     },
   ],
-})
+});
 ```
 
 ## 十二、总结

@@ -29,15 +29,15 @@ Pinia 最初就是 Vue 团队成员 Eduardo San Martin Morote（同时也是 Vue
 
 Pinia 相对 Vuex 做了哪些减法？
 
-| 对比维度 | Vuex 4 | Pinia |
-|---------|--------|-------|
-| mutations | 必须有，同步专用 | **去掉**，action 里直接改 state |
-| 模块系统 | 嵌套 modules + namespace | **扁平**，每个 store 独立 |
-| TypeScript | 后加的，推断弱 | **原生设计**，类型自动推断 |
-| 调试工具 | Vue DevTools 支持 | 同样支持，且支持时间旅行 |
-| store 体积 | 一个大 store | 按需拆分，tree-shaking 友好 |
-| API 风格 | Options（state/getters/mutations/actions） | **Options 和 Setup 两种写法** |
-| 跨 store 调用 | 根 dispatch 或模块路径 | **直接 import 另一个 store** |
+| 对比维度      | Vuex 4                                     | Pinia                           |
+| ------------- | ------------------------------------------ | ------------------------------- |
+| mutations     | 必须有，同步专用                           | **去掉**，action 里直接改 state |
+| 模块系统      | 嵌套 modules + namespace                   | **扁平**，每个 store 独立       |
+| TypeScript    | 后加的，推断弱                             | **原生设计**，类型自动推断      |
+| 调试工具      | Vue DevTools 支持                          | 同样支持，且支持时间旅行        |
+| store 体积    | 一个大 store                               | 按需拆分，tree-shaking 友好     |
+| API 风格      | Options（state/getters/mutations/actions） | **Options 和 Setup 两种写法**   |
+| 跨 store 调用 | 根 dispatch 或模块路径                     | **直接 import 另一个 store**    |
 
 简单说：**Pinia 把 Vuex 里那些「为了约束而存在」的样板代码砍掉了，留下的是真正必要的部分——一个可响应、可追踪、可组合的状态容器**。
 
@@ -51,7 +51,7 @@ Pinia 的 store 有两种写法：**Options Store** 和 **Setup Store**。先看
 
 ```ts
 // stores/counter.ts
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
 
 // 第一个参数是 store 的唯一 id，用于 devtools 和持久化
 export const useCounterStore = defineStore('counter', {
@@ -66,39 +66,39 @@ export const useCounterStore = defineStore('counter', {
     double: (state) => state.count * 2,
     // 想用其他 getter，用 this（需要显式标注返回类型）
     doublePlusOne(): number {
-      return this.double + 1
+      return this.double + 1;
     },
   },
 
   // actions：同步异步都行，用 this 访问 state
   actions: {
     increment() {
-      this.count++
+      this.count++;
     },
     async fetchCount() {
-      const res = await fetch('/api/count')
-      this.count = await res.json()
+      const res = await fetch('/api/count');
+      this.count = await res.json();
     },
   },
-})
+});
 ```
 
 ### 在组件里用
 
 ```vue
 <script setup lang="ts">
-import { storeToRefs } from 'pinia'
-import { useCounterStore } from '@/stores/counter'
+import { storeToRefs } from 'pinia';
+import { useCounterStore } from '@/stores/counter';
 
-const counter = useCounterStore()
+const counter = useCounterStore();
 
 // ❌ 直接解构会失去响应性
 // const { count, name } = counter
 
 // ✅ 用 storeToRefs 解构，保持响应性
-const { count, name } = storeToRefs(counter)
+const { count, name } = storeToRefs(counter);
 // actions 可以直接解构，它们是普通函数
-const { increment } = counter
+const { increment } = counter;
 </script>
 
 <template>
@@ -113,22 +113,22 @@ const { increment } = counter
 ### 修改 state 的三种姿势
 
 ```ts
-const counter = useCounterStore()
+const counter = useCounterStore();
 
 // 1. 直接改（Options store 也允许）
-counter.count++
+counter.count++;
 
 // 2. $patch 批量改，性能更好
 counter.$patch({
   count: counter.count + 1,
   name: 'Abalam',
-})
+});
 
 // 3. $patch 函数式，适合修改数组等复杂结构
 counter.$patch((state) => {
-  state.count++
-  state.items.push('new')
-})
+  state.count++;
+  state.items.push('new');
+});
 ```
 
 ### 订阅 state 变化
@@ -138,19 +138,19 @@ counter.$patch((state) => {
 counter.$subscribe((mutation, state) => {
   // mutation.type: 'direct' | 'patch object' | 'patch function'
   // mutation.storeId: 'counter'
-  localStorage.setItem('counter', JSON.stringify(state))
-})
+  localStorage.setItem('counter', JSON.stringify(state));
+});
 
 // store.$onAction 监听 action 的调用
 const unsubscribe = counter.$onAction({
   name: 'fetchCount',
   after() {
-    console.log('action 完成了')
+    console.log('action 完成了');
   },
   onError(error) {
-    console.error('action 报错了', error)
+    console.error('action 报错了', error);
   },
-})
+});
 ```
 
 `$subscribe` 和 `$onAction` 都返回一个取消订阅的函数，组件卸载时记得调一下，避免内存泄漏（其实在组件 setup 里注册的会自动随组件销毁，但手动管理更保险）。
@@ -163,30 +163,30 @@ Options Store 写小例子没问题，但一旦 store 逻辑复杂起来，state
 
 ```ts
 // stores/counter.ts
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
+import { ref, computed } from 'vue';
+import { defineStore } from 'pinia';
 
 export const useCounterStore = defineStore('counter', () => {
   // state → ref / reactive
-  const count = ref(0)
-  const name = ref('Eduardo')
+  const count = ref(0);
+  const name = ref('Eduardo');
 
   // getters → computed
-  const double = computed(() => count.value * 2)
-  const doublePlusOne = computed(() => double.value + 1)
+  const double = computed(() => count.value * 2);
+  const doublePlusOne = computed(() => double.value + 1);
 
   // actions → 普通函数
   function increment() {
-    count.value++
+    count.value++;
   }
   async function fetchCount() {
-    const res = await fetch('/api/count')
-    count.value = await res.json()
+    const res = await fetch('/api/count');
+    count.value = await res.json();
   }
 
   // 必须返回所有要在组件里用的东西
-  return { count, name, double, doublePlusOne, increment, fetchCount }
-})
+  return { count, name, double, doublePlusOne, increment, fetchCount };
+});
 ```
 
 ### 什么时候用 Setup Store？
@@ -200,41 +200,41 @@ export const useCounterStore = defineStore('counter', () => {
 
 ```ts
 // stores/user.ts
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
-import { loginApi, userInfoApi } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import { ref, computed } from 'vue';
+import { defineStore } from 'pinia';
+import { loginApi, userInfoApi } from '@/api/user';
+import { getToken, setToken, removeToken } from '@/utils/auth';
 
 export const useUserStore = defineStore('user', () => {
   // === state ===
-  const token = ref<string>(getToken() || '')
-  const userInfo = ref<UserInfo | null>(null)
-  const roles = ref<string[]>([])
+  const token = ref<string>(getToken() || '');
+  const userInfo = ref<UserInfo | null>(null);
+  const roles = ref<string[]>([]);
 
   // === getters ===
-  const isLogin = computed(() => !!token.value)
-  const isAdmin = computed(() => roles.value.includes('admin'))
-  const username = computed(() => userInfo.value?.username ?? '游客')
+  const isLogin = computed(() => !!token.value);
+  const isAdmin = computed(() => roles.value.includes('admin'));
+  const username = computed(() => userInfo.value?.username ?? '游客');
 
   // === actions ===
   async function login(payload: { username: string; password: string }) {
-    const { token: newToken } = await loginApi(payload)
-    token.value = newToken
-    setToken(newToken)
-    await fetchUserInfo()
+    const { token: newToken } = await loginApi(payload);
+    token.value = newToken;
+    setToken(newToken);
+    await fetchUserInfo();
   }
 
   async function fetchUserInfo() {
-    const info = await userInfoApi()
-    userInfo.value = info
-    roles.value = info.roles
+    const info = await userInfoApi();
+    userInfo.value = info;
+    roles.value = info.roles;
   }
 
   function logout() {
-    token.value = ''
-    userInfo.value = null
-    roles.value = []
-    removeToken()
+    token.value = '';
+    userInfo.value = null;
+    roles.value = [];
+    removeToken();
   }
 
   return {
@@ -247,17 +247,17 @@ export const useUserStore = defineStore('user', () => {
     login,
     fetchUserInfo,
     logout,
-  }
-})
+  };
+});
 ```
 
 注意 Setup Store 里**没有 `$reset`**（因为 Pinia 没法自动推断你的 setup 函数里哪些 ref 是初始 state）。如果需要重置，得自己写：
 
 ```ts
 function $reset() {
-  token.value = ''
-  userInfo.value = null
-  roles.value = []
+  token.value = '';
+  userInfo.value = null;
+  roles.value = [];
 }
 ```
 
@@ -271,9 +271,9 @@ function $reset() {
 
 ```ts
 // stores/cart.ts
-import { defineStore } from 'pinia'
-import { useUserStore } from './user'
-import { useProductStore } from './product'
+import { defineStore } from 'pinia';
+import { useUserStore } from './user';
+import { useProductStore } from './product';
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -283,29 +283,29 @@ export const useCartStore = defineStore('cart', {
   getters: {
     // 在 getter 里用其他 store
     checkoutPrice(state) {
-      const productStore = useProductStore()
+      const productStore = useProductStore();
       return state.items.reduce((total, item) => {
-        const product = productStore.products.find(p => p.id === item.productId)
-        return total + (product?.price ?? 0) * item.quantity
-      }, 0)
+        const product = productStore.products.find((p) => p.id === item.productId);
+        return total + (product?.price ?? 0) * item.quantity;
+      }, 0);
     },
   },
 
   actions: {
     async checkout() {
-      const userStore = useUserStore()
-      const productStore = useProductStore()
+      const userStore = useUserStore();
+      const productStore = useProductStore();
 
       // 没登录不让结账
       if (!userStore.isLogin) {
-        throw new Error('请先登录')
+        throw new Error('请先登录');
       }
 
       // 校验库存
       for (const item of this.items) {
-        const product = productStore.products.find(p => p.id === item.productId)
+        const product = productStore.products.find((p) => p.id === item.productId);
         if (!product || product.stock < item.quantity) {
-          throw new Error(`商品 ${item.productId} 库存不足`)
+          throw new Error(`商品 ${item.productId} 库存不足`);
         }
       }
 
@@ -316,14 +316,14 @@ export const useCartStore = defineStore('cart', {
           items: this.items,
           userId: userStore.userInfo?.id,
         }),
-      })
+      });
 
       // 清空购物车
-      this.items = []
-      return order.json()
+      this.items = [];
+      return order.json();
     },
   },
-})
+});
 ```
 
 ### 注意事项
@@ -333,18 +333,18 @@ export const useCartStore = defineStore('cart', {
 ```ts
 // ❌ 错误：模块加载时就调用了
 export const useCartStore = defineStore('cart', () => {
-  const userStore = useUserStore() // 报错：getActivePinia called with no active Pinia
+  const userStore = useUserStore(); // 报错：getActivePinia called with no active Pinia
   // ...
-})
+});
 
 // ✅ 正确：延迟到使用时
 export const useCartStore = defineStore('cart', () => {
   function checkout() {
-    const userStore = useUserStore() // 这里调用是安全的
+    const userStore = useUserStore(); // 这里调用是安全的
     // ...
   }
-  return { checkout }
-})
+  return { checkout };
+});
 ```
 
 2. **避免循环依赖**。A store 用 B，B 又用 A，会死锁。如果确实有这种需求，把共享的逻辑抽成一个第三方 store 或纯函数。
@@ -363,22 +363,22 @@ pnpm add pinia-plugin-persistedstate
 
 ```ts
 // main.ts
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import App from './App.vue'
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
+import App from './App.vue';
 
-const pinia = createPinia()
-pinia.use(piniaPluginPersistedstate)
+const pinia = createPinia();
+pinia.use(piniaPluginPersistedstate);
 
-createApp(App).use(pinia).mount('#app')
+createApp(App).use(pinia).mount('#app');
 ```
 
 ### 在 store 里开启持久化
 
 ```ts
 // stores/preferences.ts
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
 
 export const usePreferencesStore = defineStore('preferences', {
   state: () => ({
@@ -389,7 +389,7 @@ export const usePreferencesStore = defineStore('preferences', {
 
   // 默认持久化整个 state 到 localStorage，key 用 store id
   persist: true,
-})
+});
 ```
 
 ### 自定义持久化策略
@@ -413,13 +413,13 @@ export const useUserStore = defineStore('user', {
     paths: ['token', 'roles'],
     // 数据迁移：旧版本数据格式不兼容时用
     beforeRestore: (ctx) => {
-      console.log('即将从存储恢复', ctx.store.$id)
+      console.log('即将从存储恢复', ctx.store.$id);
     },
     afterRestore: (ctx) => {
-      console.log('已恢复', ctx.store.$id)
+      console.log('已恢复', ctx.store.$id);
     },
   },
-})
+});
 ```
 
 ### Setup Store 里用持久化
@@ -427,19 +427,23 @@ export const useUserStore = defineStore('user', {
 Setup Store 没有 `state` 选项，`persist` 配置通过 `defineStore` 的第三个参数传入（**注意这是 4.x 的新语法，老版本不支持**）：
 
 ```ts
-export const useUserStore = defineStore('user', () => {
-  const token = ref('')
-  const userInfo = ref(null)
-  const roles = ref([])
+export const useUserStore = defineStore(
+  'user',
+  () => {
+    const token = ref('');
+    const userInfo = ref(null);
+    const roles = ref([]);
 
-  // ... actions
+    // ... actions
 
-  return { token, userInfo, roles }
-}, {
-  persist: {
-    paths: ['token'],
+    return { token, userInfo, roles };
   },
-})
+  {
+    persist: {
+      paths: ['token'],
+    },
+  },
+);
 ```
 
 ### 一个常见坑：SSR 场景
@@ -459,7 +463,7 @@ Vue 3 的 SSR 体系（Nuxt 3、Vite SSR）引入了一个新的状态管理原�
 Nuxt 3 的 `useState` 签名大概是：
 
 ```ts
-function useState<T>(key: string, init?: () => T): Ref<T>
+function useState<T>(key: string, init?: () => T): Ref<T>;
 ```
 
 它在底层做了两件事：
@@ -474,21 +478,21 @@ function useState<T>(key: string, init?: () => T): Ref<T>
 <script setup lang="ts">
 // 服务端渲染时 fetch，结果进入 payload；
 // 客户端 hydration 时直接复用，不再请求
-const { data: users } = await useAsyncData('users', () => $fetch('/api/users'))
-const count = useState('count', () => 0)
+const { data: users } = await useAsyncData('users', () => $fetch('/api/users'));
+const count = useState('count', () => 0);
 </script>
 ```
 
 ### useState 和 Pinia 的对比
 
-| 维度 | `useState` | Pinia |
-|------|------------|-------|
-| 抽象层级 | **底层原语**，就是「带 SSR payload 同步的 ref」 | 完整状态管理框架，有 getters/actions/订阅 |
-| 适用场景 | 单个响应式状态的 SSR 友好封装 | 多模块、有派生逻辑和动作的复杂状态 |
-| 代码组织 | 散落在各页面，靠 key 字符串去重 | 集中在 `stores/` 目录，按模块组织 |
-| 跨模块协作 | 没有，自己想办法 | `useOtherStore()` 直接调用 |
-| 持久化 | 没有，自己写 | 插件生态成熟 |
-| 学习成本 | 极低 | 中等 |
+| 维度       | `useState`                                      | Pinia                                     |
+| ---------- | ----------------------------------------------- | ----------------------------------------- |
+| 抽象层级   | **底层原语**，就是「带 SSR payload 同步的 ref」 | 完整状态管理框架，有 getters/actions/订阅 |
+| 适用场景   | 单个响应式状态的 SSR 友好封装                   | 多模块、有派生逻辑和动作的复杂状态        |
+| 代码组织   | 散落在各页面，靠 key 字符串去重                 | 集中在 `stores/` 目录，按模块组织         |
+| 跨模块协作 | 没有，自己想办法                                | `useOtherStore()` 直接调用                |
+| 持久化     | 没有，自己写                                    | 插件生态成熟                              |
+| 学习成本   | 极低                                            | 中等                                      |
 
 ### 我的选型建议
 
@@ -506,36 +510,36 @@ const count = useState('count', () => 0)
 
 ```ts
 // composables/useState.ts
-import { inject, ref, type Ref } from 'vue'
+import { inject, ref, type Ref } from 'vue';
 
 // Symbol 作为 provide/inject 的 key
-export const STATE_KEY: symbol = Symbol('state')
+export const STATE_KEY: symbol = Symbol('state');
 
 // 提供给 SSR 入口调用：把所有 state 收集成对象，序列化注入到 HTML
 export function createServerState() {
-  const state: Record<string, Ref<unknown>> = {}
+  const state: Record<string, Ref<unknown>> = {};
   return {
     register<T>(key: string, init: () => T): Ref<T> {
       if (!(key in state)) {
-        state[key] = ref(init())
+        state[key] = ref(init());
       }
-      return state[key] as Ref<T>
+      return state[key] as Ref<T>;
     },
     // 序列化为 JSON，准备注入 HTML
     serialize(): string {
-      const plain: Record<string, unknown> = {}
+      const plain: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(state)) {
-        plain[k] = v.value
+        plain[k] = v.value;
       }
-      return JSON.stringify(plain)
+      return JSON.stringify(plain);
     },
-  }
+  };
 }
 
 // 组件里用
 export function useState<T>(key: string, init?: () => T): Ref<T> {
-  const store = inject(STATE_KEY) as ReturnType<typeof createServerState>
-  return store.register(key, () => (init ? init() : (null as unknown as T)))
+  const store = inject(STATE_KEY) as ReturnType<typeof createServerState>;
+  return store.register(key, () => (init ? init() : (null as unknown as T)));
 }
 ```
 
@@ -549,13 +553,13 @@ Vue 内置的 `provide` / `inject` 也是一种跨层级状态传递机制。它
 
 ```ts
 // 父组件
-import { provide, ref } from 'vue'
-const theme = ref('dark')
-provide('theme', theme)
+import { provide, ref } from 'vue';
+const theme = ref('dark');
+provide('theme', theme);
 
 // 任意层级的后代组件
-import { inject } from 'vue'
-const theme = inject<Ref<string>>('theme')!
+import { inject } from 'vue';
+const theme = inject<Ref<string>>('theme')!;
 ```
 
 - **作用域是组件树子树**，不是全局。`provide` 在哪个组件，只有它的后代能 `inject`。这比 Pinia 的全局单例更精确。
@@ -565,14 +569,14 @@ const theme = inject<Ref<string>>('theme')!
 
 ### Pinia vs provide/inject 决策矩阵
 
-| 场景 | 推荐 | 理由 |
-|------|------|------|
-| 全局用户登录态 | Pinia | 跨路由、跨组件都用，需要 actions |
-| 主题 / 语言偏好 | Pinia + 持久化 | 需要 SSR 友好 + localStorage |
-| 表单多步向导的临时数据 | provide/inject 或 `useState` | 只在向导组件树内有效，路由跳走就丢 |
-| 组件库内部状态（如 Modal 开关） | provide/inject | 多实例友好，作用域精确 |
-| 跨模块业务协作（购物车依赖用户、商品） | Pinia | 需要跨 store 调用 |
-| 第三方可插拔功能注入 | provide/inject | Vue 官方推荐的依赖注入范式 |
+| 场景                                   | 推荐                         | 理由                               |
+| -------------------------------------- | ---------------------------- | ---------------------------------- |
+| 全局用户登录态                         | Pinia                        | 跨路由、跨组件都用，需要 actions   |
+| 主题 / 语言偏好                        | Pinia + 持久化               | 需要 SSR 友好 + localStorage       |
+| 表单多步向导的临时数据                 | provide/inject 或 `useState` | 只在向导组件树内有效，路由跳走就丢 |
+| 组件库内部状态（如 Modal 开关）        | provide/inject               | 多实例友好，作用域精确             |
+| 跨模块业务协作（购物车依赖用户、商品） | Pinia                        | 需要跨 store 调用                  |
+| 第三方可插拔功能注入                   | provide/inject               | Vue 官方推荐的依赖注入范式         |
 
 ### 一个典型组合用法
 
@@ -584,20 +588,20 @@ const theme = inject<Ref<string>>('theme')!
 
 // stores/documents.ts —— 全局
 export const useDocumentsStore = defineStore('documents', () => {
-  const list = ref<Document[]>([])
+  const list = ref<Document[]>([]);
   // ...
-  return { list }
-})
+  return { list };
+});
 
 // components/EditorPanel.vue —— 局部
-const props = defineProps<{ docId: number }>()
+const props = defineProps<{ docId: number }>();
 
 // 这个 panel 的本地编辑状态
-const draft = ref<string>('')
-const isDirty = ref(false)
+const draft = ref<string>('');
+const isDirty = ref(false);
 
 // 通过 provide 暴露给子组件（工具栏、内容区）
-provide('editorState', { draft, isDirty })
+provide('editorState', { draft, isDirty });
 ```
 
 这样设计的好处：**同一页面可以渲染多个 `EditorPanel`，它们的 `draft` 互不干扰**；而所有 panel 又能共享 `useDocumentsStore` 里的文档列表。Pinia 的全局单例模型做不到前者，provide/inject 的子树作用域做不到后者。
@@ -616,52 +620,52 @@ provide('editorState', { draft, isDirty })
 
 ```ts
 // stores/tabForms.ts
-import { ref, type Ref } from 'vue'
-import { defineStore } from 'pinia'
+import { ref, type Ref } from 'vue';
+import { defineStore } from 'pinia';
 
 export const useTabFormsStore = defineStore('tabForms', () => {
   // 用 Map 存每个 tab 的表单快照
-  const forms = ref<Record<string, Record<string, unknown>>>({})
+  const forms = ref<Record<string, Record<string, unknown>>>({});
 
   function getForm<T extends Record<string, unknown>>(tabId: string, initial: T): T {
     if (!forms.value[tabId]) {
-      forms.value[tabId] = { ...initial }
+      forms.value[tabId] = { ...initial };
     }
-    return forms.value[tabId] as T
+    return forms.value[tabId] as T;
   }
 
   function updateField(tabId: string, field: string, value: unknown) {
     if (forms.value[tabId]) {
-      forms.value[tabId][field] = value
+      forms.value[tabId][field] = value;
     }
   }
 
   function clearForm(tabId: string) {
-    delete forms.value[tabId]
+    delete forms.value[tabId];
   }
 
-  return { forms, getForm, updateField, clearForm }
-})
+  return { forms, getForm, updateField, clearForm };
+});
 ```
 
 组件里：
 
 ```vue
 <script setup lang="ts">
-import { useTabFormsStore } from '@/stores/tabForms'
+import { useTabFormsStore } from '@/stores/tabForms';
 
-const props = defineProps<{ tabId: string }>()
-const tabForms = useTabFormsStore()
+const props = defineProps<{ tabId: string }>();
+const tabForms = useTabFormsStore();
 
 // 每个 tab 实例拿到自己的表单对象
 const form = tabForms.getForm(props.tabId, {
   name: '',
   email: '',
   remark: '',
-})
+});
 
 function onInput(field: string, e: Event) {
-  tabForms.updateField(props.tabId, field, (e.target as HTMLInputElement).value)
+  tabForms.updateField(props.tabId, field, (e.target as HTMLInputElement).value);
 }
 </script>
 ```
@@ -674,90 +678,92 @@ function onInput(field: string, e: Event) {
 
 ```ts
 // stores/product.ts
-import { ref } from 'vue'
-import { defineStore } from 'pinia'
+import { ref } from 'vue';
+import { defineStore } from 'pinia';
 
 export const useProductStore = defineStore('product', () => {
-  const products = ref<Array<{
-    id: number
-    name: string
-    price: number
-    stock: number
-  }>>([])
+  const products = ref<
+    Array<{
+      id: number;
+      name: string;
+      price: number;
+      stock: number;
+    }>
+  >([]);
 
   async function load() {
-    products.value = await fetch('/api/products').then(r => r.json())
+    products.value = await fetch('/api/products').then((r) => r.json());
   }
 
   // 减库存（下单成功后调用）
   function decreaseStock(productId: number, quantity: number) {
-    const p = products.value.find(x => x.id === productId)
-    if (p) p.stock -= quantity
+    const p = products.value.find((x) => x.id === productId);
+    if (p) p.stock -= quantity;
   }
 
   function getStock(productId: number): number {
-    return products.value.find(x => x.id === productId)?.stock ?? 0
+    return products.value.find((x) => x.id === productId)?.stock ?? 0;
   }
 
-  return { products, load, decreaseStock, getStock }
-})
+  return { products, load, decreaseStock, getStock };
+});
 ```
 
 ```ts
 // stores/cart.ts
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
-import { useProductStore } from './product'
+import { ref, computed } from 'vue';
+import { defineStore } from 'pinia';
+import { useProductStore } from './product';
 
 export const useCartStore = defineStore('cart', () => {
-  const items = ref<Array<{ productId: number; quantity: number }>>([])
+  const items = ref<Array<{ productId: number; quantity: number }>>([]);
 
   // 总价：依赖 product store 的价格
   const totalPrice = computed(() =>
     items.value.reduce((sum, item) => {
-      const productStore = useProductStore()
-      const p = productStore.products.find(x => x.id === item.productId)
-      return sum + (p?.price ?? 0) * item.quantity
+      const productStore = useProductStore();
+      const p = productStore.products.find((x) => x.id === item.productId);
+      return sum + (p?.price ?? 0) * item.quantity;
     }, 0),
-  )
+  );
 
   // 加购：校验库存
   function addToCart(productId: number, quantity: number) {
-    const productStore = useProductStore()
-    const stock = productStore.getStock(productId)
-    const existing = items.value.find(i => i.productId === productId)
-    const currentQty = existing?.quantity ?? 0
+    const productStore = useProductStore();
+    const stock = productStore.getStock(productId);
+    const existing = items.value.find((i) => i.productId === productId);
+    const currentQty = existing?.quantity ?? 0;
 
     if (currentQty + quantity > stock) {
-      throw new Error(`库存不足，最多还能买 ${stock - currentQty} 件`)
+      throw new Error(`库存不足，最多还能买 ${stock - currentQty} 件`);
     }
 
     if (existing) {
-      existing.quantity += quantity
+      existing.quantity += quantity;
     } else {
-      items.value.push({ productId, quantity })
+      items.value.push({ productId, quantity });
     }
   }
 
   // 结算后联动减库存
   async function checkout() {
-    const productStore = useProductStore()
+    const productStore = useProductStore();
     const order = await fetch('/api/orders', {
       method: 'POST',
       body: JSON.stringify({ items: items.value }),
-    }).then(r => r.json())
+    }).then((r) => r.json());
 
     // 后端下单成功 → 本地减库存 → 清购物车
-    items.value.forEach(item => {
-      productStore.decreaseStock(item.productId, item.quantity)
-    })
-    items.value = []
+    items.value.forEach((item) => {
+      productStore.decreaseStock(item.productId, item.quantity);
+    });
+    items.value = [];
 
-    return order
+    return order;
   }
 
-  return { items, totalPrice, addToCart, checkout }
-})
+  return { items, totalPrice, addToCart, checkout };
+});
 ```
 
 **关键点**：`product` 和 `cart` 是两个独立 store，但通过「在 action 里 `useProductStore()`」实现联动。下单成功后**先减库存再清购物车**这个顺序很重要——如果先清购物车，减库存时就找不到 `items` 了。
@@ -768,98 +774,105 @@ export const useCartStore = defineStore('cart', () => {
 
 ```ts
 // stores/user.ts
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
-import { getUserInfoApi } from '@/api/user'
+import { ref, computed } from 'vue';
+import { defineStore } from 'pinia';
+import { getUserInfoApi } from '@/api/user';
 
 export const useUserStore = defineStore('user', () => {
-  const token = ref('')
-  const roles = ref<string[]>([])
-  const permissions = ref<string[]>([]) // 细粒度按钮权限
+  const token = ref('');
+  const roles = ref<string[]>([]);
+  const permissions = ref<string[]>([]); // 细粒度按钮权限
 
-  const isLogin = computed(() => !!token.value)
+  const isLogin = computed(() => !!token.value);
 
   async function fetchUserInfo() {
-    const info = await getUserInfoApi()
-    roles.value = info.roles
-    permissions.value = info.permissions
-    return info
+    const info = await getUserInfoApi();
+    roles.value = info.roles;
+    permissions.value = info.permissions;
+    return info;
   }
 
   function hasPermission(perm: string): boolean {
-    return permissions.value.includes(perm)
+    return permissions.value.includes(perm);
   }
 
   function hasRole(role: string): boolean {
-    return roles.value.includes(role)
+    return roles.value.includes(role);
   }
 
   return {
-    token, roles, permissions, isLogin,
-    fetchUserInfo, hasPermission, hasRole,
-  }
-})
+    token,
+    roles,
+    permissions,
+    isLogin,
+    fetchUserInfo,
+    hasPermission,
+    hasRole,
+  };
+});
 ```
 
 路由守卫：
 
 ```ts
 // router/index.ts
-import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { createRouter, createWebHistory } from 'vue-router';
+import { useUserStore } from '@/stores/user';
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: '/login', component: () => import('@/views/Login.vue') },
-    { path: '/', component: () => import('@/views/Dashboard.vue'), meta: { roles: ['admin', 'editor'] } },
+    {
+      path: '/',
+      component: () => import('@/views/Dashboard.vue'),
+      meta: { roles: ['admin', 'editor'] },
+    },
     { path: '/users', component: () => import('@/views/Users.vue'), meta: { roles: ['admin'] } },
   ],
-})
+});
 
 router.beforeEach(async (to) => {
-  const userStore = useUserStore()
+  const userStore = useUserStore();
 
   // 未登录 → 去登录页
   if (!userStore.isLogin) {
-    if (to.path === '/login') return true
-    return '/login'
+    if (to.path === '/login') return true;
+    return '/login';
   }
 
   // 已登录但没拉过用户信息 → 拉一次
   if (userStore.roles.length === 0) {
-    await userStore.fetchUserInfo()
+    await userStore.fetchUserInfo();
   }
 
   // 校验路由所需角色
-  const requiredRoles = to.meta.roles as string[] | undefined
-  if (requiredRoles && !requiredRoles.some(r => userStore.hasRole(r))) {
-    return '/403'
+  const requiredRoles = to.meta.roles as string[] | undefined;
+  if (requiredRoles && !requiredRoles.some((r) => userStore.hasRole(r))) {
+    return '/403';
   }
 
-  return true
-})
+  return true;
+});
 ```
 
 动态菜单组件：
 
 ```vue
 <script setup lang="ts">
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/user';
 
-const userStore = useUserStore()
+const userStore = useUserStore();
 
 // 全量菜单定义
 const allMenus = [
   { path: '/', label: '仪表盘', roles: ['admin', 'editor'] },
   { path: '/users', label: '用户管理', roles: ['admin'] },
   { path: '/settings', label: '系统设置', roles: ['admin'] },
-]
+];
 
 // 根据当前用户角色过滤
-const visibleMenus = allMenus.filter(menu =>
-  menu.roles.some(role => userStore.hasRole(role))
-)
+const visibleMenus = allMenus.filter((menu) => menu.roles.some((role) => userStore.hasRole(role)));
 </script>
 
 <template>
@@ -879,28 +892,28 @@ PWA 场景：待办事项要支持离线编辑，联网后同步到服务端。�
 
 ```ts
 // stores/todos.ts
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
+import { ref, computed } from 'vue';
+import { defineStore } from 'pinia';
 
 type Todo = {
-  id: string
-  title: string
-  done: boolean
+  id: string;
+  title: string;
+  done: boolean;
   // 同步状态：pending 未同步 / synced 已同步 / error 同步失败
-  syncStatus: 'pending' | 'synced' | 'error'
-}
+  syncStatus: 'pending' | 'synced' | 'error';
+};
 
 export const useTodosStore = defineStore('todos', () => {
-  const todos = ref<Todo[]>([])
-  const isOnline = ref(navigator.onLine)
+  const todos = ref<Todo[]>([]);
+  const isOnline = ref(navigator.onLine);
   // 等待同步的队列
-  const pendingQueue = ref<Set<string>>(new Set())
+  const pendingQueue = ref<Set<string>>(new Set());
 
-  const unfinishedCount = computed(() => todos.value.filter(t => !t.done).length)
+  const unfinishedCount = computed(() => todos.value.filter((t) => !t.done).length);
 
   // 生成临时 id（最终会被服务端 id 替换）
   function genId(): string {
-    return `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    return `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   }
 
   function addTodo(title: string) {
@@ -909,42 +922,42 @@ export const useTodosStore = defineStore('todos', () => {
       title,
       done: false,
       syncStatus: 'pending',
-    }
-    todos.value.unshift(todo)
-    pendingQueue.value.add(todo.id)
-    flushQueue()
+    };
+    todos.value.unshift(todo);
+    pendingQueue.value.add(todo.id);
+    flushQueue();
   }
 
   function toggleTodo(id: string) {
-    const todo = todos.value.find(t => t.id === id)
-    if (!todo) return
-    todo.done = !todo.done
-    todo.syncStatus = 'pending'
-    pendingQueue.value.add(id)
-    flushQueue()
+    const todo = todos.value.find((t) => t.id === id);
+    if (!todo) return;
+    todo.done = !todo.done;
+    todo.syncStatus = 'pending';
+    pendingQueue.value.add(id);
+    flushQueue();
   }
 
   // 把队列里的待同步项推到服务端
   async function flushQueue() {
-    if (!isOnline.value || pendingQueue.value.size === 0) return
+    if (!isOnline.value || pendingQueue.value.size === 0) return;
 
-    const idsToSync = Array.from(pendingQueue.value)
+    const idsToSync = Array.from(pendingQueue.value);
     for (const id of idsToSync) {
-      const todo = todos.value.find(t => t.id === id)
-      if (!todo) continue
+      const todo = todos.value.find((t) => t.id === id);
+      if (!todo) continue;
       try {
         const res = await fetch('/api/todos/sync', {
           method: 'POST',
           body: JSON.stringify(todo),
-        }).then(r => r.json())
+        }).then((r) => r.json());
         // 服务端返回真正的 id 和同步状态
         if (res.id && res.id !== todo.id) {
-          todo.id = res.id
+          todo.id = res.id;
         }
-        todo.syncStatus = 'synced'
-        pendingQueue.value.delete(id)
+        todo.syncStatus = 'synced';
+        pendingQueue.value.delete(id);
       } catch {
-        todo.syncStatus = 'error'
+        todo.syncStatus = 'error';
         // 失败不删队列，下次网络恢复重试
       }
     }
@@ -952,15 +965,15 @@ export const useTodosStore = defineStore('todos', () => {
 
   // 监听网络状态
   window.addEventListener('online', () => {
-    isOnline.value = true
-    flushQueue()
-  })
+    isOnline.value = true;
+    flushQueue();
+  });
   window.addEventListener('offline', () => {
-    isOnline.value = false
-  })
+    isOnline.value = false;
+  });
 
-  return { todos, unfinishedCount, isOnline, addTodo, toggleTodo, flushQueue }
-})
+  return { todos, unfinishedCount, isOnline, addTodo, toggleTodo, flushQueue };
+});
 ```
 
 **几个实战要点**：
@@ -975,78 +988,84 @@ export const useTodosStore = defineStore('todos', () => {
 
 ```ts
 // stores/presence.ts
-import { ref } from 'vue'
-import { defineStore } from 'pinia'
+import { ref } from 'vue';
+import { defineStore } from 'pinia';
 
 type Cursor = {
-  userId: string
-  x: number
-  y: number
-  color: string
-  lastUpdate: number
-}
+  userId: string;
+  x: number;
+  y: number;
+  color: string;
+  lastUpdate: number;
+};
 
 export const usePresenceStore = defineStore('presence', () => {
   // 其他用户的光标，用 Map 方便按 userId 增删
-  const cursors = ref<Map<string, Cursor>>(new Map())
-  const onlineUsers = ref<string[]>([])
+  const cursors = ref<Map<string, Cursor>>(new Map());
+  const onlineUsers = ref<string[]>([]);
 
   // 节流：本地光标移动太频繁，需要节流后再广播
-  let lastBroadcast = 0
-  const BROADCAST_INTERVAL = 50 // ms
+  let lastBroadcast = 0;
+  const BROADCAST_INTERVAL = 50; // ms
 
   function updateLocalCursor(userId: string, x: number, y: number, color: string) {
-    const now = Date.now()
-    if (now - lastBroadcast < BROADCAST_INTERVAL) return
-    lastBroadcast = now
+    const now = Date.now();
+    if (now - lastBroadcast < BROADCAST_INTERVAL) return;
+    lastBroadcast = now;
 
     // 通过 WebSocket / BroadcastChannel 广播
     broadcastChannel.postMessage({
       type: 'cursor',
-      userId, x, y, color,
-    })
+      userId,
+      x,
+      y,
+      color,
+    });
   }
 
   // 收到其他用户的光标更新
   function onRemoteCursor(cursor: Cursor) {
-    cursors.value.set(cursor.userId, { ...cursor, lastUpdate: Date.now() })
+    cursors.value.set(cursor.userId, { ...cursor, lastUpdate: Date.now() });
   }
 
   // 清理超时光标（用户离开或网络断开）
   function cleanupStaleCursors(timeout = 5000) {
-    const now = Date.now()
+    const now = Date.now();
     for (const [userId, cursor] of cursors.value) {
       if (now - cursor.lastUpdate > timeout) {
-        cursors.value.delete(userId)
+        cursors.value.delete(userId);
       }
     }
   }
 
   // WebSocket / BroadcastChannel
-  const broadcastChannel = new BroadcastChannel('presence')
+  const broadcastChannel = new BroadcastChannel('presence');
   broadcastChannel.onmessage = (e) => {
     if (e.data.type === 'cursor') {
-      onRemoteCursor(e.data)
+      onRemoteCursor(e.data);
     }
-  }
+  };
 
   // 定时清理
-  setInterval(cleanupStaleCursors, 1000)
+  setInterval(cleanupStaleCursors, 1000);
 
   return {
-    cursors, onlineUsers,
-    updateLocalCursor, onRemoteCursor, cleanupStaleCursors,
-  }
-})
+    cursors,
+    onlineUsers,
+    updateLocalCursor,
+    onRemoteCursor,
+    cleanupStaleCursors,
+  };
+});
 ```
 
 UI 渲染：
 
 ```vue
 <script setup lang="ts">
-import { usePresenceStore } from '@/stores/presence'
+import { usePresenceStore } from '@/stores/presence';
 
-const presence = usePresenceStore()
+const presence = usePresenceStore();
 
 // 把 Map 转成数组给 v-for 用
 // 注意：Map 的变化不会触发 v-for 重渲染，需要用 reactive 包装或转成普通数组
@@ -1069,7 +1088,7 @@ const presence = usePresenceStore()
 **这里有个隐藏的坑**：`cursors` 是个 `ref<Map>`，Vue 对 `Map` 的响应式追踪是支持的（通过 `triggerRef` 在 set/delete 时触发），但**模板里 `v-for` 直接遍历 Map 实例时，Vue 不会在 Map 变化时重新渲染**。解决办法是把 Map 转成数组：
 
 ```ts
-const cursorList = computed(() => Array.from(cursors.value.values()))
+const cursorList = computed(() => Array.from(cursors.value.values()));
 ```
 
 或者干脆用普通对象 + `reactive`，让 Vue 的 proxy 自动追踪。
@@ -1092,26 +1111,26 @@ const cursorList = computed(() => Array.from(cursors.value.values()))
 
 ```ts
 userStore.$subscribe((mutation, state) => {
-  console.log(`[${mutation.type}] ${mutation.storeId}`, state)
-})
+  console.log(`[${mutation.type}] ${mutation.storeId}`, state);
+});
 ```
 
 3. **`$onAction` 拦截**：所有 action 调用前/后/出错时都会触发，可以用来做统一的错误上报和性能埋点。
 
 ```ts
 userStore.$onAction(({ name, args, after, onError }) => {
-  const startTime = Date.now()
-  console.log(`[action] ${name} called with`, args)
+  const startTime = Date.now();
+  console.log(`[action] ${name} called with`, args);
 
   after((result) => {
-    console.log(`[action] ${name} done in ${Date.now() - startTime}ms`)
-  })
+    console.log(`[action] ${name} done in ${Date.now() - startTime}ms`);
+  });
 
   onError((error) => {
-    console.error(`[action] ${name} failed`, error)
+    console.error(`[action] ${name} failed`, error);
     // 上报到 Sentry / 自建日志
-  })
-})
+  });
+});
 ```
 
 ## 总结

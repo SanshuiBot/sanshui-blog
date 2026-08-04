@@ -17,15 +17,15 @@ Vue 3.5 在这条路上又往前走了一步：编译器产物更紧凑、响应
 
 下面这张表概览了 Vue 编译器的几大优化机制：
 
-| 优化机制 | 作用阶段 | 解决的问题 | 典型受益场景 |
-|---------|---------|-----------|-------------|
-| 静态提升 hoistStatic | 编译期 | 避免每次渲染重建静态 VNode | 大量静态模板 |
-| PatchFlag | 编译期→运行期 | 标注动态部分，缩小 diff 范围 | props/文本部分更新 |
-| Block Tree | 编译期 | 拍平动态节点，避免整树递归 | 深层嵌套、大量静态节点 |
-| 缓存事件处理器 cacheHandlers | 编译期 | 避免每次渲染新建函数导致子组件无效更新 | 带事件回调的组件 |
-| v-once | 运行期指令 | 一次性渲染后缓存 | 静态子树、首屏 |
-| v-memo | 运行期指令 | 按依赖数组决定是否跳过子树 diff | 列表项、大表格 |
-| 编译器宏 defineProps 等 | 编译期 | 类型推断 + 生成更优运行时代码 | `<script setup>` |
+| 优化机制                     | 作用阶段      | 解决的问题                             | 典型受益场景           |
+| ---------------------------- | ------------- | -------------------------------------- | ---------------------- |
+| 静态提升 hoistStatic         | 编译期        | 避免每次渲染重建静态 VNode             | 大量静态模板           |
+| PatchFlag                    | 编译期→运行期 | 标注动态部分，缩小 diff 范围           | props/文本部分更新     |
+| Block Tree                   | 编译期        | 拍平动态节点，避免整树递归             | 深层嵌套、大量静态节点 |
+| 缓存事件处理器 cacheHandlers | 编译期        | 避免每次渲染新建函数导致子组件无效更新 | 带事件回调的组件       |
+| v-once                       | 运行期指令    | 一次性渲染后缓存                       | 静态子树、首屏         |
+| v-memo                       | 运行期指令    | 按依赖数组决定是否跳过子树 diff        | 列表项、大表格         |
+| 编译器宏 defineProps 等      | 编译期        | 类型推断 + 生成更优运行时代码          | `<script setup>`       |
 
 ---
 
@@ -47,10 +47,10 @@ Vue 3.5 在这条路上又往前走了一步：编译器产物更紧凑、响应
 
 ```js
 export function render(_ctx, _cache) {
-  return _createVNode("div", { class: "layout" }, [
-    _createVNode("h1", null, "我的博客"),
-    _createVNode("p", null, "这里写一些静态的介绍文字，它永远不会变。"),
-    _createVNode("article", null, _toDisplayString(_ctx.content))
+  return _createVNode('div', { class: 'layout' }, [
+    _createVNode('h1', null, '我的博客'),
+    _createVNode('p', null, '这里写一些静态的介绍文字，它永远不会变。'),
+    _createVNode('article', null, _toDisplayString(_ctx.content)),
   ]);
 }
 ```
@@ -60,14 +60,18 @@ export function render(_ctx, _cache) {
 静态提升的做法是：编译器识别出**没有动态绑定**的节点，把它们对应的 VNode 创建逻辑**提到 render 函数之外**，变成模块级常量：
 
 ```js
-const _hoisted_1 = /*#__PURE__*/_createVNode("h1", null, "我的博客");
-const _hoisted_2 = /*#__PURE__*/_createVNode("p", null, "这里写一些静态的介绍文字，它永远不会变。");
+const _hoisted_1 = /*#__PURE__*/ _createVNode('h1', null, '我的博客');
+const _hoisted_2 = /*#__PURE__*/ _createVNode(
+  'p',
+  null,
+  '这里写一些静态的介绍文字，它永远不会变。',
+);
 
 export function render(_ctx, _cache) {
-  return _createVNode("div", { class: "layout" }, [
+  return _createVNode('div', { class: 'layout' }, [
     _hoisted_1,
     _hoisted_2,
-    _createVNode("article", null, _toDisplayString(_ctx.content))
+    _createVNode('article', null, _toDisplayString(_ctx.content)),
   ]);
 }
 ```
@@ -85,8 +89,8 @@ export function render(_ctx, _cache) {
 当模板里出现**多个连续的静态节点**时，编译器不会把它们一个一个提升，而是合并成一个**静态 VNode 数组**：
 
 ```js
-const _hoisted_1 = /*#__PURE__*/_createVNode("h1", null, "我的博客");
-const _hoisted_2 = [_hoisted_1, /*#__PURE__*/_createVNode("p", null, "静态介绍文字")];
+const _hoisted_1 = /*#__PURE__*/ _createVNode('h1', null, '我的博客');
+const _hoisted_2 = [_hoisted_1, /*#__PURE__*/ _createVNode('p', null, '静态介绍文字')];
 ```
 
 合并后运行时只需要一次引用判断，就能跳过整组静态节点。
@@ -99,13 +103,16 @@ const _hoisted_2 = [_hoisted_1, /*#__PURE__*/_createVNode("p", null, "静态介�
 // compile-demo.mjs
 import { compile } from '@vue/compiler-dom';
 
-const { code } = compile(`
+const { code } = compile(
+  `
   <div>
     <h1>标题</h1>
     <p>段落</p>
     <span>{{ dynamic }}</span>
   </div>
-`, { hoistStatic: true });
+`,
+  { hoistStatic: true },
+);
 
 console.log(code);
 ```
@@ -137,19 +144,19 @@ PatchFlag 在源码里是这样一个枚举（简化版）：
 
 ```ts
 export const enum PatchFlags {
-  TEXT = 1,          // 动态文本内容
-  CLASS = 1 << 1,   // 动态 class
-  STYLE = 1 << 2,   // 动态 style
-  PROPS = 1 << 3,   // 动态非 class/style 的 props
+  TEXT = 1, // 动态文本内容
+  CLASS = 1 << 1, // 动态 class
+  STYLE = 1 << 2, // 动态 style
+  PROPS = 1 << 3, // 动态非 class/style 的 props
   FULL_PROPS = 1 << 4, // props 键集合动态变化（如动态 key）
   HYDRATE_EVENTS = 1 << 5, // 事件监听器需要 hydrate
   STABLE_FRAGMENT = 1 << 6, // 子节点顺序不变的 fragment
-  KEYED_FRAGMENT = 1 << 7,  // 带 key 的 fragment
+  KEYED_FRAGMENT = 1 << 7, // 带 key 的 fragment
   UNKEYED_FRAGMENT = 1 << 8, // 不带 key 的 fragment
   NEED_PATCH = 1 << 9, // 仅用于 ref / 指令，需要进入 patch
   DYNAMIC_SLOTS = 1 << 10, // 插槽数量或内容动态变化
-  HOISTED = -1,   // 静态提升节点，跳过 patch
-  BAIL = -2,      // 放弃优化，走完整 diff
+  HOISTED = -1, // 静态提升节点，跳过 patch
+  BAIL = -2, // 放弃优化，走完整 diff
 }
 ```
 
@@ -161,9 +168,7 @@ export const enum PatchFlags {
 
 ```html
 <template>
-  <div :class="active ? 'on' : 'off'" @click="toggle">
-    {{ message }}
-  </div>
+  <div :class="active ? 'on' : 'off'" @click="toggle">{{ message }}</div>
 </template>
 ```
 
@@ -171,10 +176,15 @@ export const enum PatchFlags {
 
 ```js
 export function render(_ctx, _cache) {
-  return _createVNode("div", {
-    class: _ctx.active ? 'on' : 'off',
-    onClick: _ctx.toggle
-  }, _toDisplayString(_ctx.message), PatchFlags.TEXT | PatchFlags.CLASS);
+  return _createVNode(
+    'div',
+    {
+      class: _ctx.active ? 'on' : 'off',
+      onClick: _ctx.toggle,
+    },
+    _toDisplayString(_ctx.message),
+    PatchFlags.TEXT | PatchFlags.CLASS,
+  );
 }
 ```
 
@@ -282,8 +292,10 @@ Block Tree 不是免费的。当模板结构非常简单（比如只有一个根
 编译后大致是：
 
 ```js
-_createVNode(MyButton, null, "点我", 0, {
-  onClick: () => { _ctx.count++ }
+_createVNode(MyButton, null, '点我', 0, {
+  onClick: () => {
+    _ctx.count++;
+  },
 });
 ```
 
@@ -295,10 +307,12 @@ Vue 3.2+ 起，编译器对内联事件处理器做缓存：
 
 ```js
 export function render(_ctx, _cache) {
-  return _createVNode(MyButton, null, "点我", 0, {
-    onClick: _cache[0] || (_cache[0] = (...args) => {
-      _ctx.count++;
-    })
+  return _createVNode(MyButton, null, '点我', 0, {
+    onClick:
+      _cache[0] ||
+      (_cache[0] = (...args) => {
+        _ctx.count++;
+      }),
   });
 }
 ```
@@ -412,7 +426,7 @@ const rows = ref(
     name: `用户${i}`,
     score: Math.floor(Math.random() * 100),
     selected: false,
-  }))
+  })),
 );
 
 function bumpScore() {
@@ -439,12 +453,12 @@ function bumpScore() {
 
 ### v-once vs v-memo 选择指南
 
-| 维度 | v-once | v-memo |
-|------|--------|--------|
+| 维度     | v-once                 | v-memo                   |
+| -------- | ---------------------- | ------------------------ |
 | 缓存粒度 | 永久，渲染一次后不再变 | 按依赖数组，依赖变才更新 |
-| 适用场景 | 真静态内容、首屏 | 大列表项、依赖明确的子树 |
-| 风险 | 误用导致不更新 | 依赖漏写导致不更新 |
-| 性能收益 | 极高（彻底跳过） | 高（仅依赖变化时 diff） |
+| 适用场景 | 真静态内容、首屏       | 大列表项、依赖明确的子树 |
+| 风险     | 误用导致不更新         | 依赖漏写导致不更新       |
+| 性能收益 | 极高（彻底跳过）       | 高（仅依赖变化时 diff）  |
 
 一个实用建议：**先用编译器自动优化跑通，遇到明确的性能瓶颈再上 v-memo**。过早手动优化反而会让模板可读性下降、维护成本上升。
 
@@ -589,7 +603,7 @@ const visibleCount = 50;
 const rowHeight = 40;
 
 const visibleRows = computed(() =>
-  rows.value.slice(startIndex.value, startIndex.value + visibleCount)
+  rows.value.slice(startIndex.value, startIndex.value + visibleCount),
 );
 
 function onScroll(e: Event) {
@@ -848,14 +862,18 @@ node inspect-compile.mjs
 你会看到类似下面的产物：
 
 ```js
-const _hoisted_1 = { class: "container" };
-const _hoisted_2 = /*#__PURE__*/_createVNode("h1", null, "静态标题", -1 /* HOISTED */);
+const _hoisted_1 = { class: 'container' };
+const _hoisted_2 = /*#__PURE__*/ _createVNode('h1', null, '静态标题', -1 /* HOISTED */);
 
 export function render(_ctx, _cache) {
-  return _createVNode("div", _hoisted_1, [
+  return _createVNode('div', _hoisted_1, [
     _hoisted_2,
-    _createVNode("p", null, _toDisplayString(_ctx.dynamic), 1 /* TEXT */),
-    _createVNode("button", { onClick: _cache[0] || (_cache[0] = (...args) => _ctx.onClick && _ctx.onClick(...args)) }, "click")
+    _createVNode('p', null, _toDisplayString(_ctx.dynamic), 1 /* TEXT */),
+    _createVNode(
+      'button',
+      { onClick: _cache[0] || (_cache[0] = (...args) => _ctx.onClick && _ctx.onClick(...args)) },
+      'click',
+    ),
   ]);
 }
 ```
@@ -874,15 +892,15 @@ export function render(_ctx, _cache) {
 
 回到文章开头那个判断标准：**编译器优化的本质，是用编译期已经确定的信息，换掉运行期不确定的遍历**。这句话可以拆成下面这张"心法—招式"对照表：
 
-| 心法 | 招式（具体机制） | 触发方式 |
-|------|----------------|---------|
-| 静态的不重建 | 静态提升 hoistStatic | 编译器自动 |
-| 动态的精准比 | PatchFlag | 编译器自动 |
-| 找动态节点不递归 | Block Tree | 编译器自动 |
-| 事件引用稳定 | cacheHandlers | 编译器自动（3.2+） |
-| 大子树永久缓存 | v-once | 手动指令 |
-| 大子树按依赖缓存 | v-memo | 手动指令 |
-| 类型即运行时声明 | defineProps / defineModel 等 | 编译器宏 |
+| 心法             | 招式（具体机制）             | 触发方式           |
+| ---------------- | ---------------------------- | ------------------ |
+| 静态的不重建     | 静态提升 hoistStatic         | 编译器自动         |
+| 动态的精准比     | PatchFlag                    | 编译器自动         |
+| 找动态节点不递归 | Block Tree                   | 编译器自动         |
+| 事件引用稳定     | cacheHandlers                | 编译器自动（3.2+） |
+| 大子树永久缓存   | v-once                       | 手动指令           |
+| 大子树按依赖缓存 | v-memo                       | 手动指令           |
+| 类型即运行时声明 | defineProps / defineModel 等 | 编译器宏           |
 
 从这张表能看出 Vue 编译器优化的几个层次：
 

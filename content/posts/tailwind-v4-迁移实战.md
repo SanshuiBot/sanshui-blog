@@ -28,7 +28,7 @@ module.exports = {
     },
   },
   plugins: [require('@tailwindcss/typography')],
-}
+};
 ```
 
 ```css
@@ -59,22 +59,22 @@ module.exports = {
 
 `@theme` 内的变量名遵循「命名空间 + 名称」格式，前缀决定生成的 utility 类：
 
-| 变量前缀 | 生成的 utility |
-| --- | --- |
-| `--color-*` | `bg-*` / `text-*` / `border-*` |
-| `--font-*` | `font-*` |
-| `--spacing-*` | `p-*` / `m-*` / `gap-*` |
-| `--breakpoint-*` | `sm:` / `md:` / ... |
-| `--radius-*` | `rounded-*` |
-| `--ease-*` | `ease-*` |
-| `--animate-*` | `animate-*` |
+| 变量前缀         | 生成的 utility                 |
+| ---------------- | ------------------------------ |
+| `--color-*`      | `bg-*` / `text-*` / `border-*` |
+| `--font-*`       | `font-*`                       |
+| `--spacing-*`    | `p-*` / `m-*` / `gap-*`        |
+| `--breakpoint-*` | `sm:` / `md:` / ...            |
+| `--radius-*`     | `rounded-*`                    |
+| `--ease-*`       | `ease-*`                       |
+| `--animate-*`    | `animate-*`                    |
 
 ```css
 @theme {
-  --color-accent-violet: #a855f7;     /* → bg-accent-violet */
-  --color-accent-pink: #ec4899;       /* → text-accent-pink */
-  --font-mono: 'JetBrains Mono', monospace;  /* → font-mono */
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);  /* → ease-out-expo */
+  --color-accent-violet: #a855f7; /* → bg-accent-violet */
+  --color-accent-pink: #ec4899; /* → text-accent-pink */
+  --font-mono: 'JetBrains Mono', monospace; /* → font-mono */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* → ease-out-expo */
 }
 ```
 
@@ -84,14 +84,14 @@ v3：
 
 ```js
 // postcss.config.js
-module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } }
+module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };
 ```
 
 v4：
 
 ```js
 // postcss.config.mjs
-export default { plugins: { '@tailwindcss/postcss': {} } }
+export default { plugins: { '@tailwindcss/postcss': {} } };
 ```
 
 **没有 autoprefixer 了**——v4 内置自动加前缀。如果还配置 autoprefixer 会报重复处理警告。
@@ -126,11 +126,15 @@ v4 改为基于浏览器原生 `@layer`，并预定义了几个层级：
 @layer theme, base, components, utilities;
 
 @layer base {
-  body { @apply bg-white; }
+  body {
+    @apply bg-white;
+  }
 }
 
 @layer utilities {
-  .glass { /* ... */ }
+  .glass {
+    /* ... */
+  }
 }
 ```
 
@@ -146,7 +150,7 @@ module.exports = {
   variants: {
     extend: { backgroundColor: ['checked'] },
   },
-}
+};
 ```
 
 v4 改用 `@custom-variant`：
@@ -164,7 +168,7 @@ v3 已经是 JIT，但仍允许在 `safelist` 里写动态类名：
 ```js
 module.exports = {
   safelist: ['bg-red-500', 'bg-blue-500'],
-}
+};
 ```
 
 v4 移除了 `safelist`。改为 `@source inline(...)`：
@@ -190,7 +194,7 @@ export default {
   plugins: {
     '@tailwindcss/postcss': {},
   },
-}
+};
 ```
 
 ### 第三步：迁移 `globals.css`
@@ -235,10 +239,7 @@ v4：
 v3：
 
 ```js
-plugins: [
-  require('@tailwindcss/typography'),
-  require('@tailwindcss/forms'),
-]
+plugins: [require('@tailwindcss/typography'), require('@tailwindcss/forms')];
 ```
 
 v4：
@@ -253,7 +254,7 @@ v4：
 v3 需要显式声明扫描路径：
 
 ```js
-content: ['./src/**/*.{ts,tsx}']
+content: ['./src/**/*.{ts,tsx}'];
 ```
 
 v4 自动扫描项目内所有源文件，**不需要 content 配置**。
@@ -303,7 +304,9 @@ v3 经常把 CSS 变量定义在 `:root` 里，配合 Tailwind utility 使用：
 }
 
 /* tailwind.config.js */
-colors: { background: 'hsl(var(--background))' }
+colors: {
+  background: 'hsl(var(--background))';
+}
 ```
 
 v4 推荐直接在 `@theme` 里定义：
@@ -322,7 +325,9 @@ v3 自定义 utility 通常写在 `@layer utilities`：
 
 ```css
 @layer utilities {
-  .text-balance { text-wrap: balance; }
+  .text-balance {
+    text-wrap: balance;
+  }
 }
 ```
 

@@ -21,9 +21,14 @@ excerpt: 媒体查询基于视口，容器查询基于父容器。本文从 @con
 用媒体查询写：
 
 ```css
-.card { display: flex; flex-direction: column; }
+.card {
+  display: flex;
+  flex-direction: column;
+}
 @media (min-width: 768px) {
-  .card { flex-direction: row; }
+  .card {
+    flex-direction: row;
+  }
 }
 ```
 
@@ -92,14 +97,18 @@ excerpt: 媒体查询基于视口，容器查询基于父容器。本文从 @con
 
 ```css
 @container (min-width: 500px) {
-  .hero { height: 80vh; }
+  .hero {
+    height: 80vh;
+  }
 }
 ```
 
 `vh` / `vw` 依然是视口单位，**不会**因为你在容器查询里就变成容器单位。如果你想用容器的高度，得用 `cqh`（容器高度百分比）、`cqw`（容器宽度百分比）、`cqi`（容器 inline 尺寸百分比）等容器单位。
 
 ```css
-.hero { height: 80cqh; } /* 容器高度的 80% */
+.hero {
+  height: 80cqh;
+} /* 容器高度的 80% */
 ```
 
 ## 六、实战案例 1：Card 组件三态布局
@@ -324,15 +333,23 @@ HTML 里每个 `td` 加 `data-label` 属性：
 ```css
 /* 老浏览器：媒体查询兜底 */
 @media (min-width: 768px) {
-  .card { flex-direction: row; }
+  .card {
+    flex-direction: row;
+  }
 }
 
 /* 新浏览器：容器查询覆盖 */
 @supports (container-type: inline-size) {
-  .card-wrapper { container-type: inline-size; }
-  .card { flex-direction: column; }
+  .card-wrapper {
+    container-type: inline-size;
+  }
+  .card {
+    flex-direction: column;
+  }
   @container (min-width: 500px) {
-    .card { flex-direction: row; }
+    .card {
+      flex-direction: row;
+    }
   }
 }
 ```
@@ -360,8 +377,12 @@ HTML 里每个 `td` 加 `data-label` 属性：
     grid-template-columns: 200px 1fr;
     grid-template-rows: auto;
   }
-  .card-image { grid-column: 1; }
-  .card-body { grid-column: 2; }
+  .card-image {
+    grid-column: 1;
+  }
+  .card-body {
+    grid-column: 2;
+  }
 }
 ```
 

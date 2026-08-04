@@ -11,12 +11,12 @@ TypeScript 5.0 把装饰器正式标准化，与旧的「experimentalDecorators 
 
 ## 一、新旧装饰器的核心差异
 
-| 维度 | 旧（experimentalDecorators） | 新（TS 5.0 标准） |
-| --- | --- | --- |
-| 启用方式 | `experimentalDecorators: true` | 默认开启 |
-| 元数据 | `reflect-metadata` + `design:paramtypes` | 内置 `Symbol.metadata` |
-| 装饰器顺序 | 自底向上 | 自顶向下 |
-| 参数装饰器 | 支持 | 5.0 不支持，需等后续提案 |
+| 维度       | 旧（experimentalDecorators）             | 新（TS 5.0 标准）        |
+| ---------- | ---------------------------------------- | ------------------------ |
+| 启用方式   | `experimentalDecorators: true`           | 默认开启                 |
+| 元数据     | `reflect-metadata` + `design:paramtypes` | 内置 `Symbol.metadata`   |
+| 装饰器顺序 | 自底向上                                 | 自顶向下                 |
+| 参数装饰器 | 支持                                     | 5.0 不支持，需等后续提案 |
 
 **关键陷阱**：两者不能混用。一个项目要么全用新装饰器，要么全用旧方案。
 
@@ -25,17 +25,17 @@ TypeScript 5.0 把装饰器正式标准化，与旧的「experimentalDecorators 
 ```ts
 // 方法装饰器
 function log(target: any, context: ClassMethodDecoratorContext) {
-  const methodName = String(context.name)
+  const methodName = String(context.name);
   return function (this: any, ...args: any[]) {
-    console.log(`[LOG] calling ${methodName}`)
-    return target.apply(this, args)
-  }
+    console.log(`[LOG] calling ${methodName}`);
+    return target.apply(this, args);
+  };
 }
 
 class Service {
   @log
   fetch(id: string) {
-    return api.get(id)
+    return api.get(id);
   }
 }
 ```
@@ -55,7 +55,7 @@ type DecoratorContext =
   | ClassSetterDecoratorContext
   | ClassFieldDecoratorContext
   | ClassAccessorDecoratorContext
-  | ClassDecoratorContext
+  | ClassDecoratorContext;
 ```
 
 每种 context 都有 `kind` 字段标识：
@@ -69,28 +69,32 @@ type DecoratorContext =
 ## 四、类装饰器实战：自动注册
 
 ```ts
-const registry = new Map<string, new () => any>()
+const registry = new Map<string, new () => any>();
 
 function Component(name?: string) {
   return function (target: new () => any, context: ClassDecoratorContext) {
-    const componentName = name ?? context.name
-    registry.set(componentName, target)
-    return target
-  }
+    const componentName = name ?? context.name;
+    registry.set(componentName, target);
+    return target;
+  };
 }
 
 @Component('user-service')
 class UserService {
-  getUser() { return { id: 1, name: 'San' } }
+  getUser() {
+    return { id: 1, name: 'San' };
+  }
 }
 
 @Component()
 class PostService {
-  getPost() { return { id: 1, title: 'Hello' } }
+  getPost() {
+    return { id: 1, title: 'Hello' };
+  }
 }
 
-console.log(registry.get('user-service')) // UserService
-console.log(registry.get('PostService'))  // PostService
+console.log(registry.get('user-service')); // UserService
+console.log(registry.get('PostService')); // PostService
 ```
 
 ## 五、字段装饰器 + accessor：响应式状态
@@ -99,23 +103,23 @@ console.log(registry.get('PostService'))  // PostService
 
 ```ts
 function reactive<T>(target: T, context: ClassAccessorDecoratorContext<T>) {
-  const { get, set } = target
+  const { get, set } = target;
   return {
     get(this: any) {
-      console.log('read reactive')
-      return get.call(this)
+      console.log('read reactive');
+      return get.call(this);
     },
     set(this: any, value: T) {
-      console.log('write reactive')
-      set.call(this, value)
+      console.log('write reactive');
+      set.call(this, value);
       // 触发 UI 更新
-      this.notify?.()
+      this.notify?.();
     },
-  } satisfies ClassAccessorDecoratorTarget<T, T>
+  } satisfies ClassAccessorDecoratorTarget<T, T>;
 }
 
 class Store {
-  @reactive accessor count = 0
+  @reactive accessor count = 0;
 }
 ```
 
@@ -132,10 +136,10 @@ class Store {
 // 还需要 polyfill Symbol.metadata
 declare global {
   interface SymbolConstructor {
-    readonly metadata: unique symbol
+    readonly metadata: unique symbol;
   }
 }
-;(Symbol as any).metadata ??= Symbol('Symbol.metadata')
+(Symbol as any).metadata ??= Symbol('Symbol.metadata');
 ```
 
 然后装饰器里可以通过 `context.metadata` 读写元数据：
@@ -143,17 +147,17 @@ declare global {
 ```ts
 function Route(path: string) {
   return function (target: any, context: ClassMethodDecoratorContext) {
-    context.metadata.path = path
-    context.metadata.handler = target
-  }
+    context.metadata.path = path;
+    context.metadata.handler = target;
+  };
 }
 
 function Controller(base: string) {
   return function (target: any, context: ClassDecoratorContext) {
-    context.metadata.base = base
-    context.metadata.routes = []
+    context.metadata.base = base;
+    context.metadata.routes = [];
     // 收集方法上的路由信息
-  }
+  };
 }
 ```
 
@@ -164,7 +168,9 @@ function Controller(base: string) {
 ```ts
 @Injectable()
 class Logger {
-  log(msg: string) { console.log(msg) }
+  log(msg: string) {
+    console.log(msg);
+  }
 }
 
 @Injectable()
@@ -172,38 +178,38 @@ class UserService {
   constructor(private logger: Logger) {}
 
   hello() {
-    this.logger.log('hello from UserService')
+    this.logger.log('hello from UserService');
   }
 }
 
-const container = new Container()
-container.register(Logger)
-container.register(UserService, [Logger])
+const container = new Container();
+container.register(Logger);
+container.register(UserService, [Logger]);
 
-const user = container.resolve(UserService)
-user.hello() // hello from UserService
+const user = container.resolve(UserService);
+user.hello(); // hello from UserService
 ```
 
 实现：
 
 ```ts
-type Constructor<T = any> = new (...args: any[]) => T
+type Constructor<T = any> = new (...args: any[]) => T;
 
 class Container {
-  private registry = new Map<Constructor, { instance: any; deps: Constructor[] }>()
+  private registry = new Map<Constructor, { instance: any; deps: Constructor[] }>();
 
   register<T>(cls: Constructor<T>, deps: Constructor[] = []) {
-    this.registry.set(cls, { instance: null, deps })
+    this.registry.set(cls, { instance: null, deps });
   }
 
   resolve<T>(cls: Constructor<T>): T {
-    const entry = this.registry.get(cls)
-    if (!entry) throw new Error(`未注册: ${cls.name}`)
-    if (entry.instance) return entry.instance
+    const entry = this.registry.get(cls);
+    if (!entry) throw new Error(`未注册: ${cls.name}`);
+    if (entry.instance) return entry.instance;
 
-    const deps = entry.deps.map((d) => this.resolve(d))
-    entry.instance = new cls(...deps)
-    return entry.instance
+    const deps = entry.deps.map((d) => this.resolve(d));
+    entry.instance = new cls(...deps);
+    return entry.instance;
   }
 }
 ```
@@ -213,10 +219,10 @@ class Container {
 ```ts
 function Injectable() {
   return function (target: Constructor, context: ClassDecoratorContext) {
-    context.metadata.injectable = true
-    context.metadata.target = target
-    return target
-  }
+    context.metadata.injectable = true;
+    context.metadata.target = target;
+    return target;
+  };
 }
 ```
 
@@ -227,10 +233,10 @@ function Injectable() {
 ```ts
 function Injectable(deps: Constructor[] = []) {
   return function (target: Constructor, context: ClassDecoratorContext) {
-    context.metadata.deps = deps
-    context.metadata.target = target
-    return target
-  }
+    context.metadata.deps = deps;
+    context.metadata.target = target;
+    return target;
+  };
 }
 
 @Injectable([Logger])
@@ -243,25 +249,25 @@ class UserService {
 
 ```ts
 class Container {
-  private registry = new Map<Constructor, any>()
-  private metas: ClassDecoratorContext[] = []
+  private registry = new Map<Constructor, any>();
+  private metas: ClassDecoratorContext[] = [];
 
   collect(metas: ClassDecoratorContext[]) {
-    this.metas = metas
+    this.metas = metas;
   }
 
   register<T>(cls: Constructor<T>) {
-    const meta = this.metas.find((m) => (m.metadata as any).target === cls)
-    if (!meta) throw new Error(`未收集 metadata: ${cls.name}`)
-    const deps = (meta.metadata as any).deps as Constructor[]
-    const instances = deps.map((d) => this.resolve(d))
-    this.registry.set(cls, new cls(...instances))
+    const meta = this.metas.find((m) => (m.metadata as any).target === cls);
+    if (!meta) throw new Error(`未收集 metadata: ${cls.name}`);
+    const deps = (meta.metadata as any).deps as Constructor[];
+    const instances = deps.map((d) => this.resolve(d));
+    this.registry.set(cls, new cls(...instances));
   }
 
   resolve<T>(cls: Constructor<T>): T {
-    if (this.registry.has(cls)) return this.registry.get(cls)
-    this.register(cls)
-    return this.registry.get(cls)
+    if (this.registry.has(cls)) return this.registry.get(cls);
+    this.register(cls);
+    return this.registry.get(cls);
   }
 }
 ```
@@ -269,30 +275,30 @@ class Container {
 ## 八、实战案例：NestJS 风格路由装饰器
 
 ```ts
-const routes: Array<{ method: string; path: string; handler: Function }> = []
+const routes: Array<{ method: string; path: string; handler: Function }> = [];
 
 function Get(path: string) {
   return function (target: any, context: ClassMethodDecoratorContext) {
-    routes.push({ method: 'GET', path, handler: target })
-  }
+    routes.push({ method: 'GET', path, handler: target });
+  };
 }
 
 function Post(path: string) {
   return function (target: any, context: ClassMethodDecoratorContext) {
-    routes.push({ method: 'POST', path, handler: target })
-  }
+    routes.push({ method: 'POST', path, handler: target });
+  };
 }
 
 @Controller('/api')
 class UserController {
   @Get('/users')
   list() {
-    return [{ id: 1 }]
+    return [{ id: 1 }];
   }
 
   @Post('/users')
   create() {
-    return { id: 2 }
+    return { id: 2 };
   }
 }
 ```
@@ -305,13 +311,13 @@ class UserController {
 
 ```ts
 function A(target: any, context: ClassMethodDecoratorContext) {
-  console.log('A called')
-  return target
+  console.log('A called');
+  return target;
 }
 
 function B(target: any, context: ClassMethodDecoratorContext) {
-  console.log('B called')
-  return target
+  console.log('B called');
+  return target;
 }
 
 class S {
@@ -331,9 +337,9 @@ class S {
 ```ts
 function log(target: any, context: ClassMethodDecoratorContext) {
   return function (...args: any[]) {
-    console.log('calling', context.name)
-    return target(...args) // ❌ 丢失 this
-  }
+    console.log('calling', context.name);
+    return target(...args); // ❌ 丢失 this
+  };
 }
 ```
 
@@ -342,9 +348,9 @@ function log(target: any, context: ClassMethodDecoratorContext) {
 ```ts
 function log(target: any, context: ClassMethodDecoratorContext) {
   return function (this: any, ...args: any[]) {
-    console.log('calling', context.name)
-    return target.call(this, ...args)
-  }
+    console.log('calling', context.name);
+    return target.call(this, ...args);
+  };
 }
 ```
 
@@ -354,7 +360,7 @@ function log(target: any, context: ClassMethodDecoratorContext) {
 
 ```ts
 class S {
-  @log onClick = () => {} // ❌ 编译错误
+  @log onClick = () => {}; // ❌ 编译错误
 }
 ```
 

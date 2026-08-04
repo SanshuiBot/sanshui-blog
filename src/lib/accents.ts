@@ -13,13 +13,7 @@
  */
 
 /** 6 个 accent 通道名，与 globals.css 的 `--accent-*-rgb` 对应 */
-export type AccentChannel =
-  | 'pink'
-  | 'violet'
-  | 'blue'
-  | 'teal'
-  | 'gold'
-  | 'rose';
+export type AccentChannel = 'pink' | 'violet' | 'blue' | 'teal' | 'gold' | 'rose';
 
 /** 一个预设：6 个 accent 的 RGB 三元组（空格分隔字符串，如 "168 85 247"） */
 export interface AccentPreset {
@@ -134,7 +128,10 @@ export function getPreset(id: string | null | undefined): AccentPreset {
 
 /** hex("#a855f7" 或 "a855f7") -> RGB 三元组字符串 "168 85 247"；失败回 null */
 export function hexToRgb(hex: string): string | null {
-  const m = hex.trim().replace(/^#/, '').match(/^([0-9a-f]{6})$/i);
+  const m = hex
+    .trim()
+    .replace(/^#/, '')
+    .match(/^([0-9a-f]{6})$/i);
   if (!m || !m[1]) return null;
   const h = m[1];
   const r = parseInt(h.slice(0, 2), 16);
