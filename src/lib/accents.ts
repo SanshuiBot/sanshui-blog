@@ -32,14 +32,18 @@ export const ACCENT_CHANNELS: readonly AccentChannel[] = [
   'rose',
 ] as const;
 
-/** 6 个 accent 通道的中文标签（UI 展示用） */
+/**
+ * 6 个 accent 通道的中文标签（UI 展示用）——描述该通道的**主导用途**而非纯颜色名。
+ * 注意：6 通道是协同调色板（多用于渐变组合），不存在严格的一一对应元素；
+ * 标签按使用分布的主导角色命名（violet 158 处 / pink 44 / blue 36 / teal 18 / gold 14 / rose 12）。
+ */
 export const ACCENT_CHANNEL_LABELS: Record<AccentChannel, string> = {
-  pink: '樱粉',
-  violet: '幻紫',
-  blue: '湛蓝',
-  teal: '青碧',
-  gold: '鎏金',
-  rose: '玫红',
+  pink: '极光·标题', // Footer 极光渐变条、区块小标题（关于/友链）
+  violet: '链接·高亮', // 文章链接、导航激活线、目录高亮、阴影辉光（主导色）
+  blue: '阅读进度', // 阅读进度条（ScrollProgress）、统计渐变
+  teal: '技能·图标', // 技能条、统计图标
+  gold: '技能·点缀', // 技能条、卡片强调
+  rose: '卡片·按钮', // 卡片渐变、按钮点缀
 };
 
 /** 默认预设：Aurora（与原站点 violet/pink/blue/teal/gold/rose 一致） */
