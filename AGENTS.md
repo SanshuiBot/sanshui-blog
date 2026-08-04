@@ -268,6 +268,8 @@ Next `<Link>` 对含 `.` 的路径段（如 `/tags/Next.js/`）按「文件路�
 
 Next 16 默认用 Turbopack（内置 lightningcss 解析器）构建，会对 Tailwind v4.3 生成的 `@layer properties{@supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) ...}` 报 **`Invalid dangling combinator in selector`**（Turbopack 解析器缺陷，非本站 CSS 问题）。因此 dev / build 脚本都显式加 `--webpack`（与 Next 15 时代的 webpack 管线一致，静态导出行为不变）。**不要**移除该 flag，也不要改 globals.css 去规避；升级 Tailwind 或等待 Turbopack 修复后再评估移除。
 
+**跟进指引**：问题在 Turbopack 的 CSS 解析路径（已实测独立 lightningcss 能解析相同 CSS，故无法靠升级 Tailwind/postcss 解决，且各依赖均已是最新版）。唯一解法在上游——每次升级 Next 补丁版后，本地跑 `NEXT_BUILD=1 npx next build`（不带 `--webpack`）验证：能通过即从 dev/build 脚本移除 `--webpack` 并删除本条规避说明。
+
 ---
 
 ## 内容编辑约定
