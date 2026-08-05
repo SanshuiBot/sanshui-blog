@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 /**
  * Tooltip —— 跟随鼠标的悬停提示
@@ -16,6 +17,8 @@ import { useState, useRef, useEffect, type ReactNode } from 'react';
  *  - 跟随鼠标：onMouseMove 实时更新气泡坐标
  *  - 显示在鼠标右下方（offsetX=14, offsetY=14），避开图标
  *  - 屏幕右/下边缘自动反转方向
+ *  - 气泡 createPortal 挂到 document.body：fixed 定位不再受祖先
+ *    transform/translate 劫持包含块（Footer 回到顶部按钮曾因此错位出屏）
  *  - 玻璃态背景 + accent 描边，带淡入 + 上浮动画
  *  - hover/focus 显示，延迟 80ms 显示 / 60ms 隐藏，避免快速划过闪烁
  *
@@ -140,16 +143,22 @@ export default function Tooltip({
       onPointerDown={handlePointerDown}
     >
       {children}
-      {visible && label && (
-        <div
-          ref={bubbleRef}
-          role="tooltip"
-          className={`fixed z-[60] whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium text-white glass-heavy border border-accent-violet/20 shadow-soft tooltip-fade ${className}`}
-          style={{ left, top, pointerEvents: 'none' }}
-        >
-          {label}
-        </div>
-      )}
+      {visible &&
+        label &&
+        // 气泡只在交互后渲染，SSR 首屏不会走到这里；挂到 body 使其脱离
+        // 任何带 transform/translate 的祖先，left/top 始终相对视口计算。
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={bubbleRef}
+            role="tooltip"
+            className={`fixed z-[60] whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium text-white glass-heavy border border-accent-violet/20 shadow-soft tooltip-fade ${className}`}
+            style={{ left, top, pointerEvents: 'none' }}
+          >
+            {label}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
