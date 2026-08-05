@@ -3,9 +3,10 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Menu, X } from 'lucide-react';
+import { Search, Menu, X, Mail } from 'lucide-react';
 import Image from 'next/image';
 import ThemeToggle from '@/components/UI/ThemeToggle';
+import Github from '@/components/UI/GithubIcon';
 import AccentPicker from '@/components/UI/AccentPicker';
 import Tooltip from '@/components/UI/Tooltip';
 import SearchModal from '@/components/UI/SearchModal';
@@ -20,6 +21,12 @@ const links = [
   { href: '/about/', label: '关于' },
   { href: '/links/', label: '友链' },
 ];
+
+/** 导航链接激活判定：精确匹配 / 去尾斜杠匹配 / 非首页前缀匹配（桌面导航与移动抽屉共用） */
+const isActive = (pathname: string, href: string) =>
+  pathname === href ||
+  pathname === href.replace(/\/$/, '') ||
+  (href !== '/' && pathname.startsWith(href));
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -57,6 +64,27 @@ export default function Navbar() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
+  // 抽屉打开时锁定背景滚动：遮罩半透明，避免背景在抽屉下滚动穿帮
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileOpen]);
+
+  // 视口跨过 md 断点（≥768px）时关闭抽屉：抽屉/遮罩/菜单按钮均 md:hidden，
+  // 不关闭的话 mobileOpen 保持 true，上面的 body 滚动锁会永久泄漏（横屏/拉宽窗口时页面卡死）
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const onChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setMobileOpen(false);
+    };
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
   return (
     <>
       <motion.header
@@ -82,10 +110,7 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-6">
             {links.map((l) => {
-              const active =
-                pathname === l.href ||
-                pathname === l.href.replace(/\/$/, '') ||
-                (l.href !== '/' && pathname.startsWith(l.href));
+              const active = isActive(pathname, l.href);
               return (
                 <Link
                   key={l.href}
@@ -114,7 +139,10 @@ export default function Navbar() {
           <div className="flex items-center gap-1">
             <Tooltip label="搜索 (⌘K)">
               <button
-                onClick={() => setSearchOpen(true)}
+                onClick={() => {
+                  setSearchOpen(true);
+                  setMobileOpen(false);
+                }}
                 className="p-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
                 aria-label="搜索"
               >
@@ -123,7 +151,7 @@ export default function Navbar() {
             </Tooltip>
             <ThemeToggle />
             <AccentPicker />
-            <Tooltip label="菜单">
+            <Tooltip label="菜单" disabled={mobileOpen}>
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
                 className="p-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all md:hidden"
@@ -139,44 +167,81 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            key="mobile-menu-mask"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 md:hidden"
+            className="fixed inset-0 z-40 md:hidden bg-ink/50 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+        {mobileOpen && (
+          <motion.aside
+            key="mobile-menu-drawer"
+            ref={mobileMenuRef}
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+            className="fixed inset-y-0 right-0 z-40 md:hidden w-[min(20rem,85vw)] glass-heavy border-l border-white/10 flex flex-col px-8 pt-20 pb-8 overflow-y-auto"
           >
-            <div
-              className="absolute inset-0 bg-ink/90 backdrop-blur-2xl"
-              onClick={() => setMobileOpen(false)}
-            />
-            <nav
-              ref={mobileMenuRef}
-              className="relative flex flex-col items-center justify-center h-full gap-8"
-            >
-              {links.map((l, i) => (
-                <motion.div
-                  key={l.href}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ delay: i * 0.06 }}
-                >
-                  <Link
-                    href={l.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`text-3xl font-bold tracking-tight transition-all ${
-                      pathname === l.href ||
-                      pathname === l.href.replace(/\/$/, '') ||
-                      (l.href !== '/' && pathname.startsWith(l.href))
-                        ? 'text-aurora'
-                        : 'text-gray-400 hover:text-white'
-                    }`}
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">
+              导航
+            </p>
+            <nav className="flex flex-col gap-1">
+              {links.map((l, i) => {
+                const active = isActive(pathname, l.href);
+                return (
+                  <motion.div
+                    key={l.href}
+                    initial={{ opacity: 0, x: 24 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.08 + i * 0.05 }}
                   >
-                    {l.label}
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      href={l.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-3 py-2.5 text-xl font-semibold transition-colors ${
+                        active ? 'text-aurora' : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <span
+                        className={`h-4 w-1 rounded-full transition-opacity duration-300 ${
+                          active ? 'opacity-100' : 'opacity-0'
+                        }`}
+                        style={{ background: 'rgb(var(--accent-violet-rgb))' }}
+                      />
+                      {l.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </nav>
-          </motion.div>
+
+            <div className="mt-auto pt-8 border-t border-white/10">
+              <div className="flex items-center gap-5">
+                <a
+                  href={siteConfig.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-link inline-flex items-center gap-2 text-sm text-gray-400"
+                >
+                  <Github size={14} />
+                  GitHub
+                </a>
+                <a
+                  href={siteConfig.emailHref}
+                  className="footer-link inline-flex items-center gap-2 text-sm text-gray-400"
+                >
+                  <Mail size={14} />
+                  Email
+                </a>
+              </div>
+              <p className="mt-3 text-xs text-gray-600">
+                &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+              </p>
+            </div>
+          </motion.aside>
         )}
       </AnimatePresence>
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
