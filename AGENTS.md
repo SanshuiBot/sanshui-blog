@@ -134,7 +134,7 @@ Next 16 的 `next build` **不再执行 lint**（`--no-lint` 选项已移除）�
 
 ### 11. 客户端动效组件懒加载
 
-`AmbientEffects.tsx`（原 `Provider.tsx` 拆分出的动效注册表）用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect` / `ParticleField`，避免打进首屏 chunk；并对 `prefers-reduced-motion` 用户跳过装饰性动效（`CursorGlow` / `ClickEffect`）。新增仅客户端、非首屏必需的动效组件，在 `AmbientEffects` 加一行 `dynamic` 注册即可，照此模式。`experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']` 让大库按需引入（Next 16 仍保留在该配置下）——**不要再自定义 `splitChunks`**，会与内置 chunk 策略冲突，反而拆出更多碎 chunk。
+`AmbientEffects.tsx`（原 `Provider.tsx` 拆分出的动效注册表）用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect` / `ParticleField`，避免打进首屏 chunk；并对 `prefers-reduced-motion` 用户跳过装饰性动效（**仅 `CursorGlow`** 受门控；`ClickEffect` 点击特效始终显示，不受门控影响，见约定 #11a）。新增仅客户端、非首屏必需的动效组件，在 `AmbientEffects` 加一行 `dynamic` 注册即可，照此模式。`experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']` 让大库按需引入（Next 16 仍保留在该配置下）——**不要再自定义 `splitChunks`**，会与内置 chunk 策略冲突，反而拆出更多碎 chunk。
 
 ### 12. 亮色为主、暗色可选
 
