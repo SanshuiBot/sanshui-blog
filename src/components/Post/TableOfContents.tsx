@@ -32,12 +32,23 @@ export default function TableOfContents({ items }: Props) {
   const [activeId, setActiveId] = useState<string>(items[0]?.id ?? '');
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // SPA 文章间跳转时 App Router 复用同一组件实例、传入新的 items 数组，
+  // 而 useState 初始值只在首挂载生效 —— 按 React 官方「prev 状态对比」模式
+  // 在渲染期把高亮重置为新文章首项：effect 内同步 setState 会被 lint 规则
+  // react-hooks/set-state-in-effect 拦截，且渲染期重置没有首帧错位。
+  const [prevItems, setPrevItems] = useState(items);
+  if (items !== prevItems) {
+    setPrevItems(items);
+    setActiveId(items[0]?.id ?? '');
+  }
+
   // 高亮当前章节 —— 监测视口上 30% 带，取监测带内最靠上的标题
   useEffect(() => {
     if (items.length === 0) return;
 
-    // 首屏：若 URL 已带 hash，让浏览器原生滚动到位后再由 observer 接管；
-    // 无 hash 时 useState 初始值已是 items[0]，无需在 effect 内重复 setState。
+    // 首屏/换文章后的高亮首项已由渲染期 prevItems 对比重置（见上方），
+    // 此处 observer 只负责滚动过程的高亮接管；若 URL 已带 hash，浏览器
+    // 原生滚动到位后由 observer 首回调接管高亮。
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
