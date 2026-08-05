@@ -1,7 +1,7 @@
 'use client';
-import { ArrowLeft, Mail, Sparkles, Heart, Code2, Server, Wrench, Terminal } from 'lucide-react';
+import { Mail, Sparkles, Heart, Code2, Server, Wrench, Terminal } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
-import Link from 'next/link';
+import ArrowLink from '@/components/UI/ArrowLink';
 import { motion } from 'framer-motion';
 import ResumeTerminal from './ResumeTerminal';
 import { siteConfig } from '@/lib/site';
@@ -62,10 +62,13 @@ interface AboutContentProps {
 export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
   return (
     <>
-      <Link href="/" className="link-back inline-flex items-center gap-1.5 text-sm mb-8">
-        <ArrowLeft size={14} className="link-arrow" />
+      <ArrowLink
+        href="/"
+        dir="back"
+        className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
+      >
         返回首页
-      </Link>
+      </ArrowLink>
       <div className="relative mb-10">
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent-pink uppercase tracking-widest mb-4">
           <Sparkles size={12} />

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Palette, Check } from 'lucide-react';
 import Tooltip from '@/components/UI/Tooltip';
 import { useDismiss } from '@/components/UI/useDismiss';
@@ -37,23 +37,29 @@ export default function AccentPicker() {
   const [customHex, setCustomHex] = useState<Record<string, string>>({});
   const popoverRef = useRef<HTMLDivElement>(null);
 
-  // 初始化：从 localStorage 读上次的 accent + 已保存的自定义预设
-  useEffect(() => {
-    const stored =
-      typeof window !== 'undefined' ? window.localStorage.getItem(ACCENT_STORAGE_KEY) : null;
-    const custom = getCustomPreset();
-    // 若激活的是 custom 且有保存的自定义预设，用自定义预设的色作为初始值
-    let preset = getPreset(stored);
-    if (stored === CUSTOM_ACCENT_ID && custom) {
-      preset = custom;
+  // 初始化：从 localStorage 读上次的 accent + 已保存的自定义预设。
+  // 放到首次点击时惰性执行（事件处理器内 setState），避免挂载 effect 内同步 setState。
+  const initializedRef = useRef(false);
+  const handleOpen = () => {
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      const stored =
+        typeof window !== 'undefined' ? window.localStorage.getItem(ACCENT_STORAGE_KEY) : null;
+      const custom = getCustomPreset();
+      // 若激活的是 custom 且有保存的自定义预设，用自定义预设的色作为初始值
+      let preset = getPreset(stored);
+      if (stored === CUSTOM_ACCENT_ID && custom) {
+        preset = custom;
+      }
+      setActiveId(preset.id);
+      const initial: Record<string, string> = {};
+      for (const ch of ACCENT_CHANNELS) {
+        initial[ch] = rgbToHex(preset.colors[ch]);
+      }
+      setCustomHex(initial);
     }
-    setActiveId(preset.id);
-    const initial: Record<string, string> = {};
-    for (const ch of ACCENT_CHANNELS) {
-      initial[ch] = rgbToHex(preset.colors[ch]);
-    }
-    setCustomHex(initial);
-  }, []);
+    setOpen((v) => !v);
+  };
 
   // 点击外部 / Esc 关闭（外点判定 + 延迟绑定统一收口在 useDismiss）
   useDismiss(popoverRef, () => setOpen(false), { enabled: open });
@@ -97,7 +103,7 @@ export default function AccentPicker() {
     <div className="relative" ref={popoverRef}>
       <Tooltip label="主题强调色" disabled={open}>
         <button
-          onClick={() => setOpen((v) => !v)}
+          onClick={handleOpen}
           className="p-2 w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
           aria-label="选择主题色"
           aria-expanded={open}

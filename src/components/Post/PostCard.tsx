@@ -159,10 +159,15 @@ export default function PostCard({ post, index }: { post: Post; index: number })
                 onMouseEnter={onCardMouseEnter}
                 className="post-card-link flex-1 flex flex-col"
               >
-                {/* Title — hover 变色走 CSS，避免 Framer Motion inline style 残留导致主题切换后失响应 */}
-                <h2 className="post-card-title text-lg font-bold mb-2 line-clamp-2 overflow-hidden min-h-[2.75rem] tracking-tight leading-snug shrink-0">
+                {/* Title — 位移走 Framer whileHover（JS 驱动，绕开 CSS transition 被 reduced-motion 压制，任何环境都有动画）；
+                    变色仍走纯 CSS（.post-card-title），避免 inline style 固化颜色导致主题切换失响应 */}
+                <motion.h2
+                  className="post-card-title text-lg font-bold mb-2 line-clamp-2 overflow-hidden min-h-[2.75rem] tracking-tight leading-snug shrink-0"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: 'spring', stiffness: 220, damping: 15 }}
+                >
                   {post.title}
-                </h2>
+                </motion.h2>
 
                 {/* Excerpt */}
                 <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1 min-h-0">

@@ -37,9 +37,12 @@ export default function Navbar() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-  useEffect(() => {
+  // 路由切换时关闭移动端菜单：渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   // 全局 ⌘K / Ctrl+K 打开搜索：监听此前被 SearchModal 的 open 门控导致快捷键失效，
   // 开关状态与快捷键收敛在同一模块（Navbar 持有 searchOpen）。

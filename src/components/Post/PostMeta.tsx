@@ -1,7 +1,8 @@
 ﻿'use client';
 import { useMemo, useEffect, useState } from 'react';
-import { ArrowLeft, Clock, Tag, Calendar, ArrowUp } from 'lucide-react';
+import { Clock, Tag, Calendar, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
+import ArrowLink from '@/components/UI/ArrowLink';
 import readingTime from 'reading-time';
 import Tooltip from '@/components/UI/Tooltip';
 import CodeCopyInjector from './CodeCopyInjector';
@@ -38,13 +39,13 @@ export default function PostMeta({ post }: Props) {
       <CodeCopyInjector />
 
       <div className="mb-8">
-        <Link
+        <ArrowLink
           href="/"
+          dir="back"
           className="link-back inline-flex items-center gap-1.5 text-sm transition-colors duration-200 group/back"
         >
-          <ArrowLeft size={14} className="link-arrow" />
           返回首页
-        </Link>
+        </ArrowLink>
       </div>
 
       <header className="mb-10">

@@ -16,8 +16,8 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getPostsByTag, getAllTags } from '@/lib/posts';
 import PostCard from '@/components/Post/PostCard';
-import Link from 'next/link';
-import { ArrowLeft, Hash } from 'lucide-react';
+import ArrowLink from '@/components/UI/ArrowLink';
+import { Hash } from 'lucide-react';
 
 interface Props {
   params: Promise<{ tag: string }>;
@@ -40,16 +40,21 @@ export default async function TagPage({ params }: Props) {
   if (posts.length === 0) notFound();
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-      <Link href="/tags/" className="link-back inline-flex items-center gap-1.5 text-sm mb-8">
-        <ArrowLeft size={14} className="link-arrow" />
+      <ArrowLink
+        href="/tags/"
+        dir="back"
+        className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
+      >
         返回标签
-      </Link>
+      </ArrowLink>
       <div className="mb-12">
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent-violet uppercase tracking-widest mb-4">
           <Hash size={12} />
           标签
         </span>
-        <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">#{decoded}</h1>
+        <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+          <span className="text-aurora">#{decoded}</span>
+        </h1>
         <p className="mt-3 text-gray-500">共 {posts.length} 篇文章</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">

@@ -1,10 +1,11 @@
 ﻿'use client';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useRef } from 'react';
 import type { Post } from '@/lib/types';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
+import ArrowLink from '@/components/UI/ArrowLink';
 
 interface Props {
   post: Post;
@@ -71,15 +72,15 @@ export default function FeaturedPost({ post }: Props) {
           </Link>
         </h2>
         <p className="text-gray-400 text-sm sm:text-base max-w-xl mb-6">{post.excerpt}</p>
-        <Link
+        <ArrowLink
           href={`/posts/${post.slug}/`}
+          dir="more"
           prefetch={false}
           onClick={startNavigation}
-          className="inline-flex items-center gap-2 text-sm font-medium text-accent-violet hover:gap-3 transition-all hover:text-accent-pink"
+          className="inline-flex items-center gap-2 text-sm font-medium text-accent-violet hover:text-accent-pink"
         >
           阅读全文
-          <ArrowRight size={14} />
-        </Link>
+        </ArrowLink>
       </motion.div>
     </section>
   );

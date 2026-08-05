@@ -37,11 +37,7 @@ export default function TableOfContents({ items }: Props) {
     if (items.length === 0) return;
 
     // 首屏：若 URL 已带 hash，让浏览器原生滚动到位后再由 observer 接管；
-    // 否则默认高亮首项 (P4)
-    if (typeof window !== 'undefined' && !window.location.hash) {
-      setActiveId(items[0]!.id);
-    }
-
+    // 无 hash 时 useState 初始值已是 items[0]，无需在 effect 内重复 setState。
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries

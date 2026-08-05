@@ -241,15 +241,13 @@ export default function HeroScene() {
                   >
                     <Icon size={12} />
                   </motion.span>
-                  {/* Label */}
-                  <motion.span
-                    className="relative text-xs font-medium"
-                    style={{ color: '#78716c' }}
-                    whileHover={{ color }}
-                    transition={{ type: 'spring', stiffness: 180, damping: 16 }}
+                  {/* Label —— hover 变色走纯 CSS（AGENTS.md #24），CSS 变量不可被 Framer 插值动画 */}
+                  <span
+                    className="quick-nav-label relative text-xs font-medium"
+                    style={{ '--pill-color': color } as React.CSSProperties}
                   >
                     {label}
-                  </motion.span>
+                  </span>
                 </Link>
               </motion.div>
             ))}

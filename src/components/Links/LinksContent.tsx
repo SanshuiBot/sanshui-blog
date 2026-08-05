@@ -1,7 +1,7 @@
 'use client';
-import { ExternalLink, ArrowLeft, Link2, Mail } from 'lucide-react';
+import { ExternalLink, Link2, Mail } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
-import Link from 'next/link';
+import ArrowLink from '@/components/UI/ArrowLink';
 import { motion } from 'framer-motion';
 import { siteConfig } from '@/lib/site';
 
@@ -14,10 +14,13 @@ export default function LinksContent() {
 
   return (
     <>
-      <Link href="/" className="link-back inline-flex items-center gap-1.5 text-sm mb-8">
-        <ArrowLeft size={14} className="link-arrow" />
+      <ArrowLink
+        href="/"
+        dir="back"
+        className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
+      >
         返回首页
-      </Link>
+      </ArrowLink>
       <div className="mb-12">
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent-violet uppercase tracking-widest mb-4">
           <Link2 size={12} />
@@ -49,13 +52,9 @@ export default function LinksContent() {
         </motion.div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <motion.span
-              className="font-semibold text-white truncate"
-              whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}
-              transition={{ type: 'spring', stiffness: 180, damping: 16 }}
-            >
+            <span className="friend-card-name font-semibold text-white truncate">
               {friend.name}
-            </motion.span>
+            </span>
             <motion.span
               initial={{ opacity: 0, x: -4 }}
               whileHover={{ opacity: 1, x: 0 }}

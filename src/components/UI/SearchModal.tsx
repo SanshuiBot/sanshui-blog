@@ -34,11 +34,15 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
       .catch(() => setPosts([]));
   }, [open, posts]);
 
+  // 关闭时清空搜索词：渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (!open) setQ('');
+  }
+
   useEffect(() => {
-    if (!open) {
-      setQ('');
-      return;
-    }
+    if (!open) return;
     // 延迟聚焦等 DOM 就位；StrictMode 下 effect 会跑两次，
     // 用 ref 持有定时器在 cleanup 中清，避免重复触发/卸载后回调
     const t = setTimeout(() => inputRef.current?.focus(), 100);

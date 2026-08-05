@@ -14,8 +14,8 @@
 import { getAllPosts, getAllTags, getPostsByTag } from '@/lib/posts';
 import PostCard from '@/components/Post/PostCard';
 import FilterDropdown from '@/components/Archive/FilterDropdown';
-import Link from 'next/link';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+import ArrowLink from '@/components/UI/ArrowLink';
+import { BookOpen } from 'lucide-react';
 
 export default function ArchivePage() {
   const posts = getAllPosts();
@@ -34,10 +34,13 @@ export default function ArchivePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-      <Link href="/" className="link-back inline-flex items-center gap-1.5 text-sm mb-8">
-        <ArrowLeft size={14} className="link-arrow" />
+      <ArrowLink
+        href="/"
+        dir="back"
+        className="link-back inline-flex items-center gap-1.5 text-sm mb-8"
+      >
         返回首页
-      </Link>
+      </ArrowLink>
 
       <div className="mb-14 flex items-center justify-between gap-4">
         <div>
@@ -45,7 +48,9 @@ export default function ArchivePage() {
             <BookOpen size={12} />
             归档
           </span>
-          <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">全部文章</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+            <span className="text-aurora">全部文章</span>
+          </h1>
           <p className="mt-3 text-gray-500">共 {posts.length} 篇文章</p>
         </div>
         {tags.length > 0 && <FilterDropdown tags={tags} />}

@@ -53,6 +53,8 @@ export default function Tooltip({
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [flipX, setFlipX] = useState(false);
   const [flipY, setFlipY] = useState(false);
+  // 气泡实际尺寸（渲染期不读 ref，由 handleMove 测量后存 state）
+  const [bubbleSize, setBubbleSize] = useState({ w: 80, h: 28 });
   const wrapRef = useRef<HTMLDivElement>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -99,6 +101,7 @@ export default function Tooltip({
     const vh = window.innerHeight;
     const bw = bubbleRef.current?.offsetWidth ?? 80;
     const bh = bubbleRef.current?.offsetHeight ?? 28;
+    setBubbleSize({ w: bw, h: bh });
     setFlipX(x + offsetX + bw > vw - 8);
     setFlipY(y + offsetY + bh > vh - 8);
   };
@@ -122,8 +125,8 @@ export default function Tooltip({
     }, 600);
   };
 
-  const left = flipX ? pos.x - offsetX - (bubbleRef.current?.offsetWidth ?? 80) : pos.x + offsetX;
-  const top = flipY ? pos.y - offsetY - (bubbleRef.current?.offsetHeight ?? 28) : pos.y + offsetY;
+  const left = flipX ? pos.x - offsetX - bubbleSize.w : pos.x + offsetX;
+  const top = flipY ? pos.y - offsetY - bubbleSize.h : pos.y + offsetY;
 
   return (
     <div
