@@ -68,7 +68,7 @@ sanshui-blog/
 ├── scripts/
 │   ├── predev.js            # ConsoleNinja 兼容：生成 .next/routes-manifest.json
 │   └── gen-posts-index.js   # 生成 public/posts-index.json（解析契约来自 parse-post.mjs）
-├── public/                  # favicon.svg/ico · logo.svg · github.png · posts-index.json（构建产物，.prettierignore 忽略）· _headers（安全响应头/缓存）
+├── public/                  # favicon.svg/ico · logo.svg · posts-index.json（构建产物，.prettierignore 忽略）· _headers（安全响应头/缓存）
 ├── next.config.ts           # NEXT_BUILD 双态切换的核心
 ├── eslint.config.mjs · .prettierrc · .prettierignore · tsconfig.json · postcss.config.mjs · .husky/pre-commit · .lintstagedrc
 └── .github/workflows/deploy.yml  # CI：Node 24 + npm ci + npm run build + 部署 ./out 到 GitHub Pages（concurrency.group="pages"，串行不中断）

@@ -2,18 +2,13 @@
 import { ExternalLink, ArrowLeft, Link2, Mail } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
 import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { withBase } from '@/lib/basePath';
 import { siteConfig } from '@/lib/site';
 
 export default function LinksContent() {
-  const [imgLoaded, setImgLoaded] = useState<boolean | undefined>(undefined);
   const friend = {
     name: 'GitHub',
     url: siteConfig.github,
-    avatar: withBase('/github.png'),
     desc: '个人开源项目托管平台',
   };
 
@@ -44,25 +39,13 @@ export default function LinksContent() {
         className="group flex items-center gap-5 p-6 rounded-2xl glass border border-white/5"
       >
         <motion.div
-          className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-white/5 relative"
+          className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-white/5 relative flex items-center justify-center"
           style={{ boxShadow: '0 0 0px rgb(var(--accent-violet-rgb) / 0)' }}
           whileHover={{ boxShadow: '0 0 24px rgb(var(--accent-violet-rgb) / 0.25)' }}
           transition={{ type: 'spring', stiffness: 180, damping: 15 }}
         >
-          {imgLoaded === undefined || imgLoaded === false ? (
-            <div className="absolute inset-0 bg-white/5 animate-pulse flex items-center justify-center">
-              <Github size={20} className="text-gray-600" />
-            </div>
-          ) : null}
-          <Image
-            src={friend.avatar}
-            alt={friend.name}
-            fill
-            sizes="56px"
-            className="object-cover"
-            onLoad={() => setImgLoaded(true)}
-            onError={() => setImgLoaded(false)}
-          />
+          {/* inline SVG 随主题变色（currentColor），替代静态 github.png */}
+          <Github size={28} className="text-gray-400" />
         </motion.div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
