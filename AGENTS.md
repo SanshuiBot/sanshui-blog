@@ -62,12 +62,14 @@ sanshui-blog/
 │   │   ├── site.ts          # 站点身份配置（url/emailHref 等派生字段，客户端安全）
 │   │   ├── basePath.ts      # BASE_PATH + withBase()（客户端安全，URL 一律走 withBase）
 │   │   ├── thumbGeometry.ts # TOC 滚动指示条几何纯函数（TableOfContents 使用）
-│   │   └── clickParticles.ts# 点击特效粒子物理纯函数（ClickEffect 使用：easing + 状态推导）
+│   │   ├── clickParticles.ts# 点击特效粒子物理纯函数（ClickEffect 使用：easing + 状态推导）
+│   │   └── post-index.ts    # PostIndexEntry 适配器（ADR-0004，client-safe，SearchModal 用）
 │   └── global.d.ts
 ├── tests/                    # Vitest 单测：lib 纯函数与契约（accents/toc/posts/basePath/resume/parsePost/thumbGeometry/clickParticles）
 ├── scripts/
 │   ├── predev.js            # ConsoleNinja 兼容：生成 .next/routes-manifest.json
-│   └── gen-posts-index.js   # 生成 public/posts-index.json（解析契约来自 parse-post.mjs）
+│   ├── gen-posts-index.js   # 生成 public/posts-index.json（解析契约来自 parse-post.mjs）
+│   └── gen-dotted-tag-payloads.js # 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404（见约定 #27）
 ├── public/                  # favicon.svg/ico · logo.svg · posts-index.json（构建产物，.prettierignore 忽略）· _headers（安全响应头/缓存）
 ├── next.config.ts           # NEXT_BUILD 双态切换的核心
 ├── eslint.config.mjs · .prettierrc · .prettierignore · tsconfig.json · postcss.config.mjs · .husky/pre-commit · .lintstagedrc
