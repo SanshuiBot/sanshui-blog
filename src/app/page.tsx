@@ -13,8 +13,7 @@
 import { getAllPosts } from '@/lib/posts';
 import { withBase } from '@/lib/basePath';
 import PostCard from '@/components/Post/PostCard';
-import HeroScene from '@/components/Home/HeroScene';
-import StatsGrid from '@/components/Home/StatsGrid';
+import HomeHydration from '@/components/Home/HomeHydration';
 import FeaturedPost from '@/components/Home/FeaturedPost';
 import ArrowLink from '@/components/UI/ArrowLink';
 
@@ -23,9 +22,14 @@ export default function Home() {
   const featured = posts[0];
   const remaining = posts.slice(1);
 
+  // 预取范围：首屏可见的 6 篇（featured + 5 张卡片），其余不预取。
+  // 此前预取全部 23 篇，23 个 <link> 撑大首页 HTML 且抢占 HTTP/2 流；
+  // 改后 HTML 显著瘦身，且首屏卡片点击仍秒开（已预取）。
+  const prefetchSlugs = posts.slice(0, 6).map((p) => p.slug);
+
   return (
     <>
-      {/* 批量预取所有文章页 HTML：用户点击卡片前，目标 HTML 已在浏览器 HTTP 缓存。
+      {/* 批量预取首屏可见的文章页 HTML：用户点击卡片前，目标 HTML 已在浏览器 HTTP 缓存。
           低优先级、空闲时拉取，不阻塞首屏。
           原生 <link> 标签不走 Next <Link> 的 basePath 自动注入，必须手动拼。
           注意：不能用 <head> 包裹——App Router 下 <head> 嵌在 <main> 里会触发
@@ -34,16 +38,10 @@ export default function Home() {
           ⚠️ 不带 as="document"：带 as 会强制走高优先级文档通道，抢占首屏 JS/CSS
           的 HTTP/2 并发流，导致首屏资源全部挂起（实测 48s）。去掉 as 后浏览器
           把它当低优先级空闲预取，首屏不再被挤占。 */}
-      {posts.map((p) => (
-        <link
-          key={p.slug}
-          rel="prefetch"
-          href={withBase(`/posts/${p.slug}/`)}
-          fetchPriority="low"
-        />
+      {prefetchSlugs.map((slug) => (
+        <link key={slug} rel="prefetch" href={withBase(`/posts/${slug}/`)} fetchPriority="low" />
       ))}
-      <HeroScene />
-      <StatsGrid />
+      <HomeHydration />
       {featured && <FeaturedPost post={featured} />}
       <section id="posts" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
         <div className="flex items-end justify-between mb-10">
