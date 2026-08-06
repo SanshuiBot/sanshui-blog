@@ -154,6 +154,10 @@ export function rgbToHex(rgb: string): string {
 /**
  * 从 localStorage 读自定义预设；不存在返回 null。
  * 自定义预设格式：{ id: 'custom', label: '自定义', colors: {...} }
+ *
+ * 校验等级与 resolveAccentColors / accentBootstrapScript 一致——只校 6 channel
+ * 类型齐全，不校验 parsed.id（本仓自己写的 key，不存在被外部污染的场景）。
+ * 见 ADR-0002。
  */
 export function getCustomPreset(): AccentPreset | null {
   if (typeof window === 'undefined') return null;
@@ -162,12 +166,15 @@ export function getCustomPreset(): AccentPreset | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<AccentPreset>;
     if (
-      parsed.id === CUSTOM_ACCENT_ID &&
       parsed.label &&
       parsed.colors &&
       ACCENT_CHANNELS.every((ch) => typeof parsed.colors![ch] === 'string')
     ) {
-      return parsed as AccentPreset;
+      return {
+        id: CUSTOM_ACCENT_ID,
+        label: parsed.label,
+        colors: parsed.colors as Record<AccentChannel, string>,
+      };
     }
     return null;
   } catch {
@@ -228,17 +235,26 @@ export function resolveAccentColors(
  * 防 FOUC inline script：首屏前同步读 localStorage 并写 CSS 变量。
  * 由本模块生成（与 resolveAccentColors 共享数据源），逻辑嵌入在自执行函数中，
  * 不依赖外部模块，可安全内联在 <head>。
+ *
+ * 校验等级与 resolveAccentColors 一致——6 channel 缺一就 reject（回退默认预设），
+ * 见 ADR-0002。partial channel 不再默写部分变量（混合调色盘 FOUC 闪屏的根因）。
  */
 export const accentBootstrapScript = `(function(){
   try {
     var id = window.localStorage.getItem('${ACCENT_STORAGE_KEY}');
     var presets = ${JSON.stringify(ACCENT_PRESETS.map((p) => ({ id: p.id, colors: p.colors })))};
+    var CH = ['pink','violet','blue','teal','gold','rose'];
     var def = presets.find(function(p){return p.id==='${DEFAULT_ACCENT_ID}';});
     var target;
     if (id === '${CUSTOM_ACCENT_ID}') {
       try {
         var raw = window.localStorage.getItem('${CUSTOM_ACCENT_STORAGE_KEY}');
-        if (raw) target = JSON.parse(raw);
+        if (raw) {
+          var p = JSON.parse(raw);
+          if (p.colors && CH.every(function(c){return typeof p.colors[c]==='string';})) {
+            target = p;
+          }
+        }
       } catch (e2) {}
     }
     if (!target) {

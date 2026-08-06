@@ -154,6 +154,72 @@ describe('accentBootstrapScript（防 FOUC 脚本与纯函数行为一致）', (
     const expected = getPreset(DEFAULT_ACCENT_ID).colors;
     expect(vars['--accent-violet-rgb']).toBe(expected.violet);
   });
+
+  // ADR-0002 边角矩阵——固化 inline script 与 resolveAccentColors 行为等价，
+  // 防止三套解析器再发散（partial channel FOUC 闪屏是 ③ 的核心 bug）。
+
+  it('partial channel：脚本与纯函数都回退默认（不默写部分变量）', () => {
+    // custom JSON 只含 1/6 channel——inline script 历史会默写部分变量造成混合调色盘 FOUC
+    const partial = { colors: { violet: '1 2 3' } };
+    const raw = JSON.stringify(partial);
+    const vars = runScript({
+      [ACCENT_STORAGE_KEY]: CUSTOM_ACCENT_ID,
+      [CUSTOM_ACCENT_STORAGE_KEY]: raw,
+    });
+    // 脚本回退默认预设
+    const expected = getPreset(DEFAULT_ACCENT_ID).colors;
+    expect(vars['--accent-violet-rgb']).toBe(expected.violet);
+    // 纯函数同样回退（双向断言等价性）
+    const resolved = resolveAccentColors(CUSTOM_ACCENT_ID, raw);
+    expect(resolved).toEqual(expected);
+  });
+
+  it('corrupt JSON：脚本与纯函数都回退默认', () => {
+    const raw = '{bad json';
+    const vars = runScript({
+      [ACCENT_STORAGE_KEY]: CUSTOM_ACCENT_ID,
+      [CUSTOM_ACCENT_STORAGE_KEY]: raw,
+    });
+    const expected = getPreset(DEFAULT_ACCENT_ID).colors;
+    expect(vars['--accent-violet-rgb']).toBe(expected.violet);
+    expect(resolveAccentColors(CUSTOM_ACCENT_ID, raw)).toEqual(expected);
+  });
+
+  it('custom id 但 CUSTOM_ACCENT_STORAGE_KEY 为 null：脚本与纯函数都回退默认', () => {
+    // 用户没存过自定义预设，getItem 返回 null
+    const vars = runScript({
+      [ACCENT_STORAGE_KEY]: CUSTOM_ACCENT_ID,
+      [CUSTOM_ACCENT_STORAGE_KEY]: null,
+    });
+    const expected = getPreset(DEFAULT_ACCENT_ID).colors;
+    expect(vars['--accent-violet-rgb']).toBe(expected.violet);
+    expect(resolveAccentColors(CUSTOM_ACCENT_ID, null)).toEqual(expected);
+  });
+
+  it('parsed.id !== custom：getCustomPreset 不再校验 id（ADR-0002 统一校验等级）', () => {
+    // localStorage 里 custom key 被写入非 custom id 的 JSON——
+    // 删 parsed.id 校验后，只要 6 channel 齐全就应接受
+    const wrongId = {
+      id: 'aurora', // 不是 custom，但 6 channel 齐全
+      label: '自定义',
+      colors: {
+        pink: '11 12 13',
+        violet: '21 22 23',
+        blue: '31 32 33',
+        teal: '41 42 43',
+        gold: '51 52 53',
+        rose: '61 62 63',
+      },
+    };
+    const vars = runScript({
+      [ACCENT_STORAGE_KEY]: CUSTOM_ACCENT_ID,
+      [CUSTOM_ACCENT_STORAGE_KEY]: JSON.stringify(wrongId),
+    });
+    // 脚本读 custom key，6 channel 齐全 → 应用（不再因 parsed.id reject）
+    expect(vars['--accent-violet-rgb']).toBe('21 22 23');
+    // 纯函数同样接受
+    expect(resolveAccentColors(CUSTOM_ACCENT_ID, JSON.stringify(wrongId))?.violet).toBe('21 22 23');
+  });
 });
 
 describe('globals.css :root 默认 accent 变量与 ACCENT_PRESETS 一致（跨语言契约）', () => {

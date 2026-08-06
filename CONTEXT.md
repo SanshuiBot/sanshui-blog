@@ -12,7 +12,9 @@
 
 **scroll container ref**: 一个其内容可滚的容器 DOM 节点的 React ref，`useScrollThumbGeometry` 唯一输入。ref 必须指向「`overflow-y: auto` 且内容可能超出」的节点（TOC 里是 `.toc-scroll`）。 _避免_: 滚动父级、可滚元素
 
-**FOUC**: First Content FOUC——首屏前主题/accent 闪烁。本项目通过 inline `<head>` script（`accentBootstrapScript`）同步读 localStorage 写 CSS 变量来防。FOUC 闪屏的具体形态见 ADR-0001 的「不靠浏览器实现细节」收尾。
+**FOUC**: First Content FOUC——首屏前主题/accent 闪烁。本项目通过 inline `<head>` script（`accentBootstrapScript`）同步读 localStorage 写 CSS 变量来防。FOUC 闪屏的具体形态见 ADR-0001 的「不靠浏览器实现细节」收尾，及 ADR-0002 的「partial channel 混合调色盘 FOUC」修法。
+
+**accent 解析器**: 「localStorage → 6 个 accent CSS 变量」的解析逻辑，有三条消费者路径——`resolveAccentColors`（纯函数，唯一真相源）/ `accentBootstrapScript`（inline FOUC 脚本副本）/ `getCustomPreset`（给 AccentPicker 读自定义预设）。三者校验等级必须一致（见 ADR-0002），否则会重现混合调色盘 FOUC 闪屏。 _避免_: accent 解析、调色盘逻辑（后者是结果不是解析器本身）
 
 ## Decisions
 
