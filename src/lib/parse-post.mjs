@@ -4,7 +4,8 @@
  * 消费方：
  *  - src/lib/posts.ts（服务端读取层，RSC）
  *  - scripts/gen-posts-index.js（索引生成脚本，CJS 通过 await import 动态加载）
- *  - SearchModal 的索引类型由此结构派生
+ *  - src/lib/post-index.ts 的 PostIndexEntry 是 SearchModal 运行时 fetch 的索引形状真相源
+ *    （ADR-0004），由本模块的返回形状派生——剔除 content / readingTime
  *
  * 抽成共享模块的原因：解析规则（文件名→slug、date 规整、excerpt 兜底、tags 缺省、
  * md/mdx 过滤、日期降序排序）此前在 posts.ts 与 gen-posts-index.js 两处逐行复制，

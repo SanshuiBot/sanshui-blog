@@ -6,18 +6,11 @@ import Link from 'next/link';
 import { withBase } from '@/lib/basePath';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import { useDismiss } from '@/components/UI/useDismiss';
-
-interface SearchPost {
-  slug: string;
-  title: string;
-  date: string;
-  excerpt: string;
-  tags: string[];
-}
+import type { PostIndexEntry } from '@/lib/post-index';
 
 export default function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState('');
-  const [posts, setPosts] = useState<SearchPost[] | null>(null);
+  const [posts, setPosts] = useState<PostIndexEntry[] | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
@@ -30,7 +23,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     if (!open || posts !== null) return;
     fetch(`${withBase('/posts-index.json')}`)
       .then((r) => (r.ok ? r.json() : []))
-      .then((data: SearchPost[]) => setPosts(data))
+      .then((data: PostIndexEntry[]) => setPosts(data))
       .catch(() => setPosts([]));
   }, [open, posts]);
 
@@ -64,7 +57,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     if (!t) return [];
     return posts
       .filter(
-        (p: SearchPost) =>
+        (p: PostIndexEntry) =>
           p.title.toLowerCase().includes(t) ||
           p.excerpt.toLowerCase().includes(t) ||
           p.tags.some((x: string) => x.toLowerCase().includes(t)),
@@ -116,7 +109,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
               {posts === null ? (
                 <div className="text-center py-10 text-gray-500 text-sm">加载中...</div>
               ) : results.length > 0 ? (
-                results.map((p: SearchPost, i: number) => (
+                results.map((p: PostIndexEntry, i: number) => (
                   <motion.div
                     key={p.slug}
                     initial={{ opacity: 0, x: -8 }}

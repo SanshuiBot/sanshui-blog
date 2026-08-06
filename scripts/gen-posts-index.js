@@ -29,7 +29,10 @@ async function build() {
   const posts = files
     .map((fn) => {
       const p = parsePostFile(fn, fs.readFileSync(path.join(postsDir, fn), 'utf-8'));
-      // 索引只保留轻量字段，剔除 content
+      // 索引只保留轻量字段，剔除 content。
+      // 字段集与 src/lib/post-index.ts 的 PostIndexEntry 字面一致（ADR-0004 隐式契约）——
+      // 未来字段变更改两处（此处 + post-index.ts）。脚本是 CJS 不 await import TS，
+      // 靠注释 + TS 类型双保险提醒。
       return { slug: p.slug, title: p.title, date: p.date, excerpt: p.excerpt, tags: p.tags };
     })
     .sort(sortPostsByDateDesc);
