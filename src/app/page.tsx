@@ -30,12 +30,14 @@ export default function Home() {
           原生 <link> 标签不走 Next <Link> 的 basePath 自动注入，必须手动拼。
           注意：不能用 <head> 包裹——App Router 下 <head> 嵌在 <main> 里会触发
           hydration 错误（<head> cannot be a child of <main>）。<link rel="prefetch">
-          允许出现在文档任意位置，浏览器同样识别。 */}
+          允许出现在文档任意位置，浏览器同样识别。
+          ⚠️ 不带 as="document"：带 as 会强制走高优先级文档通道，抢占首屏 JS/CSS
+          的 HTTP/2 并发流，导致首屏资源全部挂起（实测 48s）。去掉 as 后浏览器
+          把它当低优先级空闲预取，首屏不再被挤占。 */}
       {posts.map((p) => (
         <link
           key={p.slug}
           rel="prefetch"
-          as="document"
           href={withBase(`/posts/${p.slug}/`)}
           fetchPriority="low"
         />
