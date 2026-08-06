@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { splitResumeLines } from '@/lib/resumeLines';
+import { useSafeTimeout } from '@/components/UI/useSafeTimeout';
 
 interface ResumeTerminalProps {
   /** 完整简历文本（markdown，按行流式输出） */
@@ -34,14 +35,13 @@ export default function ResumeTerminal({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const startedRef = useRef<boolean>(false);
   const scrollBodyRef = useRef<HTMLDivElement | null>(null);
-  // 打印链定时器句柄：卸载时需清，避免对已卸载组件 setState。
-  // 显式标注 number（浏览器 setTimeout 返回 number；DOM lib 的 Timeout 与 Node 重载
-  // 在 ReturnType 推断时冲突，直接用 number 最稳）。
-  const tickTimerRef = useRef<number | null>(null);
+  // 打印链定时器：useSafeTimeout 自动 cleanup（卸载后 setState bug 类，见 ADR-0003）。
+  // tick 链用 useSafeTimeout 重排自身——cancel 由 hook 内部管，effect 重挂时不丢。
+  const setTickTimer = useSafeTimeout();
 
   // 进入视口后启动打印（startPrinting 声明提前：函数声明虽提升，但 react-hooks 规则
   // 要求先声明后使用）
-  function startPrinting() {
+  const startPrinting = useCallback(() => {
     let idx = 0;
     const tick = () => {
       idx += 1;
@@ -52,7 +52,6 @@ export default function ResumeTerminal({
       }
       if (idx >= lines.length) {
         setDone(true);
-        tickTimerRef.current = null;
         return;
       }
       // 空行稍快、标题行稍慢，营造节奏感
@@ -60,26 +59,18 @@ export default function ResumeTerminal({
       const isHeading = current.trimStart().startsWith('#');
       const isEmpty = current.trim() === '';
       const next = isEmpty ? lineDelay * 0.4 : isHeading ? lineDelay * 2.4 : lineDelay;
-      tickTimerRef.current = window.setTimeout(tick, next);
+      setTickTimer(tick, next);
     };
     tick();
-  }
-
-  // 统一卸载清理：断开观察器 + 清掉待触发的打印定时器
-  const cleanup = () => {
-    if (tickTimerRef.current) {
-      clearTimeout(tickTimerRef.current);
-      tickTimerRef.current = null;
-    }
-  };
+  }, [lines, lineDelay, setTickTimer]);
 
   useEffect(() => {
     if (!triggerOnView) {
       startPrinting();
-      return cleanup;
+      return;
     }
     const node = containerRef.current;
-    if (!node) return cleanup;
+    if (!node) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -96,7 +87,6 @@ export default function ResumeTerminal({
     observer.observe(node);
     return () => {
       observer.disconnect();
-      cleanup();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [triggerOnView]);

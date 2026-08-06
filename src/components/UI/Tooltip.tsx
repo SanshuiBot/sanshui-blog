@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useSafeTimeout } from '@/components/UI/useSafeTimeout';
 
 /**
  * Tooltip —— 跟随鼠标的悬停提示
@@ -60,11 +61,13 @@ export default function Tooltip({
   const [bubbleSize, setBubbleSize] = useState({ w: 80, h: 28 });
   const wrapRef = useRef<HTMLDivElement>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
-  const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 3 个卸载安全的定时器（useSafeTimeout 自动 cleanup，见 ADR-0003）：
+  // showTimer / hideTimer 双向 debounce；guardTimer 触屏点击后短暂抑制合成 mouseenter
+  const setShowTimer = useSafeTimeout();
+  const setHideTimer = useSafeTimeout();
+  const setGuardTimer = useSafeTimeout();
   // 触屏守卫：手指点击后短暂抑制浏览器补发的合成 mouseenter（混合设备）
   const touchGuard = useRef(false);
-  const guardTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // 主指针是否有 hover 能力；纯触屏设备（手机/平板）为 false → 不显示气泡。
   // 只在事件回调里读取、不参与渲染，用 ref 即可（避免 effect 内同步 setState 的 lint warning）
   const hoverCapable = useRef(true);
@@ -72,25 +75,17 @@ export default function Tooltip({
   useEffect(() => {
     // 设备 hover 能力不会中途变化，无需监听 change
     hoverCapable.current = window.matchMedia('(hover: hover)').matches;
-    return () => {
-      // 卸载时清掉所有待触发定时器，避免对已卸载组件调用 setVisible
-      if (guardTimer.current) clearTimeout(guardTimer.current);
-      if (showTimer.current) clearTimeout(showTimer.current);
-      if (hideTimer.current) clearTimeout(hideTimer.current);
-    };
   }, []);
 
-  const clearTimers = () => {
-    if (showTimer.current) clearTimeout(showTimer.current);
-    if (hideTimer.current) clearTimeout(hideTimer.current);
-    showTimer.current = null;
-    hideTimer.current = null;
+  const clearShowHide = () => {
+    setShowTimer(() => {}, 0); // noop：useSafeTimeout 内部会清上一个未触发 timer
+    setHideTimer(() => {}, 0);
   };
 
   const handleEnter = () => {
     if (disabled || !label || !hoverCapable.current || touchGuard.current) return;
-    clearTimers();
-    showTimer.current = setTimeout(() => setVisible(true), 80);
+    clearShowHide();
+    setShowTimer(() => setVisible(true), 80);
   };
 
   const handleMove = (e: React.MouseEvent) => {
@@ -114,20 +109,18 @@ export default function Tooltip({
 
   const handleLeave = () => {
     touchGuard.current = false;
-    clearTimers();
-    hideTimer.current = setTimeout(() => setVisible(false), 60);
+    clearShowHide();
+    setHideTimer(() => setVisible(false), 60);
   };
 
   /** 触屏点击：立即隐藏气泡，并短暂抑制随后的合成 mouseenter（混合设备防残留） */
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.pointerType !== 'touch') return;
     touchGuard.current = true;
-    clearTimers();
+    clearShowHide();
     setVisible(false);
-    if (guardTimer.current) clearTimeout(guardTimer.current);
-    guardTimer.current = setTimeout(() => {
+    setGuardTimer(() => {
       touchGuard.current = false;
-      guardTimer.current = null;
     }, 600);
   };
 

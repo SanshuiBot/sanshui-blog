@@ -16,6 +16,8 @@
 
 **accent 解析器**: 「localStorage → 6 个 accent CSS 变量」的解析逻辑，有三条消费者路径——`resolveAccentColors`（纯函数，唯一真相源）/ `accentBootstrapScript`（inline FOUC 脚本副本）/ `getCustomPreset`（给 AccentPicker 读自定义预设）。三者校验等级必须一致（见 ADR-0002），否则会重现混合调色盘 FOUC 闪屏。 _避免_: accent 解析、调色盘逻辑（后者是结果不是解析器本身）
 
+**卸载后 setState**: React 组件卸载后定时器仍触发回调、对已死组件调 `setState` 的 bug 类。本仓由 `useSafeTimeout`（ADR-0003）在 hook 层统一管 `useRef` 持 timer ID + effect cleanup 自动 `clearTimeout`。调用方不再手写「ref + cleanup」仪式。 _避免_: timer 泄漏、卸载泄漏（前者是现象，后者是结果）
+
 ## Decisions
 
 见 `docs/adr/`。每条 ADR 记一次架构决策及其「为什么这么选」——未来探索者会想知道的门槛。

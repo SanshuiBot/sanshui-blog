@@ -1,5 +1,6 @@
 'use client';
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
+import { useSafeTimeout } from '@/components/UI/useSafeTimeout';
 
 interface NavigationContextValue {
   /** 点击后立即显示全屏加载覆盖层 */
@@ -67,20 +68,17 @@ function Overlay() {
 
 export function NavigationLoadingProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
-  const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 2 个卸载安全的定时器（useSafeTimeout 自动 cleanup，见 ADR-0003）：
+  // showTimer 延迟 300ms 显示覆盖层；fallbackTimer 兜底 5 秒自动 clear
+  const setShowTimer = useSafeTimeout();
+  const setFallbackTimer = useSafeTimeout();
 
   const clear = useCallback(() => {
-    if (showTimerRef.current) {
-      clearTimeout(showTimerRef.current);
-      showTimerRef.current = null;
-    }
-    if (fallbackRef.current) {
-      clearTimeout(fallbackRef.current);
-      fallbackRef.current = null;
-    }
+    // useSafeTimeout 返回的 cancel 未导出——重设 noop 触发内部清上一个
+    setShowTimer(() => {}, 0);
+    setFallbackTimer(() => {}, 0);
     setLoading(false);
-  }, []);
+  }, [setShowTimer, setFallbackTimer]);
 
   const done = useCallback(() => {
     clear();
@@ -89,12 +87,10 @@ export function NavigationLoadingProvider({ children }: { children: React.ReactN
   const startNavigation = useCallback(() => {
     // 延迟 300ms 显示覆盖层：快跳转（< 300ms）根本看不到覆盖层，
     // 慢跳转才显示，避免用户误以为卡死。
-    if (showTimerRef.current) clearTimeout(showTimerRef.current);
-    showTimerRef.current = setTimeout(() => setLoading(true), 300);
-    if (fallbackRef.current) clearTimeout(fallbackRef.current);
+    setShowTimer(() => setLoading(true), 300);
     // 兜底 5 秒（正常情况下 PostPage 挂载时 done() 在 ms 级触发）
-    fallbackRef.current = setTimeout(clear, 5000);
-  }, [clear]);
+    setFallbackTimer(clear, 5000);
+  }, [setShowTimer, setFallbackTimer, clear]);
 
   return (
     <NavigationContext.Provider value={{ startNavigation, done }}>
