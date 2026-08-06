@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Menu, X } from 'lucide-react';
 import type { TocItem } from '@/lib/toc';
-import { thumbGeometry } from '@/lib/thumbGeometry';
+import { useScrollThumbGeometry } from '@/components/UI/useScrollThumbGeometry';
 
 interface Props {
   items: TocItem[];
@@ -96,65 +96,33 @@ export default function TableOfContents({ items }: Props) {
   }, []);
 
   // 淡入淡出滚动条 —— 显隐「只」由 hover 控制：mouseenter → 显示，mouseleave → 隐藏。
-  // 几何由 ResizeObserver + rAF 延迟算准（等布局稳定），scroll 时仅同步 top。
+  // 几何由 useScrollThumbGeometry hook 算（rAF 防抖 + ResizeObserver + scroll + fonts.ready 兜底），
+  // 见 src/components/UI/useScrollThumbGeometry.ts 与 ADR-0001。
   // 浮层 absolute 不占文档流 → 不挤压文字布局。
-  const [thumb, setThumb] = useState<{ top: number; height: number } | null>(null);
   const [thumbVisible, setThumbVisible] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const thumbVisibleRef = useRef(false);
+  const { thumb } = useScrollThumbGeometry(scrollRef);
 
+  // 显隐「只」由 hover 控制 —— 鼠标在目录里就显示，离开就隐藏
   useEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
-
-    // thumb 几何：若内容不超出视高则卸载浮层；否则按可滚比例算 top/height（纯函数见 lib/thumbGeometry）
-    const update = () => {
-      setThumb(thumbGeometry(container.clientHeight, container.scrollHeight, container.scrollTop));
-    };
-
-    // 首次与字体加载后延延算准 —— rAF 等布局稳定，fonts.ready 兜底
-    let raf = requestAnimationFrame(update);
-    if (document.fonts?.ready) document.fonts.ready.then(update).then(() => update());
-
-    // ResizeObserver：容器或内容尺寸变时重算（缩放窗 / 新内容）
-    const ro = new ResizeObserver(() => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(update);
-    });
-    ro.observe(container);
-    ro.observe(container.firstElementChild ?? container);
-
-    // scroll 时重算 thumb 几何（thumbGeometry 纯函数，见 src/lib/thumbGeometry.ts），
-    // 显隐由下面 mouseenter/leave 管
-    const onScroll = () => {
-      if (!thumbVisibleRef.current) return;
-      const g = thumbGeometry(container.clientHeight, container.scrollHeight, container.scrollTop);
-      if (g) setThumb(g);
-    };
-
-    // 显隐「只」由 hover 控制 —— 鼠标在目录里就显示，离开就隐藏
     const onEnter = () => {
       thumbVisibleRef.current = true;
       setThumbVisible(true);
-      update();
     };
     const onLeave = () => {
       thumbVisibleRef.current = false;
       setThumbVisible(false);
     };
-
-    container.addEventListener('scroll', onScroll, { passive: true });
     container.addEventListener('mouseenter', onEnter);
     container.addEventListener('mouseleave', onLeave);
-
     return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      container.removeEventListener('scroll', onScroll);
       container.removeEventListener('mouseenter', onEnter);
       container.removeEventListener('mouseleave', onLeave);
     };
-  }, [items]);
+  }, []);
 
   if (items.length === 0) return null;
 
