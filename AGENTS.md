@@ -1,6 +1,6 @@
 # AGENTS.md — sanshui-blog
 
-三水的个人博客。Next.js 16.3（App Router，纯静态导出 `output: 'export'`）+ TypeScript 5 strict + Tailwind CSS v4 + Framer Motion 12。托管在 GitHub Pages，basePath 为 `/sanshui-blog`，部署走 `.github/workflows/deploy.yml` 自动 CI/CD。全站暗色「Aurora 玻璃态」设计系统。
+三水的个人博客。Next.js 16.3（App Router，纯静态导出 `output: 'export'`）+ TypeScript 5 strict + Tailwind CSS v4 + Framer Motion 12。托管在 GitHub Pages，basePath 为 `/sanshui-blog`，部署走 `.github/workflows/deploy.yml` 自动 CI/CD。默认亮色主题、暗色可选（见约定 #12），「Aurora 玻璃态」设计系统。
 
 ---
 
@@ -49,7 +49,7 @@ sanshui-blog/
 │   │   ├── Post/            # PostCard · PostContent · PostMeta · PostNav · PostDone · TableOfContents · CodeCopyInjector
 │   │   ├── About/           # AboutContent · ResumeTerminal
 │   │   ├── Links/ · NotFound/
-│   │   ├── UI/              # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · GithubIcon · useDismiss
+│   │   ├── UI/              # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · GithubIcon · ArrowLink · useDismiss
 │   │   └── TagList.tsx
 │   ├── lib/
 │   │   ├── types.ts         # Post 接口（'server-only'）
@@ -134,7 +134,7 @@ Next 16 的 `next build` **不再执行 lint**（`--no-lint` 选项已移除）�
 
 ### 11. 客户端动效组件懒加载
 
-`AmbientEffects.tsx`（原 `Provider.tsx` 拆分出的动效注册表）用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect` / `ParticleField`，避免打进首屏 chunk；并对 `prefers-reduced-motion` 用户跳过装饰性动效（**仅 `CursorGlow`** 受门控；`ClickEffect` 点击特效始终显示，不受门控影响，见约定 #11a）。新增仅客户端、非首屏必需的动效组件，在 `AmbientEffects` 加一行 `dynamic` 注册即可，照此模式。`experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']` 让大库按需引入（Next 16 仍保留在该配置下）——**不要再自定义 `splitChunks`**，会与内置 chunk 策略冲突，反而拆出更多碎 chunk。
+`AmbientEffects.tsx`（原 `Provider.tsx` 拆分出的动效注册表）用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect` / `ParticleField`，避免打进首屏 chunk；并对 `prefers-reduced-motion` 用户跳过装饰性动效（**仅 `CursorGlow`** 受门控；`ClickEffect` 点击特效始终显示，不受门控影响，见约定 #11a）。新增仅客户端、非首屏必需的动效组件，在 `AmbientEffects` 加一行 `dynamic` 注册即可，照此模式。`experimental.optimizePackageImports: ['framer-motion','lucide-react']` 让大库按需引入（Next 16 仍保留在该配置下）——**不要再自定义 `splitChunks`**，会与内置 chunk 策略冲突，反而拆出更多碎 chunk。
 
 ### 12. 亮色为主、暗色可选
 
@@ -144,7 +144,14 @@ Next 16 的 `next build` **不再执行 lint**（`--no-lint` 选项已移除）�
 
 ### 13. 导航加载状态
 
-`NavigationLoadingProvider`（`src/components/UI/NavigationLoading.tsx`）提供 `useNavigationLoading()` hook，返回 `{ startNavigation, done }`。`startNavigation` 延迟 300ms 显示全屏旋转加载覆盖层（快跳转根本看不到），`done` 隐藏。兜底 5 秒自动 clear。**只有跳转到文章详情页（`/posts/...`）的 `<Link>` 才调用 `startNavigation`**（`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link、`SearchModal` 的搜索结果 Link、`FeaturedPost` 的标题/阅读全文 Link；`PostPage` 挂载时 `done()`）。**导航、标签、归档、友链等其他入口一律不加**——非文章详情跳转出现 loading 覆盖层会严重影响体验。新增文章详情跳转时记得补 `onClick={startNavigation}`，漏加的跳转会看不到加载覆盖层，体感「卡死」。
+`NavigationLoadingProvider`（`src/components/UI/NavigationLoading.tsx`）提供 `useNavigationLoading()` hook，返回 `{ startNavigation, done }`。`startNavigation` 延迟 300ms 显示全屏旋转加载覆盖层（快跳转根本看不到），`done` 隐藏。兜底 5 秒自动 clear。
+
+**只有跳转到文章详情页（`/posts/...`）的 `<Link>` 才调用 `startNavigation`**：
+
+- 入口（4 处）：`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link、`SearchModal` 的搜索结果 Link、`FeaturedPost` 的标题/阅读全文 Link——新增时记得补 `onClick={startNavigation}`，漏加的跳转会看不到加载覆盖层，体感「卡死」。
+- 出口：`src/app/posts/[slug]/page.tsx` 挂载时调用 `done()` 隐藏覆盖层——新增详情页路由时勿漏，否则 loading 会卡住不消失。
+
+**导航、标签、归档、友链等其他入口一律不加**——非文章详情跳转出现 loading 覆盖层会严重影响体验。
 
 ### 14. 全局搜索（⌘K）
 
@@ -224,7 +231,6 @@ TOC 组件（`src/components/Post/TableOfContents.tsx`）的实现约定：
 - **新增预设**：在 `ACCENT_PRESETS`（`src/lib/accents.ts`）追加一项即可——`accentBootstrapScript` 由本模块生成、已内联全部预设，**无需改 `layout.tsx`**。但脚本里 `presets` JSON 是构建期固化的，**新增预设后必须重新 build** 才能被防 FOUC script 识别。
 - **改默认预设**：改 `DEFAULT_ACCENT_ID`，inline script 的 `def` 也会跟着走。
 - **亮/暗主题与 accent 正交**：next-themes 管 `.dark` 类，AccentPicker 管 `--accent-*-rgb`，两者互不干扰。亮色 resume-terminal 原用更深紫（`#7c3aed`）提升对比度，现统一回主 accent 变量，亮模式下中等紫对比度略弱但行为一致。
-- **`noUncheckedIndexedAccess` 注意**：`hexToRgb` 里 `m[1]` 需先判 `!m[1]` 再用，否则 TS 报 `possibly undefined`。
 
 ### 24. hover 变色不要走 Framer Motion，用纯 CSS
 
