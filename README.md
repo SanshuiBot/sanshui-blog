@@ -5,7 +5,7 @@
 <h1 align="center">三水博客</h1>
 
 <p align="center">
-  暗色玻璃态 · 极光渐变 · 物理动效 · 全静态个人博客
+  极光玻璃态 · 渐变光晕 · 物理动效 · 全静态个人博客（默认亮色，暗色可选）
 </p>
 
 <p align="center">
@@ -35,17 +35,17 @@
 
 ## ✨ 设计理念
 
-**Aurora 暗色主题** — 全暗色玻璃态设计系统，极光渐变与物理动效深度融合。
+**Aurora 玻璃态设计系统** — 默认亮色、暗色可选，极光渐变与物理动效深度融合。
 
 |                          |                                                                                    |
 | ------------------------ | ---------------------------------------------------------------------------------- |
-| 🎨 **暗色玻璃态**        | `backdrop-filter: blur(20px)` 半透明卡片，微光边框                                 |
+| 🎨 **玻璃态卡片**        | `backdrop-filter: blur(20px)` 半透明卡片，微光边框（亮/暗双主题）                  |
 | 🌈 **极光渐变文字**      | 多色渐变 + `background-clip: text` 动画                                            |
 | 🖱️ **自定义鼠标光晕**    | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点                                      |
 | 📐 **渐隐网格背景**      | `radial-gradient` mask 从中心向四周淡出                                            |
 | 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                                                         |
 | 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                         |
-| 🔍 **⌘K 全局搜索**       | Pagefind 驱动 + 运行时 fetch 轻量索引                                              |
+| 🔍 **⌘K 全局搜索**       | 运行时 fetch `posts-index.json` 轻量索引；Pagefind 另建全文索引（两套独立机制）    |
 | 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                                                           |
 | 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条 |
 | 🎯 **三水极光 favicon**  | 三条流动水波 + 极光渐变，呼应「三水」之名                                          |
@@ -116,8 +116,9 @@ sanshui-blog/
 │       └── clickParticles.ts   # 点击特效粒子物理纯函数
 ├── tests/                      # Vitest 单测（lib 层纯函数与契约）
 ├── scripts/
-│   ├── predev.js               # ConsoleNinja 兼容脚本
-│   └── gen-posts-index.js      # 生成轻量文章索引 (解析契约来自 parse-post.mjs)
+│   ├── predev.js               # ConsoleNinja 兼容：生成 .next/routes-manifest.json
+│   ├── gen-posts-index.js      # 生成 public/posts-index.json 轻量索引 (解析契约来自 parse-post.mjs)
+│   └── gen-dotted-tag-payloads.js # 为含点号标签 (如 Next.js) 补 RSC payload 副本，避免线上 404
 ├── .github/workflows/deploy.yml # GitHub Actions 自动部署
 └── public/                     # 静态资源 (favicon.svg/ico · posts-index.json · _headers)
 ```
@@ -153,7 +154,7 @@ npx serve out
 | `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                                               |
 | `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                                                          |
 | `npm run typecheck`    | `tsc --noEmit` 类型检查（Next 16 构建不跑 lint，CI/本地须单独跑 lint + typecheck）                                             |
-| `npm run test`         | Vitest 跑 lib 层单测（纯函数与契约，当前 75 个）                                                                               |
+| `npm run test`         | Vitest 跑 lib 层单测（纯函数与契约，当前 79 个）                                                                               |
 | `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                                                         |
 
 > 🔒 **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`。
@@ -166,10 +167,10 @@ npm run dev
   └─ next dev (HMR，无 basePath/assetPrefix)
 
 npm run build
-  └─ prebuild → 生成 public/posts-index.json (~3KB)
+  └─ prebuild → 生成 public/posts-index.json (~10KB 轻量索引)
   └─ cross-env NEXT_BUILD=1 next build --webpack → 静态导出 out/
-  └─ pagefind --site out → 全文搜索索引
-  └─ gen-dotted-tag-payloads → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
+  └─ pagefind --site out → 全文搜索索引（与 ⌘K 的 posts-index.json 是两套独立机制）
+  └─ gen-dotted-tag-payloads.js → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
 ```
 
 ---
@@ -333,7 +334,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
 - **`next.config.ts` 隐式约定**：
   - `images.unoptimized: true`：静态导出无服务端图像优化器，`next/image` 退化为原图直出，新增图片需自行压缩
   - `trailingSlash: true`：所有路由以 `/` 结尾（如 `/posts/xxx/`），`generateStaticParams` 与内部链接拼接都必须遵守，否则线上 404
-  - `experimental.optimizePackageImports: ['framer-motion','lucide-react','react-icons']`：让大库按需引入，**不要再自定义 `splitChunks`**——会与内置 chunk 策略冲突，反而拆出更多碎 chunk
+  - `experimental.optimizePackageImports: ['framer-motion','lucide-react']`：让大库按需引入，**不要再自定义 `splitChunks`**——会与内置 chunk 策略冲突，反而拆出更多碎 chunk
   - `reactStrictMode: true`：开发模式下 effects 会执行两次（mount → unmount → mount），副作用清理逻辑必须幂等
 - **安全头走 `public/_headers`**：`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。新增响应头改 `public/_headers`，不要改 `next.config.ts`
 - **TOC 只提取 h2/h3，锚点与渲染侧同源**：`src/lib/toc.ts` 的 `extractHeadings()` 逐行扫描，只把 `##` / `###` 放进目录，`#` 与 `####` 不进目录；id 与渲染侧 rehype-slug 共用同一个 `github-slugger`（先剥 HTML 再 `slug()`，h1~h6 全部推进状态，重复标题自动 `-1/-2` 后缀，中文/重音/假名都保留，且**不**折叠重复连字符——与渲染侧严格一致），并跳过代码围栏内的假标题。新增需要进目录的标题，必须用 `##` 或 `###`。TOC 组件实现：桌面端目录 sticky 在正文**右边**（`page.tsx` 正文在前、TOC 在后），移动端抽屉式目录在正文上方；`IntersectionObserver` 监测视口上 30% 带取最靠上标题高亮、首屏高亮首项；点击 `scrollIntoView` 平滚 + `history.replaceState` 写 URL hash；`.prose-article h2/h3 { scroll-margin-top: 6rem }` 兜锚点不被 sticky Navbar 遮挡；**淡入淡出滚动条**——`.toc-scroll` 藏原生滚动条，浮 `.toc-thumb` 绝对定位指示条按滚动比例算 `top`/`height`（几何在 `src/lib/thumbGeometry.ts` 纯函数，可单测），显隐只由 hover 控制（`mouseenter` 显示 / `mouseleave` 隐藏），`opacity transition` 淡入淡出，浮层 `absolute` 不占文档流不挤压文字；几何用 `ResizeObserver` + `requestAnimationFrame` 延迟算准 + `document.fonts.ready` 兜底。颜色联 Accent 主题用自定义 `.toc-link` / `.toc-link-active` 类（见下 utility layer 坑），不用 Tailwind utility `text-accent-violet`
