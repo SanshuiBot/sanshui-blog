@@ -267,3 +267,39 @@ export const accentBootstrapScript = `(function(){
     });
   } catch (e) {}
 })();`;
+
+/**
+ * 主题（亮/暗）防 FOUC 同步脚本。
+ *
+ * 为什么需要它：
+ * `next-themes` 的 `ThemeProvider` 渲染在 `<body>` 内的 client 组件里
+ * （见 Providers.tsx），其防 FOUC inline script 因此被注入到 `<body>`
+ * 而非 `<head>`——首屏前 `<html>` 没有 `.dark` 类，浏览器先渲染亮色、
+ * 再被 body 内脚本切暗色 → FOUC 闪屏。
+ *
+ * 本脚本在 `<head>` 内同步跑（与 accentBootstrapScript 并列），首屏前
+ * 设好 `.dark` 类，消除 FOUC。逻辑与 next-themes 内联脚本保持一致：
+ *   读 storageKey（默认 'theme'）→ 未设置取 defaultTheme（'system'）
+ *   → 'system' 跟随 prefers-color-scheme → 否则直接对应 dark/light
+ *
+ * 参数化：与 ThemeProvider 的 props 对齐
+ *   storageKey='aurora-theme'、defaultTheme='system'、enableSystem=true
+ *
+ * 注意：本脚本只在首屏前跑一次，不影响后续 setTheme 的运行时切换。
+ * 点击切换的「等一会才变」由 disableTransitionOnChange 单独解决。
+ */
+export const themeBootstrapScript = `try {
+  var key = 'aurora-theme';
+  var stored = localStorage.getItem(key);
+  var theme = stored || 'system';
+  var isDark;
+  if (theme === 'system') {
+    isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  } else {
+    isDark = theme === 'dark';
+  }
+  var root = document.documentElement;
+  if (isDark) root.classList.add('dark');
+  else root.classList.remove('dark');
+  root.style.colorScheme = isDark ? 'dark' : 'light';
+} catch (e) {}`;

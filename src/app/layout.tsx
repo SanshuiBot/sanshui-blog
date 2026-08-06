@@ -18,7 +18,7 @@ import AmbientEffects from '@/components/AmbientEffects';
 import AppShell from '@/components/AppShell';
 import { withBase } from '@/lib/basePath';
 import { siteConfig } from '@/lib/site';
-import { accentBootstrapScript } from '@/lib/accents';
+import { accentBootstrapScript, themeBootstrapScript } from '@/lib/accents';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -56,6 +56,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* 防 FOUC：首屏前同步应用上次的 accent。脚本由 accents.ts 生成，与 resolveAccentColors 共享数据源 */}
         <script dangerouslySetInnerHTML={{ __html: accentBootstrapScript }} />
+        {/* 防 FOUC：首屏前同步设 .dark 类（next-themes 的 ThemeProvider 渲染在 <body> 内，其内联 script 进不了 <head>） */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body className="min-h-dvh flex flex-col bg-ink text-fg antialiased relative">
         <Providers>

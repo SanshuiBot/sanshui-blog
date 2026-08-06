@@ -6,7 +6,13 @@ import { NavigationLoadingProvider } from '@/components/UI/NavigationLoading';
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NavigationLoadingProvider>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem storageKey="aurora-theme">
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        storageKey="aurora-theme"
+        disableTransitionOnChange
+      >
         {children}
       </ThemeProvider>
     </NavigationLoadingProvider>
