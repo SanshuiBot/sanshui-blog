@@ -23,6 +23,16 @@ describe('thumbGeometry', () => {
     expect(g.top).toBe(0);
   });
 
+  it('视口窄于 24px 下限时 height 退化到视口高度，top 恒为 0', () => {
+    // 缺陷回归：原实现会算出 height=24 > viewport=10，top 为负，破坏不变量。
+    // 修复后 height 退化到 viewport，top 恒为 0，不再越界。
+    const g = thumbGeometry(10, 100, 45)!;
+    expect(g.height).toBe(10);
+    expect(g.top).toBe(0);
+    expect(g.top).toBeGreaterThanOrEqual(0);
+    expect(g.top + g.height).toBeLessThanOrEqual(10);
+  });
+
   it('中间位置按比例插值', () => {
     const g = thumbGeometry(200, 600, 150)!;
     expect(g.height).toBeCloseTo(200 / 3);

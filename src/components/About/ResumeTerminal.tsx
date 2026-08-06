@@ -34,6 +34,10 @@ export default function ResumeTerminal({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const startedRef = useRef<boolean>(false);
   const scrollBodyRef = useRef<HTMLDivElement | null>(null);
+  // 打印链定时器句柄：卸载时需清，避免对已卸载组件 setState。
+  // 显式标注 number（浏览器 setTimeout 返回 number；DOM lib 的 Timeout 与 Node 重载
+  // 在 ReturnType 推断时冲突，直接用 number 最稳）。
+  const tickTimerRef = useRef<number | null>(null);
 
   // 进入视口后启动打印（startPrinting 声明提前：函数声明虽提升，但 react-hooks 规则
   // 要求先声明后使用）
@@ -48,6 +52,7 @@ export default function ResumeTerminal({
       }
       if (idx >= lines.length) {
         setDone(true);
+        tickTimerRef.current = null;
         return;
       }
       // 空行稍快、标题行稍慢，营造节奏感
@@ -55,18 +60,26 @@ export default function ResumeTerminal({
       const isHeading = current.trimStart().startsWith('#');
       const isEmpty = current.trim() === '';
       const next = isEmpty ? lineDelay * 0.4 : isHeading ? lineDelay * 2.4 : lineDelay;
-      window.setTimeout(tick, next);
+      tickTimerRef.current = window.setTimeout(tick, next);
     };
     tick();
   }
 
+  // 统一卸载清理：断开观察器 + 清掉待触发的打印定时器
+  const cleanup = () => {
+    if (tickTimerRef.current) {
+      clearTimeout(tickTimerRef.current);
+      tickTimerRef.current = null;
+    }
+  };
+
   useEffect(() => {
     if (!triggerOnView) {
       startPrinting();
-      return;
+      return cleanup;
     }
     const node = containerRef.current;
-    if (!node) return;
+    if (!node) return cleanup;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -81,7 +94,10 @@ export default function ResumeTerminal({
       { threshold: 0.2 },
     );
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      cleanup();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [triggerOnView]);
 

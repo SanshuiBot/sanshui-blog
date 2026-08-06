@@ -73,7 +73,10 @@ export default function Tooltip({
     // 设备 hover 能力不会中途变化，无需监听 change
     hoverCapable.current = window.matchMedia('(hover: hover)').matches;
     return () => {
+      // 卸载时清掉所有待触发定时器，避免对已卸载组件调用 setVisible
       if (guardTimer.current) clearTimeout(guardTimer.current);
+      if (showTimer.current) clearTimeout(showTimer.current);
+      if (hideTimer.current) clearTimeout(hideTimer.current);
     };
   }, []);
 
