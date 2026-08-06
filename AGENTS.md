@@ -314,3 +314,16 @@ Five canonical triage labels, each equal to its role name: `needs-triage`, `need
 ### Domain docs
 
 Single-context layout — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+### ADR index
+
+架构决策记录在 `docs/adr/`，每条记一次深化决策及其「为什么这么选」——未来探索者会想知道的门槛：
+
+| ADR                                                   | 候选                     | commit    | 一句话                                                                                  |
+| ----------------------------------------------------- | ------------------------ | --------- | --------------------------------------------------------------------------------------- |
+| [0001](docs/adr/0001-toc-thumb-geometry-deepening.md) | TOC 指示条 locality      | `bede4a0` | thumb 几何公式 + 副作用编排收进同一可测 hook `useScrollThumbGeometry`                   |
+| [0002](docs/adr/0002-accent-resolver-unification.md)  | Accent 三解析器发散      | `2f16f1e` | `resolveAccentColors` 唯一真相源，inline script 补 channel 校验修 partial FOUC          |
+| [0003](docs/adr/0003-use-safe-timeout.md)             | useSafeTimeout primitive | `7cabc65` | 卸载安全定时器 primitive，Tooltip / NavigationLoading / ResumeTerminal 三处手写仪式统一 |
+| [0004](docs/adr/0004-post-index-entry-adapter.md)     | PostIndexEntry 适配器    | `cf9be31` | 文章索引条目形状收口到 client-safe `post-index.ts`，替掉 SearchModal 手抄 SearchPost    |
+
+候选 ⑤（`next.config.ts` / `basePath.ts` 双态切换）判定为「Do not deepen」——正确尺寸的浅缝，保持现状。
