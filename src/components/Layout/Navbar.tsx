@@ -4,14 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Menu, X, Mail } from 'lucide-react';
-import Image from 'next/image';
 import ThemeToggle from '@/components/UI/ThemeToggle';
 import Github from '@/components/UI/GithubIcon';
 import AccentPicker from '@/components/UI/AccentPicker';
 import Tooltip from '@/components/UI/Tooltip';
 import SearchModal from '@/components/UI/SearchModal';
 import { useDismiss } from '@/components/UI/useDismiss';
-import { withBase } from '@/lib/basePath';
+import NavLogo from '@/components/Layout/NavLogo';
 import { siteConfig } from '@/lib/site';
 
 const links = [
@@ -97,15 +96,10 @@ export default function Navbar() {
       >
         <nav className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <Image
-              src={withBase('/logo.svg')}
-              width={22}
-              height={22}
-              alt={siteConfig.name}
-              className="shrink-0"
-              priority
-            />
-            <span className="text-lg font-bold tracking-tight text-aurora">{siteConfig.name}</span>
+            <NavLogo />
+            <span className="nav-brand text-lg font-bold tracking-tight text-aurora">
+              {siteConfig.name}
+            </span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
@@ -115,22 +109,13 @@ export default function Navbar() {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className={`group relative py-1 text-sm transition-colors duration-200 cursor-pointer ${
+                  className={`nav-link group relative py-1 text-sm transition-colors duration-200 cursor-pointer ${
                     active
-                      ? 'text-white font-semibold'
+                      ? 'is-active text-white font-semibold'
                       : 'text-gray-400 hover:text-white font-normal'
                   }`}
                 >
                   {l.label}
-                  {/* 激活态：一道短色线指示当前位置，spring 滑动 */}
-                  {active && (
-                    <motion.span
-                      layoutId="nav-active-line"
-                      className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full"
-                      style={{ background: 'rgb(var(--accent-violet-rgb))' }}
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
                 </Link>
               );
             })}
@@ -143,7 +128,7 @@ export default function Navbar() {
                   setSearchOpen(true);
                   setMobileOpen(false);
                 }}
-                className="p-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5"
                 aria-label="搜索"
               >
                 <Search size={16} />
@@ -154,7 +139,7 @@ export default function Navbar() {
             <Tooltip label="菜单" disabled={mobileOpen}>
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="p-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all md:hidden"
+                className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 md:hidden"
                 aria-label="菜单"
               >
                 {mobileOpen ? <X size={18} /> : <Menu size={18} />}

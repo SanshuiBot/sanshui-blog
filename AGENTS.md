@@ -278,6 +278,36 @@ Next 16 默认用 Turbopack（内置 lightningcss 解析器）构建，会对 Ta
 
 **跟进指引**：问题在 Turbopack 的 CSS 解析路径（已实测独立 lightningcss 能解析相同 CSS，故无法靠升级 Tailwind/postcss 解决，且各依赖均已是最新版）。唯一解法在上游——每次升级 Next 补丁版后，本地跑 `NEXT_BUILD=1 npx next build`（不带 `--webpack`）验证：能通过即从 dev/build 脚本移除 `--webpack` 并删除本条规避说明。
 
+### 31. 动画时长限制：0.01ms（`prefers-reduced-motion` 降级值）
+
+做任何动画之前，先确认它会被 globals.css 的 `@media (prefers-reduced-motion: reduce)` 块正确降级。该块把 `animation-duration` / `transition-duration` 强制压到 **0.01ms**（实质禁用动画），服务于无障碍：
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+含义与约束：
+
+- **0.01ms 是降级值，不是「开销上限」**。它远低于浏览器最小帧时间（一帧约 16.7ms），作用是让动画在 reduced-motion 用户下「瞬间完成」而非「缓慢完成」，避免前庭不适。
+- **纯 CSS 动画自动合规**：用 `transition` / `animation` 实现的 hover、下划线滑入等，会被上面 `*` 选择器 + `!important` 自动压到 0.01ms，无需额外处理。本项目刚加的导航图标 hover 放大（`.nav-icon-btn`）、导航链接下划线滑入（`.nav-link::after`）均属此类，合规。
+- **Framer Motion 驱动的动画绕开了这条降级**：Framer 用 JS rAF + inline style 驱动位移（如 PostCard 标题 `whileHover`、ArrowLink 箭头位移），inline style 的 `transform` 不受 `transition-duration` 影响。这是「功能性可见动画」的有意例外——但 hover 变色仍走纯 CSS（#24），不交给 Framer。
+- **新增动画前 checklist**：
+  1. 优先纯 CSS（`transition` + `transform`/`opacity`/`width` 等合成层属性），自动被 0.01ms 降级覆盖。
+  2. 避免 `transition: all`（会动画非合成属性，触发 layout/paint）。
+  3. 若用 Framer Motion 驱动可见位移，确认该动画在 reduced-motion 下是否应降级——若应降级，改用纯 CSS 或在 `useReducedMotion()` 守卫下跳过。
+  4. hover 变色不交给 Framer（#24）。
+
 ---
 
 ## 内容编辑约定

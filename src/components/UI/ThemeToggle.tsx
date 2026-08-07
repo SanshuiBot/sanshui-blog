@@ -22,7 +22,7 @@ export default function ThemeToggle() {
     <Tooltip label={isDark ? '切换到亮色' : '切换到暗色'}>
       <button
         onClick={() => setTheme(isDark ? 'light' : 'dark')}
-        className="relative p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all overflow-hidden"
+        className="nav-icon-btn relative p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 overflow-hidden"
         aria-label="切换主题"
       >
         <AnimatePresence mode="wait" initial={false}>

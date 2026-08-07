@@ -104,7 +104,7 @@ export default function AccentPicker() {
       <Tooltip label="主题强调色" disabled={open}>
         <button
           onClick={handleOpen}
-          className="p-2 w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+          className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 cursor-pointer"
           aria-label="选择主题色"
           aria-expanded={open}
         >
