@@ -1,6 +1,7 @@
 ﻿'use client';
 import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useSyncExternalStore } from 'react';
 import Tooltip from '@/components/UI/Tooltip';
 
@@ -21,10 +22,21 @@ export default function ThemeToggle() {
     <Tooltip label={isDark ? '切换到亮色' : '切换到暗色'}>
       <button
         onClick={() => setTheme(isDark ? 'light' : 'dark')}
-        className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+        className="relative p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all overflow-hidden"
         aria-label="切换主题"
       >
-        {isDark ? <Sun size={16} /> : <Moon size={16} />}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.span
+            key={isDark ? 'sun' : 'moon'}
+            initial={{ y: -14, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 14, opacity: 0 }}
+            transition={{ duration: 0.08, ease: [0.4, 0, 0.2, 1] }}
+            className="block"
+          >
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          </motion.span>
+        </AnimatePresence>
       </button>
     </Tooltip>
   );
