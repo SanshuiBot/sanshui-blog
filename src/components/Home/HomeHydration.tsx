@@ -1,5 +1,4 @@
 'use client';
-
 import dynamic from 'next/dynamic';
 
 /**
@@ -14,12 +13,11 @@ import dynamic from 'next/dynamic';
  *
  * 收益：
  * - framer-motion 整包移出首屏 chunk（约 332KB 未压缩 → 砍约 107KB gzip）
- * - HeroScene / StatsGrid 的 RSC payload 不再被序列化进首页 HTML
- *   （首页 HTML gzip 体积从 141KB 大幅下降）
- * - Hero 区不再阻塞首屏：先显示 Navbar + 文章列表骨架，动效 chunk
+ * - HeroScene / PostsList 的 RSC payload 不再被序列化进首页 HTML
+ * - Hero 区不再阻塞首屏：先显示 Navbar，动效 chunk
  *   加载完后再飞入，体感「页面秒开，Hero 延迟飞入」而非「白屏等待」
  *
- * loading 骨架：Hero/Stats 在 chunk 加载期间显示一个极简占位
+ * loading 骨架：Hero/Posts 在 chunk 加载期间显示一个极简占位
  * （一个 min-h 的透明块），避免布局跳动（CLS）。
  */
 const HeroScene = dynamic(() => import('@/components/Home/HeroScene'), {
@@ -27,16 +25,36 @@ const HeroScene = dynamic(() => import('@/components/Home/HeroScene'), {
   loading: () => <div className="min-h-[100dvh]" aria-hidden />,
 });
 
-const StatsGrid = dynamic(() => import('@/components/Home/StatsGrid'), {
+const PostsList = dynamic(() => import('@/components/Home/PostsList'), {
   ssr: false,
-  loading: () => <div className="h-[8rem]" aria-hidden />,
+  loading: () => (
+    <section id="posts" className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-48 rounded-2xl bg-white/5 animate-pulse" aria-hidden />
+        ))}
+      </div>
+    </section>
+  ),
 });
 
-export default function HomeHydration() {
+export interface HeroStats {
+  posts: number;
+  tags: number;
+  lastUpdated: string;
+}
+
+export default function HomeHydration({ total, stats }: { total: number; stats: HeroStats }) {
   return (
     <>
-      <HeroScene />
-      <StatsGrid />
+      <HeroScene stats={stats} />
+      {/*
+        第一屏占位：fixed Hero 在它下方显示。
+        pointer-events-none 让点击穿透到 Hero 里的 GitHub/邮件按钮；
+        h-[100dvh] 撑出第一屏空白让 fixed Hero 显露，PostsList 紧随其后占第二屏起。
+      */}
+      <div className="relative z-10 h-[100dvh] pointer-events-none" aria-hidden />
+      <PostsList total={total} />
     </>
   );
 }

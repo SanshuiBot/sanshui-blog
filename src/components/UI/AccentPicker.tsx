@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Palette, Check } from 'lucide-react';
 import Tooltip from '@/components/UI/Tooltip';
 import { useDismiss } from '@/components/UI/useDismiss';
@@ -36,6 +36,15 @@ export default function AccentPicker() {
   // 6 个通道的自定义 hex 值；初始从当前激活预设的 RGB 反推
   const [customHex, setCustomHex] = useState<Record<string, string>>({});
   const popoverRef = useRef<HTMLDivElement>(null);
+  const firstButtonRef = useRef<HTMLButtonElement>(null);
+
+  // 打开时聚焦第一个预设按钮，让键盘用户无需 Tab 导航即可开始
+  useEffect(() => {
+    if (!open) return;
+    // 延迟等待 AnimatePresence 渲染完成后聚焦
+    const t = setTimeout(() => firstButtonRef.current?.focus(), 50);
+    return () => clearTimeout(t);
+  }, [open]);
 
   // 初始化：从 localStorage 读上次的 accent + 已保存的自定义预设。
   // 放到首次点击时惰性执行（事件处理器内 setState），避免挂载 effect 内同步 setState。
@@ -121,10 +130,11 @@ export default function AccentPicker() {
           <div className="px-2 py-1.5 text-xs text-gray-500 font-medium">主题强调色</div>
 
           {/* 预设列表 */}
-          {ACCENT_PRESETS.map((preset) => {
+          {ACCENT_PRESETS.map((preset, idx) => {
             const active = preset.id === activeId;
             return (
               <button
+                ref={idx === 0 ? firstButtonRef : undefined}
                 key={preset.id}
                 onClick={() => handleSelect(preset.id)}
                 className={`w-full flex items-center justify-between gap-2 px-2 py-2 rounded-lg transition-all cursor-pointer ${
@@ -189,6 +199,24 @@ export default function AccentPicker() {
                 );
               })}
             </div>
+            {/* 恢复默认：清空自定义预设并重置到 aurora */}
+            {activeId === CUSTOM_ACCENT_ID && (
+              <button
+                onClick={() => {
+                  const defaultPreset = getPreset(DEFAULT_ACCENT_ID);
+                  setActiveId(DEFAULT_ACCENT_ID);
+                  applyAccent(defaultPreset);
+                  try {
+                    window.localStorage.removeItem(ACCENT_STORAGE_KEY);
+                  } catch {
+                    /* 静默失败 */
+                  }
+                }}
+                className="mt-2 w-full text-xs text-gray-500 hover:text-accent-violet transition-colors text-center cursor-pointer"
+              >
+                恢复默认配色
+              </button>
+            )}
           </div>
         </div>
       )}

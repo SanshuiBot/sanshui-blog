@@ -109,36 +109,41 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
               {posts === null ? (
                 <div className="text-center py-10 text-gray-500 text-sm">加载中...</div>
               ) : results.length > 0 ? (
-                results.map((p: PostIndexEntry, i: number) => (
-                  <motion.div
-                    key={p.slug}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.03 }}
-                  >
-                    <Link
-                      href={`/posts/${p.slug}/`}
-                      onClick={() => {
-                        onClose();
-                        startNavigation();
-                      }}
-                      className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors group"
+                <div aria-live="polite" aria-atomic="true">
+                  <span className="sr-only">找到 {results.length} 篇文章</span>
+                  {results.map((p: PostIndexEntry, i: number) => (
+                    <motion.div
+                      key={p.slug}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.03 }}
                     >
-                      <div className="flex-1 min-w-0">
-                        <span className="font-medium text-white group-hover:text-accent-violet transition-colors truncate block">
-                          {p.title}
-                        </span>
-                        <span className="text-xs text-gray-500">{fmt(p.date)}</span>
-                      </div>
-                      <ArrowRight
-                        size={14}
-                        className="text-gray-600 group-hover:text-accent-violet shrink-0"
-                      />
-                    </Link>
-                  </motion.div>
-                ))
+                      <Link
+                        href={`/posts/${p.slug}/`}
+                        onClick={() => {
+                          onClose();
+                          startNavigation();
+                        }}
+                        className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors group"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-white group-hover:text-accent-violet transition-colors truncate block">
+                            {p.title}
+                          </span>
+                          <span className="text-xs text-gray-500">{fmt(p.date)}</span>
+                        </div>
+                        <ArrowRight
+                          size={14}
+                          className="text-gray-600 group-hover:text-accent-violet shrink-0"
+                        />
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
               ) : q ? (
-                <div className="text-center py-10 text-gray-500 text-sm">未找到相关文章</div>
+                <div className="text-center py-10 text-gray-500 text-sm" aria-live="polite">
+                  未找到相关文章
+                </div>
               ) : (
                 <div className="text-center py-10 text-gray-600 text-sm">⌘K 搜索</div>
               )}

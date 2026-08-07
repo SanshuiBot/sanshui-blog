@@ -15,7 +15,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getPostsByTag, getAllTags } from '@/lib/posts';
-import PostCard from '@/components/Post/PostCard';
+import PostGrid from '@/components/Post/PostGrid';
 import ArrowLink from '@/components/UI/ArrowLink';
 import { Hash } from 'lucide-react';
 
@@ -57,11 +57,7 @@ export default async function TagPage({ params }: Props) {
         </h1>
         <p className="mt-3 text-gray-500">共 {posts.length} 篇文章</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
-        {posts.map((p, i) => (
-          <PostCard key={p.slug} post={p} index={i} />
-        ))}
-      </div>
+      <PostGrid posts={posts} />
     </div>
   );
 }

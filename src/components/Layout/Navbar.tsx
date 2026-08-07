@@ -1,8 +1,8 @@
 ﻿'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Search, Menu, X, Mail } from 'lucide-react';
 import ThemeToggle from '@/components/UI/ThemeToggle';
 import Github from '@/components/UI/GithubIcon';
@@ -38,11 +38,10 @@ export default function Navbar() {
   // 与按钮 onClick 形成开关竞态；外点关闭继续由遮罩 onClick 负责
   useDismiss(mobileMenuRef, () => setMobileOpen(false), { enabled: mobileOpen, outside: false });
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  // 用 useMotionValueEvent 替代原生 scroll listener：与 ParticleField 等 rAF 循环共享
+  // 同一事件循环批次，减少 scroll 事件分发开销
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 20));
   // 路由切换时关闭移动端菜单：渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
   const [prevPathname, setPrevPathname] = useState(pathname);
   if (prevPathname !== pathname) {

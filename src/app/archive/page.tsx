@@ -12,7 +12,7 @@
  *    用于按标签筛选。浮层绝对定位，不挤压下方文章网格。
  */
 import { getAllPosts, getAllTags, getPostsByTag } from '@/lib/posts';
-import PostCard from '@/components/Post/PostCard';
+import PostGrid from '@/components/Post/PostGrid';
 import FilterDropdown from '@/components/Archive/FilterDropdown';
 import ArrowLink from '@/components/UI/ArrowLink';
 import { BookOpen } from 'lucide-react';
@@ -62,11 +62,7 @@ export default function ArchivePage() {
             <div className="text-3xl font-bold text-gray-500 tracking-tight">{year}</div>
             <div className="flex-1 h-px bg-white/5" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-start">
-            {(grouped[year] ?? []).map((p, i) => (
-              <PostCard key={p.slug} post={p} index={i} />
-            ))}
-          </div>
+          <PostGrid posts={grouped[year] ?? []} />
         </section>
       ))}
     </div>

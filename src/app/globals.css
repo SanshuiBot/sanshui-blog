@@ -445,16 +445,6 @@
   .footer-link:hover {
     color: rgb(var(--accent-violet-rgb));
   }
-  /* HeroScene 快捷导航标签 —— hover 变色走纯 CSS + CSS 变量（AGENTS.md #24）
-     颜色值由 inline --pill-color 注入，Framer 不参与插值，避免 var() 不可动画报错 */
-  .quick-nav-label {
-    color: #78716c;
-    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  html.dark .quick-nav-label:hover,
-  html:not(.dark) .quick-nav-label:hover {
-    color: var(--pill-color);
-  }
   /* 友链卡片名称 —— hover 变色走纯 CSS（AGENTS.md #24），Framer 不参与插值 */
   .friend-card-name {
     transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);

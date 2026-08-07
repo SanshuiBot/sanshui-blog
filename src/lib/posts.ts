@@ -11,8 +11,19 @@ const postsDirectory = path.join(process.cwd(), 'content/posts');
  * 静态导出下内容构建期不可变（AGENTS.md #18：修改文章需重新 build 才生效），
  * 因此去掉 mtime 签名缓存——每次算签名要 readdir + 逐文件 stat（2N 次 syscall），
  * 签名本身 O(N)，与缓存未命中成本同阶，只省了 gray-matter 解析。
+ *
+ * 额外维护 slug→Post 的 Map 索引，使 getPostBySlug / getAdjacentPosts 从 O(N)
+ * 线性扫描降为 O(1) 查找。文章数较少时差异可忽略，但这是零成本的正确优化。
  */
 let loaded: Post[] | null = null;
+let slugIndex: Map<string, Post> | null = null;
+
+function ensureIndex() {
+  if (!slugIndex) {
+    slugIndex = new Map();
+    for (const p of loaded!) slugIndex.set(p.slug, p);
+  }
+}
 
 function loadPosts(): Post[] {
   if (loaded) return loaded;
@@ -44,7 +55,9 @@ export function getAllPosts(): Post[] {
 }
 
 export function getPostBySlug(slug: string): Post | undefined {
-  return loadPosts().find((p) => p.slug === decodeSlug(slug));
+  loadPosts();
+  ensureIndex();
+  return slugIndex!.get(decodeSlug(slug));
 }
 
 export function getAllTags(): string[] {
@@ -59,7 +72,12 @@ export function getPostsByTag(tag: string): Post[] {
 
 export function getAdjacentPosts(slug: string): { prev: Post | null; next: Post | null } {
   const posts = loadPosts();
-  const idx = posts.findIndex((p) => p.slug === decodeSlug(slug));
+  ensureIndex();
+  // 用 slugIndex 拿到目标 Post 引用后，再回 posts 数组定位下标，
+  // 避免对整个数组做 O(N) findIndex 线性扫描。
+  const target = slugIndex!.get(decodeSlug(slug));
+  if (!target) return { prev: null, next: null };
+  const idx = posts.indexOf(target);
   if (idx === -1) return { prev: null, next: null };
   return { prev: posts[idx + 1] ?? null, next: posts[idx - 1] ?? null };
 }

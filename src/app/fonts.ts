@@ -1,5 +1,7 @@
 ﻿import { Inter, JetBrains_Mono } from 'next/font/google';
 
+// next/font 会自动注入 <link rel="preload"> 到 <head>，并内联 @font-face CSS。
+// display: 'swap' 在字体加载期间先用 fallback，加载完切换——配合 preload 几乎无 FOUT。
 export const sans = Inter({
   subsets: ['latin'],
   display: 'swap',

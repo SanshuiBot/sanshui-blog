@@ -1,28 +1,45 @@
 'use client';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
-import { ArrowDown, Mail, Hash, Archive, User, Terminal, Atom, Database } from 'lucide-react';
+import { Mail, ArrowDown } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
 import { siteConfig } from '@/lib/site';
 import { useState } from 'react';
-import Link from 'next/link';
 
 const social = [
   { icon: Github, href: siteConfig.github, label: 'GitHub' },
   { icon: Mail, href: siteConfig.emailHref, label: 'Email' },
 ];
 
-const techStack = [
-  { icon: Terminal, label: 'Next.js' },
-  { icon: Atom, label: 'React' },
-  { icon: Database, label: 'TypeScript' },
-];
+interface HeroStats {
+  /** 文章总数 */
+  posts: number;
+  /** 标签总数 */
+  tags: number;
+  /** 最近一次更新日期（YYYY-MM-DD） */
+  lastUpdated: string;
+}
 
-export default function HeroScene() {
-  const sectionRef = useRef<HTMLElement>(null);
+export default function HeroScene({ stats }: { stats?: HeroStats }) {
+  const statItems = stats
+    ? [
+        { label: '文章', value: stats.posts },
+        { label: '标签', value: stats.tags },
+        { label: '最近更新', value: stats.lastUpdated },
+      ]
+    : [];
+  // Hero 改为 fixed 铺满视口后，淡出区间用一屏视口高度（vh 像素）驱动，
+  // 保证任意屏幕尺寸下「滚一屏 Hero 完全淡出」，与下方 PostsList 的 pt-[100dvh] 对齐。
+  const [vh, setVh] = useState(800);
+  useEffect(() => {
+    const update = () => setVh(window.innerHeight);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
   const { scrollY } = useScroll();
-  const opacity = useTransform(scrollY, [0, 400], [1, 0]);
-  const y = useTransform(scrollY, [0, 400], [0, 80]);
+  const opacity = useTransform(scrollY, [0, vh * 0.8], [1, 0]);
+  const y = useTransform(scrollY, [0, vh * 0.8], [0, vh * 0.12]);
   const [ctaDir, setCtaDir] = useState<'left' | 'right' | 'center'>('center');
   const btnRef = useRef<HTMLAnchorElement>(null);
   const btnX = useMotionValue(0);
@@ -48,36 +65,23 @@ export default function HeroScene() {
 
   return (
     <motion.section
-      ref={sectionRef}
       style={{ opacity, y }}
-      className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden"
+      className="fixed inset-0 flex items-center justify-center overflow-hidden z-0"
     >
+      {/* Aurora blobs */}
       <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full bg-accent-violet/5 blur-[150px] animate-float pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] rounded-full bg-accent-pink/4 blur-[130px] animate-float-delayed pointer-events-none" />
       <div
         className="absolute top-1/2 right-1/3 w-[25rem] h-[25rem] rounded-full bg-accent-blue/4 blur-[100px] animate-float pointer-events-none"
         style={{ animationDelay: '3s' }}
       />
+
       <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          {/* Status badge */}
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border-white/5 mb-10"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inset-0 rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative rounded-full h-2 w-2 bg-emerald-500" />
-            </span>
-            <span className="text-xs text-gray-400 font-medium">在线创作中</span>
-          </motion.div>
-
           {/* Title */}
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05] mb-6">
             <span className="block text-white">你好，我是</span>
@@ -94,37 +98,32 @@ export default function HeroScene() {
             用文字沉淀知识，用代码改变世界。
           </motion.p>
 
-          {/* Identity tagline + Tech stack badges */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.48 }}
-            className="flex flex-wrap items-center justify-center gap-3 mb-10"
-          >
-            <span className="text-sm text-gray-500 tracking-wide">全栈开发者</span>
-            <span className="w-1 h-1 rounded-full bg-gray-600" />
-            <span className="text-sm text-gray-500 tracking-wide">技术写作者</span>
-            <span className="w-1 h-1 rounded-full bg-gray-600" />
-            <span className="text-sm text-gray-500 tracking-wide">开源爱好者</span>
-            <div className="w-full sm:w-auto flex items-center justify-center gap-2 mt-2 sm:mt-0 sm:ml-2">
-              {techStack.map(({ icon: Icon, label }) => (
+          {/* Stats — 玻璃胶囊行，与 PostCard 标签渐变呼应 */}
+          {statItems.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.56 }}
+              className="flex flex-wrap items-center justify-center gap-2 mb-10"
+            >
+              {statItems.map((s) => (
                 <span
-                  key={label}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[11px] text-gray-500"
+                  key={s.label}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium glass border border-white/10 text-gray-300"
                 >
-                  <Icon size={10} />
-                  {label}
+                  <span className="text-gray-500">{s.label}</span>
+                  <span className="text-white tabular-nums">{s.value}</span>
                 </span>
               ))}
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
 
           {/* CTA + Social */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.55 }}
-            className="flex flex-wrap items-center justify-center gap-4 mb-12"
+            transition={{ duration: 0.6, delay: 0.48 }}
+            className="flex flex-wrap items-center justify-center gap-4 mb-8"
           >
             <motion.a
               ref={btnRef}
@@ -146,9 +145,6 @@ export default function HeroScene() {
                 }}
               />
               <span className="relative z-10">浏览文章</span>
-              <span className="relative z-10 opacity-40 group-hover:opacity-80 transition-opacity">
-                <ArrowDown size={14} />
-              </span>
             </motion.a>
             <div className="flex items-center gap-1">
               {social.map(({ icon: Icon, href, label }) => (
@@ -185,93 +181,23 @@ export default function HeroScene() {
               ))}
             </div>
           </motion.div>
-
-          {/* Quick nav pills */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-            className="flex flex-wrap items-center justify-center gap-3"
-          >
-            {[
-              {
-                href: '/tags/',
-                icon: Hash,
-                label: '标签导航',
-                color: 'rgb(var(--accent-violet-rgb))',
-              },
-              {
-                href: '/archive/',
-                icon: Archive,
-                label: '文章归档',
-                color: 'rgb(var(--accent-blue-rgb))',
-              },
-              {
-                href: '/about/',
-                icon: User,
-                label: '关于我',
-                color: 'rgb(var(--accent-teal-rgb))',
-              },
-            ].map(({ href, icon: Icon, label, color }) => (
-              <motion.div
-                key={label}
-                whileHover={{ y: -4, scale: 1.04 }}
-                transition={{ type: 'spring', stiffness: 220, damping: 14 }}
-              >
-                <Link
-                  href={href}
-                  className="group relative inline-flex items-center gap-2 px-5 py-2 rounded-full glass border border-white/5 overflow-hidden"
-                >
-                  {/* Hover glow backdrop */}
-                  <motion.span
-                    className="absolute inset-0 rounded-full pointer-events-none"
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                    transition={{ type: 'spring', stiffness: 150, damping: 18 }}
-                    style={{
-                      background: `radial-gradient(80px circle at center, color-mix(in srgb, ${color} 9%, transparent), transparent 70%)`,
-                    }}
-                  />
-                  {/* Icon */}
-                  <motion.span
-                    whileHover={{ rotate: 8, scale: 1.2 }}
-                    transition={{ type: 'spring', stiffness: 250, damping: 12 }}
-                    className="relative"
-                    style={{ color }}
-                  >
-                    <Icon size={12} />
-                  </motion.span>
-                  {/* Label —— hover 变色走纯 CSS（AGENTS.md #24），CSS 变量不可被 Framer 插值动画 */}
-                  <span
-                    className="quick-nav-label relative text-xs font-medium"
-                    style={{ '--pill-color': color } as React.CSSProperties}
-                  >
-                    {label}
-                  </span>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.8 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      {/* Scroll down indicator — bottom-center, 箭头 bounce 动画 */}
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 text-gray-500 pointer-events-none select-none"
+        aria-hidden="true"
       >
-        <span className="text-[14px] text-gray-600 tracking-[0.2em] uppercase font-mono">
-          滚动探索
-        </span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        <span className="text-[10px] font-medium tracking-widest opacity-60">向下滚动</span>
+        <motion.span
+          className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-white/15"
+          animate={{ y: [0, 5, 0] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <ArrowDown size={13} className="text-gray-500" />
-        </motion.div>
-      </motion.div>
+          <ArrowDown size={12} />
+        </motion.span>
+      </div>
     </motion.section>
   );
 }

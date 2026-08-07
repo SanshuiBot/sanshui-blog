@@ -33,11 +33,11 @@ export default function CursorGlow() {
     <div className="pointer-events-none fixed inset-0 z-[9999] hidden lg:block" aria-hidden="true">
       <div
         ref={glowRef}
-        className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full"
+        className="absolute top-0 left-0 w-[200px] h-[200px] rounded-full"
         style={{
           background:
-            'radial-gradient(circle,rgb(var(--accent-violet-rgb) / 0.05) 0%,rgb(var(--accent-pink-rgb) / 0.03) 30%,transparent 70%)',
-          filter: 'blur(50px)',
+            'radial-gradient(circle,rgb(var(--accent-violet-rgb) / 0.08) 0%,rgb(var(--accent-pink-rgb) / 0.04) 30%,transparent 70%)',
+          filter: 'blur(30px)',
           willChange: 'transform',
         }}
       />

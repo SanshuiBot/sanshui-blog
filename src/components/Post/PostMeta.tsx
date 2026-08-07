@@ -1,11 +1,12 @@
 ﻿'use client';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Clock, Tag, Calendar, ArrowUp } from 'lucide-react';
 import Link from 'next/link';
 import ArrowLink from '@/components/UI/ArrowLink';
 import readingTime from 'reading-time';
 import Tooltip from '@/components/UI/Tooltip';
 import CodeCopyInjector from './CodeCopyInjector';
+import { useScroll, useMotionValueEvent } from 'framer-motion';
 
 interface Props {
   post: {
@@ -23,13 +24,11 @@ export default function PostMeta({ post }: Props) {
     () => Math.max(1, Math.ceil(readingTime(post.content, { wordsPerMinute: 300 }).minutes)),
     [post.content],
   );
-  const [showTop, setShowTop] = useState(false);
 
-  useEffect(() => {
-    const h = () => setShowTop(window.scrollY > 400);
-    window.addEventListener('scroll', h, { passive: true });
-    return () => window.removeEventListener('scroll', h);
-  }, []);
+  // 用 useMotionValueEvent 替代原生 scroll listener：与 Navbar 共用同一事件循环
+  const [showTop, setShowTop] = useState(false);
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, 'change', (v) => setShowTop(v > 400));
 
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
