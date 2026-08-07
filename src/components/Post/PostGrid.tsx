@@ -9,10 +9,15 @@
  *  - 挂载后从第 0 张起逐张把骨架替换成真实卡片，每张间隔 80ms
  *  - 用户视觉上是「文章一个一个冒出来」，不是「一堆骨架突然变一堆卡片」
  *
+ * 「跟手」流式渲染的关键（AGENTS.md #15 / 约定 #11a）：
+ *  - 每个槽位始终渲染**同一个** `<PostCard>` 实例，`skeleton` prop 控制骨架/卡片形态
+ *  - 骨架层与卡片层共享同一 DOM 挂载点，opacity 同步过渡，**没有先卸载骨架再挂载卡片的空白帧**
+ *  - 卡片入场动画从挂载即播放（PostCard 内 animate），不等 whileInView，跟手
+ *
  * 设计取舍：
  *  - 骨架数量 = max(total, posts.length)，确保数据未到时也有占位
  *  - `filled` 状态驱动逐张揭示；卸载时清定时器（AGENTS.md #20 幂等清理）
- *  - 骨架 key 用 `skel-${i}`，卡片 key 用 `p.slug`，避免骨架/卡片切换时 DOM 复用错乱
+ *  - 槽位 key 用 `slot-${i}` 稳定不变，骨架→卡片切换不会触发 DOM 卸载/重挂
  */
 import { useEffect, useState, useRef } from 'react';
 import PostCard from '@/components/Post/PostCard';
@@ -25,31 +30,20 @@ interface Props {
   total?: number;
 }
 
-/** 骨架卡片——与 PostCard 视觉尺寸对齐，animate-pulse 给「正在加载」信号 */
-function SkeletonCard() {
-  return (
-    <div
-      className="h-52 rounded-2xl bg-white/10 animate-pulse overflow-hidden relative"
-      aria-hidden="true"
-    >
-      {/* 模拟卡片顶部渐变条 */}
-      <div className="h-[2px] bg-white/10 w-full" />
-      {/* 模拟标签占位 */}
-      <div className="px-5 pt-4 flex gap-1.5">
-        <div className="h-4 w-10 rounded-full bg-white/10" />
-        <div className="h-4 w-8 rounded-full bg-white/10" />
-      </div>
-      {/* 模拟标题占位 */}
-      <div className="px-5 pt-3">
-        <div className="h-5 w-full rounded bg-white/10 mb-2" />
-        <div className="h-4 w-3/4 rounded bg-white/10" />
-      </div>
-      {/* 模拟底部分隔线 */}
-      <div className="px-5 pt-4 mt-auto">
-        <div className="h-px w-full bg-white/10" />
-      </div>
-    </div>
-  );
+/**
+ * 单个槽位——骨架与卡片共享同一 DOM 挂载点。
+ *
+ * 行为：
+ *  - `skeleton === true`：PostCard 渲染骨架层（卡片内容不挂载）
+ *  - `skeleton` 切到 false：骨架层 opacity 渐隐 + 卡片层 opacity 渐显同步过渡
+ *
+ * key 在父级用 `slot-${i}` 稳定不变，所以骨架→卡片切换不会触发 DOM 卸载/重挂，
+ * 也就没有「骨架消失、卡片还没出现」的空白帧。
+ */
+function Slot({ post, skeleton }: { post?: Post; skeleton: boolean }) {
+  // skeleton 模式下 post 可能不存在，传一个占位空对象满足类型
+  const safePost: Post = post ?? ({} as Post);
+  return <PostCard post={safePost} skeleton={skeleton} />;
 }
 
 export default function PostGrid({ posts, total }: Props) {
@@ -68,14 +62,12 @@ export default function PostGrid({ posts, total }: Props) {
     };
   }, [posts, filled]);
 
-  // 渲染槽位：已填充的显示真实卡片，未填充的显示骨架
+  // 渲染槽位：每个槽位始终是同一个 <Slot> 实例（key=slot-${i} 稳定）
+  // i < filled 且有对应 post → 显示真实卡片；否则显示骨架
   const slots = Array.from({ length: slotCount }, (_, i) => {
-    if (i < filled && i < posts.length) {
-      const p = posts[i]!;
-      return <PostCard key={p.slug} post={p} index={i} />;
-    }
-    // 同 i 下的骨架需要稳定 key，避免骨架/卡片切换时 DOM 复用错乱
-    return <SkeletonCard key={`skel-${i}`} />;
+    const hasPost = i < posts.length;
+    const isFilled = i < filled && hasPost;
+    return <Slot key={`slot-${i}`} post={hasPost ? posts[i] : undefined} skeleton={!isFilled} />;
   });
 
   return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">{slots}</div>;
