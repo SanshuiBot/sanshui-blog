@@ -5,7 +5,7 @@
  *
  * 用法：
  *  - 服务端组件，构建时通过 getAllPosts() 从文件系统读取所有 .md 文章。
- *  - <HomeHydration> 是 client wrapper，内部 dynamic(ssr:false) 懒加载 HeroScene 和 PostsList，
+ *  - <HomeHydration> 是 client wrapper，内部 dynamic(ssr:false) 懒加载 HeroParallax 和 PostsList，
  *    避免 framer-motion 被打进首屏 chunk。
  *  - <head> 内对第一篇文章插入 <link rel="prefetch" fetchPriority="low">，
  *    低优先级、空闲时预取文章页 HTML，使点击卡片时几乎秒开。

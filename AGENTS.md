@@ -31,6 +31,7 @@ sanshui-blog/
 ├── src/
 │   ├── app/                 # App Router 页面：layout/page/globals.css/fonts/not-found + about/ archive/ tags/[tag]/ posts/[slug]/ links/
 │   ├── components/          # Providers · AmbientEffects · AppShell · Layout/ · Home/ · Post/ · About/ · Links/ · NotFound/ · UI/ · TagList.tsx
+│   │   └── Home/            # HeroParallax（视差拼贴首屏，3 深度层）· HomeHydration（懒加载入口）· PostsList
 │   └── lib/                 # types.ts · posts.ts · parse-post.mjs · toc.ts · resume.ts · resumeLines.ts · accents.ts · site.ts · basePath.ts · thumbGeometry.ts · clickParticles.ts · post-index.ts
 ├── tests/                   # Vitest 单测：lib 纯函数与契约
 ├── scripts/                 # predev.js · gen-posts-index.js · gen-dotted-tag-payloads.js

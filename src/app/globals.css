@@ -432,6 +432,253 @@
     background-clip: text;
     animation: aurora-shift 8s ease-in-out infinite;
   }
+
+  /* ── 首屏 Hero 专用样式 ── 集中一处，亮色覆盖紧贴暗色基（AGENTS.md #27） */
+
+  /* 流光网格层：conic-gradient + radial mask，纯 CSS keyframes 流动 */
+  .hero-aurora-grid {
+    background-image:
+      conic-gradient(
+        from 0deg at 50% 50%,
+        rgb(var(--accent-violet-rgb) / 0.08),
+        rgb(var(--accent-pink-rgb) / 0.05),
+        rgb(var(--accent-blue-rgb) / 0.06),
+        rgb(var(--accent-violet-rgb) / 0.08)
+      ),
+      linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size:
+      100% 100%,
+      56px 56px,
+      56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, #000 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, #000 30%, transparent 75%);
+    animation: hero-grid-pan 24s linear infinite;
+  }
+  @keyframes hero-grid-pan {
+    to {
+      background-position:
+        0 0,
+        56px 56px,
+        56px 56px;
+    }
+  }
+
+  /* 身份徽章：玻璃态 + accent 边框光 + 呼吸圆点 */
+  .hero-badge {
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.18),
+      0 4px 16px rgb(var(--accent-violet-rgb) / 0.05);
+  }
+  .hero-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: rgb(var(--accent-violet-rgb) / 0.9);
+    box-shadow: 0 0 8px rgb(var(--accent-violet-rgb) / 0.6);
+    animation: hero-dot-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes hero-dot-pulse {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: scale(0.85);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+
+  /* 名字 aurora 光泽扫过：叠在 .text-aurora 之上的伪元素流光 */
+  .hero-name-shimmer {
+    position: relative;
+  }
+  .hero-name-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgb(255 255 255 / 0.22) 50%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    pointer-events: none;
+    animation: hero-shimmer 5.5s ease-in-out infinite;
+  }
+  @keyframes hero-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    60% {
+      background-position: -120% 0;
+    }
+    100% {
+      background-position: -120% 0;
+    }
+  }
+  html:not(.dark) .hero-name-shimmer::after {
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgb(255 255 255 / 0.65) 50%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Stats — 极简 inline 行：数字（单色 accent）· 标签，点分隔 */
+  .hero-stats-inline {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.625rem 0.875rem;
+  }
+  .hero-stat-inline-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.375rem;
+  }
+  .hero-stat-sep {
+    color: rgb(255 255 255 / 0.2);
+    margin-right: 0.25rem;
+  }
+  html:not(.dark) .hero-stat-sep {
+    color: rgb(0 0 0 / 0.2);
+  }
+  .hero-stat-inline-num {
+    font-size: 1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .hero-stat-inline-label {
+    font-size: 0.7rem;
+    color: rgb(255 255 255 / 0.45);
+    letter-spacing: 0.05em;
+  }
+  html:not(.dark) .hero-stat-inline-label {
+    color: rgb(0 0 0 / 0.5);
+  }
+
+  /* CTA：Aurora 渐变描边玻璃按钮，hover 流光带 */
+  .hero-cta {
+    color: #fff;
+    background: var(--glass-bg);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.22),
+      0 8px 28px rgb(var(--accent-violet-rgb) / 0.08);
+    transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hero-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      120deg,
+      rgb(var(--accent-pink-rgb) / 0.6),
+      rgb(var(--accent-violet-rgb) / 0.6),
+      rgb(var(--accent-blue-rgb) / 0.6)
+    );
+    background-size: 200% 200%;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    animation: hero-cta-border 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes hero-cta-border {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  .hero-cta-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    background: radial-gradient(
+      60% 80% at 50% 0%,
+      rgb(var(--accent-violet-rgb) / 0.18),
+      transparent 70%
+    );
+    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .hero-cta:hover .hero-cta-glow {
+    opacity: 1;
+  }
+  .hero-cta:hover {
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.35),
+      0 10px 36px rgb(var(--accent-violet-rgb) / 0.16);
+  }
+  .hero-cta-arrow {
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hero-cta:hover .hero-cta-arrow {
+    transform: translateY(2px);
+  }
+
+  /* 亮色 CTA 覆盖：深色字 + 更柔的玻璃 */
+  html:not(.dark) .hero-cta {
+    color: #1c1917;
+    background: rgba(255 255 255 / 0.7);
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.14),
+      0 8px 28px rgb(var(--accent-violet-rgb) / 0.05);
+  }
+  html:not(.dark) .hero-cta:hover {
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.28),
+      0 10px 36px rgb(var(--accent-violet-rgb) / 0.1);
+  }
+
+  /* 社交图标托盘：统一玻璃 + emboss 质感 */
+  .hero-social {
+    box-shadow: var(--shadow-emboss);
+    transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hero-social:hover {
+    box-shadow: var(--shadow-emboss-hover);
+  }
+
+  /* 滚动指示器：小字标签 + 向下飘动箭头 */
+  .hero-scroll-label {
+    color: rgb(var(--accent-violet-rgb) / 0.7);
+    text-shadow: 0 0 8px rgb(var(--accent-violet-rgb) / 0.25);
+    letter-spacing: 0.3em;
+    font-variant-numeric: tabular-nums;
+  }
+  .hero-scroll-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(var(--accent-violet-rgb) / 0.7);
+  }
+
   .glow-violet {
     box-shadow:
       0 0 10px var(--glow-violet),

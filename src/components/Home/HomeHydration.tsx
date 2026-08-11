@@ -13,14 +13,14 @@ import dynamic from 'next/dynamic';
  *
  * 收益：
  * - framer-motion 整包移出首屏 chunk（约 332KB 未压缩 → 砍约 107KB gzip）
- * - HeroScene / PostsList 的 RSC payload 不再被序列化进首页 HTML
+ * - HeroParallax / PostsList 的 RSC payload 不再被序列化进首页 HTML
  * - Hero 区不再阻塞首屏：先显示 Navbar，动效 chunk
  *   加载完后再飞入，体感「页面秒开，Hero 延迟飞入」而非「白屏等待」
  *
  * loading 骨架：Hero/Posts 在 chunk 加载期间显示一个极简占位
  * （一个 min-h 的透明块），避免布局跳动（CLS）。
  */
-const HeroScene = dynamic(() => import('@/components/Home/HeroScene'), {
+const HeroParallax = dynamic(() => import('@/components/Home/HeroParallax'), {
   ssr: false,
   loading: () => <div className="min-h-[100dvh]" aria-hidden />,
 });
@@ -47,7 +47,7 @@ export interface HeroStats {
 export default function HomeHydration({ total, stats }: { total: number; stats: HeroStats }) {
   return (
     <>
-      <HeroScene stats={stats} />
+      <HeroParallax stats={stats} />
       {/*
         第一屏占位：fixed Hero 在它下方显示。
         pointer-events-none 让点击穿透到 Hero 里的 GitHub/邮件按钮；

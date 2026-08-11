@@ -37,20 +37,21 @@
 
 **Aurora 玻璃态设计系统** — 默认亮色、暗色可选，极光渐变与物理动效深度融合。
 
-|                          |                                                                                    |
-| ------------------------ | ---------------------------------------------------------------------------------- |
-| 🎨 **玻璃态卡片**        | `backdrop-filter: blur(20px)` 半透明卡片，微光边框（亮/暗双主题）                  |
-| 🌈 **极光渐变文字**      | 多色渐变 + `background-clip: text` 动画                                            |
-| 🖱️ **自定义鼠标光晕**    | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点                                      |
-| 📐 **渐隐网格背景**      | `radial-gradient` mask 从中心向四周淡出                                            |
-| 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                                                         |
-| 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                         |
-| 🔍 **⌘K 全局搜索**       | 运行时 fetch `posts-index.json` 轻量索引；Pagefind 另建全文索引（两套独立机制）    |
-| 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                                                           |
-| 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条 |
-| 🎯 **三水极光 favicon**  | 三条流动水波 + 极光渐变，呼应「三水」之名                                          |
-| 📜 **流式打印简历**      | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配                                |
-| 🎨 **Accent 主题强调色** | 5 个预设调色板 + 6 通道自定义色板，运行时换色全站联动                              |
+|                          |                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------- |
+| 🎨 **玻璃态卡片**        | `backdrop-filter: blur(20px)` 半透明卡片，微光边框（亮/暗双主题）                      |
+| 🌈 **极光渐变文字**      | 多色渐变 + `background-clip: text` 动画                                                |
+| 🖱️ **自定义鼠标光晕**    | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点                                          |
+| 📐 **渐隐网格背景**      | `radial-gradient` mask 从中心向四周淡出                                                |
+| 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                                                             |
+| 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                             |
+| 🔍 **⌘K 全局搜索**       | 运行时 fetch `posts-index.json` 轻量索引；Pagefind 另建全文索引（两套独立机制）        |
+| 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                                                               |
+| 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条     |
+| 🎯 **三水极光 favicon**  | 三条流动水波 + 极光渐变，呼应「三水」之名                                              |
+| 📜 **流式打印简历**      | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配                                    |
+| 🎨 **Accent 主题强调色** | 5 个预设调色板 + 6 通道自定义色板，运行时换色全站联动                                  |
+| 🌊 **视差拼贴首屏**      | 3 深度层（流光网格 / 文章缩略图墙 / 标题 CTA）滚动视差，缩略图墙运行时 fetch 最新 6 篇 |
 
 ---
 
@@ -97,7 +98,7 @@ sanshui-blog/
 │   │   ├── AmbientEffects.tsx  # 全局动效注册表 (懒加载 + reduced-motion 兜底)
 │   │   ├── AppShell.tsx        # 布局壳 (Navbar + main + Footer)
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
-│   │   ├── Home/               # HeroScene · StatsGrid · FeaturedPost
+│   │   ├── Home/               # HeroParallax（视差拼贴首屏，3 深度层）· HomeHydration（懒加载入口）· PostsList
 │   │   ├── Post/               # PostCard · PostContent · PostMeta · PostNav · PostDone · TableOfContents · CodeCopyInjector
 │   │   ├── About/              # AboutContent · ResumeTerminal (流式打印简历)
 │   │   ├── Links/ · NotFound/
