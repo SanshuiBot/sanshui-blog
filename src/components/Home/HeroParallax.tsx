@@ -61,16 +61,31 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
   const { scrollY } = useScroll();
 
   // 最近层（标题/CTA）：随 scrollY 平移 + 淡出
-  const titleOpacity = useTransform(scrollY, [0, vh * 0.6], [1, 0]);
+  // opacity / scale 套 useSpring 阻尼——快速滚动时浏览器平滑滚动的惯性会让
+  // scrollY 冲过 vh*0.6 后回弹，raw transform 会瞬时跳变「0→正值→0」导致
+  // 「你好，我是」闪现；spring 平滑收敛，回弹跳变被吸收为不可见的极小值。
+  // 位移 titleY 保留 raw，spring 会让位移有延迟感不跟手。
+  const titleOpacity = useSpring(useTransform(scrollY, [0, vh * 0.6], [1, 0]), {
+    stiffness: 120,
+    damping: 20,
+    restDelta: 0.001,
+  });
   const titleY = useTransform(scrollY, [0, vh * 0.6], [0, -60]);
-  const titleScale = useTransform(scrollY, [0, vh * 0.6], [1, 0.92]);
+  const titleScale = useSpring(useTransform(scrollY, [0, vh * 0.6], [1, 0.92]), {
+    stiffness: 120,
+    damping: 20,
+    restDelta: 0.001,
+  });
 
-  // 中间层（缩略图墙）：中速向上飘 + 轻微旋转
+  // 中间层（缩略图墙）：中速向上飘 + 活微旋转
   const midY = useTransform(scrollY, [0, vh], [0, -180]);
   const midRotate = useTransform(scrollY, [0, vh], [0, -4]);
 
   // 最远层（网格背景）：极慢漂移
   const farY = useTransform(scrollY, [0, vh], [0, 40]);
+
+  // 向下滚动提示：用户一开始滚（前 15vh）就快速淡出
+  const scrollHintOpacity = useTransform(scrollY, [0, vh * 0.15], [1, 0]);
 
   // CTA 跟手
   const btnRef = useRef<HTMLAnchorElement>(null);
@@ -302,7 +317,8 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
       </motion.div>
 
       {/* Scroll indicator */}
-      <div
+      <motion.div
+        style={{ opacity: scrollHintOpacity }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-gray-500 pointer-events-none select-none"
         aria-hidden
       >
@@ -315,7 +331,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
         >
           <ArrowDown size={16} />
         </motion.span>
-      </div>
+      </motion.div>
     </motion.section>
   );
 }

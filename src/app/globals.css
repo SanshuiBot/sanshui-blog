@@ -876,6 +876,36 @@
     padding-left: 1.5em;
     margin-bottom: 1.25em;
   }
+  /* 无序列表 —— 藏原生 marker，改用 ::before 圆点指示（颜色 / 层级更可控） */
+  .prose-article ul {
+    list-style: none;
+    padding-left: 0.75em;
+  }
+  .prose-article ul li {
+    position: relative;
+    padding-left: 0.75em;
+  }
+  html.dark .prose-article ul li::before,
+  html:not(.dark) .prose-article ul li::before {
+    content: '';
+    position: absolute;
+    left: -0.6em;
+    top: 0.7em;
+    width: 0.3em;
+    height: 0.3em;
+    border-radius: 50%;
+    background: rgb(var(--accent-violet-rgb) / 0.7);
+  }
+  /* 嵌套列表项 —— 指示条换浅色，区分层级 */
+  html.dark .prose-article ul ul li::before,
+  html:not(.dark) .prose-article ul ul li::before {
+    background: rgb(var(--accent-pink-rgb) / 0.6);
+  }
+  /* 有序列表 —— marker 联 accent，加粗更醒目 */
+  .prose-article ol li::marker {
+    color: rgb(var(--accent-violet-rgb));
+    font-weight: 600;
+  }
   .prose-article li {
     margin-bottom: 0.5em;
   }
