@@ -665,6 +665,20 @@
     box-shadow: var(--shadow-emboss-hover);
   }
 
+  /* 拼贴卡片墙 —— 手机端缩放 + 拉开间距，避免 6 张卡片重叠 */
+  .hero-thumb-wall {
+    /* 手机端整体缩小：6 张 w-44(176px) 卡片在 375px 视口里挤成一团，
+       scale(0.62) 把卡片压到 ~109px，配合更分散的位置避免相交 */
+    transform: scale(0.62);
+    transform-origin: center;
+  }
+  /* ≥sm(640px)：桌面/平板恢复正常尺寸，拼贴墙满铺 */
+  @media (min-width: 640px) {
+    .hero-thumb-wall {
+      transform: none;
+    }
+  }
+
   /* 滚动指示器：小字标签 + 向下飘动箭头 */
   .hero-scroll-label {
     color: rgb(var(--accent-violet-rgb) / 0.7);
@@ -871,22 +885,21 @@
     background: rgb(var(--accent-violet-rgb) / 0.04);
     border-radius: 0 0.75rem 0.75rem 0;
   }
+  /* 列表 —— ul/ol 统一藏原生 marker，改用 ::before 圆点指示
+     （ul/ol、任意嵌套包裹下 li 样式完全一致） */
   .prose-article ul,
   .prose-article ol {
-    padding-left: 1.5em;
-    margin-bottom: 1.25em;
-  }
-  /* 无序列表 —— 藏原生 marker，改用 ::before 圆点指示（颜色 / 层级更可控） */
-  .prose-article ul {
     list-style: none;
     padding-left: 0.75em;
+    margin-bottom: 1.25em;
   }
-  .prose-article ul li {
+  .prose-article li {
     position: relative;
     padding-left: 0.75em;
+    margin-bottom: 0.5em;
   }
-  html.dark .prose-article ul li::before,
-  html:not(.dark) .prose-article ul li::before {
+  html.dark .prose-article li::before,
+  html:not(.dark) .prose-article li::before {
     content: '';
     position: absolute;
     left: -0.6em;
@@ -897,20 +910,9 @@
     background: rgb(var(--accent-violet-rgb) / 0.7);
   }
   /* 嵌套列表项 —— 指示条换浅色，区分层级 */
-  html.dark .prose-article ul ul li::before,
-  html:not(.dark) .prose-article ul ul li::before {
+  html.dark .prose-article li li::before,
+  html:not(.dark) .prose-article li li::before {
     background: rgb(var(--accent-pink-rgb) / 0.6);
-  }
-  /* 有序列表 —— marker 联 accent，加粗更醒目 */
-  .prose-article ol li::marker {
-    color: rgb(var(--accent-violet-rgb));
-    font-weight: 600;
-  }
-  .prose-article li {
-    margin-bottom: 0.5em;
-  }
-  .prose-article li::marker {
-    color: rgb(var(--accent-violet-rgb));
   }
   .prose-article strong {
     color: var(--color-fg);

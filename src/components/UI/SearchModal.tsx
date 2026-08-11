@@ -6,14 +6,18 @@ import Link from 'next/link';
 import { withBase } from '@/lib/basePath';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import { useDismiss } from '@/components/UI/useDismiss';
+import { useRouter } from 'next/navigation';
 import type { PostIndexEntry } from '@/lib/post-index';
 
 export default function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState('');
   const [posts, setPosts] = useState<PostIndexEntry[] | null>(null);
+  const [activeIdx, setActiveIdx] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLAnchorElement[]>([]);
   const { startNavigation } = useNavigationLoading();
+  const router = useRouter();
 
   // 点击外部 / Esc 关闭（外点判定 + 延迟绑定统一收口在 useDismiss）
   useDismiss(panelRef, onClose, { enabled: open });
@@ -27,12 +31,21 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
       .catch(() => setPosts([]));
   }, [open, posts]);
 
-  // 关闭时清空搜索词：渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
+  // 关闭时清空搜索词 + 选中态：渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
   const [prevOpen, setPrevOpen] = useState(open);
   if (prevOpen !== open) {
     setPrevOpen(open);
-    if (!open) setQ('');
+    if (!open) {
+      setQ('');
+      setActiveIdx(-1);
+    }
   }
+
+  // query 变化时重置选中到第一项（有结果时），保持键盘流连续
+  useEffect(() => {
+    setActiveIdx(results.length > 0 ? 0 : -1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q, posts]);
 
   useEffect(() => {
     if (!open) return;
@@ -40,6 +53,17 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     // 用 ref 持有定时器在 cleanup 中清，避免重复触发/卸载后回调
     const t = setTimeout(() => inputRef.current?.focus(), 100);
     return () => clearTimeout(t);
+  }, [open]);
+
+  // 打开时锁背景滚动：记录原 overflow 并在卸载/关闭时还原，
+  // 避免其他脚本改动 body.style 时互相覆盖
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
   }, [open]);
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -93,6 +117,29 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                 type="text"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (results.length > 0) {
+                      setActiveIdx((i) => (i + 1) % results.length);
+                    }
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (results.length > 0) {
+                      setActiveIdx((i) => (i - 1 + results.length) % results.length);
+                    }
+                  } else if (e.key === 'Enter') {
+                    const post = results[activeIdx];
+                    if (!post) return;
+                    e.preventDefault();
+                    onClose();
+                    startNavigation();
+                    router.push(`/posts/${post.slug}/`);
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    onClose();
+                  }
+                }}
                 placeholder="搜索文章..."
                 className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-base"
               />
@@ -120,21 +167,38 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                     >
                       <Link
                         href={`/posts/${p.slug}/`}
+                        ref={(el) => {
+                          if (el) listRef.current[i] = el;
+                        }}
+                        data-active={i === activeIdx}
+                        onMouseEnter={() => setActiveIdx(i)}
                         onClick={() => {
                           onClose();
                           startNavigation();
                         }}
-                        className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-colors group"
+                        className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors group ${
+                          i === activeIdx ? 'bg-white/5' : ''
+                        }`}
                       >
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-white group-hover:text-accent-violet transition-colors truncate block">
+                          <span
+                            className={`font-medium transition-colors truncate block ${
+                              i === activeIdx
+                                ? 'text-accent-violet'
+                                : 'text-white group-hover:text-accent-violet'
+                            }`}
+                          >
                             {p.title}
                           </span>
                           <span className="text-xs text-gray-500">{fmt(p.date)}</span>
                         </div>
                         <ArrowRight
                           size={14}
-                          className="text-gray-600 group-hover:text-accent-violet shrink-0"
+                          className={`shrink-0 transition-colors ${
+                            i === activeIdx
+                              ? 'text-accent-violet'
+                              : 'text-gray-600 group-hover:text-accent-violet'
+                          }`}
                         />
                       </Link>
                     </motion.div>

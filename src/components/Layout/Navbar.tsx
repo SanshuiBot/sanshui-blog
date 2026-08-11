@@ -12,6 +12,7 @@ import SearchModal from '@/components/UI/SearchModal';
 import { useDismiss } from '@/components/UI/useDismiss';
 import NavLogo from '@/components/Layout/NavLogo';
 import { siteConfig } from '@/lib/site';
+import { searchHotkeyLabel } from '@/lib/platform';
 
 const links = [
   { href: '/', label: '首页' },
@@ -121,7 +122,7 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-1">
-            <Tooltip label="搜索 (⌘K)">
+            <Tooltip label={`搜索 (${searchHotkeyLabel()})`}>
               <button
                 onClick={() => {
                   setSearchOpen(true);

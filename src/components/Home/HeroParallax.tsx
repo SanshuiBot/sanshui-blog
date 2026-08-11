@@ -78,11 +78,26 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
   });
 
   // 中间层（缩略图墙）：中速向上飘 + 活微旋转
-  const midY = useTransform(scrollY, [0, vh], [0, -180]);
-  const midRotate = useTransform(scrollY, [0, vh], [0, -4]);
+  // 套 spring（高 stiffness + 高 damping）：吸收手机端慢滚时 scrollY 的亚像素抖动，
+  // 同时参数够「硬」保持跟手、无延迟感。
+  const midY = useSpring(useTransform(scrollY, [0, vh], [0, -180]), {
+    stiffness: 400,
+    damping: 40,
+    restDelta: 0.001,
+  });
+  const midRotate = useSpring(useTransform(scrollY, [0, vh], [0, -4]), {
+    stiffness: 400,
+    damping: 40,
+    restDelta: 0.001,
+  });
 
   // 最远层（网格背景）：极慢漂移
-  const farY = useTransform(scrollY, [0, vh], [0, 40]);
+  // 同样套 spring 吸收抖动；远层位移量小，spring 延迟不可见。
+  const farY = useSpring(useTransform(scrollY, [0, vh], [0, 40]), {
+    stiffness: 400,
+    damping: 40,
+    restDelta: 0.001,
+  });
 
   // 向下滚动提示：用户一开始滚（前 15vh）就快速淡出
   const scrollHintOpacity = useTransform(scrollY, [0, vh * 0.15], [1, 0]);
@@ -149,9 +164,9 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
   );
 
   return (
-    <motion.section className="fixed inset-0 flex items-center justify-center overflow-hidden z-0">
+    <motion.section className="fixed inset-0 flex items-center justify-center overflow-hidden z-0 will-change-transform">
       {/* ── 最远层：流光网格 + aurora blob ── */}
-      <motion.div style={{ y: farY }} className="absolute inset-[-10%]">
+      <motion.div style={{ y: farY }} className="absolute inset-[-10%] will-change-transform">
         <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full bg-accent-violet/5 blur-[150px] animate-float pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] rounded-full bg-accent-pink/4 blur-[130px] animate-float-delayed pointer-events-none" />
         <div aria-hidden className="absolute inset-0 hero-aurora-grid" />
@@ -160,7 +175,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
       {/* ── 中间层：文章缩略图拼贴墙 ── */}
       <motion.div
         style={{ y: midY, rotate: midRotate }}
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none will-change-transform hero-thumb-wall"
         aria-hidden
       >
         {thumbs.map((t, i) => {
@@ -169,7 +184,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
           return (
             <div
               key={i}
-              className="absolute w-44 h-56 rounded-xl glass overflow-hidden shadow-soft"
+              className="absolute w-44 h-56 rounded-xl glass overflow-hidden shadow-soft hero-thumb-card"
               style={{
                 left: pos.left,
                 top: pos.top,
@@ -199,7 +214,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
       {/* ── 最近层：标题 / CTA（中央，视差最快） ── */}
       <motion.div
         style={{ opacity: titleOpacity, y: titleY, scale: titleScale }}
-        className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center"
+        className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center will-change-transform"
       >
         {/* 身份徽章 */}
         <motion.div
