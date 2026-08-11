@@ -806,6 +806,11 @@
   .prose-article h3 {
     scroll-margin-top: 6rem;
   }
+
+  /* 首屏「浏览文章」CTA 跳到 #posts，标题需露出 Navbar 下方 */
+  #posts {
+    scroll-margin-top: 6rem;
+  }
   .prose-article p {
     margin-bottom: 1.25em;
   }

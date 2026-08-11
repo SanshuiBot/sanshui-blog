@@ -21,6 +21,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import PostGrid from '@/components/Post/PostGrid';
+import ArrowLink from '@/components/UI/ArrowLink';
 import { withBase } from '@/lib/basePath';
 import type { PostIndexEntry } from '@/lib/post-index';
 import type { Post } from '@/lib/types';
@@ -79,7 +80,7 @@ export default function PostsList({ total }: Props) {
       className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20"
     >
       {/* 标题：滚动入场淡入 */}
-      <div ref={titleRef} className="flex items-end justify-between mb-10">
+      <div ref={titleRef} className="flex items-center justify-between mb-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={titleInView ? { opacity: 1, y: 0 } : {}}
@@ -87,6 +88,15 @@ export default function PostsList({ total }: Props) {
         >
           <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">最新文章</h2>
           <p className="mt-2 text-gray-500 text-sm">共 {total} 篇文章</p>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={titleInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <ArrowLink href="/archive/" dir="more" className="link-more text-sm font-medium">
+            查看全部
+          </ArrowLink>
         </motion.div>
       </div>
 
