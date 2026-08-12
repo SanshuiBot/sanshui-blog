@@ -21,7 +21,7 @@ import { siteConfig } from '@/lib/site';
 import { withBase } from '@/lib/basePath';
 import type { PostIndexEntry } from '@/lib/post-index';
 
-interface HeroStats {
+export interface HeroStats {
   posts: number;
   tags: number;
   lastUpdated: string;
@@ -196,8 +196,8 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
     <motion.section className="fixed inset-0 flex items-center justify-center overflow-hidden z-0 will-change-transform">
       {/* ── 最远层：流光网格 + aurora blob ── */}
       <motion.div style={{ y: farY }} className="absolute inset-[-10%] will-change-transform">
-        <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full bg-accent-violet/5 blur-[150px] animate-float pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] rounded-full bg-accent-pink/4 blur-[130px] animate-float-delayed pointer-events-none" />
+        <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full bg-accent-violet/15 blur-[150px] animate-float pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] rounded-full bg-accent-pink/12 blur-[130px] animate-float-delayed pointer-events-none" />
         <div aria-hidden className="absolute inset-0 hero-aurora-grid" />
       </motion.div>
 

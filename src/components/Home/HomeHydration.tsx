@@ -1,5 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
+import type { HeroStats } from './HeroParallax';
 
 /**
  * 首屏动效组件懒加载入口（client wrapper）。
@@ -37,12 +38,6 @@ const PostsList = dynamic(() => import('@/components/Home/PostsList'), {
     </section>
   ),
 });
-
-export interface HeroStats {
-  posts: number;
-  tags: number;
-  lastUpdated: string;
-}
 
 export default function HomeHydration({ total, stats }: { total: number; stats: HeroStats }) {
   return (

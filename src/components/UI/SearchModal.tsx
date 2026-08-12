@@ -15,7 +15,6 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
   const [activeIdx, setActiveIdx] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLAnchorElement[]>([]);
   const { startNavigation } = useNavigationLoading();
   const router = useRouter();
 
@@ -167,9 +166,6 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                     >
                       <Link
                         href={`/posts/${p.slug}/`}
-                        ref={(el) => {
-                          if (el) listRef.current[i] = el;
-                        }}
                         data-active={i === activeIdx}
                         onMouseEnter={() => setActiveIdx(i)}
                         onClick={() => {
@@ -183,9 +179,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                         <div className="flex-1 min-w-0">
                           <span
                             className={`font-medium transition-colors truncate block ${
-                              i === activeIdx
-                                ? 'text-accent-violet'
-                                : 'text-white group-hover:text-accent-violet'
+                              i === activeIdx ? 'text-accent-violet' : 'text-white'
                             }`}
                           >
                             {p.title}
@@ -195,9 +189,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                         <ArrowRight
                           size={14}
                           className={`shrink-0 transition-colors ${
-                            i === activeIdx
-                              ? 'text-accent-violet'
-                              : 'text-gray-600 group-hover:text-accent-violet'
+                            i === activeIdx ? 'text-accent-violet' : 'text-gray-600'
                           }`}
                         />
                       </Link>

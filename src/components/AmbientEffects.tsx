@@ -21,6 +21,7 @@ function subscribeReducedMotion(onChange: () => void): () => void {
  * 对 prefers-reduced-motion 用户跳过装饰性动效（仅 CursorGlow 受门控）；
  * 点击特效（ClickEffect）与功能性动效（ScrollProgress）保持运行，
  * 已自检的动效（ParticleField 内部处理）同样保持运行。
+ * HeroParallax 是首页专属首屏组件，由 HomeHydration 独立加载，不在此注册表内。
  */
 export default function AmbientEffects() {
   // useSyncExternalStore：matchMedia 是外部 store，避免 effect 内同步 setState
