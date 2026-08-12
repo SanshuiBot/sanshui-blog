@@ -51,8 +51,17 @@ const thumbAccents = [
 
 export default function HeroParallax({ stats }: { stats?: HeroStats }) {
   const [vh, setVh] = useState(800);
+  const [w, setW] = useState(1024);
   useEffect(() => {
-    const update = () => setVh(window.innerHeight);
+    // Hero 区有独立的流光网格（56px），添加 marker 让全局网格（64px）隐藏，避免两层叠加产生摩尔纹
+    document.documentElement.classList.add('sanshui-hero-active');
+    return () => document.documentElement.classList.remove('sanshui-hero-active');
+  }, []);
+  useEffect(() => {
+    const update = () => {
+      setVh(window.innerHeight);
+      setW(window.innerWidth);
+    };
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
@@ -150,18 +159,38 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
     };
   }, []);
 
-  // 拼贴卡片随机分布位置（固定 seed，避免 hydration mismatch——但本组件 ssr:false，可随机）
-  // 用 useMemo 而非 useRef：positions 是纯计算派生值，渲染期读取应走 memo，避免触发 react-hooks/refs 警告
-  const positions = useMemo(
-    () =>
-      thumbs.map((_, i) => ({
-        left: `${((i * 17 + 8) % 80) + 5}%`,
-        top: `${((i * 23 + 12) % 70) + 10}%`,
-        rotate: `${(i % 2 === 0 ? 1 : -1) * (3 + (i % 4))}deg`,
-        scale: 0.7 + (i % 3) * 0.08,
-      })),
-    [thumbs],
-  );
+  // 拼贴卡片位置：根据视口宽度动态计算，避免移动端重叠
+  // desktop: 分散在较大区域；mobile: 紧凑排列 + 更小 scale
+  const positions = useMemo(() => {
+    const isMobile = w < 640;
+    return thumbs.map((_, i) => {
+      if (!isMobile) {
+        // 桌面端：沿用原有分布公式
+        const baseLeft = ((i * 17 + 8) % 80) + 10;
+        const baseTop = ((i * 23 + 12) % 70) + 10;
+        // card 5 原位置压在按钮下方，移至右下避免遮挡
+        const left = i === 5 ? 75 : baseLeft;
+        const top = i === 5 ? 75 : baseTop;
+        return {
+          left: `${left}%`,
+          top: `${top}%`,
+          rotate: `${(i % 2 === 0 ? 1 : -1) * (3 + (i % 4))}deg`,
+          scale: 0.7 + (i % 3) * 0.08,
+        };
+      }
+      // 移动端：2列3行紧凑排列，确保不重叠
+      // scale=0.55，卡片实际约 97×123px，在 375px 视口内居中分布
+      // 列：左25%、右75%；行：top 22%、50%、78%（等分视口）
+      const colPositions = [25, 75];
+      const rowPositions = [22, 50, 78];
+      return {
+        left: `${colPositions[i % 2]!}%`,
+        top: `${rowPositions[Math.floor(i / 2)]!}%`,
+        rotate: `${(i % 3 === 0 ? 1 : -1) * (9 + i)}deg`,
+        scale: 0.55,
+      };
+    });
+  }, [thumbs, w]);
 
   return (
     <motion.section className="fixed inset-0 flex items-center justify-center overflow-hidden z-0 will-change-transform">
@@ -201,8 +230,10 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               />
               {/* 文字 */}
               <div className="p-3">
-                <div className="text-[10px] font-mono text-gray-500 mb-1">{t.tag}</div>
-                <div className="text-xs font-semibold text-gray-200 leading-snug line-clamp-3">
+                <div className="text-[10px] font-mono text-gray-400/40 dark:text-white/20 mb-1">
+                  {t.tag}
+                </div>
+                <div className="text-xs font-semibold text-gray-400/50 dark:text-white/25 leading-snug line-clamp-3">
                   {t.title}
                 </div>
               </div>

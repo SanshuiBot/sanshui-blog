@@ -445,8 +445,8 @@
         rgb(var(--accent-blue-rgb) / 0.06),
         rgb(var(--accent-violet-rgb) / 0.08)
       ),
-      linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+      linear-gradient(rgb(255 255 255 / 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.02) 1px, transparent 1px);
     background-size:
       100% 100%,
       56px 56px,
@@ -665,19 +665,8 @@
     box-shadow: var(--shadow-emboss-hover);
   }
 
-  /* 拼贴卡片墙 —— 手机端缩放 + 拉开间距，避免 6 张卡片重叠 */
-  .hero-thumb-wall {
-    /* 手机端整体缩小：6 张 w-44(176px) 卡片在 375px 视口里挤成一团，
-       scale(0.62) 把卡片压到 ~109px，配合更分散的位置避免相交 */
-    transform: scale(0.62);
-    transform-origin: center;
-  }
-  /* ≥sm(640px)：桌面/平板恢复正常尺寸，拼贴墙满铺 */
-  @media (min-width: 640px) {
-    .hero-thumb-wall {
-      transform: none;
-    }
-  }
+  /* 拼贴卡片墙 —— 手机端位置由 JS 层动态计算（scale=0.55，2列3行），CSS 无需额外缩放 */
+  /* ≥sm(640px)：桌面/平板恢复原位置公式 */
 
   /* 滚动指示器：小字标签 + 向下飘动箭头 */
   .hero-scroll-label {
@@ -1186,6 +1175,10 @@ body::before {
   background-size: 64px 64px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 70%);
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 70%);
+}
+/* Hero 区有独立流光网格（56px），隐藏全局网格（64px）避免两层叠加产生摩尔纹 */
+html.sanshui-hero-active body::before {
+  opacity: 0;
 }
 
 /* ═══ CENTER GLOW OVERLAY ═══ */
