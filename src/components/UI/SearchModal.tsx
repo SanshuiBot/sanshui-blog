@@ -75,6 +75,9 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     return () => window.removeEventListener('keydown', h);
   }, [open]);
 
+  // React Compiler: manual useMemo preserved here — query/posts change infrequently enough that
+  // skipping the optimizer is intentional (compiler cannot safely drop this memo).
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const results = useMemo(() => {
     if (!posts) return [];
     const t = q.trim().toLowerCase();
@@ -207,7 +210,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between px-5 py-3 border-t border-white/5">
+            <div className="flex items-center justify-end px-5 py-3 border-t border-white/5">
               <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
                 <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
                   {searchHotkeyLabel()}
@@ -216,7 +219,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                 <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
                   ↑↓
                 </kbd>
-                <span className="hidden sm:inline">导航</span>
+                <span className="hidden sm:inline">选择</span>
                 <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
                   ↵
                 </kbd>
