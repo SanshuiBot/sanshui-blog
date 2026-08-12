@@ -148,9 +148,17 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                   <X size={16} />
                 </button>
               )}
-              <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500">
-                ESC
-              </kbd>
+              <div className="flex items-center gap-1.5">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500">
+                  ↑↓
+                </kbd>
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500">
+                  ↵
+                </kbd>
+                <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500">
+                  ESC
+                </kbd>
+              </div>
             </div>
             <div className="max-h-80 overflow-y-auto p-2">
               {posts === null ? (
