@@ -972,6 +972,10 @@
     background: var(--color-ink);
     border-color: rgb(var(--accent-violet-rgb) / 0.1);
   }
+  html.dark .prose-article pre {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
   html:not(.dark) .prose-article pre code {
     color: #d4d4d8;
   }
