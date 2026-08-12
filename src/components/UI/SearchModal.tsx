@@ -7,6 +7,7 @@ import { withBase } from '@/lib/basePath';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import { useDismiss } from '@/components/UI/useDismiss';
 import { useRouter } from 'next/navigation';
+import { searchHotkeyLabel } from '@/lib/platform';
 import type { PostIndexEntry } from '@/lib/post-index';
 
 export default function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -201,7 +202,9 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                   未找到相关文章
                 </div>
               ) : (
-                <div className="text-center py-10 text-gray-600 text-sm">⌘K 搜索</div>
+                <div className="text-center py-10 text-gray-600 text-sm">
+                  {searchHotkeyLabel()} 搜索
+                </div>
               )}
             </div>
           </motion.div>
