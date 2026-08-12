@@ -148,17 +148,9 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                   <X size={16} />
                 </button>
               )}
-              <div className="flex items-center gap-1.5">
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500">
-                  ↑↓
-                </kbd>
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500">
-                  ↵
-                </kbd>
-                <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500">
-                  ESC
-                </kbd>
-              </div>
+              <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500">
+                ESC
+              </kbd>
             </div>
             <div className="max-h-80 overflow-y-auto p-2">
               {posts === null ? (
@@ -214,6 +206,25 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                   {searchHotkeyLabel()} 搜索
                 </div>
               )}
+            </div>
+            <div className="flex items-center justify-between px-5 py-3 border-t border-white/5">
+              <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
+                  {searchHotkeyLabel()}
+                </kbd>
+                <span className="hidden sm:inline">搜索</span>
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
+                  ↑↓
+                </kbd>
+                <span className="hidden sm:inline">导航</span>
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
+                  ↵
+                </kbd>
+                <span className="hidden sm:inline">打开</span>
+              </div>
+              <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500 sm:hidden">
+                ESC
+              </kbd>
             </div>
           </motion.div>
         </div>
