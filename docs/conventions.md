@@ -42,7 +42,7 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 ## 9. 图片：`images.unoptimized: true`
 
-静态导出无服务端图像优化器，`next/image` 退化为原图直出。新增图片需自行压缩。`public/` 下的资源引用要带 basePath：`<Image src={withBase('/logo.svg')} ... />`。
+静态导出无服务端图像优化器，`next/image` 退化为原图直出。新增图片需自行压缩。`public/` 下的资源引用：Server Component 的 `<Image>` 由 Next 自动注入 basePath，无需 `withBase()`；客户端组件（`'use client'`）需手动包裹 `withBase()`，如 `<Image src={withBase('/logo.svg')} ... />`。Navbar 的 logo 是 Server Component，直接写 `src="/logo.svg"` 即可。
 
 ## 10. Tailwind v4 语法（无 `tailwind.config.js`）
 
