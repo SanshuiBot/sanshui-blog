@@ -12,6 +12,7 @@ import Tooltip from '@/components/UI/Tooltip';
 import SearchModal from '@/components/UI/SearchModal';
 import { useDismiss } from '@/components/UI/useDismiss';
 import { siteConfig } from '@/lib/site';
+import { withBase } from '@/lib/basePath';
 import { searchHotkeyLabel } from '@/lib/platform';
 
 const links = [
@@ -97,7 +98,7 @@ export default function Navbar() {
         <nav className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <Image
-              src="/logo.svg"
+              src={withBase('/logo.svg')}
               alt="三水"
               width={24}
               height={24}
