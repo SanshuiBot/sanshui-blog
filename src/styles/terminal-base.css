@@ -1,0 +1,95 @@
+/**
+ * 终端窗口基础样式（TerminalShell）
+ * ----------------------------------
+ * 链接页与简历页共用，提取到 globals.css 避免重复。
+ *
+ * 结构：
+ *   .terminal-shell            — 外层容器（毛玻璃、边框、阴影）
+ *   .terminal-shell-titlebar   — macOS 风格标题栏
+ *   .terminal-shell-dot        — 红/黄/绿圆点
+ *   .terminal-shell-title      — 标题文本
+ *   .terminal-shell-status     — 右侧状态文本
+ */
+
+/* ── 窗口外壳 ── */
+.terminal-shell {
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08),
+    0 24px 64px rgb(0 0 0 / 0.5),
+    0 8px 24px rgb(0 0 0 / 0.3);
+}
+
+/* ── 标题栏 ── */
+.terminal-shell-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  user-select: none;
+}
+
+.terminal-shell-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.terminal-shell-dot-red {
+  background: #ff5f57;
+}
+.terminal-shell-dot-yellow {
+  background: #febc2e;
+}
+.terminal-shell-dot-green {
+  background: #28c840;
+}
+
+/* ── 亮色模式覆盖（macOS 三色圆点在亮色背景下需加深） ── */
+html:not(.dark) .terminal-shell-dot-red {
+  background: #c42b1e;
+}
+html:not(.dark) .terminal-shell-dot-yellow {
+  background: #b7791f;
+}
+html:not(.dark) .terminal-shell-dot-green {
+  background: #166534;
+}
+
+.terminal-shell-title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgb(255 255 255 / 0.3);
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+.terminal-shell-status {
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  color: rgb(255 255 255 / 0.25);
+}
+
+/* ── 亮色模式覆盖 ── */
+html:not(.dark) .terminal-shell {
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 0 0 1px rgb(var(--accent-violet-rgb) / 0.06),
+    0 16px 48px rgba(0 0 0 / 0.08),
+    0 6px 16px rgba(0 0 0 / 0.06);
+}
+html:not(.dark) .terminal-shell-titlebar {
+  background: rgba(0, 0, 0, 0.04);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+html:not(.dark) .terminal-shell-title {
+  color: rgb(0 0 0 / 0.3);
+}
+html:not(.dark) .terminal-shell-status {
+  color: rgb(0 0 0 / 0.25);
+}

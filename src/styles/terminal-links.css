@@ -1,0 +1,268 @@
+/**
+ * 终端友链卡片样式
+ * -----------------------------
+ * 融合 Bento 网格 + 终端命令行美学 + 鼠标跟随磁吸光晕。
+ * 外层窗口壳由 TerminalShell 组件（terminal-base.css）提供。
+ *
+ * 本文件职责：terminal-body / terminal-prompt / terminal-grid / 链接卡片
+ */
+
+/* ── 内容区 ── */
+.terminal-body {
+  background: rgba(8, 8, 14, 0.85);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  padding: 1.25rem;
+}
+
+/* ── 命令提示行 ── */
+.terminal-prompt-line {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: rgb(var(--accent-teal-rgb));
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.75rem;
+}
+.terminal-prompt-symbol {
+  color: rgb(var(--accent-violet-rgb));
+  font-weight: 700;
+  animation: terminal-blink 1s step-end infinite;
+}
+@keyframes terminal-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ── Bento 网格 ── */
+.terminal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.625rem;
+}
+@media (max-width: 639px) {
+  .terminal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 链接卡片 ── */
+.terminal-link-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.625rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 磁吸光晕层（随鼠标位置移动） */
+.terminal-card-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    rgb(var(--accent-violet-rgb) / 0.14),
+    transparent 60%
+  );
+}
+
+/* 发光边框层 */
+.terminal-card-border-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    rgb(var(--accent-violet-rgb) / 0.25),
+    transparent 60%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  padding: 1px;
+}
+
+.terminal-link-card:hover {
+  border-color: rgb(var(--accent-violet-rgb) / 0.3);
+  background: rgba(var(--accent-violet-rgb) / 0.04);
+}
+.terminal-link-card:hover .terminal-card-glow,
+.terminal-link-card:hover .terminal-card-border-glow {
+  opacity: 1;
+}
+
+/* 左侧颜色圆点 */
+.terminal-card-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.terminal-link-card:hover .terminal-card-dot {
+  transform: scale(1.3);
+  box-shadow: 0 0 8px currentColor;
+}
+
+/* 右侧信息区 */
+.terminal-card-info {
+  flex: 1;
+  width: 0; /* 等同 Tailwind min-w-0，使 text-overflow: ellipsis 生效 */
+}
+
+/* 名称行 */
+.terminal-card-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(255 255 255 / 0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s ease;
+}
+.terminal-link-card:hover .terminal-card-name-row {
+  color: rgb(var(--accent-violet-rgb));
+}
+.terminal-card-arrow {
+  color: rgb(255 255 255 / 0.2);
+  flex-shrink: 0;
+  transition:
+    color 0.3s ease,
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.terminal-link-card:hover .terminal-card-arrow {
+  color: rgb(var(--accent-violet-rgb) / 0.7);
+  transform: translateX(2px);
+}
+
+/* 描述行 */
+.terminal-card-desc {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgb(255 255 255 / 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.125rem;
+  transition: color 0.3s ease;
+}
+.terminal-link-card:hover .terminal-card-desc {
+  color: rgb(255 255 255 / 0.5);
+}
+
+/* ── 亮色模式覆盖 ── */
+html:not(.dark) .terminal-body {
+  background: rgba(255, 255, 255, 0.85);
+}
+html:not(.dark) .terminal-prompt-line {
+  color: rgb(var(--accent-teal-rgb) / 0.8);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+html:not(.dark) .terminal-prompt-symbol {
+  color: rgb(var(--accent-violet-rgb) / 0.8);
+}
+html:not(.dark) .terminal-link-card {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+}
+html:not(.dark) .terminal-link-card:hover {
+  border-color: rgb(var(--accent-violet-rgb) / 0.35);
+  background: rgb(var(--accent-violet-rgb) / 0.03);
+}
+html:not(.dark) .terminal-card-name-row {
+  color: rgb(28 25 23 / 0.85);
+}
+html:not(.dark) .terminal-link-card:hover .terminal-card-name-row {
+  color: rgb(var(--accent-violet-rgb));
+}
+html:not(.dark) .terminal-card-arrow {
+  color: rgb(0 0 0 / 0.2);
+}
+html:not(.dark) .terminal-card-desc {
+  color: rgb(0 0 0 / 0.35);
+}
+html:not(.dark) .terminal-link-card:hover .terminal-card-desc {
+  color: rgb(0 0 0 / 0.55);
+}
+html:not(.dark) .terminal-card-glow {
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    rgb(var(--accent-violet-rgb) / 0.08),
+    transparent 60%
+  );
+}
+html:not(.dark) .terminal-card-border-glow {
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    rgb(var(--accent-violet-rgb) / 0.15),
+    transparent 60%
+  );
+}
+
+/* ── 交换卡片（延续终端风格）── */
+.terminal-exchange-box {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(var(--accent-violet-rgb) / 0.2);
+  background: rgb(var(--accent-violet-rgb) / 0.04);
+  box-shadow: 0 0 24px rgb(var(--accent-violet-rgb) / 0.06);
+}
+.terminal-exchange-title {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(var(--accent-violet-rgb));
+  margin-bottom: 0.375rem;
+}
+.terminal-exchange-desc {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: rgb(255 255 255 / 0.55);
+  margin-bottom: 1rem;
+}
+/* 亮色覆盖 */
+html:not(.dark) .terminal-exchange-box {
+  border-color: rgb(var(--accent-violet-rgb) / 0.25);
+  background: rgb(var(--accent-violet-rgb) / 0.04);
+  box-shadow: 0 0 24px rgb(var(--accent-violet-rgb) / 0.05);
+}
+html:not(.dark) .terminal-exchange-desc {
+  color: rgb(0 0 0 / 0.55);
+}

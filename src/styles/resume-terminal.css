@@ -1,0 +1,99 @@
+/**
+ * 简历终端（ResumeTerminal）样式
+ * -----------------------------
+ * 窗口外壳由 TerminalShell（terminal-base.css）提供，此处仅定义内容区样式。
+ */
+
+/* ── Resume Terminal：流式打印简历模块 ── 暗/亮双主题 ── */
+.resume-terminal {
+  --rt-bg: rgba(10, 10, 20, 0.6);
+  --rt-prompt: #8b8b9e;
+  --rt-heading: rgb(var(--accent-violet-rgb));
+  --rt-text: #d4d4d8;
+  --rt-quote-border: rgb(var(--accent-pink-rgb));
+  --rt-quote-text: #8b8b9e;
+  --rt-list-marker: rgb(var(--accent-teal-rgb));
+  --rt-list-text: #d4d4d8;
+  --rt-bold: #ffffff;
+  --rt-code-bg: rgb(var(--accent-violet-rgb) / 0.12);
+  --rt-code-text: rgb(var(--accent-violet-rgb));
+  --rt-code-border: rgb(var(--accent-violet-rgb) / 0.2);
+  --rt-cursor: rgb(var(--accent-violet-rgb));
+  --rt-cursor-done-opacity: 0.3;
+  --rt-done-border: rgba(255, 255, 255, 0.06);
+  --rt-done-text: #8b8b9e;
+  --rt-done-icon: rgb(var(--accent-teal-rgb));
+  --rt-hr: rgba(255, 255, 255, 0.1);
+}
+
+.resume-terminal .resume-body {
+  background: var(--rt-bg);
+  color: var(--rt-text);
+}
+.resume-terminal .resume-prompt {
+  color: var(--rt-prompt);
+}
+.resume-terminal .resume-heading {
+  color: var(--rt-heading);
+}
+.resume-terminal .resume-quote {
+  border-left: 2px solid var(--rt-quote-border);
+  color: var(--rt-quote-text);
+}
+.resume-terminal .resume-list-marker {
+  color: var(--rt-list-marker);
+}
+.resume-terminal .resume-list {
+  color: var(--rt-list-text);
+}
+.resume-terminal .resume-text {
+  color: var(--rt-text);
+}
+.resume-terminal .resume-bold {
+  color: var(--rt-bold);
+}
+.resume-terminal .resume-code {
+  background: var(--rt-code-bg);
+  color: var(--rt-code-text);
+  border-color: var(--rt-code-border);
+}
+.resume-terminal .resume-cursor {
+  background-color: var(--rt-cursor);
+}
+.resume-terminal .resume-cursor-done {
+  background: transparent;
+  border-left: 2px solid var(--rt-cursor);
+  opacity: var(--rt-cursor-done-opacity);
+}
+.resume-terminal .resume-done {
+  border-color: var(--rt-done-border);
+  color: var(--rt-done-text);
+}
+.resume-terminal .resume-done-icon {
+  color: var(--rt-done-icon);
+}
+.resume-terminal .resume-hr {
+  border-color: var(--rt-hr);
+}
+
+/* ── 亮色主题覆盖：html:not(.dark) ── */
+html:not(.dark) .resume-terminal {
+  --rt-bg: #ffffff;
+  --rt-prompt: #78716c;
+  --rt-heading: rgb(var(--accent-violet-rgb));
+  --rt-text: #44403c;
+  --rt-quote-border: rgb(var(--accent-pink-rgb));
+  --rt-quote-text: #57534e;
+  --rt-list-marker: rgb(var(--accent-teal-rgb));
+  --rt-list-text: #44403c;
+  --rt-bold: #1c1917;
+  --rt-code-bg: rgb(var(--accent-violet-rgb) / 0.08);
+  --rt-code-text: #6d28d9;
+  --rt-code-border: rgb(var(--accent-violet-rgb) / 0.15);
+  --rt-cursor: rgb(var(--accent-violet-rgb));
+  --rt-cursor-done-opacity: 0.4;
+  --rt-done-border: rgba(0, 0, 0, 0.08);
+  --rt-done-text: #57534e;
+  --rt-done-icon: rgb(var(--accent-teal-rgb));
+  --rt-hr: rgba(0, 0, 0, 0.12);
+}

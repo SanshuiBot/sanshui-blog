@@ -224,7 +224,7 @@ describe('accentBootstrapScript（防 FOUC 脚本与纯函数行为一致）', (
 
 describe('globals.css :root 默认 accent 变量与 ACCENT_PRESETS 一致（跨语言契约）', () => {
   it('六个通道值完全匹配 aurora 预设', () => {
-    const css = readFileSync(join(process.cwd(), 'src/app/globals.css'), 'utf-8');
+    const css = readFileSync(join(process.cwd(), 'src/styles/globals.css'), 'utf-8');
     const aurora = ACCENT_PRESETS[0]!;
     for (const ch of ACCENT_CHANNELS) {
       const m = new RegExp(`--accent-${ch}-rgb:\\s*([^;]+);`).exec(css);

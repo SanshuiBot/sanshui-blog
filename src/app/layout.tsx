@@ -11,7 +11,7 @@
  *  - 切勿在此处引入任何客户端专用逻辑或 'use client' 组件本体，应统一交给 <Provider>。
  */
 import type { Metadata, Viewport } from 'next';
-import './globals.css';
+import '@/styles/globals.css';
 import { sans, mono } from './fonts';
 import Providers from '@/components/Providers';
 import AmbientEffects from '@/components/AmbientEffects';

@@ -85,7 +85,6 @@ sanshui-blog/
 │   ├── app/                    # Next.js App Router 页面
 │   │   ├── page.tsx            # 首页 (Hero + Stats + Featured + PostList)
 │   │   ├── layout.tsx          # 根布局 (Providers/AmbientEffects/AppShell + favicon metadata + 防 FOUC accent 脚本)
-│   │   ├── globals.css         # Tailwind v4 + 自定义设计系统 + 简历模块双主题
 │   │   ├── fonts.ts            # Inter + JetBrains Mono 字体配置
 │   │   ├── not-found.tsx       # 404 页面 (粒子动画)
 │   │   ├── about/              # 关于页 (技能条 + 技术栈 + 流式简历)
@@ -93,6 +92,11 @@ sanshui-blog/
 │   │   ├── tags/               # 标签云 + 按标签筛选
 │   │   ├── posts/[slug]/       # 文章详情 (RSC MDX 渲染，含 loading.tsx 骨架屏)
 │   │   └── links/              # 友链
+│   ├── styles/                 # 全站 CSS（集中存放，禁止组件目录散落 .css 文件）
+│   │   ├── globals.css         # Tailwind v4 + 自定义设计系统 + 全局 reset + prefers-reduced-motion
+│   │   ├── terminal-base.css   # TerminalShell 共享外壳（毛玻璃窗口 + macOS 标题栏红黄绿圆点）
+│   │   ├── terminal-links.css  # 友链卡片特有（terminal-body / prompt / 网格 / 卡片）
+│   │   └── resume-terminal.css # 简历内容区（变量 + 暗/亮双主题覆盖）
 │   ├── components/
 │   │   ├── Providers.tsx       # 纯 Context 组合 (next-themes + 导航加载)
 │   │   ├── AmbientEffects.tsx  # 全局动效注册表 (懒加载 + reduced-motion 兜底)
@@ -206,7 +210,7 @@ excerpt: 一句话摘要（可选，不写则自动取正文前 160 字；含代
 
 > 💡 新增/修改文章后，`predev` 或 `prebuild` 钩子会自动重新生成 `public/posts-index.json`，SearchModal 即可搜索到新文章。但**线上 HTML 只在重新 `npm run build` 后更新**。
 
-> ⚠️ 文章排版样式走 `globals.css` 里手写的 `.prose-article` 类（h1/h2/h3 字号颜色、`a` 紫粉渐变、`code` 紫底、`blockquote` 紫边等），**未用 Tailwind Typography 的 `prose` 类**。改文章样式就改 `.prose-article` 这段 CSS。
+> ⚠️ 文章排版样式走 `src/styles/globals.css` 里手写的 `.prose-article` 类（h1/h2/h3 字号颜色、`a` 紫粉渐变、`code` 紫底、`blockquote` 紫边等），**未用 Tailwind Typography 的 `prose` 类**。改文章样式就改 `.prose-article` 这段 CSS。
 
 ---
 
@@ -233,7 +237,7 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 - **动画触发**：`IntersectionObserver` 监听组件进入视口（threshold 0.2），首次进入即启动打印
 - **打印节奏**：`setTimeout` 调度，空行 0.4×、标题行 2.4×、普通行 1×（默认 `lineDelay = 60ms`）
 - **自动滚动**：每打印一行自动 `scrollTop = scrollHeight`，模拟终端追加
-- **双主题适配**：`globals.css` 中 `.resume-terminal` 用 CSS 变量定义暗/亮两套配色，`html:not(.dark)` 覆盖亮色值
+- **双主题适配**：`src/styles/resume-terminal.css` 用 CSS 变量定义 `.resume-terminal` 暗/亮两套配色，`html:not(.dark)` 覆盖亮色值
 
 ### 渲染能力
 
@@ -261,7 +265,7 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 
 ## 🎨 Accent 主题强调色系统
 
-全站 6 个 accent 色（pink/violet/blue/teal/gold/rose）通过 CSS 变量 `--accent-*-rgb`（空格分隔 RGB 三元组，如 `168 85 247`）驱动。所有阴影、glow、hljs 高亮、prose-article 链接、resume-terminal、Aurora 文字渐变均经由 `rgb(var(--accent-xxx-rgb) / α)` 引用——**改这 6 个变量 = 全站联动**。
+全站 6 个 accent 色（pink/violet/blue/teal/gold/rose）通过 CSS 变量 `--accent-*-rgb`（空格分隔 RGB 三元组，如 `168 85 247`）驱动。所有阴影、glow、hljs 高亮、prose-article 链接、terminal-links / resume-terminal 组件、Aurora 文字渐变均经由 `rgb(var(--accent-xxx-rgb) / α)` 引用——**改这 6 个变量 = 全站联动**。
 
 ### 机制链路
 
@@ -319,7 +323,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
 
 ## ⚠️ 开发注意事项
 
-- **亮色为主、暗色可选**：默认 **亮色主题**。`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA（滚动条/表单控件/地址栏）与默认主题一致。**改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱
+- **亮色为主、暗色可选**：默认 **亮色主题**。`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`src/styles/globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA（滚动条/表单控件/地址栏）与默认主题一致。**改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱
 - **Tailwind v4 语法**：使用 `@import "tailwindcss"` / `@plugin` / `@theme`，而非 v3 的 `@tailwind` 指令；PostCSS 插件是 `@tailwindcss/postcss`
 - **TypeScript 严格**：`strict: true` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters`，所有索引访问都需 undefined 检查
 - **中文 Slug**：`getPostBySlug()` / `getAdjacentPosts()` 内部经 `decodeSlug()` 统一做 `decodeURIComponent`（非法编码按原样查找、不抛异常）；`generateStaticParams` 返回原始 slug，新增 slug 查询时保持一致
@@ -340,7 +344,8 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
 - **安全头走 `public/_headers`**：`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。新增响应头改 `public/_headers`，不要改 `next.config.ts`
 - **文章卡片网格「跟手」流式渲染**：`PostGrid` + `PostCard` 实现骨架渐隐与卡片渐显**同一 DOM 帧叠加**，零空白帧。关键实现：骨架层与卡片层同时挂载于同一 `h-60`（240px）固定容器，absolute 叠放，只通过 opacity 切换显隐；槽位 key 用 `slot-${i}` 稳定不变，骨架→卡片切换不触发 DOM 卸载/重挂；卡片入场从 `whileInView` 改为挂载即播放（列表场景卡片总是从下方进入视野，等 `IntersectionObserver` 反而不跟手）；两层用完全相同的 transition（`duration: 0.25s`），不用 `y` 位移（会让卡片在途中「露半张」）；`prefetchedRef` 在 `post.slug` 变化时重置（`useEffect`），避免稳定 slot key 复用 PostCard 实例时新文章 hover 跳过 prefetch
 - **TOC 只提取 h2/h3，锚点与渲染侧同源**：`src/lib/toc.ts` 的 `extractHeadings()` 逐行扫描，只把 `##` / `###` 放进目录，`#` 与 `####` 不进目录；id 与渲染侧 rehype-slug 共用同一个 `github-slugger`（先剥 HTML 再 `slug()`，h1~h6 全部推进状态，重复标题自动 `-1/-2` 后缀，中文/重音/假名都保留，且**不**折叠重复连字符——与渲染侧严格一致），并跳过代码围栏内的假标题。新增需要进目录的标题，必须用 `##` 或 `###`。TOC 组件实现：桌面端目录 sticky 在正文**右边**（`page.tsx` 正文在前、TOC 在后），移动端抽屉式目录在正文上方；`IntersectionObserver` 监测视口上 30% 带取最靠上标题高亮、首屏高亮首项；点击 `scrollIntoView` 平滚 + `history.replaceState` 写 URL hash；`.prose-article h2/h3 { scroll-margin-top: 6rem }` 兜锚点不被 sticky Navbar 遮挡；**淡入淡出滚动条**——`.toc-scroll` 藏原生滚动条，浮 `.toc-thumb` 绝对定位指示条按滚动比例算 `top`/`height`（几何在 `src/lib/thumbGeometry.ts` 纯函数，可单测），显隐只由 hover 控制（`mouseenter` 显示 / `mouseleave` 隐藏），`opacity transition` 淡入淡出，浮层 `absolute` 不占文档流不挤压文字；几何用 `ResizeObserver` + `requestAnimationFrame` 延迟算准 + `document.fonts.ready` 兜底。颜色联 Accent 主题用自定义 `.toc-link` / `.toc-link-active` 类（见下 utility layer 坑），不用 Tailwind utility `text-accent-violet`
-- **globals.css 同元素规则集中**：同一元素的暗色基与亮色覆盖（`html:not(.dark) ...`）必须相邻写，不散乱到文件两极；不写重复样式。`prose-article` / `glass` / `glass-heavy` / `::-webkit-scrollbar` 的亮色覆盖均已并入暗色基旁，Tailwind utility 亮色覆盖单独分组于文件尾。新增元素的亮色覆盖紧贴其暗色基写
+- **CSS 文件集中存放**：所有 `.css` 文件（含 `globals.css`）统一放在 `src/styles/`，组件内通过 JS import 按需引入（`import '@/styles/xxx.css'`），全局样式由 `layout.tsx` 统一 import。**禁止在组件目录里散落 `.css` 文件**。共享外壳（终端窗口）抽为 `TerminalShell` 组件，各页面只传 `title`/`status` prop，不要手抄圆点标题栏
+- **`src/styles/globals.css` 同元素规则集中**：同一元素的暗色基与亮色覆盖（`html:not(.dark) ...`）必须相邻写，不散乱到文件两极；不写重复样式。`prose-article` / `glass` / `glass-heavy` / `::-webkit-scrollbar` 的亮色覆盖均已并入暗色基旁，Tailwind utility 亮色覆盖单独分组于文件尾。新增元素的亮色覆盖紧贴其暗色基写
 - **`posts.ts` 读取层契约**：
   - `'server-only'` 标记：`posts.ts` / `toc.ts` / `types.ts` 顶部都有 `import 'server-only'`，这些 lib **只能在 RSC / Server Component 里调用**，不能 import 进 client 组件。客户端需要文章数据时 fetch `public/posts-index.json`
   - 共享解析契约：解析规则唯一实现在 `src/lib/parse-post.mjs`（纯 ESM、无 fs），`posts.ts` 与 `scripts/gen-posts-index.js` 共用，改解析只改这一处
@@ -349,8 +354,8 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
 - **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`；`public/posts-index.json` 是构建产物，已在 `.prettierignore` 忽略，不要手动格式化它
 - **弹层关闭统一走 `useDismiss`**：外点（mousedown + 延迟绑定避开「触发弹层的同一次点击」）/ Esc 关闭收口在 `src/components/UI/useDismiss.ts`；ref 须包裹「开关按钮 + 浮层」，Navbar 移动菜单用 `{ outside: false }` 只启用 Esc（开关按钮在浮层外）
 - **hover 变色不要走 Framer Motion**：`whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}` 会把动画后的 `color` 写成 **inline style**，CSS 变量在 inline style 中被解析成具体值（如 `rgb(168 85 247)`）后就**不再响应** `--accent-*-rgb` 的变化——切 Accent 主题色、切亮/暗模式时，标题会卡在动画那一刻的颜色上，看起来像「变白/变黑不响应主题」。**正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统；位移动画也一并迁到 CSS `transform`。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore` + `.post-card-link:hover`）就是这么改的
-- **Tailwind v4 utility 的 layer 优先级坑**：Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-violet` 等）注入到 `@layer utilities` 里。而 `globals.css` 中那些 `html:not(.dark) .text-gray-500 { color: #78716c }` 亮色覆盖规则是**裸 CSS**（不在任何 `@layer` 内）。**裸 CSS 优先级高于任何 `@layer` 内的同特异性规则**，所以亮色模式下 `group-hover/link:text-accent-violet` 这类 utility hover 会被裸覆盖规则持续压制，hover 不变色。**正确做法**：需要响应 Accent 主题色联动的 hover 变色，**不要用 Tailwind utility**，改用自定义 CSS 类，`html.dark` / `html:not(.dark)` 双前缀提升特异性到 (0,3,1)，稳压裸覆盖规则
-- **动画时长限制 0.01ms（`prefers-reduced-motion` 降级值）**：做任何动画之前，先确认它会被 globals.css 的 `@media (prefers-reduced-motion: reduce)` 块正确降级。该块把 `animation-duration` / `transition-duration` 强制压到 **0.01ms**（实质禁用动画），服务于无障碍：
+- **Tailwind v4 utility 的 layer 优先级坑**：Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-violet` 等）注入到 `@layer utilities` 里。而 `src/styles/globals.css` 中那些 `html:not(.dark)` 亮色覆盖规则是**裸 CSS**（不在任何 `@layer` 内）。**裸 CSS 优先级高于任何 `@layer` 内的同特异性规则**，所以亮色模式下 `group-hover/link:text-accent-violet` 这类 utility hover 会被裸覆盖规则持续压制，hover 不变色。**正确做法**：需要响应 Accent 主题色联动的 hover 变色，**不要用 Tailwind utility**，改用自定义 CSS 类，`html.dark` / `html:not(.dark)` 双前缀提升特异性到 (0,3,1)，稳压裸覆盖规则
+- **动画时长限制 0.01ms（`prefers-reduced-motion` 降级值）**：做任何动画之前，先确认它会被 `src/styles/globals.css` 的 `@media (prefers-reduced-motion: reduce)` 块正确降级。该块把 `animation-duration` / `transition-duration` 强制压到 **0.01ms**（实质禁用动画），服务于无障碍：
   ```css
   @media (prefers-reduced-motion: reduce) {
     html {

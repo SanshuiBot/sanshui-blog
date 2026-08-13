@@ -32,6 +32,7 @@ sanshui-blog/
 │   ├── app/                 # App Router 页面：layout/page/globals.css/fonts/not-found + about/ archive/ tags/[tag]/ posts/[slug]/ links/
 │   ├── components/          # Providers · AmbientEffects · AppShell · Layout/ (Navbar · Footer · ScrollProgress) · Home/ · Post/ · About/ · Links/ · NotFound/ · UI/ · TagList.tsx
 │   │   └── Home/            # HeroParallax（视差拼贴首屏，3 深度层）· HomeHydration（懒加载入口）· PostsList
+│   ├── styles/              # globals.css · terminal-base.css · terminal-links.css · resume-terminal.css
 │   └── lib/                 # types.ts · posts.ts · parse-post.mjs · toc.ts · resume.ts · resumeLines.ts · accents.ts · site.ts · basePath.ts · thumbGeometry.ts · clickParticles.ts · post-index.ts
 ├── tests/                   # Vitest 单测：lib 纯函数与契约
 ├── scripts/                 # predev.js · gen-posts-index.js · gen-dotted-tag-payloads.js
@@ -80,6 +81,10 @@ sanshui-blog/
 30. **`posts-index.json` 是构建产物**，已被 `.prettierignore` 忽略；**不要手动格式化它**。
 31. **Turbopack 无法解析 Tailwind v4.3 的生成 CSS**，dev/build 用 `--webpack`；**不要移除该 flag**。
 32. **动画时长限制：0.01ms（`prefers-reduced-motion` 降级值）**：新增动画优先纯 CSS（自动合规），避免 `transition: all`，hover 变色不交给 Framer。
+33. **不要用原生 `<img>`，用 `<Image />` from `next/image`**：仓库内资源（logo、文章图、封面）走 `next/image`；外部 favicon 等无法控制的远端小图继续用原生 `<img>`，是合理例外，不用改。
+34. **图片错误降级走 React state，不操作 DOM**：用 `useState` 跟踪 `onError`，条件渲染 fallback；禁止在 `onError` 里直接操作 `currentElement.style.display`。
+35. **CSS 集中存放**：所有 `.css` 文件（含 `globals.css`）统一放在 `src/styles/`；全局注入靠 `layout.tsx` 的 import，组件内注入靠 JS import。禁止在组件目录里散落 `.css` 文件。
+36. **共享 UI 组件外壳抽 TerminalShell**：终端窗口（毛玻璃体 + macOS 标题栏）是链接页/简历页共用的视觉组件，外壳逻辑收进 `src/components/UI/TerminalShell.tsx`，各页面只通过 `title`/`status` prop 传入文案，禁止各自手抄圆点标题栏。
 
 ---
 

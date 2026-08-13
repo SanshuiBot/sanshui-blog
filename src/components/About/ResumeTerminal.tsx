@@ -1,9 +1,11 @@
 'use client';
 
+import '@/styles/resume-terminal.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { splitResumeLines } from '@/lib/resumeLines';
 import { useSafeTimeout } from '@/components/UI/useSafeTimeout';
+import TerminalShell from '@/components/UI/TerminalShell';
 
 interface ResumeTerminalProps {
   /** 完整简历文本（markdown，按行流式输出） */
@@ -100,40 +102,33 @@ export default function ResumeTerminal({
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className="resume-terminal rounded-2xl border overflow-hidden shadow-2xl"
     >
-      {/* 标题栏 */}
-      <div className="resume-titlebar flex items-center gap-2 px-4 py-3 border-b">
-        <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-        <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
-        <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-        <span className="ml-3 text-xs font-mono resume-titlebar-text">sanshui@blog: ~/resume</span>
-        <span className="ml-auto text-[11px] font-mono resume-titlebar-status">streaming…</span>
-      </div>
-
-      {/* 终端主体 */}
-      <div
-        ref={scrollBodyRef}
-        className="resume-body font-mono text-[13px] leading-relaxed p-5 h-[460px] overflow-y-auto"
-      >
-        <div className="resume-prompt mb-2">$ cat resume.md</div>
-        <div className="space-y-0.5">
-          {lines.slice(0, printedLines).map((line, i) => (
-            <ResumeLine key={i} line={line} />
-          ))}
-        </div>
-
-        {/* 闪烁光标 */}
-        <span
-          className={`resume-cursor inline-block w-2 h-4 align-middle ml-1 ${
-            done ? 'resume-cursor-done' : 'animate-pulse'
-          }`}
-        />
-
-        {done && (
-          <div className="resume-done mt-4 pt-3 border-t">
-            <span className="resume-done-icon">✓</span> 简历打印完成 · 共 {lines.length} 行
+      <TerminalShell title="sanshui@blog ~/resume" status="streaming…">
+        {/* 终端主体 */}
+        <div
+          ref={scrollBodyRef}
+          className="resume-body font-mono text-[13px] leading-relaxed p-5 h-[460px] overflow-y-auto"
+        >
+          <div className="resume-prompt mb-2">$ cat resume.md</div>
+          <div className="space-y-0.5">
+            {lines.slice(0, printedLines).map((line, i) => (
+              <ResumeLine key={i} line={line} />
+            ))}
           </div>
-        )}
-      </div>
+
+          {/* 闪烁光标 */}
+          <span
+            className={`resume-cursor inline-block w-2 h-4 align-middle ml-1 ${
+              done ? 'resume-cursor-done' : 'animate-pulse'
+            }`}
+          />
+
+          {done && (
+            <div className="resume-done mt-4 pt-3 border-t">
+              <span className="resume-done-icon">✓</span> 简历打印完成 · 共 {lines.length} 行
+            </div>
+          )}
+        </div>
+      </TerminalShell>
     </motion.div>
   );
 }
