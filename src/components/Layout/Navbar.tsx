@@ -1,6 +1,7 @@
 ﻿'use client';
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Search, Menu, X, Mail } from 'lucide-react';
@@ -10,7 +11,6 @@ import AccentPicker from '@/components/UI/AccentPicker';
 import Tooltip from '@/components/UI/Tooltip';
 import SearchModal from '@/components/UI/SearchModal';
 import { useDismiss } from '@/components/UI/useDismiss';
-import NavLogo from '@/components/Layout/NavLogo';
 import { siteConfig } from '@/lib/site';
 import { searchHotkeyLabel } from '@/lib/platform';
 
@@ -96,8 +96,14 @@ export default function Navbar() {
       >
         <nav className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <NavLogo />
-            <span className="nav-brand text-lg font-bold tracking-tight text-aurora">
+            <Image
+              src="/logo.svg"
+              alt="三水"
+              width={24}
+              height={24}
+              className="nav-logo shrink-0 h-6"
+            />
+            <span className="nav-brand text-lg font-bold tracking-tight text-aurora leading-none">
               {siteConfig.name}
             </span>
           </Link>
