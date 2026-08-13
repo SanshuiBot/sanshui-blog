@@ -102,6 +102,7 @@ export default function Navbar() {
               alt="三水"
               width={24}
               height={24}
+              priority
               className="nav-logo shrink-0 h-6"
             />
             <span className="nav-brand text-lg font-bold tracking-tight text-aurora leading-none">
