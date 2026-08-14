@@ -14,14 +14,7 @@ import { useDismiss } from '@/components/UI/useDismiss';
 import { siteConfig } from '@/lib/site';
 import { withBase } from '@/lib/basePath';
 import { searchHotkeyLabel } from '@/lib/platform';
-
-const links = [
-  { href: '/', label: '首页' },
-  { href: '/archive/', label: '归档' },
-  { href: '/tags/', label: '标签' },
-  { href: '/about/', label: '关于' },
-  { href: '/links/', label: '友链' },
-];
+import { navLinks } from '@/lib/navLinks';
 
 /** 导航链接激活判定：精确匹配 / 去尾斜杠匹配 / 非首页前缀匹配（桌面导航与移动抽屉共用） */
 const isActive = (pathname: string, href: string) =>
@@ -112,12 +105,13 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
-            {links.map((l) => {
+            {navLinks.map((l) => {
               const active = isActive(pathname, l.href);
               return (
                 <Link
                   key={l.href}
                   href={l.href}
+                  prefetch={l.prefetch}
                   className={`nav-link group relative py-1 text-sm transition-colors duration-200 cursor-pointer ${
                     active
                       ? 'is-active text-white font-semibold'
@@ -183,7 +177,7 @@ export default function Navbar() {
               导航
             </p>
             <nav className="flex flex-col gap-1">
-              {links.map((l, i) => {
+              {navLinks.map((l, i) => {
                 const active = isActive(pathname, l.href);
                 return (
                   <motion.div
@@ -194,6 +188,7 @@ export default function Navbar() {
                   >
                     <Link
                       href={l.href}
+                      prefetch={l.prefetch}
                       onClick={() => setMobileOpen(false)}
                       className={`flex items-center gap-3 py-2.5 text-xl font-semibold transition-colors ${
                         active ? 'text-aurora' : 'text-gray-400 hover:text-white'

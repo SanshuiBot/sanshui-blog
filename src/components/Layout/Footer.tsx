@@ -4,16 +4,9 @@ import { Mail, ArrowUp, Rss } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
 import Tooltip from '@/components/UI/Tooltip';
 import { siteConfig } from '@/lib/site';
+import { navLinks } from '@/lib/navLinks';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useState } from 'react';
-
-const navLinks = [
-  { href: '/', label: '首页' },
-  { href: '/archive/', label: '归档' },
-  { href: '/tags/', label: '标签' },
-  { href: '/about/', label: '关于' },
-  { href: '/links/', label: '友链' },
-];
 
 export default function Footer() {
   const [showTop, setShowTop] = useState(false);
@@ -70,7 +63,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {navLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="footer-link text-sm">
+                  <Link href={link.href} prefetch={link.prefetch} className="footer-link text-sm">
                     {link.label}
                   </Link>
                 </li>

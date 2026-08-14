@@ -95,7 +95,7 @@ function LinkCard({
         ) : (
           <>
             {/* 外部 favicon：静态导出无优化器，用原生 img + state 降级，符合约定 #33/#34 */}
-            {/* display:none 释放占位，让 Globe 完全可见 */}
+            {/* favicon 加载失败时 display:none 释放占位，Globe 兜底（仅此时渲染，避免盖住已加载的图标） */}
             {/* loading="eager"：显式退出 Chromium 懒加载干预（该干预会推迟视口外图片的 load/error 事件），保证 onError 降级立即触发 */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -107,7 +107,7 @@ function LinkCard({
               style={faviconErr ? { display: 'none' } : undefined}
               onError={() => setFaviconErr(true)}
             />
-            <Globe size={13} className="opacity-40 absolute inset-0 m-auto" />
+            {faviconErr && <Globe size={13} className="opacity-40 absolute inset-0 m-auto" />}
           </>
         )}
       </div>

@@ -100,7 +100,7 @@ export default function ResumeTerminal({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="resume-terminal rounded-2xl border overflow-hidden shadow-2xl"
+      className="resume-terminal rounded-2xl border overflow-hidden shadow-xl"
     >
       <TerminalShell title="sanshui@blog ~/resume" status="streaming…">
         {/* 终端主体 */}

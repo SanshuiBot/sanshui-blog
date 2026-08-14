@@ -18,8 +18,8 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
     0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08),
-    0 24px 64px rgb(0 0 0 / 0.5),
-    0 8px 24px rgb(0 0 0 / 0.3);
+    0 16px 40px rgb(0 0 0 / 0.35),
+    0 6px 16px rgb(0 0 0 / 0.2);
 }
 
 /* ── 标题栏 ── */
@@ -80,8 +80,8 @@ html:not(.dark) .terminal-shell {
   border-color: rgba(0, 0, 0, 0.1);
   box-shadow:
     0 0 0 1px rgb(var(--accent-violet-rgb) / 0.06),
-    0 16px 48px rgba(0 0 0 / 0.08),
-    0 6px 16px rgba(0 0 0 / 0.06);
+    0 10px 28px rgba(0 0 0 / 0.06),
+    0 4px 12px rgba(0 0 0 / 0.04);
 }
 html:not(.dark) .terminal-shell-titlebar {
   background: rgba(0, 0, 0, 0.04);

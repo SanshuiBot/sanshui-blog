@@ -241,8 +241,11 @@ html:not(.dark) .terminal-card-border-glow {
   padding: 1.25rem 1.5rem;
   border-radius: 0.75rem;
   border: 1px solid rgba(var(--accent-violet-rgb) / 0.2);
-  background: rgb(var(--accent-violet-rgb) / 0.04);
-  box-shadow: 0 0 24px rgb(var(--accent-violet-rgb) / 0.06);
+  background: rgb(var(--accent-violet-rgb) / 0.02);
+  box-shadow:
+    0 0 24px rgb(var(--accent-violet-rgb) / 0.08),
+    0 8px 24px rgb(0 0 0 / 0.28),
+    0 4px 12px rgb(0 0 0 / 0.16);
 }
 .terminal-exchange-title {
   font-family: var(--font-mono);
@@ -260,8 +263,11 @@ html:not(.dark) .terminal-card-border-glow {
 /* 亮色覆盖 */
 html:not(.dark) .terminal-exchange-box {
   border-color: rgb(var(--accent-violet-rgb) / 0.25);
-  background: rgb(var(--accent-violet-rgb) / 0.04);
-  box-shadow: 0 0 24px rgb(var(--accent-violet-rgb) / 0.05);
+  background: rgb(var(--accent-violet-rgb) / 0.02);
+  box-shadow:
+    0 0 24px rgb(var(--accent-violet-rgb) / 0.06),
+    0 8px 20px rgba(0 0 0 / 0.06),
+    0 4px 12px rgba(0 0 0 / 0.04);
 }
 html:not(.dark) .terminal-exchange-desc {
   color: rgb(0 0 0 / 0.55);
