@@ -102,6 +102,7 @@ export default function Navbar() {
               alt="三水"
               width={24}
               height={24}
+              loading="eager"
               fetchPriority="low"
               className="nav-logo shrink-0 h-6"
             />

@@ -96,10 +96,12 @@ function LinkCard({
           <>
             {/* 外部 favicon：静态导出无优化器，用原生 img + state 降级，符合约定 #33/#34 */}
             {/* display:none 释放占位，让 Globe 完全可见 */}
+            {/* loading="eager"：显式退出 Chromium 懒加载干预（该干预会推迟视口外图片的 load/error 事件），保证 onError 降级立即触发 */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={faviconUrl}
               alt=""
+              loading="eager"
               fetchPriority="low"
               className="w-4 h-4 opacity-60 rounded-sm object-contain"
               style={faviconErr ? { display: 'none' } : undefined}

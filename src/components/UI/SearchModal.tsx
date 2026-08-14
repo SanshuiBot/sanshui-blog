@@ -41,12 +41,6 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     }
   }
 
-  // query 变化时重置选中到第一项（有结果时），保持键盘流连续
-  useEffect(() => {
-    setActiveIdx(results.length > 0 ? 0 : -1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, posts]);
-
   useEffect(() => {
     if (!open) return;
     // 延迟聚焦等 DOM 就位；StrictMode 下 effect 会跑两次，
@@ -77,7 +71,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
 
   // React Compiler: manual useMemo preserved here — query/posts change infrequently enough that
   // skipping the optimizer is intentional (compiler cannot safely drop this memo).
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  // 原 eslint-disable（react-hooks/preserve-manual-memoization）已移除：lint 实测该规则不再触发。
   const results = useMemo(() => {
     if (!posts) return [];
     const t = q.trim().toLowerCase();
@@ -91,6 +85,17 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
       )
       .slice(0, 8);
   }, [q, posts]);
+
+  // query/posts 变化时重置选中到第一项（有结果时），保持键盘流连续：
+  // 渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
+  const [prevQuery, setPrevQuery] = useState<readonly [string, PostIndexEntry[] | null]>([
+    q,
+    posts,
+  ]);
+  if (prevQuery[0] !== q || prevQuery[1] !== posts) {
+    setPrevQuery([q, posts]);
+    setActiveIdx(results.length > 0 ? 0 : -1);
+  }
 
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
