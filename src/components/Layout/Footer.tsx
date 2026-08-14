@@ -6,7 +6,6 @@ import Tooltip from '@/components/UI/Tooltip';
 import { siteConfig } from '@/lib/site';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { useState } from 'react';
-import { searchHotkeyLabel } from '@/lib/platform';
 
 const navLinks = [
   { href: '/', label: '首页' },
@@ -110,23 +109,6 @@ export default function Footer() {
           <p className="text-xs text-gray-600 flex items-center gap-1">
             Next.js &bull; MDX &bull; Tailwind CSS <Rss size={12} className="opacity-40" />
           </p>
-          <div className="flex items-center gap-2 text-[11px] text-gray-500">
-            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
-              {searchHotkeyLabel()}
-            </kbd>
-            <span className="hidden sm:inline text-gray-600">搜索</span>
-            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
-              ↑↓
-            </kbd>
-            <span className="hidden sm:inline text-gray-600">导航</span>
-            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
-              ↵
-            </kbd>
-            <span className="hidden sm:inline text-gray-600">打开</span>
-            <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
-              Esc
-            </kbd>
-          </div>
         </div>
       </div>
     </footer>
