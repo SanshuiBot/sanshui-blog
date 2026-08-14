@@ -100,6 +100,7 @@ function LinkCard({
             <img
               src={faviconUrl}
               alt=""
+              fetchPriority="low"
               className="w-4 h-4 opacity-60 rounded-sm object-contain"
               style={faviconErr ? { display: 'none' } : undefined}
               onError={() => setFaviconErr(true)}
