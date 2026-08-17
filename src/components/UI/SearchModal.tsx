@@ -10,6 +10,9 @@ import { useRouter } from 'next/navigation';
 import { searchHotkeyLabel } from '@/lib/platform';
 import type { PostIndexEntry } from '@/lib/post-index';
 
+/** 日期字符串 → 本地化格式 的模块级 memo（纯函数缓存，随站点文章数有界） */
+const fmtCache = new Map<string, string>();
+
 export default function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState('');
   const [posts, setPosts] = useState<PostIndexEntry[] | null>(null);
@@ -72,19 +75,29 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
   // React Compiler: manual useMemo preserved here — query/posts change infrequently enough that
   // skipping the optimizer is intentional (compiler cannot safely drop this memo).
   // 原 eslint-disable（react-hooks/preserve-manual-memoization）已移除：lint 实测该规则不再触发。
+  // 搜索索引：posts 加载后只小写化一次（标题/摘要/标签拼成单个 haystack），
+  // 之后每次按键只需 includes 一次字符串比较——替代原来每个字段每键重复 toLowerCase 的 O(k) 分配
+  const searchIndex = useMemo(() => {
+    if (!posts) return null;
+    return posts.map((p) => ({
+      post: p,
+      haystack: [p.title, p.excerpt, ...p.tags].join('\n').toLowerCase(),
+    }));
+  }, [posts]);
+
   const results = useMemo(() => {
-    if (!posts) return [];
+    if (!searchIndex) return [];
     const t = q.trim().toLowerCase();
     if (!t) return [];
-    return posts
-      .filter(
-        (p: PostIndexEntry) =>
-          p.title.toLowerCase().includes(t) ||
-          p.excerpt.toLowerCase().includes(t) ||
-          p.tags.some((x: string) => x.toLowerCase().includes(t)),
-      )
-      .slice(0, 8);
-  }, [q, posts]);
+    const out: PostIndexEntry[] = [];
+    for (const entry of searchIndex) {
+      if (entry.haystack.includes(t)) {
+        out.push(entry.post);
+        if (out.length === 8) break;
+      }
+    }
+    return out;
+  }, [q, searchIndex]);
 
   // query/posts 变化时重置选中到第一项（有结果时），保持键盘流连续：
   // 渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
@@ -97,8 +110,19 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     setActiveIdx(results.length > 0 ? 0 : -1);
   }
 
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+  // 日期格式化缓存：同一 date 字符串只做一次 toLocaleDateString（纯函数，模块级 memo），
+  // 结果列表每次按键重渲染时直接命中缓存，避免重复本地化格式化开销
+  const fmt = (d: string) => {
+    const cached = fmtCache.get(d);
+    if (cached !== undefined) return cached;
+    const s = new Date(d).toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    fmtCache.set(d, s);
+    return s;
+  };
 
   return (
     <AnimatePresence>

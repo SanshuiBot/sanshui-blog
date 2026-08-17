@@ -19,7 +19,7 @@
  *  - `filled` 状态驱动逐张揭示；卸载时清定时器（AGENTS.md #20 幂等清理）
  *  - 槽位 key 用 `slot-${i}` 稳定不变，骨架→卡片切换不会触发 DOM 卸载/重挂
  */
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 import PostCard from '@/components/Post/PostCard';
 import type { Post } from '@/lib/types';
 
@@ -39,12 +39,17 @@ interface Props {
  *
  * key 在父级用 `slot-${i}` 稳定不变，所以骨架→卡片切换不会触发 DOM 卸载/重挂，
  * 也就没有「骨架消失、卡片还没出现」的空白帧。
+ *
+ * React.memo：流式填充每 80ms tick 只改变一个槽位的 skeleton 标志，其余槽位的
+ * props（post 引用稳定 + skeleton 未变）全部命中 memo 跳过重渲染——
+ * 把每 tick 的 O(槽位数) 全量重渲染降为 O(1)（只重渲染刚填充的那张卡片）。
+ * 不改变任何 DOM 行为，只跳过无变化的 re-render。
  */
-function Slot({ post, skeleton }: { post?: Post; skeleton: boolean }) {
+const Slot = memo(function Slot({ post, skeleton }: { post?: Post; skeleton: boolean }) {
   // skeleton 模式下 post 可能不存在，传一个占位空对象满足类型
   const safePost: Post = post ?? ({} as Post);
   return <PostCard post={safePost} skeleton={skeleton} />;
-}
+});
 
 export default function PostGrid({ posts, total }: Props) {
   const slotCount = total ?? posts.length;

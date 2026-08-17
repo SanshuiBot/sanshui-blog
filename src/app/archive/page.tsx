@@ -11,7 +11,7 @@
  *  - 「全部文章」标题右侧挂一个 <FilterDropdown>，点击展开 tag chip 浮层，
  *    用于按标签筛选。浮层绝对定位，不挤压下方文章网格。
  */
-import { getAllPosts, getAllTags, getPostsByTag } from '@/lib/posts';
+import { getAllPosts, getTagCounts } from '@/lib/posts';
 import PostGrid from '@/components/Post/PostGrid';
 import FilterDropdown from '@/components/Archive/FilterDropdown';
 import ArrowLink from '@/components/UI/ArrowLink';
@@ -26,9 +26,11 @@ export default function ArchivePage() {
   });
   const years = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
 
-  // 标题右侧筛选按钮的下拉数据：按文章数降序，最多 16 个
-  const tags = getAllTags()
-    .map((t) => ({ name: t, count: getPostsByTag(t).length }))
+  // 标题右侧筛选按钮的下拉数据：单趟 O(N) 计数（getTagCounts），
+  // 避免「每个标签一次全量 filter」的 O(T×N) 嵌套循环；按文章数降序，最多 16 个
+  const counts = getTagCounts();
+  const tags = [...counts.entries()]
+    .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 16);
 

@@ -12,16 +12,43 @@ const postsDirectory = path.join(process.cwd(), 'content/posts');
  * 因此去掉 mtime 签名缓存——每次算签名要 readdir + 逐文件 stat（2N 次 syscall），
  * 签名本身 O(N)，与缓存未命中成本同阶，只省了 gray-matter 解析。
  *
- * 额外维护 slug→Post 的 Map 索引，使 getPostBySlug / getAdjacentPosts 从 O(N)
- * 线性扫描降为 O(1) 查找。文章数较少时差异可忽略，但这是零成本的正确优化。
+ * 三个懒加载索引，全部在首次查询时一次性构建（各自 O(N) 摊还）：
+ *  - slugIndex：slug→Post，getPostBySlug 从 O(N) 线性扫描降为 O(1) 查找
+ *  - tagIndex：tag→Post[]，getPostsByTag / getAllTags / getTagCounts 复用，
+ *    避免「每个标签一次全量 filter」的 O(T×N) 累积开销（getTagCounts 单趟 O(N)）
+ *  - orderIndex：slug→排序后下标，getAdjacentPosts 的 indexOf 从 O(N) 降为 O(1)
+ * 文章数较少时差异可忽略，但这是零成本的正确优化。
  */
 let loaded: Post[] | null = null;
 let slugIndex: Map<string, Post> | null = null;
+let tagIndex: Map<string, Post[]> | null = null;
+let orderIndex: Map<string, number> | null = null;
 
 function ensureIndex() {
   if (!slugIndex) {
     slugIndex = new Map();
-    for (const p of loaded!) slugIndex.set(p.slug, p);
+    orderIndex = new Map();
+    // 用 for-of + 计数器而非 forEach：回调是闭包，会把捕获的模块级 let 变量
+    // 放宽回可空类型（TS18047），for-of 循环体不构成闭包，收窄保持有效
+    let i = 0;
+    for (const p of loaded!) {
+      slugIndex.set(p.slug, p);
+      orderIndex.set(p.slug, i);
+      i++;
+    }
+  }
+}
+
+function ensureTagIndex() {
+  if (!tagIndex) {
+    tagIndex = new Map();
+    for (const p of loaded!) {
+      for (const t of p.tags) {
+        const bucket = tagIndex.get(t);
+        if (bucket) bucket.push(p);
+        else tagIndex.set(t, [p]);
+      }
+    }
   }
 }
 
@@ -61,23 +88,36 @@ export function getPostBySlug(slug: string): Post | undefined {
 }
 
 export function getAllTags(): string[] {
-  const set = new Set<string>();
-  loadPosts().forEach((p) => p.tags.forEach((t) => set.add(t)));
-  return [...set].sort();
+  loadPosts();
+  ensureTagIndex();
+  return [...tagIndex!.keys()].sort();
+}
+
+/**
+ * 单趟 O(N) 统计每个标签的文章数（构建 tagIndex 时顺带计数）。
+ * 替代「getAllTags().map(t => getPostsByTag(t).length)」的 O(T×N) 嵌套循环
+ * （归档页 / 标签总览页此前就是前者，标签多文章多时累积成本可观）。
+ */
+export function getTagCounts(): Map<string, number> {
+  loadPosts();
+  ensureTagIndex();
+  const counts = new Map<string, number>();
+  for (const [tag, posts] of tagIndex!) counts.set(tag, posts.length);
+  return counts;
 }
 
 export function getPostsByTag(tag: string): Post[] {
-  return loadPosts().filter((p) => p.tags.includes(tag));
+  loadPosts();
+  ensureTagIndex();
+  return tagIndex!.get(tag) ?? [];
 }
 
 export function getAdjacentPosts(slug: string): { prev: Post | null; next: Post | null } {
-  const posts = loadPosts();
+  loadPosts();
   ensureIndex();
-  // 用 slugIndex 拿到目标 Post 引用后，再回 posts 数组定位下标，
-  // 避免对整个数组做 O(N) findIndex 线性扫描。
-  const target = slugIndex!.get(decodeSlug(slug));
-  if (!target) return { prev: null, next: null };
-  const idx = posts.indexOf(target);
-  if (idx === -1) return { prev: null, next: null };
+  // orderIndex 保存排序后下标，替代 posts.indexOf(target) 的 O(N) 线性扫描。
+  const idx = orderIndex!.get(decodeSlug(slug));
+  if (idx === undefined) return { prev: null, next: null };
+  const posts = loaded!;
   return { prev: posts[idx + 1] ?? null, next: posts[idx - 1] ?? null };
 }

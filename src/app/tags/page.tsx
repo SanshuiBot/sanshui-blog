@@ -12,11 +12,12 @@
  */
 import { Hash } from 'lucide-react';
 import ArrowLink from '@/components/UI/ArrowLink';
-import { getAllTags, getPostsByTag } from '@/lib/posts';
+import { getTagCounts } from '@/lib/posts';
 import TagList from '@/components/TagList';
 
 export default function TagsPage() {
-  const tags = getAllTags().map((t) => ({ name: t, count: getPostsByTag(t).length }));
+  // 单趟 O(N) 统计（getTagCounts），替代「每个标签一次 getPostsByTag().length」的 O(T×N) 嵌套循环
+  const tags = [...getTagCounts().entries()].map(([name, count]) => ({ name, count }));
   const colors = [
     'rgb(var(--accent-pink-rgb))',
     'rgb(var(--accent-violet-rgb))',
