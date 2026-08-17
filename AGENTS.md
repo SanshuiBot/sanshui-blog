@@ -1,6 +1,6 @@
 # AGENTS.md — sanshui-blog
 
-三水的个人博客。Next.js 16.3（App Router，纯静态导出 `output: 'export'`）+ TypeScript 5 strict + Tailwind CSS v4 + Framer Motion 12。托管在 GitHub Pages，basePath `/sanshui-blog`，部署走 `.github/workflows/deploy.yml`。默认亮色主题、暗色可选（约定 #12），「Aurora 玻璃态」设计系统。
+三水的个人博客。Next.js 16.3（App Router，纯静态导出 `output: 'export'`）+ React 19 + TypeScript 5 strict + Tailwind CSS v4 + Framer Motion 12。托管在 GitHub Pages，basePath `/sanshui-blog`，部署走 `.github/workflows/deploy.yml`。默认亮色主题、暗色可选（约定 #12），「Aurora 玻璃态」设计系统。
 
 ---
 

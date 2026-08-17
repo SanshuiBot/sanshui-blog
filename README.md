@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-16.3-black?logo=nextdotjs&logoColor=white" /></a>
+  <a href="https://react.dev"><img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5-blue?logo=typescript&logoColor=white" /></a>
   <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind-v4-06B6D4?logo=tailwindcss&logoColor=white" /></a>
   <a href="https://www.framer.com/motion"><img src="https://img.shields.io/badge/Framer_Motion-12-0055FF?logo=framer&logoColor=white" /></a>
@@ -57,17 +58,18 @@
 
 ## 🔧 技术栈
 
-| 类别     | 技术                                                             |
-| -------- | ---------------------------------------------------------------- |
-| **框架** | Next.js 16.3 (App Router, SSG 静态导出)                          |
-| **语言** | TypeScript 5 (strict 模式 + `noUncheckedIndexedAccess`)          |
-| **样式** | Tailwind CSS v4 (`@theme` 自定义设计令牌，无 tailwind.config.js) |
-| **动画** | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                |
-| **图标** | Lucide React + 自定义 SVG 图标（无 react-icons 整包依赖）        |
-| **内容** | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)      |
-| **搜索** | Pagefind (静态全文搜索，构建时自动索引)                          |
-| **测试** | Vitest 4（lib 层纯函数与契约单测，`tests/`）                     |
-| **部署** | GitHub Pages + GitHub Actions 自动 CI/CD                         |
+| 类别       | 技术                                                             |
+| ---------- | ---------------------------------------------------------------- |
+| **框架**   | Next.js 16.3 (App Router, SSG 静态导出)                          |
+| **运行时** | React 19 (Server Components / Hooks，`react-dom` 服务端渲染)     |
+| **语言**   | TypeScript 5 (strict 模式 + `noUncheckedIndexedAccess`)          |
+| **样式**   | Tailwind CSS v4 (`@theme` 自定义设计令牌，无 tailwind.config.js) |
+| **动画**   | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                |
+| **图标**   | Lucide React + 自定义 SVG 图标（无 react-icons 整包依赖）        |
+| **内容**   | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)      |
+| **搜索**   | Pagefind (静态全文搜索，构建时自动索引)                          |
+| **测试**   | Vitest 4（lib 层纯函数与契约单测，`tests/`）                     |
+| **部署**   | GitHub Pages + GitHub Actions 自动 CI/CD                         |
 
 ---
 
