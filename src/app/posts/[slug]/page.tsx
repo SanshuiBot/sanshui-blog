@@ -20,6 +20,7 @@ import PostContent from '@/components/Post/PostContent';
 import PostMeta from '@/components/Post/PostMeta';
 import PostNav from '@/components/Post/PostNav';
 import PostDone from '@/components/Post/PostDone';
+import PostComments from '@/components/Post/PostComments';
 import TableOfContents from '@/components/Post/TableOfContents';
 
 interface Props {
@@ -63,6 +64,7 @@ export default async function PostPage({ params }: Props) {
             prev={prev ? { slug: prev.slug, title: prev.title } : null}
             next={next ? { slug: next.slug, title: next.title } : null}
           />
+          <PostComments />
         </div>
       </div>
       <PostDone />
