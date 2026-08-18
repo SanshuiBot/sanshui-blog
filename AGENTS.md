@@ -30,7 +30,7 @@ sanshui-blog/
 │   └── resume.md            # 简历源，构建期 fs.readFileSync 注入 /about
 ├── src/
 │   ├── app/                 # App Router 页面：layout/page/globals.css/fonts/not-found + about/ archive/ tags/[tag]/ posts/[slug]/ links/
-│   ├── components/          # Providers · AmbientEffects · AppShell · Layout/ (Navbar · Footer · ScrollProgress) · Home/ · Post/ · About/ · Links/ · NotFound/ · UI/ · TagList.tsx
+│   ├── components/          # Providers · AmbientEffects · AppShell · Layout/ (Navbar · Footer · ScrollProgress) · Home/ · Post/ (PostComments Giscus 评论) · About/ · Links/ · NotFound/ · UI/ (SpinRing 共用加载环) · TagList.tsx
 │   │   └── Home/            # HeroParallax（视差拼贴首屏，3 深度层）· HomeHydration（懒加载入口）· PostsList
 │   ├── styles/              # globals.css · terminal-base.css · terminal-links.css · resume-terminal.css
 │   └── lib/                 # types.ts · posts.ts · parse-post.mjs · toc.ts · resume.ts · resumeLines.ts · accents.ts · site.ts · basePath.ts · thumbGeometry.ts · clickParticles.ts · post-index.ts
@@ -85,6 +85,7 @@ sanshui-blog/
 34. **图片错误降级走 React state，不操作 DOM**：用 `useState` 跟踪 `onError`，条件渲染 fallback；禁止在 `onError` 里直接操作 `currentElement.style.display`。
 35. **CSS 集中存放**：所有 `.css` 文件（含 `globals.css`）统一放在 `src/styles/`；全局注入靠 `layout.tsx` 的 import，组件内注入靠 JS import。禁止在组件目录里散落 `.css` 文件。
 36. **共享 UI 组件外壳抽 TerminalShell**：终端窗口（毛玻璃体 + macOS 标题栏）是链接页/简历页共用的视觉组件，外壳逻辑收进 `src/components/UI/TerminalShell.tsx`，各页面只通过 `title`/`status` prop 传入文案，禁止各自手抄圆点标题栏。
+37. **Giscus 评论收口 `PostComments.tsx`**：脚本属性名必须 kebab-case（`data-repo-id`，camelCase 会被浏览器小写化，创建讨论时 repositoryId 传 undefined）；`mapping='og:title'` + `strict='1'`（CJK 标题走 in:title 搜索不可靠，strict 按 sha1 摘要 in:body 查找）；主题用官方 `light`/`dark`（`transparent_light` 上游 404）；Edge「Images loaded lazily」干预警告来自 widget 内部懒加载头像，宿主页不可修。
 
 ---
 
@@ -102,6 +103,7 @@ sanshui-blog/
 
 - 正文用标准 Markdown / GFM。目录自动从 `##` / `###` 提取。代码块自动高亮（rehype-highlight）+ 复制按钮（CodeCopyInjector）。
 - **新增/修改文章后**：`predev` / `prebuild` 钩子会自动重新生成 `public/posts-index.json`，SearchModal 即可搜索到新文章。但**线上 HTML 只在重新 build 后更新**。
+- 文章页底部自带 **Giscus 评论区**（GitHub Discussions 驱动）：讨论按文章标题（og:title）关联，**改文章标题会使历史评论失联**——改标题前需先在仓库 Discussions 里同步改名（见约定 #37）。
 
 ---
 
