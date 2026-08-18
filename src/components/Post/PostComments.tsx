@@ -25,7 +25,10 @@ const GISCUS_ATTRS: Record<string, string> = {
   category: 'General',
   'category-id': 'DIC_kwDOCzCx9c4DDncE',
   mapping: 'og:title', // 用页面 og:title（文章标题）作 term，讨论标题更干净（子目录站点推荐做法）
-  strict: '0',
+  // strict=1：按 term 的 sha1 摘要 in:body 查找。og:title 是中文，GitHub 的
+  // in:title 搜索无法命中 CJK 标题（讨论存在也 404）；摘要是 ASCII 可稳定命中，
+  // 且 giscus 创建讨论时正文会自动带上该 sha1 标记。
+  strict: '1',
   'reactions-enabled': '1',
   'emit-metadata': '0',
   'input-position': 'top',
