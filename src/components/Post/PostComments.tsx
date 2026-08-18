@@ -16,16 +16,19 @@ import { useTheme } from 'next-themes';
  * 更换讨论分类时：GitHub 仓库新建分类 → giscus.app 下拉里选中它 →
  * 复制页面底部脚本片段里的 data-category-id，覆盖下面的 categoryId。
  */
+// 属性名必须是 giscus 官方 kebab-case（data-repo-id / data-category-id）：
+// camelCase 会被浏览器小写化（data-repoId → data-repoid），widget 读不到，
+// 创建讨论时 repositoryId/categoryId 会以 "undefined" 传给 GitHub 被拒绝。
 const GISCUS_ATTRS: Record<string, string> = {
   repo: 'SanshuiBot/sanshui-blog',
-  repoId: 'MDEwOlJlcG9zaXRvcnkxODc3NDA2NjE=',
+  'repo-id': 'MDEwOlJlcG9zaXRvcnkxODc3NDA2NjE=',
   category: 'General',
-  categoryId: 'DIC_kwDOCzCx9c4DDncE',
-  mapping: 'og:title', // 用页面 og:title（文章标题）作 term；pathname 含 basePath 与中文百分号编码，会原样成为 Discussion 标题，曾导致创建失败
+  'category-id': 'DIC_kwDOCzCx9c4DDncE',
+  mapping: 'og:title', // 用页面 og:title（文章标题）作 term，讨论标题更干净（子目录站点推荐做法）
   strict: '0',
-  reactionsEnabled: '1',
-  emitMetadata: '0',
-  inputPosition: 'top',
+  'reactions-enabled': '1',
+  'emit-metadata': '0',
+  'input-position': 'top',
   lang: 'zh-CN',
   loading: 'lazy',
 };
