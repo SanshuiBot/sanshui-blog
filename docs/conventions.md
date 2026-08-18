@@ -201,6 +201,7 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
 
 - **纯 CSS 动画自动合规**：`transition` / `animation` 实现的 hover、下划线滑入等被 `*` 选择器 + `!important` 自动压到 0.01ms。
 - **Framer Motion 绕开降级**：Framer 用 JS rAF + inline style 驱动位移，inline style 的 `transform` 不受 `transition-duration` 影响。这是「功能性可见动画」的有意例外——但 hover 变色仍走纯 CSS（#25）。
+- **装饰性 JS 动画入阀（站内已实现）**：`AmbientEffects` 用 `prefers-reduced-motion` 门控 `CursorGlow`（光晕）与 `ClickEffect`（点击特效）；`ScrollProgress` 保留功能性指示条但 spring 平滑用 `useReducedMotion()` 守卫；`ParticleField` 内部自检（reduced 下只画静态帧）。新增装饰性 JS 动画记得入阀（见 §11）。
 - **新增动画前 checklist**：
   1. 优先纯 CSS（`transition` + `transform`/`opacity`/`width` 等合成层属性），自动被 0.01ms 降级覆盖。
   2. 避免 `transition: all`（会动画非合成属性，触发 layout/paint）。
