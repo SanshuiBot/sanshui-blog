@@ -33,8 +33,9 @@ const GISCUS_ATTRS: Record<string, string> = {
   'emit-metadata': '0',
   'input-position': 'top',
   lang: 'zh-CN',
-  // 刻意不用 loading="lazy"：懒加载 iframe 会让 Edge 推迟其 load 事件，
-  // 与下方容器上的 load 捕获监听组合，触发「Images loaded lazily」干预警告。
+  loading: 'lazy',
+  // 注：Edge 的「Images loaded lazily」干预警告来自 giscus widget 内部
+  // （Comment.tsx / Reply.tsx 的懒加载头像），与本站配置无关，宿主页无法修复。
 };
 
 export default function PostComments() {
