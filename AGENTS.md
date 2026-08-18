@@ -61,7 +61,7 @@ tests/ scripts/ public/ next.config.ts .github/workflows/deploy.yml
 29. 弹层关闭统一 `useDismiss`（ref 包开关+浮层）。
 30. `posts-index.json` 是产物（prettierignore），别手动格式化。
 31. Turbopack 解析不了 Tailwind v4.3 CSS，dev/build 用 `--webpack`，别移除。
-32. 动画优先纯 CSS（自动合规 reduced-motion），避免 `transition: all`。
+32. 动画优先纯 CSS（自动合规 reduced-motion 0.01ms）；装饰性 JS 动画（光晕/点击特效）纳入 `AmbientEffects` 的 reduced-motion 阀门。
 33. 仓库内图片用 `<Image />`，别用原生 `<img>`（外部小图例外）。
 34. 图片 onError 降级走 state，不操作 DOM。
 35. CSS 集中 `src/styles/`，禁止组件目录散落 .css。

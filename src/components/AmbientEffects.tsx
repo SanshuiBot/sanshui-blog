@@ -18,9 +18,9 @@ function subscribeReducedMotion(onChange: () => void): () => void {
  * 全局常驻动效注册表。
  *
  * 4 个动效的懒加载入口统一在这里，新增效果只加一行 dynamic 注册即可。
- * 对 prefers-reduced-motion 用户跳过装饰性动效（仅 CursorGlow 受门控）；
- * 点击特效（ClickEffect）与功能性动效（ScrollProgress）保持运行，
- * 已自检的动效（ParticleField 内部处理）同样保持运行。
+ * prefers-reduced-motion 阀门：装饰性动效（CursorGlow、ClickEffect）整体跳过；
+ * ScrollProgress 是功能性指示条，保留但组件内对 spring 平滑入阀；
+ * ParticleField 内部自检（reduced 下只画一帧静态画面）。
  * HeroParallax 是首页专属首屏组件，由 HomeHydration 独立加载，不在此注册表内。
  */
 export default function AmbientEffects() {
@@ -31,12 +31,12 @@ export default function AmbientEffects() {
     () => false, // SSR 快照：默认非 reduced
   );
 
-  // 服务端渲染阶段（ssr:false → 渲染 null）与 reduced-motion 用户跳过光标光晕；
-  // 点击特效始终显示，不受 prefers-reduced-motion 门控影响
+  // 装饰性动效（光晕、点击特效）对 prefers-reduced-motion 用户整体跳过；
+  // ScrollProgress（功能性，spring 平滑入阀）与 ParticleField（内部自检静态帧）保留
   return (
     <>
       {reduced ? null : <CursorGlow />}
-      <ClickEffect />
+      {reduced ? null : <ClickEffect />}
       <ScrollProgress />
       <ParticleField />
     </>
