@@ -1,41 +1,11 @@
+import SpinRing from '@/components/UI/SpinRing';
+
 export default function PostLoading() {
   return (
     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
-      {/* 顶部旋转加载环 — CSS animation 旋转（约定 #32 纯 CSS 优先） */}
+      {/* 顶部旋转加载环 */}
       <div className="flex items-center justify-center mb-10">
-        <svg
-          className="w-12 h-12"
-          viewBox="0 0 48 48"
-          style={{ animation: 'spin 0.8s linear infinite' }}
-        >
-          <circle
-            cx="24"
-            cy="24"
-            r="20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            className="text-black/[0.08] dark:text-white/[0.08]"
-          />
-          <circle
-            cx="24"
-            cy="24"
-            r="20"
-            fill="none"
-            strokeWidth="3"
-            strokeLinecap="round"
-            stroke="url(#post-spin-grad)"
-            strokeDasharray="125.6"
-            strokeDashoffset="31.4"
-          />
-          <defs>
-            <linearGradient id="post-spin-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" className="stop-accent-violet" />
-              <stop offset="50%" className="stop-accent-pink" />
-              <stop offset="100%" className="stop-accent-blue" />
-            </linearGradient>
-          </defs>
-        </svg>
+        <SpinRing sizeClass="w-12 h-12" gradId="post-spin-grad" />
       </div>
 
       {/* 加载文字 + 跳跃点 */}
