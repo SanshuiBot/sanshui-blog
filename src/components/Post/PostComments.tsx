@@ -5,8 +5,12 @@ import { useTheme } from 'next-themes';
 /**
  * Giscus 评论（GitHub Discussions 驱动，零后端，静态导出可用）
  * -----------------------------
- * 实现：动态注入 giscus 客户端脚本，iframe 与站点主题联动（transparent 主题，
- * 与 Aurora 玻璃态背景融合）。脚本仅在客户端执行，不污染 RSC payload。
+ * 实现：动态注入 giscus 客户端脚本，iframe 与站点主题联动（官方内置 light / dark）。
+ * 脚本仅在客户端执行，不污染 RSC payload。
+ *
+ * 注意：不要用 transparent_light —— giscus 上游 /themes/transparent_light.css 缺失
+ * （2026-08 验证 404，transparent_dark 正常），widget 会把它当自定义相对路径解析成
+ * /zh-CN/transparent_light，触发样式表 MIME 报错。light / dark 均正常。
  *
  * 配置已就绪：repoId / categoryId 已通过 GitHub API 直接获取（仓库 Discussions 已启用）。
  * 更换讨论分类时：GitHub 仓库新建分类 → giscus.app 下拉里选中它 →
@@ -29,7 +33,7 @@ const GISCUS_ATTRS: Record<string, string> = {
 export default function PostComments() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
-  const theme = resolvedTheme === 'dark' ? 'transparent_dark' : 'transparent_light';
+  const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
   const themeRef = useRef(theme);
   // 主题变化时同步到 ref（脚本注入 / iframe load 兜底读取最新值，绕开闭包过期）
   useEffect(() => {
