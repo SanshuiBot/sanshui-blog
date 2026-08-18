@@ -1138,6 +1138,35 @@ body::after {
   animation: tooltip-in 0.18s ease-out;
 }
 
+/* ── 加载环旋转（纯 CSS，替代 SVG animateTransform，约定 #32）── */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── 骨架屏动画：流光扫过 + 跳跃点（133997c 误删，恢复 fa412ce 原定义）── */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+@keyframes dot-bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /* ── 导航栏图标按钮：hover 放大（纯 CSS，AGENTS.md #24）── */
 .nav-icon-btn {
   transition:

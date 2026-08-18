@@ -186,6 +186,7 @@ export default function AccentPicker() {
                     {/* 隐藏的原生 color input，仅作拾色器入口 */}
                     <input
                       type="color"
+                      name={`accent-${ch}`}
                       value={hex}
                       onChange={(e) => handleCustomChange(ch, e.target.value)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"

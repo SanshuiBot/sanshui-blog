@@ -147,6 +147,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
               <input
                 ref={inputRef}
                 type="text"
+                name="q"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 onKeyDown={(e) => {

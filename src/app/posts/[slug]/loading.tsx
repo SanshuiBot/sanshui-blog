@@ -1,9 +1,13 @@
 export default function PostLoading() {
   return (
     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
-      {/* 顶部旋转加载环 — SVG 原生 animateTransform */}
+      {/* 顶部旋转加载环 — CSS animation 旋转（约定 #32 纯 CSS 优先） */}
       <div className="flex items-center justify-center mb-10">
-        <svg className="w-12 h-12" viewBox="0 0 48 48">
+        <svg
+          className="w-12 h-12"
+          viewBox="0 0 48 48"
+          style={{ animation: 'spin 0.8s linear infinite' }}
+        >
           <circle
             cx="24"
             cy="24"
@@ -23,16 +27,7 @@ export default function PostLoading() {
             stroke="url(#post-spin-grad)"
             strokeDasharray="125.6"
             strokeDashoffset="31.4"
-          >
-            <animateTransform
-              attributeName="transform"
-              type="rotate"
-              from="-90 24 24"
-              to="270 24 24"
-              dur="0.8s"
-              repeatCount="indefinite"
-            />
-          </circle>
+          />
           <defs>
             <linearGradient id="post-spin-grad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" className="stop-accent-violet" />
