@@ -21,7 +21,7 @@ const GISCUS_ATTRS: Record<string, string> = {
   repoId: 'MDEwOlJlcG9zaXRvcnkxODc3NDA2NjE=',
   category: 'General',
   categoryId: 'DIC_kwDOCzCx9c4DDncE',
-  mapping: 'pathname', // 每篇文章按 URL 路径（含 basePath）唯一对应一个 Discussion
+  mapping: 'og:title', // 用页面 og:title（文章标题）作 term；pathname 含 basePath 与中文百分号编码，会原样成为 Discussion 标题，曾导致创建失败
   strict: '0',
   reactionsEnabled: '1',
   emitMetadata: '0',
