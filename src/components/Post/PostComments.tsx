@@ -41,6 +41,9 @@ export default function PostComments() {
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
   const themeRef = useRef(theme);
+  // 记录 giscus iframe 是否已加载完成：加载完成前（about:blank）向它
+  // postMessage 会抛「target origin 不匹配」异常（接收窗口源是父页面）
+  const loadedRef = useRef(false);
   // 主题变化时同步到 ref（脚本注入 / iframe load 兜底读取最新值，绕开闭包过期）
   useEffect(() => {
     themeRef.current = theme;
@@ -60,8 +63,13 @@ export default function PostComments() {
     }
     script.setAttribute('data-theme', themeRef.current);
 
-    // 捕获阶段监听 iframe 的 load，兜住「脚本注入期间主题已切换」的竞态
-    const syncThemeOnLoad = () => postTheme(el, themeRef.current);
+    // 捕获阶段监听 iframe 的 load（script 的 load 会先触发，须按 target 过滤）：
+    // 加载完成才标记 ready 并同步一次主题，兜住「注入期间主题已切换」的竞态
+    const syncThemeOnLoad = (event: Event) => {
+      if (!(event.target instanceof HTMLIFrameElement)) return;
+      loadedRef.current = true;
+      postTheme(el, themeRef.current);
+    };
     el.addEventListener('load', syncThemeOnLoad, true);
 
     el.appendChild(script);
@@ -71,10 +79,10 @@ export default function PostComments() {
     };
   }, []);
 
-  // 主题切换时同步给已加载的 iframe
+  // 主题切换时同步给已加载的 iframe（未加载完成前跳过，由 load 监听兜底）
   useEffect(() => {
     const el = containerRef.current;
-    if (el) postTheme(el, theme);
+    if (el && loadedRef.current) postTheme(el, theme);
   }, [theme]);
 
   return (
