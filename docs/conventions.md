@@ -15,20 +15,21 @@
 
 不同目标对 basePath 的处理不一样，**套错 `withBase()` 会双重前缀**（线上 404）。判定基准：`npm run build` 后检查 `out/*.html` 里的实际 URL（曾两次栽在这里）：
 
-| 目标                                             | 是否自动注入 basePath                   | 写法                                                               |
-| ------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------------ |
-| `<Link>`（next/link）                            | ✅ 自动                                 | `href="/feed.xml"`（**别套** withBase）                            |
-| `router.push` / `router.prefetch`                | ✅ 自动                                 | 裸路径（PostCard 的 `postUrl()` 就这么用）                         |
-| `<Image>`（next/image）                          | ❌ 不自动（实测）                       | `src={withBase('/logo.svg')}`（**必须套**，server/client 同）      |
-| metadata 图片（og:image 等相对 URL）             | ❌ 不自动；`metadataBase` 已含 basePath | `url: '/og.png'`（**裸相对路径**，套了双重）                       |
-| metadata `icons`（favicon）                      | ❌ 不自动（原生输出）                   | `withBase('/favicon.svg')`（必须套）                               |
-| 原生 `<a>` / `<img>` / `<link>` / `<script src>` | ❌ 不自动                               | 必须 withBase（首页 `<link rel="prefetch">` 如此）                 |
-| `fetch()` / XHR                                  | ❌ 不自动                               | 必须 withBase（SearchModal / PostsList / HeroParallax 拉索引如此） |
+| 目标                                             | 是否自动注入 basePath                   | 写法                                                                                       |
+| ------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `<Link>`（next/link）                            | ✅ 自动（**只用于真实路由**）           | `href="/archive/"`（别套 withBase；静态文件如 feed.xml 会做 RSC 预取 404，改用原生 `<a>`） |
+| `router.push` / `router.prefetch`                | ✅ 自动                                 | 裸路径（PostCard 的 `postUrl()` 就这么用）                                                 |
+| `<Image>`（next/image）                          | ❌ 不自动（实测）                       | `src={withBase('/logo.svg')}`（**必须套**，server/client 同）                              |
+| metadata 图片（og:image 等相对 URL）             | ❌ 不自动；`metadataBase` 已含 basePath | `url: '/og.png'`（**裸相对路径**，套了双重）                                               |
+| metadata `icons`（favicon）                      | ❌ 不自动（原生输出）                   | `withBase('/favicon.svg')`（必须套）                                                       |
+| 原生 `<a>` / `<img>` / `<link>` / `<script src>` | ❌ 不自动                               | 必须 withBase（首页 `<link rel="prefetch">` 如此）                                         |
+| `fetch()` / XHR                                  | ❌ 不自动                               | 必须 withBase（SearchModal / PostsList / HeroParallax 拉索引如此）                         |
 
-**历史 bug（两次都栽在「以为自动注入」或「以为不自动注入」上）**：
+**历史 bug（三次：栽在「以为自动注入」「以为不自动注入」「Link 当路由」）**：
 
 1. Footer RSS 链接：`<Link href={withBase('/feed.xml')}>` → 产物 `href="/sanshui-blog/sanshui-blog/feed.xml"`——`<Link>` 自动注入 + 手写 withBase 双重前缀，线上订阅链接 404。已修为裸路径。
 2. `layout.tsx` 的 og:image：`withBase('/og.png')` → 产物 `https://.../sanshui-blog/sanshui-blog/og.png`——metadataBase 已是 `siteConfig.url`（含 basePath），相对路径再被解析叠加。已修为裸路径 `/og.png`。
+3. Footer RSS 链接（第二弹）：`<Link href="/feed.xml">` 虽无双重前缀，但 feed.xml 是**静态文件不是路由**——`<Link>` 把它当页面做 RSC 预取（请求 `/feed.xml/__next._tree.txt`、`feed.xml.txt?_rsc=`）→ 线上控制台 404 噪音。已改原生 `<a href={withBase('/feed.xml')}>` + `target="_blank"`。**判定**：`<Link>` 只用于真实路由（src/app/ 下有对应页面），静态资源一律原生 `<a>`。
 
 **判定方法**：改完任何带 URL 的代码后 `npm run build`，`grep -o 'sanshui-blog/sanshui-blog' out/*.html` 应为空。
 
