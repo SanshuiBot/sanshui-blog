@@ -1,12 +1,12 @@
 ﻿'use client';
-import { useMemo, useState } from 'react';
-import { Clock, Tag, Calendar, ArrowUp } from 'lucide-react';
+import { useMemo } from 'react';
+import { Clock, Tag, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import ArrowLink from '@/components/UI/ArrowLink';
+import BackToTop from '@/components/UI/BackToTop';
 import readingTime from 'reading-time';
-import Tooltip from '@/components/UI/Tooltip';
 import CodeCopyInjector from './CodeCopyInjector';
-import { useScroll, useMotionValueEvent } from 'framer-motion';
+import { formatDate } from '@/lib/formatDate';
 
 interface Props {
   post: {
@@ -24,14 +24,6 @@ export default function PostMeta({ post }: Props) {
     () => Math.max(1, Math.ceil(readingTime(post.content, { wordsPerMinute: 300 }).minutes)),
     [post.content],
   );
-
-  // 用 useMotionValueEvent 替代原生 scroll listener：与 Navbar 共用同一事件循环
-  const [showTop, setShowTop] = useState(false);
-  const { scrollY } = useScroll();
-  useMotionValueEvent(scrollY, 'change', (v) => setShowTop(v > 400));
-
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
     <>
@@ -66,7 +58,7 @@ export default function PostMeta({ post }: Props) {
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
           <span className="flex items-center gap-1.5">
             <Clock size={14} />
-            {fmt(post.date)}
+            {formatDate(post.date)}
           </span>
           <span className="text-gray-700">&middot;</span>
           <span className="flex items-center gap-1.5">
@@ -76,19 +68,8 @@ export default function PostMeta({ post }: Props) {
         </div>
       </header>
 
-      {showTop && (
-        <div className="fixed bottom-6 left-6 z-40">
-          <Tooltip label="回到顶部">
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="p-3 rounded-full glass border border-white/5 text-gray-400 hover:text-white transition-all active:scale-95"
-              aria-label="回到顶部"
-            >
-              <ArrowUp size={16} />
-            </button>
-          </Tooltip>
-        </div>
-      )}
+      {/* 回到顶部：滚动超过 400px 出现（定位/显隐统一收口在 BackToTop） */}
+      <BackToTop threshold={400} className="fixed bottom-6 left-6 z-40" />
     </>
   );
 }

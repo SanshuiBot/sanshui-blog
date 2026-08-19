@@ -2,6 +2,7 @@
 import { MotionConfig } from 'framer-motion';
 import { ThemeProvider } from 'next-themes';
 import { NavigationLoadingProvider } from '@/components/UI/NavigationLoading';
+import ThemeColorSync from '@/components/UI/ThemeColorSync';
 
 /**
  * 纯 Context 组合：next-themes + 导航加载 + framer-motion 配置。不包含任何 DOM 布局或动效。
@@ -21,7 +22,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         storageKey="aurora-theme"
         disableTransitionOnChange
       >
-        <MotionConfig reducedMotion="never">{children}</MotionConfig>
+        <MotionConfig reducedMotion="never">
+          {/* 浏览器地址栏颜色跟随主题（需在 ThemeProvider 内读取 resolvedTheme） */}
+          <ThemeColorSync />
+          {children}
+        </MotionConfig>
       </ThemeProvider>
     </NavigationLoadingProvider>
   );

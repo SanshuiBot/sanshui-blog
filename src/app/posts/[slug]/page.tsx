@@ -67,7 +67,7 @@ export default async function PostPage({ params }: Props) {
           <PostComments />
         </div>
       </div>
-      <PostDone />
+      <PostDone slug={slug} />
     </div>
   );
 }

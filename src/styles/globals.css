@@ -123,6 +123,12 @@
       transition-duration: 0.01ms !important;
     }
   }
+  :root {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
     font-family: var(--font-sans);
     background: var(--color-ink);
@@ -184,164 +190,161 @@
   }
 
   /* ── archive-filter：归档页标题右侧筛选按钮 + 下拉浮层 ──
-     双前缀 html.dark / html:not(.dark) 提特异性到 (0,3,1)，
-     稳压裸 CSS 亮色覆盖（AGENTS.md 约定 #25）。颜色联 accent 变量。 */
+     颜色收敛（P2-19）：亮暗各定义一次 CSS 变量，子元素规则单条引用，消除整段双份复制。
+     btn/chip 的 bg/border 与 .glass/.border-white utility 同值，保留双前缀
+     html.dark / html:not(.dark) (0,2,1) 稳压裸 CSS 亮色覆盖（AGENTS.md #25）；
+     纯颜色子元素同样保留双前缀（防同层 Tailwind utility 反压，如 chip 的
+     text-accent-violet/70），规则体只引用变量不重复声明。颜色联 accent 变量。 */
+  html.dark {
+    --af-hover: rgb(var(--accent-violet-rgb));
+    --af-hover-dim: rgb(var(--accent-violet-rgb) / 0.85);
+    --af-hash: rgb(var(--accent-violet-rgb) / 0.7);
+    --af-text: rgb(168 162 158);
+    --af-text-hover: #fff;
+    --af-count: rgb(120 113 108);
+    --af-chip-text: rgb(214 211 209);
+    --af-chip-text-hover: #fff;
+    --af-panel: rgb(214 211 209);
+    --af-close: rgb(168 162 158);
+    --af-close-bg-hover: rgb(var(--accent-violet-rgb) / 0.08);
+    --af-all: rgb(120 113 108);
+  }
+  html:not(.dark) {
+    --af-hover: rgb(var(--accent-violet-rgb));
+    --af-hover-dim: rgb(var(--accent-violet-rgb) / 0.85);
+    --af-hash: rgb(var(--accent-violet-rgb) / 0.75);
+    --af-text: rgb(87 83 78);
+    --af-text-hover: rgb(28 25 23);
+    --af-count: rgb(120 113 108);
+    --af-chip-text: rgb(68 64 60);
+    --af-chip-text-hover: rgb(28 25 23);
+    --af-panel: rgb(68 64 60);
+    --af-close: rgb(87 83 78);
+    --af-close-bg-hover: rgb(var(--accent-violet-rgb) / 0.06);
+    --af-all: rgb(87 83 78);
+  }
+
+  /* 筛选按钮 */
   html.dark .archive-filter-btn {
-    color: rgb(168 162 158);
+    color: var(--af-text);
   }
   html.dark .archive-filter-btn:hover {
-    color: #fff;
+    color: var(--af-text-hover);
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
   }
   html:not(.dark) .archive-filter-btn {
-    color: rgb(87 83 78);
+    color: var(--af-text);
     background: rgba(255, 255, 255, 0.7);
     border-color: rgba(0, 0, 0, 0.06);
   }
   html:not(.dark) .archive-filter-btn:hover {
-    color: rgb(28 25 23);
+    color: var(--af-text-hover);
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
   }
 
-  /* 按钮内「筛选」文字 + 数字：默认灰色，hover/open 联 accent 主题色 */
-  /* 暗色基 */
-  html.dark .archive-filter-btn-label {
-    color: rgb(168 162 158);
-  }
-  html.dark .archive-filter-btn-count {
-    color: rgb(120 113 108);
-  }
-  /* 暗色 hover + open 高亮 */
-  html.dark .archive-filter-btn:hover .archive-filter-btn-label,
-  html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label {
-    color: rgb(var(--accent-violet-rgb));
-  }
-  html.dark .archive-filter-btn:hover .archive-filter-btn-count,
-  html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-count {
-    color: rgb(var(--accent-violet-rgb) / 0.85);
-  }
-
-  /* 亮色覆盖：默认深灰保可读，hover/open 联 accent */
+  /* 按钮内「筛选」文字 + 数字：默认灰，hover/open 联 accent（双前缀守特异性） */
+  html.dark .archive-filter-btn-label,
   html:not(.dark) .archive-filter-btn-label {
-    color: rgb(87 83 78);
+    color: var(--af-text);
   }
+  html.dark .archive-filter-btn-count,
   html:not(.dark) .archive-filter-btn-count {
-    color: rgb(120 113 108);
+    color: var(--af-count);
   }
-  /* 亮色 hover + open 高亮 */
+  html.dark .archive-filter-btn:hover .archive-filter-btn-label,
+  html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label,
   html:not(.dark) .archive-filter-btn:hover .archive-filter-btn-label,
   html:not(.dark) .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label {
-    color: rgb(var(--accent-violet-rgb));
+    color: var(--af-hover);
   }
+  html.dark .archive-filter-btn:hover .archive-filter-btn-count,
+  html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-count,
   html:not(.dark) .archive-filter-btn:hover .archive-filter-btn-count,
   html:not(.dark) .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-count {
-    color: rgb(var(--accent-violet-rgb) / 0.85);
+    color: var(--af-hover-dim);
   }
 
-  /* chip：暗色基 */
+  /* chip */
   html.dark .archive-filter-chip {
-    color: rgb(214 211 209);
+    color: var(--af-chip-text);
     background: var(--glass-bg);
     border-color: var(--glass-border);
   }
   html.dark .archive-filter-chip:hover {
-    color: #fff;
+    color: var(--af-chip-text-hover);
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
     background: rgb(var(--accent-violet-rgb) / 0.08);
   }
-  /* chip：亮色覆盖 */
   html:not(.dark) .archive-filter-chip {
-    color: rgb(68 64 60);
+    color: var(--af-chip-text);
     background: rgba(255, 255, 255, 0.7);
     border-color: rgba(0, 0, 0, 0.06);
   }
   html:not(.dark) .archive-filter-chip:hover {
-    color: rgb(28 25 23);
+    color: var(--af-chip-text-hover);
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
     background: rgb(var(--accent-violet-rgb) / 0.06);
   }
 
-  /* chip 内文字元素：标签名 + 计数 + hash 图标
-     hover 时联 accent 主题色（rgb(var(--accent-violet-rgb))）。
-     双前缀 html.dark / html:not(.dark) 提特异性到 (0,3,1)。 */
-  /* 暗色基：默认 stone-300，hover 联 violet */
-  html.dark .archive-filter-chip-name-text {
-    color: rgb(214 211 209);
-  }
-  html.dark .archive-filter-chip:hover .archive-filter-chip-name-text {
-    color: rgb(var(--accent-violet-rgb));
-  }
-  /* 计数：暗色默认 gray-500，hover 联 violet 高亮 */
-  html.dark .archive-filter-chip-count-text {
-    color: rgb(120 113 108);
-  }
-  html.dark .archive-filter-chip:hover .archive-filter-chip-count-text {
-    color: rgb(var(--accent-violet-rgb) / 0.85);
-  }
-  /* hash 图标：暗色基 violet/70，hover 全亮 */
-  html.dark .archive-filter-chip-hash {
-    color: rgb(var(--accent-violet-rgb) / 0.7);
-  }
-  html.dark .archive-filter-chip:hover .archive-filter-chip-hash {
-    color: rgb(var(--accent-violet-rgb));
-  }
-
-  /* 亮色覆盖：默认 stone-600 偏深保可读，hover 联 violet */
+  /* chip 内文字元素：标签名 + 计数 + hash 图标，hover 联 accent（双前缀守特异性，
+     尤其 hash 图标元素带 text-accent-violet/70 utility，单类规则会被同层反压） */
+  html.dark .archive-filter-chip-name-text,
   html:not(.dark) .archive-filter-chip-name-text {
-    color: rgb(87 83 78);
+    color: var(--af-chip-text);
   }
+  html.dark .archive-filter-chip:hover .archive-filter-chip-name-text,
   html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-name-text {
-    color: rgb(var(--accent-violet-rgb));
+    color: var(--af-hover);
   }
+  html.dark .archive-filter-chip-count-text,
   html:not(.dark) .archive-filter-chip-count-text {
-    color: rgb(120 113 108);
+    color: var(--af-count);
   }
+  html.dark .archive-filter-chip:hover .archive-filter-chip-count-text,
   html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-count-text {
-    color: rgb(var(--accent-violet-rgb) / 0.85);
+    color: var(--af-hover-dim);
   }
+  html.dark .archive-filter-chip-hash,
   html:not(.dark) .archive-filter-chip-hash {
-    color: rgb(var(--accent-violet-rgb) / 0.75);
+    color: var(--af-hash);
   }
+  html.dark .archive-filter-chip:hover .archive-filter-chip-hash,
   html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-hash {
-    color: rgb(var(--accent-violet-rgb));
+    color: var(--af-hover);
   }
 
-  /* 浮层标题与底部「查看全部」链接 */
-  html.dark .archive-filter-panel {
-    color: rgb(214 211 209);
-  }
+  /* 浮层标题 / 关闭按钮 / 「查看全部」链接（双前缀守特异性） */
+  html.dark .archive-filter-panel,
   html:not(.dark) .archive-filter-panel {
-    color: rgb(68 64 60);
+    color: var(--af-panel);
   }
-  html.dark .archive-filter-close {
-    color: rgb(168 162 158);
-  }
+  html.dark .archive-filter-close,
   html:not(.dark) .archive-filter-close {
-    color: rgb(87 83 78);
+    color: var(--af-close);
   }
-
-  /* 关闭按钮 hover：联 accent 主题色 */
-  html.dark .archive-filter-close:hover {
-    color: rgb(var(--accent-violet-rgb));
-    background: rgb(var(--accent-violet-rgb) / 0.08);
-  }
+  html.dark .archive-filter-close:hover,
   html:not(.dark) .archive-filter-close:hover {
-    color: rgb(var(--accent-violet-rgb));
-    background: rgb(var(--accent-violet-rgb) / 0.06);
+    color: var(--af-hover);
+    background: var(--af-close-bg-hover);
+  }
+  html.dark .archive-filter-all,
+  html:not(.dark) .archive-filter-all {
+    color: var(--af-all);
+  }
+  html.dark .archive-filter-all:hover,
+  html:not(.dark) .archive-filter-all:hover {
+    color: var(--af-hover);
   }
 
-  /* 「查看全部标签 →」链接：默认灰，hover 联 accent */
-  html.dark .archive-filter-all {
-    color: rgb(120 113 108);
+  /* ── ⌘K 搜索结果关键词高亮（SearchModal 的 <mark>，P1-12）── */
+  .search-mark {
+    background: rgb(var(--accent-violet-rgb) / 0.18);
+    color: inherit;
+    border-radius: 3px;
+    padding: 0 0.15em;
   }
-  html.dark .archive-filter-all:hover {
-    color: rgb(var(--accent-violet-rgb));
-  }
-  html:not(.dark) .archive-filter-all {
-    color: rgb(87 83 78);
-  }
-  html:not(.dark) .archive-filter-all:hover {
-    color: rgb(var(--accent-violet-rgb));
+  html:not(.dark) .search-mark {
+    background: rgb(var(--accent-violet-rgb) / 0.15);
   }
 
   /* ── 通用「返回 / 查看全部」链接 ──
@@ -588,40 +591,35 @@
     color: rgb(var(--accent-violet-rgb) / 0.5);
   }
 
-  /* CTA：Aurora 渐变描边玻璃按钮，hover 流光带 */
+  /* CTA：Aurora 渐变描边玻璃按钮，hover 流光带
+     P2-CTA 优化：双背景（padding-box/border-box）替代 ::before + mask-composite 描边，
+     少一层伪元素、兼容性更好；补 focus-visible 焦点环 / active 按压 / hover 放大上浮 /
+     文字光晕 / 常驻柔光晕。 */
   .hero-cta {
     color: #fff;
-    background: var(--glass-bg);
     border: 1px solid transparent;
-    background-clip: padding-box;
+    /* 玻璃底 padding-box + 渐变描边 border-box（双背景，替代 mask-composite 方案） */
+    background:
+      linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box,
+      linear-gradient(
+          120deg,
+          rgb(var(--accent-pink-rgb) / 0.6),
+          rgb(var(--accent-violet-rgb) / 0.6),
+          rgb(var(--accent-blue-rgb) / 0.6)
+        )
+        border-box;
+    background-size:
+      100% 100%,
+      200% 200%;
+    animation: hero-cta-border 6s ease-in-out infinite;
     box-shadow:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.22),
       0 8px 28px rgb(var(--accent-violet-rgb) / 0.08);
-    transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .hero-cta::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      120deg,
-      rgb(var(--accent-pink-rgb) / 0.6),
-      rgb(var(--accent-violet-rgb) / 0.6),
-      rgb(var(--accent-blue-rgb) / 0.6)
-    );
-    background-size: 200% 200%;
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    animation: hero-cta-border 6s ease-in-out infinite;
-    pointer-events: none;
+    /* scale/translate 用独立属性：与 framer 的 inline transform 可叠加，不被覆盖 */
+    transition:
+      box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      scale 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      translate 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   @keyframes hero-cta-border {
     0%,
@@ -631,6 +629,21 @@
     50% {
       background-position: 100% 50%;
     }
+  }
+  /* 常驻柔光晕：按钮背后扩散的 aurora 光晕（比 box-shadow 更柔，不与阴影过渡冲突） */
+  .hero-cta::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: inherit;
+    background: radial-gradient(
+      70% 70% at 50% 50%,
+      rgb(var(--accent-violet-rgb) / 0.16),
+      transparent 70%
+    );
+    filter: blur(6px);
+    z-index: -1;
+    pointer-events: none;
   }
   .hero-cta-glow {
     position: absolute;
@@ -648,10 +661,23 @@
   .hero-cta:hover .hero-cta-glow {
     opacity: 1;
   }
+  /* hover：轻微放大上浮（独立 scale/translate 属性，与 framer inline transform 叠加） */
   .hero-cta:hover {
+    scale: 1.02;
+    translate: 0 -2px;
     box-shadow:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.35),
       0 10px 36px rgb(var(--accent-violet-rgb) / 0.16);
+  }
+  /* 按压反馈：与全站按钮一致；源序在 hover 之后，按下时取消上浮 */
+  .hero-cta:active {
+    scale: 0.98;
+    translate: 0 0;
+  }
+  /* 键盘焦点环：自定义 accent outline（浏览器默认 outline 与玻璃态脱节） */
+  .hero-cta:focus-visible {
+    outline: 2px solid rgb(var(--accent-violet-rgb) / 0.6);
+    outline-offset: 3px;
   }
   .hero-cta-arrow {
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -659,11 +685,29 @@
   .hero-cta:hover .hero-cta-arrow {
     transform: translateY(2px);
   }
+  /* 文字光晕：hover 时 accent 辉光 */
+  .hero-cta-text {
+    transition: text-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .hero-cta:hover .hero-cta-text {
+    text-shadow: 0 0 12px rgb(var(--accent-violet-rgb) / 0.6);
+  }
 
-  /* 亮色 CTA 覆盖：深色字 + 更柔的玻璃 */
+  /* 亮色 CTA 覆盖：深色字 + 更柔的玻璃（双背景描边须整体重建，rgba→rgb 空格语法） */
   html:not(.dark) .hero-cta {
     color: #1c1917;
-    background: rgba(255 255 255 / 0.7);
+    background:
+      linear-gradient(rgb(255 255 255 / 0.7), rgb(255 255 255 / 0.7)) padding-box,
+      linear-gradient(
+          120deg,
+          rgb(var(--accent-pink-rgb) / 0.6),
+          rgb(var(--accent-violet-rgb) / 0.6),
+          rgb(var(--accent-blue-rgb) / 0.6)
+        )
+        border-box;
+    background-size:
+      100% 100%,
+      200% 200%;
     box-shadow:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.14),
       0 8px 28px rgb(var(--accent-violet-rgb) / 0.05);
@@ -672,6 +716,20 @@
     box-shadow:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.28),
       0 10px 36px rgb(var(--accent-violet-rgb) / 0.1);
+  }
+  /* 亮色下光晕/文字辉光降一档，避免白底上过艳 */
+  html:not(.dark) .hero-cta::after {
+    background: radial-gradient(
+      70% 70% at 50% 50%,
+      rgb(var(--accent-violet-rgb) / 0.1),
+      transparent 70%
+    );
+  }
+  html:not(.dark) .hero-cta:hover .hero-cta-text {
+    text-shadow: 0 0 10px rgb(var(--accent-violet-rgb) / 0.45);
+  }
+  html:not(.dark) .hero-cta:focus-visible {
+    outline-color: rgb(var(--accent-violet-rgb) / 0.8);
   }
 
   /* 社交图标托盘：统一玻璃 + emboss 质感 */

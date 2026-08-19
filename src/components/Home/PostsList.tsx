@@ -24,7 +24,6 @@ import PostGrid from '@/components/Post/PostGrid';
 import ArrowLink from '@/components/UI/ArrowLink';
 import { withBase } from '@/lib/basePath';
 import type { PostIndexEntry } from '@/lib/post-index';
-import type { Post } from '@/lib/types';
 
 interface Props {
   /** 总文章数，用于显示计数 */
@@ -32,7 +31,7 @@ interface Props {
 }
 
 export default function PostsList({ total }: Props) {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<PostIndexEntry[]>([]);
   const [error, setError] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
@@ -46,9 +45,9 @@ export default function PostsList({ total }: Props) {
     fetch(withBase('/posts-index.json'))
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((data: PostIndexEntry[]) => {
-        // PostGrid 期望 Post[]；PostIndexEntry 字段集是 Post 的子集，
-        // 补 content 空串以满足类型（PostCard 不读 content）
-        setPosts(data as unknown as Post[]);
+        // posts-index.json 形状即 PostIndexEntry（ADR-0004），无需类型转换。
+        // PostCard/PostGrid 只读 title/excerpt/date/tags/slug，不依赖 content
+        setPosts(data);
       })
       .catch(() => setError(true))
       .finally(() => {

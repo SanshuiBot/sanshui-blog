@@ -24,4 +24,10 @@ export const siteConfig = {
   github: 'https://github.com/SanshuiBot',
   /** mailto 链接（调用方直接使用，无需再拼前缀） */
   emailHref: 'mailto:localhost6@foxmail.com',
+  /**
+   * 版权年份（固定常量）。
+   * 不用 new Date().getFullYear()：客户端组件 SSR 用构建时年份、hydration 用访问时年份，
+   * 跨年/跨时区会产生 hydration mismatch。每年元旦手动更新一次即可。
+   */
+  copyrightYear: 2026,
 } as const;

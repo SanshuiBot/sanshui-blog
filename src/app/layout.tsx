@@ -32,8 +32,12 @@ export const metadata: Metadata = {
     url: siteConfig.url,
     siteName: siteConfig.blogName,
     locale: 'zh_CN',
+    // 分享卡片图：scripts/gen-og-image.js 生成（prebuild 自动重建）
+    images: [
+      { url: withBase('/og.png'), width: 1200, height: 630, alt: `${siteConfig.blogName} 封面` },
+    ],
   },
-  twitter: { card: 'summary_large_image' },
+  twitter: { card: 'summary_large_image', images: [withBase('/og.png')] },
   icons: {
     icon: [
       { url: withBase('/favicon.svg'), type: 'image/svg+xml' },
@@ -47,7 +51,10 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   themeColor: '#fafaf9',
-  colorScheme: 'light',
+  // light dark：让原生滚动条/表单控件按站点主题渲染（暗色下不再强制亮色）。
+  // 实际值由 CSS `color-scheme`（globals.css :root / html.dark）跟随主题类驱动，
+  // 浏览器地址栏颜色由 ThemeColorSync 动态同步。
+  colorScheme: 'light dark',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

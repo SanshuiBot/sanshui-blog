@@ -4,14 +4,32 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { withBase } from '@/lib/basePath';
+import { postUrl, type PostIndexEntry } from '@/lib/post-index';
+import { searchPosts, splitByTerms } from '@/lib/search';
+import { formatDate } from '@/lib/formatDate';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import { useDismiss } from '@/components/UI/useDismiss';
+import { useScrollLock } from '@/components/UI/useScrollLock';
+import { useFocusTrap } from '@/components/UI/useFocusTrap';
 import { useRouter } from 'next/navigation';
 import { searchHotkeyLabel } from '@/lib/platform';
-import type { PostIndexEntry } from '@/lib/post-index';
 
-/** 日期字符串 → 本地化格式 的模块级 memo（纯函数缓存，随站点文章数有界） */
-const fmtCache = new Map<string, string>();
+/** 命中词元用 <mark> 高亮（样式 .search-mark 收口在 globals.css） */
+function Highlight({ text, query }: { text: string; query: string }) {
+  return (
+    <>
+      {splitByTerms(text, query).map((seg, i) =>
+        seg.hit ? (
+          <mark key={i} className="search-mark">
+            {seg.text}
+          </mark>
+        ) : (
+          <span key={i}>{seg.text}</span>
+        ),
+      )}
+    </>
+  );
+}
 
 export default function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState('');
@@ -24,14 +42,22 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
 
   // 点击外部 / Esc 关闭（外点判定 + 延迟绑定统一收口在 useDismiss）
   useDismiss(panelRef, onClose, { enabled: open });
+  // 打开时锁定 body 滚动 + Tab 焦点圈在模态内（统一收口 useScrollLock / useFocusTrap）
+  useScrollLock(open);
+  useFocusTrap(panelRef, open);
 
-  // 首次打开时拉取轻量索引（~10KB），不再走 RSC payload
+  // 首次打开时拉取轻量索引（~10KB），不再走 RSC payload。
+  // AbortController：关闭/卸载时中断在途请求；AbortError 不落空态，下次打开重试
   useEffect(() => {
     if (!open || posts !== null) return;
-    fetch(`${withBase('/posts-index.json')}`)
+    const ac = new AbortController();
+    fetch(`${withBase('/posts-index.json')}`, { signal: ac.signal })
       .then((r) => (r.ok ? r.json() : []))
       .then((data: PostIndexEntry[]) => setPosts(data))
-      .catch(() => setPosts([]));
+      .catch((err: unknown) => {
+        if ((err as Error)?.name !== 'AbortError') setPosts([]);
+      });
+    return () => ac.abort();
   }, [open, posts]);
 
   // 关闭时清空搜索词 + 选中态：渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
@@ -52,17 +78,8 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     return () => clearTimeout(t);
   }, [open]);
 
-  // 打开时锁背景滚动：记录原 overflow 并在卸载/关闭时还原，
-  // 避免其他脚本改动 body.style 时互相覆盖
   useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
-  useEffect(() => {
+    // 模态打开时拦截 ⌘K，避免与 Navbar 的全局监听重复触发
     const h = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
@@ -72,35 +89,10 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     return () => window.removeEventListener('keydown', h);
   }, [open]);
 
-  // React Compiler: manual useMemo preserved here — query/posts change infrequently enough that
-  // skipping the optimizer is intentional (compiler cannot safely drop this memo).
-  // 原 eslint-disable（react-hooks/preserve-manual-memoization）已移除：lint 实测该规则不再触发。
-  // 搜索索引：posts 加载后只小写化一次（标题/摘要/标签拼成单个 haystack），
-  // 之后每次按键只需 includes 一次字符串比较——替代原来每个字段每键重复 toLowerCase 的 O(k) 分配
-  const searchIndex = useMemo(() => {
-    if (!posts) return null;
-    return posts.map((p) => ({
-      post: p,
-      haystack: [p.title, p.excerpt, ...p.tags].join('\n').toLowerCase(),
-    }));
-  }, [posts]);
+  // 多关键词 AND 过滤（lib/search.ts 纯函数：空格分词，每词子串匹配）
+  const results = useMemo(() => searchPosts(posts ?? [], q), [posts, q]);
 
-  const results = useMemo(() => {
-    if (!searchIndex) return [];
-    const t = q.trim().toLowerCase();
-    if (!t) return [];
-    const out: PostIndexEntry[] = [];
-    for (const entry of searchIndex) {
-      if (entry.haystack.includes(t)) {
-        out.push(entry.post);
-        if (out.length === 8) break;
-      }
-    }
-    return out;
-  }, [q, searchIndex]);
-
-  // query/posts 变化时重置选中到第一项（有结果时），保持键盘流连续：
-  // 渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
+  // query/posts 变化时重置选中到第一项（有结果时），保持键盘流连续
   const [prevQuery, setPrevQuery] = useState<readonly [string, PostIndexEntry[] | null]>([
     q,
     posts,
@@ -110,19 +102,8 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     setActiveIdx(results.length > 0 ? 0 : -1);
   }
 
-  // 日期格式化缓存：同一 date 字符串只做一次 toLocaleDateString（纯函数，模块级 memo），
-  // 结果列表每次按键重渲染时直接命中缓存，避免重复本地化格式化开销
-  const fmt = (d: string) => {
-    const cached = fmtCache.get(d);
-    if (cached !== undefined) return cached;
-    const s = new Date(d).toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-    fmtCache.set(d, s);
-    return s;
-  };
+  const hasQuery = q.trim().length > 0;
+  const noResults = posts !== null && hasQuery && results.length === 0;
 
   return (
     <AnimatePresence>
@@ -167,13 +148,13 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                     e.preventDefault();
                     onClose();
                     startNavigation();
-                    router.push(`/posts/${post.slug}/`);
+                    router.push(postUrl(post.slug));
                   } else if (e.key === 'Escape') {
                     e.preventDefault();
                     onClose();
                   }
                 }}
-                placeholder="搜索文章..."
+                placeholder="搜索文章（空格分隔多关键词）..."
                 className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-base"
               />
               {q && (
@@ -188,6 +169,10 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
             <div className="max-h-80 overflow-y-auto p-2">
               {posts === null ? (
                 <div className="text-center py-10 text-gray-500 text-sm">加载中...</div>
+              ) : noResults ? (
+                <div className="text-center py-10 text-gray-500 text-sm" aria-live="polite">
+                  未找到与「{q.trim()}」匹配的文章
+                </div>
               ) : results.length > 0 ? (
                 <div aria-live="polite" aria-atomic="true">
                   <span className="sr-only">找到 {results.length} 篇文章</span>
@@ -199,7 +184,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                       transition={{ delay: i * 0.03 }}
                     >
                       <Link
-                        href={`/posts/${p.slug}/`}
+                        href={postUrl(p.slug)}
                         data-active={i === activeIdx}
                         onMouseEnter={() => setActiveIdx(i)}
                         onClick={() => {
@@ -216,9 +201,12 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                               i === activeIdx ? 'text-accent-violet' : 'text-white'
                             }`}
                           >
-                            {p.title}
+                            <Highlight text={p.title} query={q} />
                           </span>
-                          <span className="text-xs text-gray-500">{fmt(p.date)}</span>
+                          <span className="block text-xs text-gray-500 truncate mt-0.5">
+                            <Highlight text={p.excerpt} query={q} />
+                          </span>
+                          <span className="text-[11px] text-gray-600">{formatDate(p.date)}</span>
                         </div>
                         <ArrowRight
                           size={14}
@@ -230,13 +218,9 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                     </motion.div>
                   ))}
                 </div>
-              ) : q ? (
-                <div className="text-center py-10 text-gray-500 text-sm" aria-live="polite">
-                  未找到相关文章
-                </div>
               ) : (
                 <div className="text-center py-10 text-gray-600 text-sm">
-                  {searchHotkeyLabel()} 搜索
+                  {searchHotkeyLabel()} 搜索全部文章
                 </div>
               )}
             </div>

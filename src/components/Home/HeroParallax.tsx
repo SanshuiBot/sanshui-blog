@@ -17,6 +17,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { Mail, ArrowDown } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import { siteConfig } from '@/lib/site';
 import { withBase } from '@/lib/basePath';
 import type { PostIndexEntry } from '@/lib/post-index';
@@ -50,6 +51,11 @@ const thumbAccents = [
 ];
 
 export default function HeroParallax({ stats }: { stats?: HeroStats }) {
+  // reduced-motion：首屏视差/入场全是 JS 驱动（Framer），全局 CSS 0.01ms 压制管不到，
+  // 必须组件内自检（AGENTS.md #32）。reduced 时跳过**装饰性**视差 transform 与入场动画；
+  // 但「滚动淡出首屏内容」（titleOpacity / scrollHintOpacity）是功能性行为，
+  // 必须保留——否则滚动后首屏文字永远不消失（此前 bug 根因）。
+  const reduced = usePrefersReducedMotion();
   const [vh, setVh] = useState(800);
   const [w, setW] = useState(1024);
   useEffect(() => {
@@ -195,7 +201,10 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
   return (
     <motion.section className="fixed inset-0 flex items-center justify-center overflow-hidden z-0 will-change-transform">
       {/* ── 最远层：流光网格 + aurora blob ── */}
-      <motion.div style={{ y: farY }} className="absolute inset-[-10%] will-change-transform">
+      <motion.div
+        style={reduced ? undefined : { y: farY }}
+        className="absolute inset-[-10%] will-change-transform"
+      >
         <div className="absolute top-1/4 left-1/4 w-[40rem] h-[40rem] rounded-full bg-accent-violet/15 blur-[150px] animate-float pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] rounded-full bg-accent-pink/12 blur-[130px] animate-float-delayed pointer-events-none" />
         <div aria-hidden className="absolute inset-0 hero-aurora-grid" />
@@ -203,7 +212,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
 
       {/* ── 中间层：文章缩略图拼贴墙 ── */}
       <motion.div
-        style={{ y: midY, rotate: midRotate }}
+        style={reduced ? undefined : { y: midY, rotate: midRotate }}
         className="absolute inset-0 pointer-events-none will-change-transform hero-thumb-wall"
         aria-hidden
       >
@@ -243,13 +252,19 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
       </motion.div>
 
       {/* ── 最近层：标题 / CTA（中央，视差最快） ── */}
+      {/* opacity 淡出（scrollY→0.6vh 归零）保留：滚动后首屏必须隐藏，reduced 也不例外；
+          y/scale 视差位移是装饰性，reduced 时跳过 */}
       <motion.div
-        style={{ opacity: titleOpacity, y: titleY, scale: titleScale }}
+        style={
+          reduced
+            ? { opacity: titleOpacity }
+            : { opacity: titleOpacity, y: titleY, scale: titleScale }
+        }
         className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center will-change-transform"
       >
         {/* 身份徽章 */}
         <motion.div
-          initial={{ opacity: 0, y: -8 }}
+          initial={reduced ? false : { opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: lineEase }}
           className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass hero-badge mb-8"
@@ -263,7 +278,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
         {/* Title */}
         <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05] mb-6">
           <motion.span
-            initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
+            initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 0.9, delay: 0.05, ease: lineEase }}
             className="block text-white"
@@ -271,7 +286,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
             你好，我是
           </motion.span>
           <motion.span
-            initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
+            initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 0.9, delay: 0.18, ease: lineEase }}
             className="block mt-3 text-aurora hero-name-shimmer"
@@ -282,7 +297,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
 
         {/* Subtitle */}
         <motion.p
-          initial={{ opacity: 0, y: 16 }}
+          initial={reduced ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed"
@@ -293,7 +308,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
         {/* Stats — 极简 inline 行：数字（单色 accent）· 标签，点分隔 */}
         {statItems.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={reduced ? false : { opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.56 }}
             className="hero-stats-inline mb-10"
@@ -324,7 +339,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
 
         {/* CTA + Social */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={reduced ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.48 }}
           className="flex flex-wrap items-center justify-center gap-4 mb-8"
@@ -337,11 +352,11 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               btnX.set(0);
               btnY.set(0);
             }}
-            style={{ x: sBtnX, y: sBtnY }}
-            className="group relative inline-flex items-center gap-3 px-7 py-3 rounded-full hero-cta"
+            style={reduced ? undefined : { x: sBtnX, y: sBtnY }}
+            className="relative inline-flex items-center gap-3 px-7 py-3 rounded-full hero-cta"
           >
             <span className="hero-cta-glow" />
-            <span className="relative z-10 font-semibold text-sm">浏览文章</span>
+            <span className="hero-cta-text relative z-10 font-semibold text-sm">浏览文章</span>
             <ArrowDown size={15} className="relative z-10 hero-cta-arrow" />
           </motion.a>
           {social.map(({ icon: Icon, href, label }, idx) => (
@@ -352,7 +367,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
               aria-label={label}
               className="block p-3 rounded-full glass hero-social text-gray-400 hover:text-white"
-              initial={{ opacity: 0, scale: 0 }}
+              initial={reduced ? false : { opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}
             >
@@ -363,6 +378,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
       </motion.div>
 
       {/* Scroll indicator */}
+      {/* Scroll indicator：淡出（前 15vh 归零）是功能性行为，reduced 也保留 */}
       <motion.div
         style={{ opacity: scrollHintOpacity }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-gray-500 pointer-events-none select-none"
@@ -372,7 +388,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
         <motion.span
           aria-hidden
           className="hero-scroll-arrow"
-          animate={{ y: [-4, 6, -4], opacity: [0.4, 1, 0.4] }}
+          animate={reduced ? { opacity: 0.5 } : { y: [-4, 6, -4], opacity: [0.4, 1, 0.4] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
         >
           <ArrowDown size={16} />

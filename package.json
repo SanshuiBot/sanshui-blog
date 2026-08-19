@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/predev.js && node scripts/gen-posts-index.js",
+    "predev": "node scripts/predev.js && node scripts/gen-posts-index.js && node scripts/gen-feed.js",
     "dev": "next dev --webpack",
-    "prebuild": "node scripts/gen-posts-index.js",
+    "prebuild": "node scripts/gen-posts-index.js && node scripts/gen-feed.js && node scripts/gen-og-image.js",
     "build": "cross-env NEXT_BUILD=1 next build --webpack && pagefind --site out && node scripts/gen-dotted-tag-payloads.js",
     "lint": "eslint",
     "lint:fix": "eslint --fix",

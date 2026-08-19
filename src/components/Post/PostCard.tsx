@@ -23,13 +23,20 @@
  *     骨架层与卡片层均 absolute 铺满固定容器，通过 opacity 交叉淡入淡出。
  *     骨架模式下卡片层不挂载（避免空 post 撑高度）。
  */
-import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useMotionTemplate,
+  useSpring,
+} from 'framer-motion';
 import { ArrowUpRight, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
-import type { Post } from '@/lib/types';
+import { formatDate } from '@/lib/formatDate';
+import { postUrl, type PostIndexEntry } from '@/lib/post-index';
 
 const tagGradients = [
   'from-accent-pink/20 to-accent-rose/20',
@@ -70,7 +77,7 @@ export default function PostCard({
   post,
   skeleton = false,
 }: {
-  post: Post;
+  post: PostIndexEntry;
   /**
    * 骨架模式：true 时骨架层可见、卡片层 opacity:0。
    * 切到 false 时，两层 opacity 同步反向过渡，骨架直接被卡片覆盖，零空白帧。
@@ -81,7 +88,7 @@ export default function PostCard({
   const { startNavigation } = useNavigationLoading();
   const router = useRouter();
   // 不用 withBase()：next/link 的 <Link> 和 router.prefetch 都会自动注入 basePath
-  const postHref = `/posts/${post.slug}/`;
+  const postHref = postUrl(post.slug);
   const prefetchedRef = useRef(false);
 
   // PostGrid 用稳定 slot key 复用 PostCard 实例，
@@ -97,15 +104,13 @@ export default function PostCard({
   };
 
   // Mouse-following spotlight
+  // useMotionTemplate：模板插值只做一次字符串构建，替代 useTransform 每次
+  // mousemove 都重建模板字符串（P1-6）
   const mx = useMotionValue(50);
   const my = useMotionValue(50);
   const sx = useSpring(mx, { stiffness: 100, damping: 20 });
   const sy = useSpring(my, { stiffness: 100, damping: 20 });
-  const spotlight = useTransform(
-    [sx, sy],
-    ([x, y]) =>
-      `radial-gradient(280px circle at ${x}% ${y}%, rgb(var(--accent-violet-rgb) / 0.22), rgb(var(--accent-pink-rgb) / 0.12) 30%, transparent 60%)`,
-  );
+  const spotlight = useMotionTemplate`radial-gradient(280px circle at ${sx}% ${sy}%, rgb(var(--accent-violet-rgb) / 0.22), rgb(var(--accent-pink-rgb) / 0.12) 30%, transparent 60%)`;
 
   // 3D tilt values
   const rx = useMotionValue(0);
@@ -130,9 +135,6 @@ export default function PostCard({
     rx.set(0);
     ry.set(0);
   };
-
-  const fmt = (d: string) =>
-    new Date(d).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
 
   // 骨架→卡片切换的统一过渡：两层用完全相同的 transition，同步渐隐/渐显，零空白帧。
   // duration 短到 0.25s：骨架快速被卡片覆盖，视觉上是「直接变卡片」而非「缓慢淡入」。
@@ -282,7 +284,7 @@ export default function PostCard({
                       >
                         <span className="flex items-center gap-1.5 text-xs text-gray-600">
                           <Clock size={11} />
-                          {fmt(post.date)}
+                          {formatDate(post.date)}
                         </span>
                         <motion.span
                           className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium transition-colors"

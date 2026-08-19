@@ -21,11 +21,11 @@
  */
 import { useEffect, useState, useRef, memo } from 'react';
 import PostCard from '@/components/Post/PostCard';
-import type { Post } from '@/lib/types';
+import type { PostIndexEntry } from '@/lib/post-index';
 
 interface Props {
   /** 已就绪的文章数组（RSC 透传或客户端 fetch 结果） */
-  posts: Post[];
+  posts: PostIndexEntry[];
   /** 网格槽位总数；默认 = posts.length */
   total?: number;
 }
@@ -45,9 +45,9 @@ interface Props {
  * 把每 tick 的 O(槽位数) 全量重渲染降为 O(1)（只重渲染刚填充的那张卡片）。
  * 不改变任何 DOM 行为，只跳过无变化的 re-render。
  */
-const Slot = memo(function Slot({ post, skeleton }: { post?: Post; skeleton: boolean }) {
+const Slot = memo(function Slot({ post, skeleton }: { post?: PostIndexEntry; skeleton: boolean }) {
   // skeleton 模式下 post 可能不存在，传一个占位空对象满足类型
-  const safePost: Post = post ?? ({} as Post);
+  const safePost: PostIndexEntry = post ?? ({} as PostIndexEntry);
   return <PostCard post={safePost} skeleton={skeleton} />;
 });
 

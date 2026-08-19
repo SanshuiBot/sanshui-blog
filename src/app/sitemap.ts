@@ -6,13 +6,15 @@ const baseUrl = 'https://sanshuibot.github.io' + BASE_PATH;
 
 // 配合 output: 'export' 静态导出：显式声明 force-static，
 // 否则 Next 默认按 dynamic 处理，导出时报错。
+// 注意：不能同时写 revalidate = 0 —— revalidate:0 会强制动态渲染，
+// 覆盖 force-static，导致 sitemap.xml 不被导出（此前是 latent bug）。
 export const dynamic = 'force-static' as const;
-export const revalidate = 0;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const posts = getAllPosts();
   const postEntries = posts.map((post) => ({
-    url: `${baseUrl}/posts/${post.slug}/`,
+    // 中文 slug 必须百分号编码，否则 sitemap.xml 非法、部分爬虫拒绝解析
+    url: `${baseUrl}/posts/${encodeURIComponent(post.slug)}/`,
     lastModified: post.date,
     changeFrequency: 'monthly' as const,
     priority: 0.8,

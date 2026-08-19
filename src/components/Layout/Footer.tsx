@@ -1,17 +1,16 @@
-﻿'use client';
+'use client';
 import Link from 'next/link';
-import { Mail, ArrowUp, Rss } from 'lucide-react';
+import { Mail, Rss } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Github from '@/components/UI/GithubIcon';
-import Tooltip from '@/components/UI/Tooltip';
+import BackToTop from '@/components/UI/BackToTop';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import { siteConfig } from '@/lib/site';
 import { navLinks } from '@/lib/navLinks';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
-import { useState } from 'react';
+import { withBase } from '@/lib/basePath';
 
 export default function Footer() {
-  const [showTop, setShowTop] = useState(false);
-  const { scrollY } = useScroll();
-  useMotionValueEvent(scrollY, 'change', (v) => setShowTop(v > 500));
+  const reduced = usePrefersReducedMotion();
 
   return (
     <footer className="relative border-t border-white/5 mt-32">
@@ -23,28 +22,13 @@ export default function Footer() {
               'linear-gradient(90deg,transparent,rgb(var(--accent-violet-rgb)),rgb(var(--accent-pink-rgb)),rgb(var(--accent-blue-rgb)),transparent)',
             backgroundSize: '50% 100%',
           }}
-          animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+          animate={reduced ? { x: '0%' } : { x: ['0%', '-50%'] }}
+          transition={reduced ? { duration: 0 } : { duration: 4, repeat: Infinity, ease: 'linear' }}
         />
       </div>
 
-      {showTop && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute -top-5 left-1/2 -translate-x-1/2 z-10"
-        >
-          <Tooltip label="回到顶部">
-            <button
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="p-2.5 rounded-full bg-surface border border-white/10 text-gray-400 hover:text-white hover:glow-violet transition-all active:scale-95"
-              aria-label="回到顶部"
-            >
-              <ArrowUp size={16} />
-            </button>
-          </Tooltip>
-        </motion.div>
-      )}
+      {/* 回到顶部：滚动超过 500px 出现（定位/显隐统一收口在 BackToTop） */}
+      <BackToTop threshold={500} className="absolute -top-5 left-1/2 -translate-x-1/2 z-10" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-12">
@@ -74,7 +58,8 @@ export default function Footer() {
             <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-5">
               联系
             </h3>
-            <div className="space-y-3">
+            {/* 链接用 flex gap 对齐，不用 <br /> 硬换行 */}
+            <div className="flex flex-col gap-3">
               <a
                 href={siteConfig.github}
                 target="_blank"
@@ -84,7 +69,6 @@ export default function Footer() {
                 <Github size={14} />
                 GitHub
               </a>
-              <br />
               <a
                 href={siteConfig.emailHref}
                 className="footer-link inline-flex items-center gap-2 text-sm"
@@ -97,10 +81,18 @@ export default function Footer() {
         </div>
         <div className="mt-14 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-gray-600">
-            &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+            &copy; {siteConfig.copyrightYear} {siteConfig.name}. All rights reserved.
           </p>
           <p className="text-xs text-gray-600 flex items-center gap-1">
-            Next.js &bull; MDX &bull; Tailwind CSS <Rss size={12} className="opacity-40" />
+            Next.js &bull; MDX &bull; Tailwind CSS
+            {/* RSS 订阅真链接（feed.xml 由 scripts/gen-feed.js 生成） */}
+            <Link
+              href={withBase('/feed.xml')}
+              aria-label="RSS 订阅"
+              className="footer-link inline-flex text-gray-500 hover:text-accent-violet transition-colors"
+            >
+              <Rss size={12} />
+            </Link>
           </p>
         </div>
       </div>

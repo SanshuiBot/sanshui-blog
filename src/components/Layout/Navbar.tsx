@@ -11,6 +11,8 @@ import AccentPicker from '@/components/UI/AccentPicker';
 import Tooltip from '@/components/UI/Tooltip';
 import SearchModal from '@/components/UI/SearchModal';
 import { useDismiss } from '@/components/UI/useDismiss';
+import { useScrollLock } from '@/components/UI/useScrollLock';
+import { useFocusTrap } from '@/components/UI/useFocusTrap';
 import { siteConfig } from '@/lib/site';
 import { withBase } from '@/lib/basePath';
 import { searchHotkeyLabel } from '@/lib/platform';
@@ -32,6 +34,9 @@ export default function Navbar() {
   // 移动端菜单仅启用 Esc 关闭：开关按钮在 header（浮层外），mousedown 外点判定会误关，
   // 与按钮 onClick 形成开关竞态；外点关闭继续由遮罩 onClick 负责
   useDismiss(mobileMenuRef, () => setMobileOpen(false), { enabled: mobileOpen, outside: false });
+  // 抽屉打开时锁定背景滚动 + Tab 焦点圈在抽屉内（统一收口 useScrollLock / useFocusTrap）
+  useScrollLock(mobileOpen);
+  useFocusTrap(mobileMenuRef, mobileOpen);
 
   // 用 useMotionValueEvent 替代原生 scroll listener：与 ParticleField 等 rAF 循环共享
   // 同一事件循环批次，减少 scroll 事件分发开销
@@ -57,16 +62,8 @@ export default function Navbar() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  // 抽屉打开时锁定背景滚动：遮罩半透明，避免背景在抽屉下滚动穿帮
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [mobileOpen]);
-
+  // 抽屉打开时锁定背景滚动：遮罩半透明，避免背景在抽屉下滚动穿帮。
+  // （锁定逻辑已收口到 useScrollLock，此处删除手写实现）
   // 视口跨过 md 断点（≥768px）时关闭抽屉：抽屉/遮罩/菜单按钮均 md:hidden，
   // 不关闭的话 mobileOpen 保持 true，上面的 body 滚动锁会永久泄漏（横屏/拉宽窗口时页面卡死）
   useEffect(() => {
@@ -227,7 +224,7 @@ export default function Navbar() {
                 </a>
               </div>
               <p className="mt-3 text-xs text-gray-600">
-                &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+                &copy; {siteConfig.copyrightYear} {siteConfig.name}. All rights reserved.
               </p>
             </div>
           </motion.aside>

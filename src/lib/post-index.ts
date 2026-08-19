@@ -18,6 +18,11 @@ export interface PostIndexEntry {
   tags: string[];
 }
 
+/** 文章详情路由统一构造（保留尾部斜杠，AGENTS.md #22；next/link 自动注入 basePath） */
+export function postUrl(slug: string): string {
+  return `/posts/${slug}/`;
+}
+
 /**
  * 从含这 5 字段的对象投影到 `PostIndexEntry`。
  *

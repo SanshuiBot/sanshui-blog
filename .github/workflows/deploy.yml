@@ -17,6 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -29,6 +30,20 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # 质量门禁：构建不跑 lint（AGENTS.md #8），这里单独补上。
+      # 三个门禁按顺序执行；lint/test 加 if: always()：即使前一步失败也会跑完，
+      # 一次 CI 能看到全部失败。Build 用默认 success() 条件，任一门禁失败即跳过部署。
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        if: always()
+        run: npm run lint
+
+      - name: Test
+        if: always()
+        run: npm run test
 
       - name: Build with Next.js
         run: npm run build
