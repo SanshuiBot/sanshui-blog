@@ -4,16 +4,16 @@
 
 ## 命令
 
-| 用途 | 命令                              | 备注                                                                               |
-| ---- | --------------------------------- | ---------------------------------------------------------------------------------- |
-| 开发 | `npm run dev`                     | `predev` 建索引；不设 `NEXT_BUILD`；`--webpack`（#31）                             |
-| 构建 | `npm run build`                   | 索引 → `NEXT_BUILD=1 next build --webpack` 静态导出 → pagefind → dotted-tag（#28） |
-| Lint | `npm run lint` / `lint:fix`       | 构建不跑 lint，须单独跑（#8）                                                      |
-| 格式 | `npm run format` / `format:check` | Prettier                                                                           |
-| 类型 | `npm run typecheck`               | `tsc --noEmit`（strict）                                                           |
-| 测试 | `npm run test`                    | Vitest（lib 纯函数与契约）                                                         |
-| 预览 | `npx serve out`                   | 构建产物                                                                           |
-| 提交 | `git commit`                      | Husky：prettier(暂存) → typecheck → test                                           |
+| 用途 | 命令                              | 备注                                                                                       |
+| ---- | --------------------------------- | ------------------------------------------------------------------------------------------ |
+| 开发 | `npm run dev`                     | `predev` 建索引/feed；不设 `NEXT_BUILD`；`--webpack`（#31）                                |
+| 构建 | `npm run build`                   | 索引/feed/og → `NEXT_BUILD=1 next build --webpack` 静态导出 → pagefind → dotted-tag（#28） |
+| Lint | `npm run lint` / `lint:fix`       | 构建不跑 lint，须单独跑（#8）                                                              |
+| 格式 | `npm run format` / `format:check` | Prettier                                                                                   |
+| 类型 | `npm run typecheck`               | `tsc --noEmit`（strict）                                                                   |
+| 测试 | `npm run test`                    | Vitest：lib 纯函数/契约 + jsdom 组件测试（RTL）                                            |
+| 预览 | `npx serve out`                   | 构建产物                                                                                   |
+| 提交 | `git commit`                      | Husky：prettier(暂存) → typecheck → test                                                   |
 
 > 别用 `npm start`（纯静态导出）。
 
@@ -22,13 +22,16 @@
 ```
 content/        posts/*.md(x)（文件名即 slug）+ resume.md
 src/app/        App Router 页面（posts/[slug]/loading.tsx 骨架屏）
-src/components/ Providers AmbientEffects AppShell Layout/ Home/ Post/(PostComments Giscus) About/ Links/ Projects/ NotFound/ UI/(SpinRing usePrefersReducedMotion) TagList
+src/components/ Providers AmbientEffects AppShell Layout/ Home/ Post/(PostComments Giscus) About/ Links/ Projects/ NotFound/ UI/(SpinRing usePrefersReducedMotion useScrollLock useFocusTrap BackToTop ThemeColorSync) TagList
 src/styles/     globals.css + terminal-*.css + projects.css（集中存放 #35）
-src/lib/        纯函数/读取层，职责看文件头注释
-tests/ scripts/ public/ next.config.ts .github/workflows/deploy.yml
+src/lib/        纯函数/读取层（formatDate/search/post-index 为客户端安全模块），职责看文件头注释
+scripts/        predev.js gen-posts-index.js gen-feed.js gen-og-image.js gen-dotted-tag-payloads.js
+tests/          lib 单测 + jsdom 组件测试（tests/search-modal.test.tsx 含 RTL）
+public/         静态资源 + 构建产物（posts-index.json feed.xml og.png）
+next.config.ts  .github/workflows/deploy.yml
 ```
 
-## 红线（38 条，展开见 docs/conventions.md）
+## 红线（46 条，展开见 docs/conventions.md）
 
 1. `NEXT_BUILD` 双态：dev 不设、build 必设；客户端 basePath 走 `withBase()`；别手动设 `output:'export'`。
 2. `params` 是 Promise，必须 `await`。
@@ -68,6 +71,14 @@ tests/ scripts/ public/ next.config.ts .github/workflows/deploy.yml
 36. 终端外壳抽 `UI/TerminalShell.tsx`（title/status prop），别手抄。
 37. Giscus 收口 `Post/PostComments.tsx`：属性 kebab-case（`data-repo-id`）；`og:title`+`strict='1'`（CJK 搜索不可靠）；主题 `light`/`dark`（transparent_light 上游 404）；Edge 懒加载警告来自 widget 内部，不可修。
 38. 项目页 `ProjectsContent`：数据只改 `lib/projects.ts`（新增 push 对象）；样式收口 `styles/projects.css`（标题渐变/语言色文字/hover 光晕的亮暗双态）；竖线色按 URL 哈希取（纯函数，别 `Math.random()`，lint purity 会报）；hover 光晕用 `--mx/--my` 跟随鼠标；语言色文字亮色下 `color-mix` 混黑加深，否则浅色（如黄）看不清。
+39. 版权年份用 `siteConfig.copyrightYear` 常量，别 `new Date().getFullYear()`（SSR/客户端 hydration mismatch）。
+40. 公共实现收口别手抄：日期 `lib/formatDate`、滚动锁 `UI/useScrollLock`、焦点陷阱 `UI/useFocusTrap`、返回顶部 `UI/BackToTop`、主题色同步 `UI/ThemeColorSync`、搜索匹配 `lib/search`（空格分词 AND + 高亮片段）。
+41. sitemap 别设 `revalidate = 0`：会覆盖 `force-static` 导致 sitemap.xml 不被静态导出（历史 bug）。
+42. 与 framer inline transform 叠加的缩放/位移用 CSS 独立 `scale`/`translate` 属性，别用 `transform`（会被内联样式覆盖）。
+43. reduced-motion 区分功能性/装饰性：滚动淡出（hero 标题/提示）必须保留，只跳视差/入场/循环动画。
+44. 生成脚本收口：`gen-posts-index.js`（索引）/ `gen-feed.js`（RSS）/ `gen-og-image.js`（og 图）都复用 `parse-post.mjs` 解析契约。
+45. CI 门禁：typecheck/lint/test 在 build 前跑；lint/test 加 `if: always()`（前一步失败也全跑，build 默认 success() 兜底）。
+46. 组件测试（jsdom）手动 `afterEach(cleanup)`：vitest 未开 globals，RTL 不自动清 DOM，多 render 会累积。
 
 ## 内容编辑
 

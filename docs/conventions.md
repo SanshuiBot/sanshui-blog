@@ -207,3 +207,108 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
   2. 避免 `transition: all`（会动画非合成属性，触发 layout/paint）。
   3. 若用 Framer Motion 驱动可见位移，确认该动画在 reduced-motion 下是否应降级——若应降级，改用纯 CSS 或在 `useReducedMotion()` 守卫下跳过。
   4. hover 变色不交给 Framer（#25）。
+
+## 33. 仓库内图片用 `<Image />`，别用原生 `<img>`
+
+静态导出（`images.unoptimized: true`）下 `next/image` 退化为原图直出，但仍享受 basePath 自动注入与尺寸约束。**Server Component 里的 `<Image>` 由 Next 自动注入 basePath**（直接写 `src="/logo.svg"`）；**客户端组件需手动 `withBase()`**（见 #1）。外部小图（如友链头像 URL）用原生 `<img>` 是可接受例外（eslint 已降为 warn）。
+
+## 34. 图片 onError 降级走 state
+
+图片加载失败（如外链头像 404）的降级切换用组件 state 驱动（`setState` → 换 fallback 源/占位），**不要直接操作 DOM**（`el.src = ...`）。与 React 声明式模型一致，且 StrictMode 双执行下幂等。
+
+## 35. CSS 集中 `src/styles/`
+
+所有 `.css` 文件统一放 `src/styles/`，组件内 `import '@/styles/xxx.css'` 按需引入，全局样式由 `layout.tsx` 统一 import。**禁止在组件目录散落 `.css`**。共享终端外壳（macOS 圆点标题栏）抽为 `UI/TerminalShell.tsx` 组件（title/status prop），各页面不手抄。
+
+## 36. 终端外壳抽 `UI/TerminalShell.tsx`
+
+终端风页面（关于页简历 / 友链页）的「毛玻璃窗口 + 红黄绿圆点标题栏 + 状态行」外壳由 `TerminalShell` 统一提供，页面只传 `title` / `status` prop。样式在 `styles/terminal-base.css`。**新增终端风页面直接复用，不手抄圆点标题栏。**
+
+## 37. Giscus 评论收口 `Post/PostComments.tsx`
+
+- 属性必须 **kebab-case**（`data-repo-id`、`data-mapping`，React 不认驼峰传给 web component）。
+- 关联策略：`mapping='og:title'` + `strict='1'`——按文章标题关联 GitHub Discussions；CJK 下摘要搜索（`pathname`/`url` 之外的模糊匹配）不可靠。**改文章标题会使历史评论失联**，先改 Discussions 侧。
+- 主题：官方 `light` / `dark`（跟随站点主题类）；`transparent_light` 上游 404 不可用。
+- Edge 浏览器的「Images loaded lazily」干预警告来自 widget 内部懒加载头像，属 giscus 自身行为，宿主页无法消除，不是 bug。
+
+## 38. 项目页 `ProjectsContent`（数据/样式双收口）
+
+- 数据：只改 `src/lib/projects.ts`（数组末尾 push 一条对象），不改组件。
+- 样式：收口 `src/styles/projects.css`——标题渐变（`.project-card-title`）、语言色文字（`.project-lang-text`，亮色下 `color-mix` 混黑加深）、hover 光晕（`.project-card-glow` / `.project-card-border-glow`）的亮暗双态。
+- 竖线色：`hashBarColor(url)` 纯函数（URL 确定性哈希 → 15 色池），**别用 `Math.random()`**——渲染期随机触发 `react-hooks/purity` lint 报错且 hydration 不稳定。
+- hover 光晕：`onMouseMove` 写 `--mx`/`--my`，纯 CSS 渐变层跟随；离开复位 50%/50%。
+
+## 39. 版权年份用 `siteConfig.copyrightYear` 常量
+
+`src/lib/site.ts` 的 `copyrightYear: 2026` 固定值，Footer 与 Navbar 抽屉的 `©` 行都走它。
+
+**为什么不用 `new Date().getFullYear()`**：客户端组件在静态导出下，SSR 用**构建时**年份生成 HTML，hydration 时客户端用**访问时**年份重新渲染——跨年（12/31 构建、1/1 访问）或时区差异下产生 hydration mismatch（React 属性/文本 diff 警告，StrictMode 下更明显）。mismatch 平时看不到，跨年是真实线上 bug。
+
+每年元旦手动更新一次常量即可（site.ts 有注释提醒）。
+
+## 40. 公共实现收口别手抄
+
+六处收口（出现第二份复制时就收口，别等第三份）：
+
+| 收口       | 文件                    | 背景                                                                                           |
+| ---------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
+| 日期格式化 | `lib/formatDate.ts`     | zh-CN 长格式 + 模块级 Map 缓存；此前 SearchModal（有缓存）/PostCard/PostMeta（无缓存）三份实现 |
+| 滚动锁     | `UI/useScrollLock.ts`   | body overflow 保存/还原；Navbar 抽屉与 SearchModal 曾各写一份，**同开时还原互相覆盖**          |
+| 焦点陷阱   | `UI/useFocusTrap.ts`    | Tab 循环 + 关闭焦点还原；搜索模态 + 移动抽屉共用                                               |
+| 返回顶部   | `UI/BackToTop.tsx`      | scrollY 阈值 + Tooltip 圆钮 + 平滑回顶；Footer/PostMeta 两份复制收敛                           |
+| 主题色同步 | `UI/ThemeColorSync.tsx` | meta theme-color 动态跟随主题（须在 ThemeProvider 内读 resolvedTheme）                         |
+| 搜索匹配   | `lib/search.ts`         | tokenize/searchPosts/splitByTerms 纯函数，组件只渲染                                           |
+
+## 41. sitemap 别设 `revalidate = 0`
+
+**历史 bug**：`sitemap.ts` 同时写 `export const dynamic = 'force-static'` 与 `export const revalidate = 0`——后者强制动态渲染、覆盖前者。build 后路由表显示 `/sitemap.xml` 是 `ƒ`（Dynamic），`out/` 里没有 sitemap.xml，**线上一直缺 sitemap**（爬虫拿不到站点地图）。
+
+**验证方法**：`npm run build` 后看路由表该行是 `○`（Static）还是 `ƒ`；`ls out/sitemap.xml`。中文 slug 记得 `encodeURIComponent`（XML 需要百分号编码）。
+
+## 42. 与 framer inline transform 叠加用 CSS 独立 `scale`/`translate`
+
+**场景**：元素同时有 Framer Motion 写的 inline `transform`（Hero CTA 跟手 `x/y`、卡片 tilt 等）和 CSS 缩放/位移需求。CSS `transform: scale(...)` 会被 inline style **覆盖失效**；独立属性 `scale:` / `translate:` 与 transform 独立叠加（组合语义 translate → rotate → scale），互不干扰。
+
+**用法**（`.hero-cta`）：`:hover { scale: 1.02; translate: 0 -2px; }`，`:active { scale: 0.98; translate: 0 0; }`（源序在 hover 后，按下时取消上浮）。
+
+**支持**：Chrome 104+ / Firefox 72+ / Safari 14.1+（2026 年无兼容顾虑）。
+
+## 43. reduced-motion 区分功能性/装饰性
+
+`usePrefersReducedMotion()` 为 true 时：
+
+- **功能性（必须保留）**：滚动淡出（Hero 标题/提示的 scrollY→opacity）——reduced 用户也要「滚动后首屏隐藏」；ScrollProgress 进度条（spring 平滑入阀）。
+- **装饰性（跳过）**：视差位移（titleY/midY/farY）、入场动画（initial→animate）、无限循环（Footer 走马灯/箭头/呼吸点）、鼠标跟手（CTA 按钮 x/y）。
+
+**历史 bug**：HeroParallax 的 reduced 分支曾把整个 `style` 置 `undefined`，标题层 opacity 永不淡出 → 首屏文字滚动后一直显示。判断标准：动画承载信息（隐藏/进度）还是纯氛围？信息→保留，装饰→跳过。
+
+## 44. 生成脚本收口（都复用 `parse-post.mjs`）
+
+| 脚本                         | 产物                                                      | 触发              |
+| ---------------------------- | --------------------------------------------------------- | ----------------- |
+| `gen-posts-index.js`         | public/posts-index.json（⌘K 搜索索引）                    | predev / prebuild |
+| `gen-feed.js`                | public/feed.xml（RSS 2.0 + 全文 CDATA + 标签）            | predev / prebuild |
+| `gen-og-image.js`            | public/og.png（1200×630 社交卡片，纯 Node zlib PNG 编码） | prebuild          |
+| `gen-dotted-tag-payloads.js` | out/ 内点号标签 payload 副本（#28）                       | build 后          |
+
+- 前三者复用 `src/lib/parse-post.mjs` 解析契约（CJS 脚本 `await import` ESM）。
+- `gen-feed.js` 的站点常量与 `site.ts` **字面一致**——改站点信息（title/description/url）需同步两处。
+- 产物在 `public/` 且已提交；prebuild 确定性重建，无 git 噪音。
+
+## 45. CI 质量门禁（对齐 #8）
+
+`deploy.yml` 构建前先跑 `typecheck` → `lint` → `test`：
+
+- **步骤严格串行**（GitHub Actions 单 job）：默认前一步失败后续全部跳过。
+- lint/test 加 `if: always()`：即使前一步失败也跑完，**一次 CI 暴露全部失败**；Build 用默认 `success()` 条件，任一门禁失败即跳过部署。
+- 对齐 #8：Next 16 的 `next build` 不再执行 lint，CI 必须单独跑，否则门禁形同虚设。
+
+## 46. 组件测试（jsdom）三坑
+
+`tests/search-modal.test.tsx` 用 `// @vitest-environment jsdom` 单文件切换环境（vitest.config 默认 node；include 已扩展为 `tests/**/*.test.{ts,tsx}`）。三个必踩的坑：
+
+1. **cleanup**：vitest 未开 `globals: true` 时全局没有 `afterEach`，RTL 的自动 cleanup 不生效——必须显式 `afterEach(cleanup)`，否则多 render 的 DOM 累积报 "Found multiple elements with the placeholder"。
+2. **matchMedia**：jsdom 不实现 `window.matchMedia`，framer-motion 挂载即炸——需垫片（matches/media/onchange + add/removeEventListener + add/removeListener/dispatchEvent）。
+3. **依赖 mock**：`vi.mock('next/link')` 成纯 `<a>`；`vi.mock('next/navigation')` 提供可控 `useRouter`；fetch 用 `vi.stubGlobal` 并在 `afterEach` 里 `vi.unstubAllGlobals()`。
+
+另外：空查询时组件有意不渲染结果（`searchPosts` 空词元返回 `[]`），断言前必须先输入；断言结果标题用 `getByRole('link')` + textContent 包含（嵌套 `<span>` 会让字符串匹配失败）。

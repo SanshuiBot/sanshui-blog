@@ -39,42 +39,46 @@
 
 **Aurora 玻璃态设计系统** — 默认亮色、暗色可选，极光渐变与物理动效深度融合。
 
-|                          |                                                                                                   |
-| ------------------------ | ------------------------------------------------------------------------------------------------- |
-| ♿ **减少动效适配**      | 系统开启「减少动态效果」时跳过装饰性动效（鼠标光晕/点击特效/spring 平滑）——无障碍设计，非功能缺失 |
-| 🎨 **玻璃态卡片**        | `backdrop-filter: blur(20px)` 半透明卡片，微光边框（亮/暗双主题）                                 |
-| 🌈 **极光渐变文字**      | 多色渐变 + `background-clip: text` 动画                                                           |
-| 🖱️ **自定义鼠标光晕**    | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点                                                     |
-| 📐 **渐隐网格背景**      | `radial-gradient` mask 从中心向四周淡出                                                           |
-| 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                                                                        |
-| 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                                        |
-| 🗂️ **项目卡片墙**        | `/projects/` 统一尺寸 Bento 卡片：左侧竖线 URL 哈希取色混主题色 + hover 语言色光晕跟随鼠标        |
-| 🔍 **⌘K 全局搜索**       | 运行时 fetch `posts-index.json` 轻量索引；Pagefind 另建全文索引（两套独立机制）                   |
-| 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                                                                          |
-| 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条                |
-| 💬 **Giscus 评论**       | GitHub Discussions 驱动，零后端；og:title 映射 + strict 摘要查找；亮暗主题联动                    |
-| 🎯 **三水 favicon**      | 三片紫蓝渐变椭圆花瓣 + 中心圆点，配米白背景，呼应「三水」之名                                     |
-| 📜 **流式打印简历**      | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配                                               |
-| 🎨 **Accent 主题强调色** | 5 个预设调色板 + 6 通道自定义色板，运行时换色全站联动                                             |
-| 🌊 **视差拼贴首屏**      | 3 深度层（流光网格 / 文章缩略图墙 / 标题 CTA）滚动视差，缩略图墙运行时 fetch 最新 6 篇            |
+|                          |                                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| ♿ **减少动效适配**      | 系统开启「减少动态效果」时跳过装饰性动效（鼠标光晕/点击特效/视差/spring）；**功能性滚动淡出（首屏隐藏）保留**——无障碍设计，非功能缺失 |
+| 🎨 **玻璃态卡片**        | `backdrop-filter: blur(20px)` 半透明卡片，微光边框（亮/暗双主题）                                                                     |
+| 🌈 **极光渐变文字**      | 多色渐变 + `background-clip: text` 动画                                                                                               |
+| 🖱️ **自定义鼠标光晕**    | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点                                                                                         |
+| 📐 **渐隐网格背景**      | `radial-gradient` mask 从中心向四周淡出                                                                                               |
+| 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                                                                                                            |
+| 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                                                                            |
+| 🗂️ **项目卡片墙**        | `/projects/` 统一尺寸 Bento 卡片：左侧竖线 URL 哈希取色混主题色 + hover 语言色光晕跟随鼠标                                            |
+| 🔍 **⌘K 全局搜索**       | 空格分词**多关键词 AND** 匹配 + 命中 `<mark>` 高亮 + 键盘流（↑↓/Enter/Esc）+ 无结果态；Pagefind 另建全文索引（两套独立机制）          |
+| 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                                                                                                              |
+| 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条                                                    |
+| 💬 **Giscus 评论**       | GitHub Discussions 驱动，零后端；og:title 映射 + strict 摘要查找；亮暗主题联动                                                        |
+| 🎯 **三水 favicon**      | 三片紫蓝渐变椭圆花瓣 + 中心圆点，配米白背景，呼应「三水」之名                                                                         |
+| 📜 **流式打印简历**      | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配                                                                                   |
+| 🎨 **Accent 主题强调色** | 5 个预设调色板 + 6 通道自定义色板，运行时换色全站联动                                                                                 |
+| 🌊 **视差拼贴首屏**      | 3 深度层（流光网格 / 文章缩略图墙 / 标题 CTA）滚动视差，缩略图墙运行时 fetch 最新 6 篇                                                |
+| 📡 **RSS 订阅**          | 构建期自动生成 `feed.xml`（RSS 2.0 + 全文 CDATA + 标签分类），Footer 图标即订阅链接                                                   |
+| 🖼️ **社交分享卡片**      | 纯 Node 零依赖生成 1200×630 `og.png`（Aurora 渐变），接入 OpenGraph / Twitter Card                                                    |
+| ♿ **键盘无障碍**        | 搜索模态/移动抽屉焦点陷阱（Tab 循环 + 关闭还原焦点）、`aria-live` 结果计数、CTA 自定义 focus-visible 焦点环                           |
 
 ---
 
 ## 🔧 技术栈
 
-| 类别       | 技术                                                             |
-| ---------- | ---------------------------------------------------------------- |
-| **框架**   | Next.js 16.3 (App Router, SSG 静态导出)                          |
-| **运行时** | React 19 (Server Components / Hooks，`react-dom` 服务端渲染)     |
-| **语言**   | TypeScript 5 (strict 模式 + `noUncheckedIndexedAccess`)          |
-| **样式**   | Tailwind CSS v4 (`@theme` 自定义设计令牌，无 tailwind.config.js) |
-| **动画**   | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                |
-| **图标**   | Lucide React + 自定义 SVG 图标（无 react-icons 整包依赖）        |
-| **内容**   | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)      |
-| **搜索**   | Pagefind (静态全文搜索，构建时自动索引)                          |
-| **评论**   | Giscus (GitHub Discussions 驱动，零后端)                         |
-| **测试**   | Vitest 4（lib 层纯函数与契约单测，`tests/`）                     |
-| **部署**   | GitHub Pages + GitHub Actions 自动 CI/CD                         |
+| 类别       | 技术                                                                 |
+| ---------- | -------------------------------------------------------------------- |
+| **框架**   | Next.js 16.3 (App Router, SSG 静态导出)                              |
+| **运行时** | React 19 (Server Components / Hooks，`react-dom` 服务端渲染)         |
+| **语言**   | TypeScript 5 (strict 模式 + `noUncheckedIndexedAccess`)              |
+| **样式**   | Tailwind CSS v4 (`@theme` 自定义设计令牌，无 tailwind.config.js)     |
+| **动画**   | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                    |
+| **图标**   | Lucide React + 自定义 SVG 图标（无 react-icons 整包依赖）            |
+| **内容**   | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)          |
+| **搜索**   | Pagefind (静态全文搜索，构建时自动索引)                              |
+| **评论**   | Giscus (GitHub Discussions 驱动，零后端)                             |
+| **测试**   | Vitest 4（lib 纯函数/契约 + jsdom 组件测试 RTL，`tests/`）           |
+| **订阅**   | RSS 2.0（构建期生成 `feed.xml`，含全文 CDATA 与标签分类）            |
+| **部署**   | GitHub Pages + GitHub Actions（typecheck/lint/test 门禁 + 自动部署） |
 
 ---
 
@@ -116,27 +120,32 @@ sanshui-blog/
 │   │   ├── About/              # AboutContent · ResumeTerminal (流式打印简历)
 │   │   ├── Projects/           # ProjectsContent（项目卡片墙，统一尺寸 + 鼠标跟随光晕）
 │   │   ├── Links/ · NotFound/
-│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · useDismiss · usePrefersReducedMotion
+│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop · ThemeColorSync · useDismiss · useScrollLock · useFocusTrap · usePrefersReducedMotion · useSafeTimeout
 │   └── lib/
 │       ├── types.ts            # Post 类型定义（server-only）
 │       ├── posts.ts            # 文章读取（单次装载，无 mtime 缓存；slug 解码统一兜底）
-│       ├── parse-post.mjs      # 文章解析契约唯一实现（posts.ts 与索引脚本共用）
+│       ├── parse-post.mjs      # 文章解析契约唯一实现（posts.ts / gen-posts-index / gen-feed 共用）
 │       ├── toc.ts              # h2/h3 提取（github-slugger 与渲染侧 rehype-slug 同源）
 │       ├── resume.ts           # 简历读取（构建期 fs.readFileSync，含 node:fs）
 │       ├── resumeLines.ts      # 简历行切分纯函数（客户端安全）
 │       ├── accents.ts          # Accent 预设/解析/应用 + 防 FOUC 脚本生成
 │       ├── projects.ts         # 项目数据字典（name/url/desc/lang/stars/tags）
-│       ├── site.ts             # 站点身份配置（url/emailHref 等派生字段）
+│       ├── site.ts             # 站点身份配置（url/emailHref/copyrightYear 等派生字段）
 │       ├── basePath.ts         # basePath 中心定义 + withBase()
 │       ├── thumbGeometry.ts    # TOC 滚动指示条几何纯函数
-│       └── clickParticles.ts   # 点击特效粒子物理纯函数
-├── tests/                      # Vitest 单测（lib 层纯函数与契约）
+│       ├── clickParticles.ts   # 点击特效粒子物理纯函数
+│       ├── formatDate.ts       # 日期格式化（zh-CN 长格式 + 模块级缓存，全站唯一实现）
+│       ├── search.ts           # 搜索匹配纯函数（空格分词 AND + 高亮片段，可单测）
+│       └── post-index.ts       # PostIndexEntry 客户端安全索引形状 + toIndexEntry + postUrl
+├── tests/                      # Vitest 单测（lib 纯函数/契约 + jsdom 组件测试 RTL）
 ├── scripts/
 │   ├── predev.js               # ConsoleNinja 兼容：生成 .next/routes-manifest.json
 │   ├── gen-posts-index.js      # 生成 public/posts-index.json 轻量索引 (解析契约来自 parse-post.mjs)
+│   ├── gen-feed.js             # 生成 public/feed.xml（RSS 2.0 + 全文 CDATA + 标签分类）
+│   ├── gen-og-image.js         # 生成 public/og.png（纯 Node 零依赖 PNG 编码，1200×630 Aurora 渐变）
 │   └── gen-dotted-tag-payloads.js # 为含点号标签 (如 Next.js) 补 RSC payload 副本，避免线上 404
-├── .github/workflows/deploy.yml # GitHub Actions 自动部署
-└── public/                     # 静态资源 (favicon.svg/ico · posts-index.json · _headers)
+├── .github/workflows/deploy.yml # GitHub Actions：质量门禁 + 自动部署
+└── public/                     # 静态资源 (favicon.svg/ico · posts-index.json · feed.xml · og.png · _headers)
 ```
 
 ---
@@ -160,18 +169,18 @@ npx serve out
 
 ### 可用命令
 
-| 命令                   | 作用                                                                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引（`--webpack` 绕开 Turbopack 的 Tailwind v4.3 CSS 解析问题） |
-| `npm run build`        | 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                                                                     |
-| `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）                                             |
-| `npm run lint`         | ESLint v9 flat config，只报告不修改                                                                                            |
-| `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                                                             |
-| `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                                               |
-| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                                                          |
-| `npm run typecheck`    | `tsc --noEmit` 类型检查（Next 16 构建不跑 lint，CI/本地须单独跑 lint + typecheck）                                             |
-| `npm run test`         | Vitest 跑 lib 层单测（纯函数与契约，当前 96 个）                                                                               |
-| `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                                                         |
+| 命令                   | 作用                                                                                                                                      |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引 + RSS feed（`--webpack` 绕开 Turbopack 的 Tailwind v4.3 CSS 解析问题） |
+| `npm run build`        | prebuild 生成索引/RSS/og 图 → 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                                                  |
+| `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）                                                        |
+| `npm run lint`         | ESLint v9 flat config，只报告不修改                                                                                                       |
+| `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                                                                        |
+| `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                                                          |
+| `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                                                                     |
+| `npm run typecheck`    | `tsc --noEmit` 类型检查（Next 16 构建不跑 lint，CI/本地须单独跑 lint + typecheck）                                                        |
+| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 112 个）                                                                        |
+| `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                                                                    |
 
 > 🔒 **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`。
 
@@ -179,11 +188,11 @@ npx serve out
 
 ```
 npm run dev
-  └─ predev → 生成 .next/routes-manifest.json (ConsoleNinja 兼容)
+  └─ predev → 生成 .next/routes-manifest.json (ConsoleNinja 兼容) + posts-index.json + feed.xml
   └─ next dev (HMR，无 basePath/assetPrefix)
 
 npm run build
-  └─ prebuild → 生成 public/posts-index.json (~10KB 轻量索引)
+  └─ prebuild → 生成 posts-index.json (~10KB 轻量索引) + feed.xml (RSS 2.0) + og.png (1200×630 社交卡片图)
   └─ cross-env NEXT_BUILD=1 next build --webpack → 静态导出 out/
   └─ pagefind --site out → 全文搜索索引（与 ⌘K 的 posts-index.json 是两套独立机制）
   └─ gen-dotted-tag-payloads.js → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
@@ -351,7 +360,8 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 graph LR
   A["git push main"] --> B["GitHub Actions"]
   B --> C["Node 24 + npm ci"]
-  C --> D["prebuild: 生成文章索引"]
+  C --> C1["质量门禁 typecheck / lint / test"]
+  C1 --> D["prebuild: 生成索引 / RSS / og 图"]
   D --> E["npm run build"]
   E --> F["静态导出 out/"]
   F --> G["Pagefind 搜索索引"]
@@ -359,7 +369,7 @@ graph LR
   H --> I["Deploy to GitHub Pages"]
 ```
 
-CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、`npm run build` 静态导出、`actions/upload-pages-artifact@v3` 上传 `./out`、`actions/deploy-pages@v4` 部署。`concurrency.group: "pages"` + `cancel-in-progress: false` 保证部署串行不中断。
+CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` 严格安装；构建前先跑 **typecheck / lint / test 质量门禁**——lint/test 加 `if: always()`（前一步失败也全跑，一次 CI 暴露全部失败），Build 用默认 `success()` 条件，任一门禁失败即跳过部署；通过后 `npm run build` 静态导出、`actions/upload-pages-artifact@v5` 上传 `./out`、`actions/deploy-pages@v5` 部署。`concurrency.group: "pages"` + `cancel-in-progress: false` 保证部署串行不中断。
 
 **部署特征：**
 
@@ -372,7 +382,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
 
 ## ⚠️ 开发注意事项
 
-- **亮色为主、暗色可选**：默认 **亮色主题**。`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`src/styles/globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA（滚动条/表单控件/地址栏）与默认主题一致。**改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱
+- **亮色为主、暗色可选**：默认 **亮色主题**。`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`src/styles/globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`viewport` 用 `colorScheme: 'light dark'` + globals.css 的 `color-scheme`（`:root`/`html.dark`）跟随主题类，原生滚动条/表单控件按站点主题渲染；`themeColor` 由 `ThemeColorSync` 组件动态同步（暗 `#05050a` / 亮 `#fafaf9`）。**改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱
 - **Tailwind v4 语法**：使用 `@import "tailwindcss"` / `@plugin` / `@theme`，而非 v3 的 `@tailwind` 指令；PostCSS 插件是 `@tailwindcss/postcss`
 - **TypeScript 严格**：`strict: true` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters`，所有索引访问都需 undefined 检查
 - **中文 Slug**：`getPostBySlug()` / `getAdjacentPosts()` 内部经 `decodeSlug()` 统一做 `decodeURIComponent`（非法编码按原样查找、不抛异常）；`generateStaticParams` 返回原始 slug，新增 slug 查询时保持一致
@@ -426,6 +436,13 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
   - **纯 CSS 动画自动合规**：用 `transition` / `animation` 实现的 hover、下划线滑入等，会被上面 `*` 选择器 + `!important` 自动压到 0.01ms，无需额外处理。导航图标 hover 放大（`.nav-icon-btn`）、导航链接下划线滑入（`.nav-link::after`）均属此类，合规。
   - **Framer Motion 驱动的动画绕开了这条降级**：Framer 用 JS rAF + inline style 驱动位移（如 PostCard 标题 `whileHover`、ArrowLink 箭头位移），inline style 的 `transform` 不受 `transition-duration` 影响。这是「功能性可见动画」的有意例外——但 hover 变色仍走纯 CSS，不交给 Framer。
   - **新增动画前 checklist**：① 优先纯 CSS（`transition` + `transform`/`opacity`/`width` 等合成层属性），自动被 0.01ms 降级覆盖；② 避免 `transition: all`（会动画非合成属性，触发 layout/paint）；③ 若用 Framer Motion 驱动可见位移，确认该动画在 reduced-motion 下是否应降级——若应降级，改用纯 CSS 或在 `usePrefersReducedMotion()` 守卫下跳过；④ hover 变色不交给 Framer。
+- **版权年份**：`©` 年份用 `siteConfig.copyrightYear` 常量（`src/lib/site.ts`，每年元旦手动更新）。不要在客户端组件里 `new Date().getFullYear()`——静态导出时 SSR 用构建时年份、hydration 用访问时年份，跨年/跨时区会 mismatch（Footer 与 Navbar 抽屉的版权行都走这个常量）
+- **公共 hook 收口别手抄**：滚动锁 `useScrollLock`、焦点陷阱 `useFocusTrap`、返回顶部 `BackToTop`、主题色同步 `ThemeColorSync`、日期格式化 `formatDate` 都是全站唯一实现（AGENTS.md #40）。此前 Navbar/SearchModal 各写一份 body 滚动锁，同开时还原互相覆盖——新增弹层/模态直接复用
+- **搜索匹配逻辑收口 `lib/search.ts`**：⌘K 的匹配（空格分词多关键词 AND、`splitByTerms` 高亮片段）是纯函数，组件只渲染；契约测试在 `tests/search.test.ts`。改匹配规则改 lib，不要动组件
+- **CSS 独立 `scale`/`translate` 属性**：要与 Framer Motion 的 inline `transform`（如 Hero CTA 的跟手 `x/y`）叠加的缩放/位移，用 `scale:` / `translate:` 独立属性——`transform` 会被内联样式覆盖失效。支持 Chrome 104+ / FF 72+ / Safari 14.1+（2026 年无兼容顾虑）
+- **sitemap 静态导出**：`sitemap.ts` 必须 `export const dynamic = 'force-static'`，**不要**再写 `revalidate = 0`（会强制动态渲染、覆盖 force-static，sitemap.xml 不被导出到 `out/`）；中文 slug 记得 `encodeURIComponent`
+- **reduced-motion 区分功能性/装饰性**：滚动淡出（Hero 标题 / 向下滚动提示的 scrollY→opacity）是功能性——reduced 用户也必须「滚动后首屏隐藏」；只有视差/入场/循环这类装饰动画才跳过（AGENTS.md #43；Hero 曾整体关闭导致首屏永不消失的 bug）
+- **组件测试（jsdom）**：`tests/search-modal.test.tsx` 用 `// @vitest-environment jsdom` 跑 RTL；vitest 未开 `globals` 时 RTL **不会自动 cleanup**，必须 `afterEach(cleanup)`（否则多 render 的 DOM 累积报 multiple elements）；jsdom 无 `matchMedia` 需垫片；mock `next/link` / `next/navigation`
 
 ---
 
