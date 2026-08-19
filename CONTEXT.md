@@ -20,6 +20,18 @@
 
 **文章索引条目**: SearchModal 运行时 fetch 的轻量索引形状 `{ slug, title, date, excerpt, tags }`——剔除 `content`/`readingTime` 让 `posts-index.json` 从 ~72KB 涨到全量数据被序列化进 RSC payload，此处只保留 ~10KB。真相源是 `src/lib/post-index.ts` 的 `PostIndexEntry`（client-safe，不 import `server-only` 的 `Post`），由 `toIndexEntry` 适配器从完整 Post 投影。 _避免_: SearchPost、索引形状（前者是手抄副本已替，后者是描述不是名）
 
+**项目数据字典**: `src/lib/projects.ts` 的 `Project[]`——项目页的唯一数据源，每条 `{ name, url, desc, lang, stars, tags }`；新增项目 = 数组末尾 push 一条对象，无需改组件。 _避免_: 项目列表、仓库数据（前者是渲染结果，后者是描述不是数据源）
+
+**竖线色哈希**: `hashBarColor(url)`——把项目 URL 确定性哈希到 15 色竖线色池的纯函数。同一 URL 恒得同色（重渲染/刷新不变），又因 URL 各异让卡片竖线各不相同。区别于 `Math.random()`：渲染期随机会触发 `react-hooks/purity` lint 报错且 hydration 不稳定。 _避免_: 随机竖线色、随机取色（它是确定性哈希，不是随机）
+
+**鼠标跟随光晕**: 项目卡片 hover 时随光标移动的语言色光晕——卡片 `onMouseMove` 把光标相对坐标写入 `--mx`/`--my` CSS 变量，`.project-card-glow`（背景光晕）与 `.project-card-border-glow`（1px 描边发光）两个纯 CSS 渐变层用 `var(--mx)`/`var(--my)` 定位，光标离开复位 50%/50% 淡出。与友链卡片的磁吸光晕同机制。 _避免_: hover 光晕、光标光晕（前者是泛称，后者是 CursorGlow 全局鼠标光晕，两者不同）
+
+**语言色文字加深**: `.project-lang-text` 类——元信息行里语言名的文字色：暗色基用 `var(--project-lang)` 原色，亮色覆盖用 `color-mix(in srgb, var(--project-lang) 68%, #000)` 混黑加深。浅色语言（如 JavaScript 黄 `#f1e05a`）亮色下若不加深会白得看不清；圆点保留原色（色块不怕浅）。 _避免_: 语言名颜色、语言色文字色（后者是描述不是类）
+
+**reduced-motion 共享 hook**: `usePrefersReducedMotion`（`src/components/UI/usePrefersReducedMotion.ts`）——封装 `matchMedia('(prefers-reduced-motion: reduce)')` + `useSyncExternalStore`（客户端实时快照 / SSR 固定 false）的 hook，`AmbientEffects` 与 `ScrollProgress` 共用。替代 framer-motion 的 `useReducedMotion`——后者在设备开启 reduced-motion 且 dev 模式时打 `warnOnce` 噪音（"reduced-motion-disabled"）。 _避免_: reduced-motion 检测、matchMedia 订阅（前者是概念，后者是实现细节）
+
+**framer 自动降级关闭**: `Providers.tsx` 的 `<MotionConfig reducedMotion="never">`——声明项目动效自管 reduced-motion（CSS 0.01ms 压制 + AmbientEffects 阀门 + 共享 hook），不依赖 framer 的自动检测降级；顺带静默 dev 下任意 motion 组件挂载时 VisualElement 的 warnOnce。 _避免_: MotionConfig 配置、reduced motion 设置（前者是组件名，后者是泛称）
+
 ## Decisions
 
 见 `docs/adr/`。每条 ADR 记一次架构决策及其「为什么这么选」——未来探索者会想知道的门槛。

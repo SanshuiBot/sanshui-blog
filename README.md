@@ -27,6 +27,7 @@
 - [项目结构](#-项目结构)
 - [快速开始](#-快速开始)
 - [添加文章](#-添加文章)
+- [🗂️ 项目页模块](#-项目页模块)
 - [📄 个人简历模块](#-个人简历模块)
 - [🎨 Accent 主题强调色系统](#-accent-主题强调色系统)
 - [部署](#-部署)
@@ -47,6 +48,7 @@
 | 📐 **渐隐网格背景**      | `radial-gradient` mask 从中心向四周淡出                                                           |
 | 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                                                                        |
 | 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                                        |
+| 🗂️ **项目卡片墙**        | `/projects/` 统一尺寸 Bento 卡片：左侧竖线 URL 哈希取色混主题色 + hover 语言色光晕跟随鼠标        |
 | 🔍 **⌘K 全局搜索**       | 运行时 fetch `posts-index.json` 轻量索引；Pagefind 另建全文索引（两套独立机制）                   |
 | 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                                                                          |
 | 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条                |
@@ -96,22 +98,25 @@ sanshui-blog/
 │   │   ├── archive/            # 归档 (按年份分组)
 │   │   ├── tags/               # 标签云 + 按标签筛选
 │   │   ├── posts/[slug]/       # 文章详情 (RSC MDX 渲染，含 loading.tsx 骨架屏)
+│   │   ├── projects/           # 项目页 (GitHub 仓库卡片墙)
 │   │   └── links/              # 友链
 │   ├── styles/                 # 全站 CSS（集中存放，禁止组件目录散落 .css 文件）
 │   │   ├── globals.css         # Tailwind v4 + 自定义设计系统 + 全局 reset + prefers-reduced-motion
 │   │   ├── terminal-base.css   # TerminalShell 共享外壳（毛玻璃窗口 + macOS 标题栏红黄绿圆点）
 │   │   ├── terminal-links.css  # 友链卡片特有（terminal-body / prompt / 网格 / 卡片）
-│   │   └── resume-terminal.css # 简历内容区（变量 + 暗/亮双主题覆盖）
+│   │   ├── resume-terminal.css # 简历内容区（变量 + 暗/亮双主题覆盖）
+│   │   └── projects.css        # 项目卡片（标题渐变 / 语言色文字 / hover 光晕的亮暗双态）
 │   ├── components/
-│   │   ├── Providers.tsx       # 纯 Context 组合 (next-themes + 导航加载)
+│   │   ├── Providers.tsx       # 纯 Context 组合 (next-themes + 导航加载 + MotionConfig)
 │   │   ├── AmbientEffects.tsx  # 全局动效注册表 (懒加载 + reduced-motion 兜底)
 │   │   ├── AppShell.tsx        # 布局壳 (Navbar + main + Footer)
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
 │   │   ├── Home/               # HeroParallax（视差拼贴首屏，3 深度层）· HomeHydration（懒加载入口）· PostsList
 │   │   ├── Post/               # PostCard · PostContent · PostMeta · PostNav · PostDone · PostComments (Giscus 评论) · TableOfContents · CodeCopyInjector
 │   │   ├── About/              # AboutContent · ResumeTerminal (流式打印简历)
+│   │   ├── Projects/           # ProjectsContent（项目卡片墙，统一尺寸 + 鼠标跟随光晕）
 │   │   ├── Links/ · NotFound/
-│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · useDismiss
+│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · useDismiss · usePrefersReducedMotion
 │   └── lib/
 │       ├── types.ts            # Post 类型定义（server-only）
 │       ├── posts.ts            # 文章读取（单次装载，无 mtime 缓存；slug 解码统一兜底）
@@ -120,6 +125,7 @@ sanshui-blog/
 │       ├── resume.ts           # 简历读取（构建期 fs.readFileSync，含 node:fs）
 │       ├── resumeLines.ts      # 简历行切分纯函数（客户端安全）
 │       ├── accents.ts          # Accent 预设/解析/应用 + 防 FOUC 脚本生成
+│       ├── projects.ts         # 项目数据字典（name/url/desc/lang/stars/tags）
 │       ├── site.ts             # 站点身份配置（url/emailHref 等派生字段）
 │       ├── basePath.ts         # basePath 中心定义 + withBase()
 │       ├── thumbGeometry.ts    # TOC 滚动指示条几何纯函数
@@ -216,6 +222,44 @@ excerpt: 一句话摘要（可选，不写则自动取正文前 160 字；含代
 > 💡 新增/修改文章后，`predev` 或 `prebuild` 钩子会自动重新生成 `public/posts-index.json`，SearchModal 即可搜索到新文章。但**线上 HTML 只在重新 `npm run build` 后更新**。
 
 > ⚠️ 文章排版样式走 `src/styles/globals.css` 里手写的 `.prose-article` 类（h1/h2/h3 字号颜色、`a` 紫粉渐变、`code` 紫底、`blockquote` 紫边等），**未用 Tailwind Typography 的 `prose` 类**。改文章样式就改 `.prose-article` 这段 CSS。
+
+---
+
+## 🗂️ 项目页模块
+
+项目页（`/projects`）以 **GitHub 仓库卡片墙** 形式展示博主的开源项目，与友链终端风、首页文章卡形成差异。
+
+### 工作原理
+
+```
+src/lib/projects.ts  ──(静态数据字典)──►  src/components/Projects/ProjectsContent.tsx
+                                                │
+                                                ▼
+                              src/app/projects/page.tsx（服务端壳，metadata 覆盖）
+```
+
+- **数据源**：`src/lib/projects.ts` 维护 `Project[]`（`name`/`url`/`desc`/`lang`/`stars`/`tags`），新增项目只需 push 一条对象
+- **布局**：`md` 以上两列网格、窄屏单列，所有卡片统一尺寸（无 featured 大卡）
+- **竖线配色**：左侧 3px 竖线颜色由 `hashBarColor(url)`（URL 哈希纯函数）从 15 色池取色，再 `color-mix` 混主题紫——每卡颜色稳定（重渲染/刷新不变）且各不相同
+- **hover 光晕**：卡片 `onMouseMove` 把光标坐标写入 `--mx`/`--my` CSS 变量，`.project-card-glow`（语言色背景光晕）与 `.project-card-border-glow`（1px 描边发光）随鼠标移动淡入，纯 CSS 动画
+- **双主题适配**：卡片边框/文字/标签用 Tailwind `dark:` 双态；标题渐变与语言色文字走 `src/styles/projects.css` 的 `.project-card-title` / `.project-lang-text` 类，亮色下 `color-mix` 混黑加深（浅色语言如黄 `#f1e05a` 亮色下仍可读）
+
+### 新增项目
+
+编辑 `src/lib/projects.ts`，在数组末尾追加一条对象即可：
+
+```ts
+{
+  name: 'repo-name',
+  url: 'https://github.com/you/repo',   // 跳转地址
+  desc: '一句话描述',
+  lang: 'TypeScript',                    // 可选，驱动语言色（色盘见 ProjectsContent）
+  stars: 12,                             // 可选，无则不展示
+  tags: ['React', 'CSS'],                // 可选标签
+},
+```
+
+> 💡 新项目上线需重新 `npm run build`（静态导出产物）。
 
 ---
 
@@ -339,6 +383,8 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
 - **RSC payload 优化**：`getAllPosts()` 已从 `layout.tsx` 移除，文章数据通过 `public/posts-index.json`（~10KB）在 SearchModal 运行时 fetch，避免全量文章数据被序列化进根 layout 的 RSC payload
 - **Giscus 评论**：配置集中在 `src/components/Post/PostComments.tsx` 的 `GISCUS_ATTRS`（属性名必须 kebab-case；`mapping='og:title'` + `strict='1'`，讨论按文章标题关联，**改文章标题会使历史评论失联**）；主题用官方 `light`/`dark`；Edge 的「Images loaded lazily」干预警告来自 widget 内部懒加载头像，属 giscus 自身行为、宿主页无法消除
 - **重组件懒加载**：`CursorGlow`、`ScrollProgress`、`ClickEffect`、`ParticleField` 等非首屏必需的 client 组件由 `AmbientEffects.tsx` 通过 `next/dynamic` 统一懒加载（`prefers-reduced-motion` 阀门跳过装饰性动效 `CursorGlow`/`ClickEffect`；`ScrollProgress` 保留指示条但 spring 平滑入阀；`ParticleField` 内部自检画静态帧），避免被打进首屏 chunk
+- **reduced-motion 检测统一走共享 hook**：`src/components/UI/usePrefersReducedMotion.ts` 封装 `matchMedia('(prefers-reduced-motion: reduce)')` + `useSyncExternalStore`（客户端实时快照 / SSR 固定 false），`AmbientEffects` 与 `ScrollProgress` 共用，**不要手抄 matchMedia 订阅**（改 query/监听/SSR 快照只改一处）。`usePrefersReducedMotion` 替代 framer-motion 的 `useReducedMotion`——后者在设备开启 reduced-motion 且 dev 模式时会打 `warnOnce` 噪音（"reduced-motion-disabled"）
+- **framer 自动降级关闭**：`Providers.tsx` 包 `<MotionConfig reducedMotion="never">`——项目动效已自管 reduced-motion（CSS 0.01ms 压制 + AmbientEffects 阀门 + 共享 hook），不依赖 framer 的自动检测降级；关闭它同时静默 dev 下 VisualElement 挂载的 warnOnce
 - **Turbopack + Tailwind v4.3 不兼容**：Next 16 默认 Turbopack 无法解析 Tailwind v4.3 生成的 `@layer properties` 选择器（`Invalid dangling combinator in selector`），dev/build 脚本已显式加 `--webpack`，不要移除
 - **sharp 依赖**：`package.json` 的 `overrides` 锁定 `sharp: "^0.35.3"` 与 `postcss: "^8.5.25"`，保证静态导出 + `images.unoptimized: true` 场景下依赖树稳定
 - **`out/` 是构建产物**：`out/` 在 `.gitignore` 中、未被 git 跟踪，是 `npm run build` 的静态导出产物。`out/en/` 等陈旧子树可能是早期英文版 / `[locale]` i18n 路由的构建残留，**源码里已无对应路由**。排查路由时以 `src/app/` 为准，不要把 `out/` 的旧产物当成当前结构，也不要手动清理 `out/`——下次 `build` 会整体覆盖
@@ -379,7 +425,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24、`npm ci` 严格安装、
   - **0.01ms 是降级值，不是「开销上限」**。它远低于浏览器最小帧时间（一帧约 16.7ms），作用是让动画在 reduced-motion 用户下「瞬间完成」而非「缓慢完成」，避免前庭不适。
   - **纯 CSS 动画自动合规**：用 `transition` / `animation` 实现的 hover、下划线滑入等，会被上面 `*` 选择器 + `!important` 自动压到 0.01ms，无需额外处理。导航图标 hover 放大（`.nav-icon-btn`）、导航链接下划线滑入（`.nav-link::after`）均属此类，合规。
   - **Framer Motion 驱动的动画绕开了这条降级**：Framer 用 JS rAF + inline style 驱动位移（如 PostCard 标题 `whileHover`、ArrowLink 箭头位移），inline style 的 `transform` 不受 `transition-duration` 影响。这是「功能性可见动画」的有意例外——但 hover 变色仍走纯 CSS，不交给 Framer。
-  - **新增动画前 checklist**：① 优先纯 CSS（`transition` + `transform`/`opacity`/`width` 等合成层属性），自动被 0.01ms 降级覆盖；② 避免 `transition: all`（会动画非合成属性，触发 layout/paint）；③ 若用 Framer Motion 驱动可见位移，确认该动画在 reduced-motion 下是否应降级——若应降级，改用纯 CSS 或在 `useReducedMotion()` 守卫下跳过；④ hover 变色不交给 Framer。
+  - **新增动画前 checklist**：① 优先纯 CSS（`transition` + `transform`/`opacity`/`width` 等合成层属性），自动被 0.01ms 降级覆盖；② 避免 `transition: all`（会动画非合成属性，触发 layout/paint）；③ 若用 Framer Motion 驱动可见位移，确认该动画在 reduced-motion 下是否应降级——若应降级，改用纯 CSS 或在 `usePrefersReducedMotion()` 守卫下跳过；④ hover 变色不交给 Framer。
 
 ---
 

@@ -22,13 +22,13 @@
 ```
 content/        posts/*.md(x)（文件名即 slug）+ resume.md
 src/app/        App Router 页面（posts/[slug]/loading.tsx 骨架屏）
-src/components/ Providers AmbientEffects AppShell Layout/ Home/ Post/(PostComments Giscus) About/ Links/ NotFound/ UI/(SpinRing) TagList
-src/styles/     globals.css + terminal-*.css（集中存放 #35）
+src/components/ Providers AmbientEffects AppShell Layout/ Home/ Post/(PostComments Giscus) About/ Links/ Projects/ NotFound/ UI/(SpinRing usePrefersReducedMotion) TagList
+src/styles/     globals.css + terminal-*.css + projects.css（集中存放 #35）
 src/lib/        纯函数/读取层，职责看文件头注释
 tests/ scripts/ public/ next.config.ts .github/workflows/deploy.yml
 ```
 
-## 红线（37 条，展开见 docs/conventions.md）
+## 红线（38 条，展开见 docs/conventions.md）
 
 1. `NEXT_BUILD` 双态：dev 不设、build 必设；客户端 basePath 走 `withBase()`；别手动设 `output:'export'`。
 2. `params` 是 Promise，必须 `await`。
@@ -61,12 +61,13 @@ tests/ scripts/ public/ next.config.ts .github/workflows/deploy.yml
 29. 弹层关闭统一 `useDismiss`（ref 包开关+浮层）。
 30. `posts-index.json` 是产物（prettierignore），别手动格式化。
 31. Turbopack 解析不了 Tailwind v4.3 CSS，dev/build 用 `--webpack`，别移除。
-32. 动画优先纯 CSS（自动合规 reduced-motion 0.01ms）；装饰性 JS 动画（光晕/点击特效）纳入 `AmbientEffects` 的 reduced-motion 阀门。
+32. 动画优先纯 CSS（自动合规 reduced-motion 0.01ms）；装饰性 JS 动画（光晕/点击特效）纳入 `AmbientEffects` 的 reduced-motion 阀门；reduced-motion 检测统一走 `UI/usePrefersReducedMotion`（共享 hook），别手抄 matchMedia。
 33. 仓库内图片用 `<Image />`，别用原生 `<img>`（外部小图例外）。
 34. 图片 onError 降级走 state，不操作 DOM。
 35. CSS 集中 `src/styles/`，禁止组件目录散落 .css。
 36. 终端外壳抽 `UI/TerminalShell.tsx`（title/status prop），别手抄。
 37. Giscus 收口 `Post/PostComments.tsx`：属性 kebab-case（`data-repo-id`）；`og:title`+`strict='1'`（CJK 搜索不可靠）；主题 `light`/`dark`（transparent_light 上游 404）；Edge 懒加载警告来自 widget 内部，不可修。
+38. 项目页 `ProjectsContent`：数据只改 `lib/projects.ts`（新增 push 对象）；样式收口 `styles/projects.css`（标题渐变/语言色文字/hover 光晕的亮暗双态）；竖线色按 URL 哈希取（纯函数，别 `Math.random()`，lint purity 会报）；hover 光晕用 `--mx/--my` 跟随鼠标；语言色文字亮色下 `color-mix` 混黑加深，否则浅色（如黄）看不清。
 
 ## 内容编辑
 
