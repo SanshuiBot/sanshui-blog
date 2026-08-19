@@ -1,0 +1,85 @@
+/**
+ * 项目页卡片样式（projects.css）
+ * -----------------------------
+ * 职责：项目卡片标题渐变 + 语言色文字 + hover 光晕的亮暗双态（暗色基，亮色覆盖紧贴其后）。
+ * 语言色由组件通过 --project-lang CSS 变量注入（数据字典 hex，非 accent 变量）。
+ * 亮色下语言色本身偏浅（如 #f1e05a），用 color-mix 混黑加深保对比度（约定 #12/#27）。
+ * 卡片其余样式（边框/背景/标签）在组件内用 Tailwind dark: 变体，与本文件互补。
+ */
+
+/* ── 卡片标题渐变：暗色基（白 → 语言色） ── */
+.project-card-title {
+  background: linear-gradient(135deg, #fff 20%, var(--project-lang, #a855f7) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── 卡片标题渐变：亮色覆盖（深墨 → 语言色混黑），避免白字/浅色在浅底隐形 ── */
+html:not(.dark) .project-card-title {
+  background: linear-gradient(
+    135deg,
+    #292524 20%,
+    color-mix(in srgb, var(--project-lang, #a855f7) 72%, #000) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── 语言色文字（元信息行里的语言名）：暗色基原色 ── */
+.project-lang-text {
+  color: var(--project-lang, #a855f7);
+}
+
+/* ── 语言色文字：亮色覆盖（混黑加深，语言色太浅时仍可读） ── */
+html:not(.dark) .project-lang-text {
+  color: color-mix(in srgb, var(--project-lang, #a855f7) 68%, #000);
+}
+
+/* ── hover 光晕：背景光晕层（语言色径向渐变，随鼠标位置移动） ── */
+.project-card-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    var(--project-glow, rgb(168 85 247 / 0.2)),
+    transparent 60%
+  );
+}
+.group:hover .project-card-glow {
+  opacity: 1;
+}
+
+/* ── hover 光晕：边框发光层（mask 只留 1px 边框带，语言色描边，跟随鼠标） ── */
+.project-card-border-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    var(--project-border-glow, rgb(168 85 247 / 0.4)),
+    transparent 60%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  padding: 1px;
+}
+.group:hover .project-card-border-glow {
+  opacity: 1;
+}

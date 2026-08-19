@@ -15,8 +15,9 @@ export const navLinks: NavLink[] = [
   { href: '/', label: '首页' },
   { href: '/archive/', label: '归档' },
   { href: '/tags/', label: '标签' },
-  // about/links 有独有 CSS（resume-terminal / terminal-base / terminal-links），
+  // about/links/projects 有独有 CSS（resume-terminal / terminal-base / terminal-links），
   // 预取会注入未使用的 CSS preload 触发线上告警，故关闭（其余路由只有全局 CSS，预取无副作用）
   { href: '/about/', label: '关于', prefetch: false },
+  { href: '/projects/', label: '项目', prefetch: false },
   { href: '/links/', label: '友链', prefetch: false },
 ];
