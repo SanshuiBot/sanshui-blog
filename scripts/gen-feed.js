@@ -33,10 +33,14 @@ function esc(s) {
     .replace(/'/g, '&apos;');
 }
 
-/** RFC 822 日期（RSS pubDate 要求）：new Date 的 toUTCString 就是该格式 */
+/** RFC 822 日期（RSS pubDate 要求）：new Date 的 toUTCString 就是该格式。
+    非法/缺失日期回退到固定 epoch——**不能**用 new Date().toUTCString()：
+    每次 build 时间戳不同，feed.xml 永远有 git 噪音。 */
+const EPOCH_RFC822 = 'Thu, 01 Jan 1970 00:00:00 GMT';
+
 function rfc822(dateStr) {
   const d = new Date(dateStr);
-  return Number.isNaN(d.getTime()) ? new Date().toUTCString() : d.toUTCString();
+  return Number.isNaN(d.getTime()) ? EPOCH_RFC822 : d.toUTCString();
 }
 
 /** 提取正文首个 h1/h2/代码块外的纯文本前 160 字做 item description（无 frontmatter 的 excerpt 兜底） */
@@ -77,6 +81,11 @@ async function build() {
     })
     .join('\n');
 
+  // lastBuildDate 用最新文章日期（确定性）——不能用 new Date()（每次 build 时间戳不同产生 git 噪音）。
+  // posts 已按日期降序；取全部文章中的最大有效日期，全部缺失则回退固定 epoch
+  const latestDate = posts.reduce((acc, p) => (p.date > acc ? p.date : acc), '');
+  const lastBuildDate = latestDate ? rfc822(latestDate) : EPOCH_RFC822;
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
   xmlns:atom="http://www.w3.org/2005/Atom"
@@ -86,7 +95,7 @@ async function build() {
     <link>${SITE.baseUrl}</link>
     <description>${esc(SITE.description)}</description>
     <language>zh-cn</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <atom:link href="${SITE.baseUrl}/feed.xml" rel="self" type="application/rss+xml" />
     ${items}
   </channel>
