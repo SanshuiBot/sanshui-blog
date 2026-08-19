@@ -32,12 +32,11 @@ export const metadata: Metadata = {
     url: siteConfig.url,
     siteName: siteConfig.blogName,
     locale: 'zh_CN',
-    // 分享卡片图：scripts/gen-og-image.js 生成（prebuild 自动重建）
-    images: [
-      { url: withBase('/og.png'), width: 1200, height: 630, alt: `${siteConfig.blogName} 封面` },
-    ],
+    // 分享卡片图：scripts/gen-og-image.js 生成（prebuild 自动重建）。
+    // metadataBase 已含 basePath，og 图给裸相对路径即可——套 withBase 会双重前缀
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: `${siteConfig.blogName} 封面` }],
   },
-  twitter: { card: 'summary_large_image', images: [withBase('/og.png')] },
+  twitter: { card: 'summary_large_image', images: ['/og.png'] },
   icons: {
     icon: [
       { url: withBase('/favicon.svg'), type: 'image/svg+xml' },

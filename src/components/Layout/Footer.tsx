@@ -7,7 +7,6 @@ import BackToTop from '@/components/UI/BackToTop';
 import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import { siteConfig } from '@/lib/site';
 import { navLinks } from '@/lib/navLinks';
-import { withBase } from '@/lib/basePath';
 
 export default function Footer() {
   const reduced = usePrefersReducedMotion();
@@ -85,9 +84,10 @@ export default function Footer() {
           </p>
           <p className="text-xs text-gray-600 flex items-center gap-1">
             Next.js &bull; MDX &bull; Tailwind CSS
-            {/* RSS 订阅真链接（feed.xml 由 scripts/gen-feed.js 生成） */}
+            {/* RSS 订阅真链接（feed.xml 由 scripts/gen-feed.js 生成）。
+                <Link> 会自动注入 basePath——href 写裸路径，**不要**套 withBase（会双重前缀） */}
             <Link
-              href={withBase('/feed.xml')}
+              href="/feed.xml"
               aria-label="RSS 订阅"
               className="footer-link inline-flex text-gray-500 hover:text-accent-violet transition-colors"
             >

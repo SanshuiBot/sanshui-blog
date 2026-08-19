@@ -9,8 +9,28 @@
 `output: 'export'` / `basePath` / `assetPrefix` **仅在 `NEXT_BUILD=1` 时生效**。`process.env.NEXT_BUILD` 没有 `NEXT_PUBLIC_` 前缀，不会被 inline 到客户端 bundle；`next.config.ts` 显式 `env: { NEXT_PUBLIC_BASE_PATH: BASE_PATH }` 注入，`src/lib/basePath.ts` 读取。
 
 - **新增需要 basePath 的客户端代码，必须走 `withBase()`**，不要自己拼 `process.env.NEXT_BUILD`。
-- 原生 `<link>` / `<a>` / `<img>` **不走** Next `<Link>` / `next/image` 的 basePath 自动注入，必须用 `withBase()` 手动拼前缀。
 - **不要手动设置 `output: 'export'`**：dev 模式下会导致 HMR 挂掉。
+
+### basePath 注入矩阵（实测产物验证过）
+
+不同目标对 basePath 的处理不一样，**套错 `withBase()` 会双重前缀**（线上 404）。判定基准：`npm run build` 后检查 `out/*.html` 里的实际 URL（曾两次栽在这里）：
+
+| 目标                                             | 是否自动注入 basePath                   | 写法                                                               |
+| ------------------------------------------------ | --------------------------------------- | ------------------------------------------------------------------ |
+| `<Link>`（next/link）                            | ✅ 自动                                 | `href="/feed.xml"`（**别套** withBase）                            |
+| `router.push` / `router.prefetch`                | ✅ 自动                                 | 裸路径（PostCard 的 `postUrl()` 就这么用）                         |
+| `<Image>`（next/image）                          | ❌ 不自动（实测）                       | `src={withBase('/logo.svg')}`（**必须套**，server/client 同）      |
+| metadata 图片（og:image 等相对 URL）             | ❌ 不自动；`metadataBase` 已含 basePath | `url: '/og.png'`（**裸相对路径**，套了双重）                       |
+| metadata `icons`（favicon）                      | ❌ 不自动（原生输出）                   | `withBase('/favicon.svg')`（必须套）                               |
+| 原生 `<a>` / `<img>` / `<link>` / `<script src>` | ❌ 不自动                               | 必须 withBase（首页 `<link rel="prefetch">` 如此）                 |
+| `fetch()` / XHR                                  | ❌ 不自动                               | 必须 withBase（SearchModal / PostsList / HeroParallax 拉索引如此） |
+
+**历史 bug（两次都栽在「以为自动注入」或「以为不自动注入」上）**：
+
+1. Footer RSS 链接：`<Link href={withBase('/feed.xml')}>` → 产物 `href="/sanshui-blog/sanshui-blog/feed.xml"`——`<Link>` 自动注入 + 手写 withBase 双重前缀，线上订阅链接 404。已修为裸路径。
+2. `layout.tsx` 的 og:image：`withBase('/og.png')` → 产物 `https://.../sanshui-blog/sanshui-blog/og.png`——metadataBase 已是 `siteConfig.url`（含 basePath），相对路径再被解析叠加。已修为裸路径 `/og.png`。
+
+**判定方法**：改完任何带 URL 的代码后 `npm run build`，`grep -o 'sanshui-blog/sanshui-blog' out/*.html` 应为空。
 
 ## 2. 异步 `params` / `searchParams`（Next 15+，16 同样适用）
 

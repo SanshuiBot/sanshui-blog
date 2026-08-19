@@ -33,7 +33,7 @@ next.config.ts  .github/workflows/deploy.yml
 
 ## 红线（46 条，展开见 docs/conventions.md）
 
-1. `NEXT_BUILD` 双态：dev 不设、build 必设；客户端 basePath 走 `withBase()`；别手动设 `output:'export'`。
+1. `NEXT_BUILD` 双态：dev 不设、build 必设；别手动设 `output:'export'`。basePath 注入矩阵：`<Link>`/`router.push`/`router.prefetch` **自动注入，别套** `withBase()`（套了双重前缀）；`<Image>` 与原生 `<a>`/`<img>`/`<link>`/`fetch()` **必须套** `withBase()`；metadata 图片（og 图等）走 `metadataBase`，给裸相对路径。
 2. `params` 是 Promise，必须 `await`。
 3. 中文 slug：`getPostBySlug`/`getAdjacentPosts` 内部已 decode，跨层注意。
 4. `generateStaticParams` 返回全部 slug；新文章要重新 build 才上线。
