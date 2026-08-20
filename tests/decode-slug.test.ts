@@ -13,10 +13,10 @@ describe('decodeSlug（URIError 边界）', () => {
   });
 
   it('合法编码正常解码', () => {
-    // 'hello%20world' 解码为 'hello world'
-    const result = getPostBySlug('hello%20world');
-    // 即使文章不存在，也不应抛异常
-    expect(result).toBeDefined();
+    // 'hello%20world' 解码为 'hello world'；content 中无此文章，
+    // 应正常返回 undefined 而非抛异常（decode 成功但查无此 slug）
+    expect(() => getPostBySlug('hello%20world')).not.toThrow();
+    expect(getPostBySlug('hello%20world')).toBeUndefined();
   });
 
   it('getAdjacentPosts 对非法编码同样安全', () => {

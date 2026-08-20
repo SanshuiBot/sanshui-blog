@@ -263,8 +263,8 @@ export default function ClickEffect() {
       EFFECT_RENDERERS[effect](layer);
 
       // 所有动画最长不超过 1.5s，到点统一清理
-      const timer = window.setTimeout(() => {
-        activeLayers--;
+      window.setTimeout(() => {
+        if (activeLayers > 0) activeLayers--;
         if (layer.parentNode) layer.remove();
       }, 1500);
     };
@@ -274,9 +274,9 @@ export default function ClickEffect() {
       document.removeEventListener('click', handleClick);
       // 卸载时清理所有尚未到期的层（防止内存泄漏）
       if (activeLayers > 0) {
-        document.querySelectorAll<HTMLDivElement>('div[data-effect-layer="true"]').forEach(
-          (el) => el.remove(),
-        );
+        document
+          .querySelectorAll<HTMLDivElement>('div[data-effect-layer="true"]')
+          .forEach((el) => el.remove());
       }
     };
   }, []);

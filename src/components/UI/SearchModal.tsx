@@ -3,7 +3,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { withBase } from '@/lib/basePath';
 import { postUrl, type PostIndexEntry } from '@/lib/post-index';
 import { searchPosts, splitByTerms } from '@/lib/search';
 import { formatDate } from '@/lib/formatDate';

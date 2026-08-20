@@ -15,13 +15,15 @@ export interface TocItem {
  *  - 先剥 HTML 标签再生成 id（rehype-slug 操作的是文本节点，等价于此）
  *  - h1~h6 全部推进 slugger 状态（重复标题得到 -1/-2 后缀），只输出 h2/h3
  *  - 行扫描跳过代码围栏（``` / ~~~）内的假标题，避免死锚点
+ *  - split(/\r?\n/)：兼容 CRLF 检出（Windows git autocrlf 会把 LF 转 CRLF；
+ *    若按 '\n' 切，行末残留 \r，`.` 不匹配 \r，标题行全部匹配失败 → TOC 为空）
  */
 export function extractHeadings(content: string): TocItem[] {
   const slugger = new Slugger();
   const items: TocItem[] = [];
   let inFence = false;
 
-  for (const rawLine of content.split('\n')) {
+  for (const rawLine of content.split(/\r?\n/)) {
     if (/^\s*(```|~~~)/.test(rawLine)) {
       inFence = !inFence;
       continue;

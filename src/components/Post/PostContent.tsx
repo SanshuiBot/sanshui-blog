@@ -2,7 +2,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
-import { languages } from 'lowlight/lib/core';
+import { common as languages } from 'lowlight';
 import hljsSolidity from 'highlightjs-solidity';
 
 // rehype-highlight v7 默认只注册 common 的 37 种语言，博客主要用到以下语言：

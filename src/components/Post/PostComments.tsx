@@ -77,11 +77,22 @@ export default function PostComments() {
     el.appendChild(script);
 
     // 兜底：若 iframe 已被缓存快速加载（load 事件在 addEventListener 前就触发了），
-    // 轮询检查 readyState，避免 loadedRef 永远为 false 导致主题无法同步
+    // 轮询检查 iframe 是否已提交到 giscus.app 跨域文档（避免 loadedRef 永远为 false
+    // 导致主题无法同步）。判定依据：同源 about:blank（未加载）时 contentDocument 可读
+    // 为非 null；提交到跨域 giscus.app 后 contentDocument 返回 null。不能只看
+    // src/srcdoc —— giscus 创建 iframe 时就设了 src，但窗口 origin 仍是父页面，
+    // 此时 postMessage 会抛「target origin 不匹配」。
     const checkExisting = () => {
       if (loadedRef.current) return;
       const frame = el.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
-      if (frame && (frame.readyState === 'complete' || frame.srcdoc || frame.src)) {
+      // 同源 about:blank 时 contentDocument 可读；跨域 giscus.app 时抛 SecurityError
+      //（而非返回 null，见 MDN contentDocument）。统一用 try/catch 覆盖两种情形：
+      // 无异常 → 同源，未加载完成；有异常 → 跨域，giscus 已接管，可安全 postMessage。
+      let doc: Document | null = null;
+      try {
+        doc = frame!.contentDocument;
+      } catch {}
+      if (frame && doc === null) {
         loadedRef.current = true;
         postTheme(el, themeRef.current);
       }

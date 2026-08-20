@@ -92,3 +92,13 @@ next.config.ts  .github/workflows/deploy.yml
 - 排查路由以 `src/app/` 为准；`out/` 是产物（gitignore），别清。
 - Agent skills（issue-tracker / triage-labels / domain）见 `docs/agents/`。
 - ADR（docs/adr/）：0001 TOC 几何 · 0002 Accent 解析统一 · 0003 useSafeTimeout primitive · 0004 PostIndexEntry 适配器；候选 ⑤（basePath 双态）不深化。
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

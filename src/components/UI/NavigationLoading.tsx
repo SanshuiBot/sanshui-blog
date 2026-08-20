@@ -22,7 +22,10 @@ export function useNavigationLoading() {
 /** 覆盖层 - 全屏居中旋转加载环，带主题自适应蒙层 */
 function Overlay() {
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-surface/95 dark:bg-ink/95 backdrop-blur-sm">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-sm"
+      style={{ background: 'color-mix(in srgb, var(--bg-nav-loading) 95%, transparent)' }}
+    >
       <SpinRing sizeClass="w-14 h-14" gradId="nav-spin-grad" />
     </div>
   );

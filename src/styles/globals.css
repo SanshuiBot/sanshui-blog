@@ -54,6 +54,8 @@
     --fg-dim: #5c5c70;
     --border-skeleton: rgba(255, 255, 255, 0.06);
     --border-skeleton-shimmer: rgba(255, 255, 255, 0.06);
+    /* ── 导航过渡层背景（跟随主题：暗=ink 深，亮=cream）── */
+    --bg-nav-loading: var(--color-ink);
 
     /* ── Shadow Design System ── */
     /* B · 彩色霓虹辉光 — 正文卡片 */
@@ -215,6 +217,7 @@
     --af-all: rgb(120 113 108);
   }
   html:not(.dark) {
+    --bg-nav-loading: #fafaf9;
     --af-hover: rgb(var(--accent-violet-rgb));
     --af-hover-dim: rgb(var(--accent-violet-rgb) / 0.85);
     --af-hash: rgb(var(--accent-violet-rgb) / 0.75);
@@ -231,7 +234,9 @@
 
   /* 筛选按钮基色与 hover（双前缀守特异性） */
   html.dark .archive-filter-btn,
-  html:not(.dark) .archive-filter-btn { color: var(--af-text); }
+  html:not(.dark) .archive-filter-btn {
+    color: var(--af-text);
+  }
   html.dark .archive-filter-btn:hover,
   html:not(.dark) .archive-filter-btn:hover {
     color: var(--af-text-hover);
@@ -244,9 +249,13 @@
 
   /* 按钮内文字元素 */
   html.dark .archive-filter-btn-label,
-  html:not(.dark) .archive-filter-btn-label { color: var(--af-text); }
+  html:not(.dark) .archive-filter-btn-label {
+    color: var(--af-text);
+  }
   html.dark .archive-filter-btn-count,
-  html:not(.dark) .archive-filter-btn-count { color: var(--af-count); }
+  html:not(.dark) .archive-filter-btn-count {
+    color: var(--af-count);
+  }
   html.dark .archive-filter-btn:hover .archive-filter-btn-label,
   html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label,
   html:not(.dark) .archive-filter-btn:hover .archive-filter-btn-label,
@@ -276,37 +285,61 @@
     color: var(--af-chip-text-hover);
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
   }
-  html.dark .archive-filter-chip:hover { background: rgb(var(--accent-violet-rgb) / 0.08); }
-  html:not(.dark) .archive-filter-chip:hover { background: rgb(var(--accent-violet-rgb) / 0.06); }
+  html.dark .archive-filter-chip:hover {
+    background: rgb(var(--accent-violet-rgb) / 0.08);
+  }
+  html:not(.dark) .archive-filter-chip:hover {
+    background: rgb(var(--accent-violet-rgb) / 0.06);
+  }
 
   /* chip 内文字元素（双前缀守特异性，防 tailwind text-accent-violet/70 反压） */
   html.dark .archive-filter-chip-name-text,
-  html:not(.dark) .archive-filter-chip-name-text { color: var(--af-chip-text); }
+  html:not(.dark) .archive-filter-chip-name-text {
+    color: var(--af-chip-text);
+  }
   html.dark .archive-filter-chip:hover .archive-filter-chip-name-text,
-  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-name-text { color: var(--af-hover); }
+  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-name-text {
+    color: var(--af-hover);
+  }
   html.dark .archive-filter-chip-count-text,
-  html:not(.dark) .archive-filter-chip-count-text { color: var(--af-count); }
+  html:not(.dark) .archive-filter-chip-count-text {
+    color: var(--af-count);
+  }
   html.dark .archive-filter-chip:hover .archive-filter-chip-count-text,
-  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-count-text { color: var(--af-hover-dim); }
+  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-count-text {
+    color: var(--af-hover-dim);
+  }
   html.dark .archive-filter-chip-hash,
-  html:not(.dark) .archive-filter-chip-hash { color: var(--af-hash); }
+  html:not(.dark) .archive-filter-chip-hash {
+    color: var(--af-hash);
+  }
   html.dark .archive-filter-chip:hover .archive-filter-chip-hash,
-  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-hash { color: var(--af-hover); }
+  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-hash {
+    color: var(--af-hover);
+  }
 
   /* 浮层标题 / 关闭 / 查看全部 */
   html.dark .archive-filter-panel,
-  html:not(.dark) .archive-filter-panel { color: var(--af-panel); }
+  html:not(.dark) .archive-filter-panel {
+    color: var(--af-panel);
+  }
   html.dark .archive-filter-close,
-  html:not(.dark) .archive-filter-close { color: var(--af-close); }
+  html:not(.dark) .archive-filter-close {
+    color: var(--af-close);
+  }
   html.dark .archive-filter-close:hover,
   html:not(.dark) .archive-filter-close:hover {
     color: var(--af-hover);
     background: var(--af-close-bg-hover);
   }
   html.dark .archive-filter-all,
-  html:not(.dark) .archive-filter-all { color: var(--af-all); }
+  html:not(.dark) .archive-filter-all {
+    color: var(--af-all);
+  }
   html.dark .archive-filter-all:hover,
-  html:not(.dark) .archive-filter-all:hover { color: var(--af-hover); }
+  html:not(.dark) .archive-filter-all:hover {
+    color: var(--af-hover);
+  }
 
   /* ── ⌘K 搜索结果关键词高亮（SearchModal 的 <mark>，P1-12）── */
   .search-mark {
@@ -1321,16 +1354,42 @@ html:not(.dark) {
 
 /* ── Tailwind utility 亮色覆盖（裸 CSS 压制 utility 层特异性，见 AGENTS.md #23）── */
 /* 颜色替换：Tailwind 预置类在亮色下输出错误语义色，需覆盖为亮色对应值 */
-html:not(.dark) .border-white\/5  { border-color: rgba(0, 0, 0, 0.06); }
-html:not(.dark) .border-white\/10 { border-color: rgba(0, 0, 0, 0.1); }
-html:not(.dark) .bg-white\/5      { background: rgba(0, 0, 0, 0.03); }
-html:not(.dark) .bg-white\/10     { background: rgba(0, 0, 0, 0.06); }
-html:not(.dark) .bg-white         { background: #1c1917; }
-html:not(.dark) .text-white       { color: #1c1917; }
-html:not(.dark) .text-black       { color: #ffffff; }
-html:not(.dark) .text-gray-300    { color: #44403c; }
-html:not(.dark) .text-gray-400    { color: #57534e; }
-html:not(.dark) .text-gray-500    { color: #78716c; }
-html:not(.dark) .text-gray-600    { color: #a8a29e; }
-html:not(.dark) .text-gray-700    { color: #d6d3d1; }
-html:not(.dark) .bg-surface       { background: #ffffff; }
+html:not(.dark) .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+html:not(.dark) .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+html:not(.dark) .bg-white\/5 {
+  background: rgba(0, 0, 0, 0.03);
+}
+html:not(.dark) .bg-white\/10 {
+  background: rgba(0, 0, 0, 0.06);
+}
+html:not(.dark) .bg-white {
+  background: #1c1917;
+}
+html:not(.dark) .text-white {
+  color: #1c1917;
+}
+html:not(.dark) .text-black {
+  color: #ffffff;
+}
+html:not(.dark) .text-gray-300 {
+  color: #44403c;
+}
+html:not(.dark) .text-gray-400 {
+  color: #57534e;
+}
+html:not(.dark) .text-gray-500 {
+  color: #78716c;
+}
+html:not(.dark) .text-gray-600 {
+  color: #a8a29e;
+}
+html:not(.dark) .text-gray-700 {
+  color: #d6d3d1;
+}
+html:not(.dark) .bg-surface {
+  background: #ffffff;
+}
