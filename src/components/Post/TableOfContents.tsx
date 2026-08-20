@@ -58,6 +58,7 @@ export default function TableOfContents({ items }: Props) {
           setActiveId(visible[0].target.id);
         } else {
           // 反向滚动兜底：监测带内空了，找当前已滚过、最靠近视口顶的那个标题
+          // 只取第一个（最靠上）的已滚过标题，避免全量扫描到最后一个时误判
           let lastAbove: string | null = null;
           for (const item of items) {
             const el = document.getElementById(item.id);
@@ -65,10 +66,14 @@ export default function TableOfContents({ items }: Props) {
             if (el.getBoundingClientRect().top < 80) {
               lastAbove = item.id;
             } else {
+              // 遇第一个未滚过标题即停止（标题按顺序排列，后面的也不会已滚过）
               break;
             }
           }
-          if (lastAbove) setActiveId(lastAbove);
+          if (lastAbove && lastAbove !== activeId) {
+            // 防止在同一位置反复 setState
+            setActiveId(lastAbove);
+          }
         }
       },
       { rootMargin: '-80px 0px -70% 0px', threshold: 0 },

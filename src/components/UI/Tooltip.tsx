@@ -143,7 +143,7 @@ export default function Tooltip({
         label &&
         // 气泡只在交互后渲染，SSR 首屏不会走到这里；挂到 body 使其脱离
         // 任何带 transform/translate 的祖先，left/top 始终相对视口计算。
-        typeof document !== 'undefined' &&
+        // typeof document 检查保留：用于测试环境模拟 SSR 场景下的安全守卫
         createPortal(
           <div
             ref={bubbleRef}

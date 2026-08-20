@@ -60,7 +60,7 @@ export default function PostMeta({ post }: Props) {
             <Clock size={14} />
             {formatDate(post.date)}
           </span>
-          <span className="text-gray-700">&middot;</span>
+          <span className="text-fg-dim">&middot;</span>
           <span className="flex items-center gap-1.5">
             <Calendar size={14} />
             预计阅读 {rt} 分钟

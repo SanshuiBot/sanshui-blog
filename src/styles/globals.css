@@ -47,6 +47,13 @@
     --glass-bg: rgba(20, 20, 32, 0.6);
     --glass-border: rgba(255, 255, 255, 0.06);
     --glow-violet: rgb(var(--accent-violet-rgb) / 0.05);
+    /* ── 骨架屏/加载页通用变量 ── */
+    --bg-skeleton: rgba(255, 255, 255, 0.06);
+    --bg-skeleton-shimmer: rgba(255, 255, 255, 0.06);
+    --fg-muted: #8b8b9e;
+    --fg-dim: #5c5c70;
+    --border-skeleton: rgba(255, 255, 255, 0.06);
+    --border-skeleton-shimmer: rgba(255, 255, 255, 0.06);
 
     /* ── Shadow Design System ── */
     /* B · 彩色霓虹辉光 — 正文卡片 */
@@ -190,11 +197,9 @@
   }
 
   /* ── archive-filter：归档页标题右侧筛选按钮 + 下拉浮层 ──
-     颜色收敛（P2-19）：亮暗各定义一次 CSS 变量，子元素规则单条引用，消除整段双份复制。
+     颜色收敛：亮暗各定义一次 CSS 变量，子元素规则单条引用，消除整段双份复制。
      btn/chip 的 bg/border 与 .glass/.border-white utility 同值，保留双前缀
-     html.dark / html:not(.dark) (0,2,1) 稳压裸 CSS 亮色覆盖（AGENTS.md #25）；
-     纯颜色子元素同样保留双前缀（防同层 Tailwind utility 反压，如 chip 的
-     text-accent-violet/70），规则体只引用变量不重复声明。颜色联 accent 变量。 */
+     html.dark / html:not(.dark) (0,2,1) 稳压裸 CSS 亮色覆盖（AGENTS.md #25）。 */
   html.dark {
     --af-hover: rgb(var(--accent-violet-rgb));
     --af-hover-dim: rgb(var(--accent-violet-rgb) / 0.85);
@@ -224,33 +229,24 @@
     --af-all: rgb(87 83 78);
   }
 
-  /* 筛选按钮 */
-  html.dark .archive-filter-btn {
-    color: var(--af-text);
-  }
-  html.dark .archive-filter-btn:hover {
-    color: var(--af-text-hover);
-    border-color: rgb(var(--accent-violet-rgb) / 0.4);
-  }
-  html:not(.dark) .archive-filter-btn {
-    color: var(--af-text);
-    background: rgba(255, 255, 255, 0.7);
-    border-color: rgba(0, 0, 0, 0.06);
-  }
+  /* 筛选按钮基色与 hover（双前缀守特异性） */
+  html.dark .archive-filter-btn,
+  html:not(.dark) .archive-filter-btn { color: var(--af-text); }
+  html.dark .archive-filter-btn:hover,
   html:not(.dark) .archive-filter-btn:hover {
     color: var(--af-text-hover);
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
   }
+  html:not(.dark) .archive-filter-btn {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
 
-  /* 按钮内「筛选」文字 + 数字：默认灰，hover/open 联 accent（双前缀守特异性） */
+  /* 按钮内文字元素 */
   html.dark .archive-filter-btn-label,
-  html:not(.dark) .archive-filter-btn-label {
-    color: var(--af-text);
-  }
+  html:not(.dark) .archive-filter-btn-label { color: var(--af-text); }
   html.dark .archive-filter-btn-count,
-  html:not(.dark) .archive-filter-btn-count {
-    color: var(--af-count);
-  }
+  html:not(.dark) .archive-filter-btn-count { color: var(--af-count); }
   html.dark .archive-filter-btn:hover .archive-filter-btn-label,
   html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label,
   html:not(.dark) .archive-filter-btn:hover .archive-filter-btn-label,
@@ -264,77 +260,53 @@
     color: var(--af-hover-dim);
   }
 
-  /* chip */
+  /* chip 基色与 hover */
   html.dark .archive-filter-chip {
     color: var(--af-chip-text);
     background: var(--glass-bg);
     border-color: var(--glass-border);
-  }
-  html.dark .archive-filter-chip:hover {
-    color: var(--af-chip-text-hover);
-    border-color: rgb(var(--accent-violet-rgb) / 0.4);
-    background: rgb(var(--accent-violet-rgb) / 0.08);
   }
   html:not(.dark) .archive-filter-chip {
     color: var(--af-chip-text);
     background: rgba(255, 255, 255, 0.7);
     border-color: rgba(0, 0, 0, 0.06);
   }
+  html.dark .archive-filter-chip:hover,
   html:not(.dark) .archive-filter-chip:hover {
     color: var(--af-chip-text-hover);
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
-    background: rgb(var(--accent-violet-rgb) / 0.06);
   }
+  html.dark .archive-filter-chip:hover { background: rgb(var(--accent-violet-rgb) / 0.08); }
+  html:not(.dark) .archive-filter-chip:hover { background: rgb(var(--accent-violet-rgb) / 0.06); }
 
-  /* chip 内文字元素：标签名 + 计数 + hash 图标，hover 联 accent（双前缀守特异性，
-     尤其 hash 图标元素带 text-accent-violet/70 utility，单类规则会被同层反压） */
+  /* chip 内文字元素（双前缀守特异性，防 tailwind text-accent-violet/70 反压） */
   html.dark .archive-filter-chip-name-text,
-  html:not(.dark) .archive-filter-chip-name-text {
-    color: var(--af-chip-text);
-  }
+  html:not(.dark) .archive-filter-chip-name-text { color: var(--af-chip-text); }
   html.dark .archive-filter-chip:hover .archive-filter-chip-name-text,
-  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-name-text {
-    color: var(--af-hover);
-  }
+  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-name-text { color: var(--af-hover); }
   html.dark .archive-filter-chip-count-text,
-  html:not(.dark) .archive-filter-chip-count-text {
-    color: var(--af-count);
-  }
+  html:not(.dark) .archive-filter-chip-count-text { color: var(--af-count); }
   html.dark .archive-filter-chip:hover .archive-filter-chip-count-text,
-  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-count-text {
-    color: var(--af-hover-dim);
-  }
+  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-count-text { color: var(--af-hover-dim); }
   html.dark .archive-filter-chip-hash,
-  html:not(.dark) .archive-filter-chip-hash {
-    color: var(--af-hash);
-  }
+  html:not(.dark) .archive-filter-chip-hash { color: var(--af-hash); }
   html.dark .archive-filter-chip:hover .archive-filter-chip-hash,
-  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-hash {
-    color: var(--af-hover);
-  }
+  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-hash { color: var(--af-hover); }
 
-  /* 浮层标题 / 关闭按钮 / 「查看全部」链接（双前缀守特异性） */
+  /* 浮层标题 / 关闭 / 查看全部 */
   html.dark .archive-filter-panel,
-  html:not(.dark) .archive-filter-panel {
-    color: var(--af-panel);
-  }
+  html:not(.dark) .archive-filter-panel { color: var(--af-panel); }
   html.dark .archive-filter-close,
-  html:not(.dark) .archive-filter-close {
-    color: var(--af-close);
-  }
+  html:not(.dark) .archive-filter-close { color: var(--af-close); }
   html.dark .archive-filter-close:hover,
   html:not(.dark) .archive-filter-close:hover {
     color: var(--af-hover);
     background: var(--af-close-bg-hover);
   }
   html.dark .archive-filter-all,
-  html:not(.dark) .archive-filter-all {
-    color: var(--af-all);
-  }
+  html:not(.dark) .archive-filter-all { color: var(--af-all); }
   html.dark .archive-filter-all:hover,
-  html:not(.dark) .archive-filter-all:hover {
-    color: var(--af-hover);
-  }
+  html:not(.dark) .archive-filter-all:hover { color: var(--af-hover); }
 
   /* ── ⌘K 搜索结果关键词高亮（SearchModal 的 <mark>，P1-12）── */
   .search-mark {
@@ -1026,12 +998,12 @@
     color: #1c1917;
   }
   html:not(.dark) .prose-article pre {
-    background: var(--color-ink);
-    border-color: rgb(var(--accent-violet-rgb) / 0.1);
-  }
-  html.dark .prose-article pre {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.15);
+  }
+  html.dark .prose-article pre {
+    background: var(--color-ink);
+    border-color: rgb(var(--accent-violet-rgb) / 0.1);
   }
   html:not(.dark) .prose-article pre code {
     color: #d4d4d8;
@@ -1346,43 +1318,19 @@ html:not(.dark) {
     inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 1px 3px rgb(var(--accent-violet-rgb) / 0.03), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
+
 /* ── Tailwind utility 亮色覆盖（裸 CSS 压制 utility 层特异性，见 AGENTS.md #23）── */
-html:not(.dark) .border-white\/5 {
-  border-color: rgba(0, 0, 0, 0.06);
-}
-html:not(.dark) .border-white\/10 {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-html:not(.dark) .bg-white\/5 {
-  background: rgba(0, 0, 0, 0.03);
-}
-html:not(.dark) .bg-white\/10 {
-  background: rgba(0, 0, 0, 0.06);
-}
-html:not(.dark) .bg-white {
-  background: #1c1917;
-}
-html:not(.dark) .text-white {
-  color: #1c1917;
-}
-html:not(.dark) .text-black {
-  color: #ffffff;
-}
-html:not(.dark) .text-gray-300 {
-  color: #44403c;
-}
-html:not(.dark) .text-gray-400 {
-  color: #57534e;
-}
-html:not(.dark) .text-gray-500 {
-  color: #78716c;
-}
-html:not(.dark) .text-gray-600 {
-  color: #a8a29e;
-}
-html:not(.dark) .text-gray-700 {
-  color: #d6d3d1;
-}
-html:not(.dark) .bg-surface {
-  background: #ffffff;
-}
+/* 颜色替换：Tailwind 预置类在亮色下输出错误语义色，需覆盖为亮色对应值 */
+html:not(.dark) .border-white\/5  { border-color: rgba(0, 0, 0, 0.06); }
+html:not(.dark) .border-white\/10 { border-color: rgba(0, 0, 0, 0.1); }
+html:not(.dark) .bg-white\/5      { background: rgba(0, 0, 0, 0.03); }
+html:not(.dark) .bg-white\/10     { background: rgba(0, 0, 0, 0.06); }
+html:not(.dark) .bg-white         { background: #1c1917; }
+html:not(.dark) .text-white       { color: #1c1917; }
+html:not(.dark) .text-black       { color: #ffffff; }
+html:not(.dark) .text-gray-300    { color: #44403c; }
+html:not(.dark) .text-gray-400    { color: #57534e; }
+html:not(.dark) .text-gray-500    { color: #78716c; }
+html:not(.dark) .text-gray-600    { color: #a8a29e; }
+html:not(.dark) .text-gray-700    { color: #d6d3d1; }
+html:not(.dark) .bg-surface       { background: #ffffff; }

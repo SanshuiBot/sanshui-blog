@@ -45,9 +45,18 @@ interface Props {
  * 把每 tick 的 O(槽位数) 全量重渲染降为 O(1)（只重渲染刚填充的那张卡片）。
  * 不改变任何 DOM 行为，只跳过无变化的 re-render。
  */
+const SKELETON_PLACEHOLDER: PostIndexEntry = {
+  slug: '',
+  title: '',
+  excerpt: '',
+  date: '',
+  tags: [],
+};
+
 const Slot = memo(function Slot({ post, skeleton }: { post?: PostIndexEntry; skeleton: boolean }) {
-  // skeleton 模式下 post 可能不存在，传一个占位空对象满足类型
-  const safePost: PostIndexEntry = post ?? ({} as PostIndexEntry);
+  // 骨架模式下 post 可能不存在，传安全占位对象满足类型；
+  // PostCard 内部对所有字段做了 ??/slice 兜底，不会出现 undefined 渲染
+  const safePost = skeleton && !post ? SKELETON_PLACEHOLDER : (post ?? SKELETON_PLACEHOLDER);
   return <PostCard post={safePost} skeleton={skeleton} />;
 });
 
@@ -58,14 +67,18 @@ export default function PostGrid({ posts, total }: Props) {
   // 流式填充定时器引用，卸载时清
   const fillTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 数据到了：从第 0 张起逐张填充，每张间隔 80ms
+  // 动态间隔：文章多时加快（最短 30ms），文章少时保持舒缓（最长 100ms）
+  // 公式：max(30, Math.min(100, 3000 / posts.length))
+  const interval = Math.max(30, Math.min(100, Math.floor(3000 / Math.max(posts.length, 1))));
+
+  // 数据到了：从第 0 张起逐张填充
   useEffect(() => {
     if (filled >= posts.length) return;
-    fillTimerRef.current = setTimeout(() => setFilled((n) => n + 1), 80);
+    fillTimerRef.current = setTimeout(() => setFilled((n) => n + 1), interval);
     return () => {
       if (fillTimerRef.current) clearTimeout(fillTimerRef.current);
     };
-  }, [posts, filled]);
+  }, [posts, filled, interval]);
 
   // 渲染槽位：每个槽位始终是同一个 <Slot> 实例（key=slot-${i} 稳定）
   // i < filled 且有对应 post → 显示真实卡片；否则显示骨架

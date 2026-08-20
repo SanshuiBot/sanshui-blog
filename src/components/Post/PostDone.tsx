@@ -1,6 +1,5 @@
 'use client';
-
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 
 interface Props {
@@ -13,21 +12,25 @@ interface Props {
  * 同时清理跨文章跳转残留的 URL hash（P2-21）：
  * 上一篇文章 TOC 点击写入的 #锚点在新文章里大概率不存在，保留会让
  * 浏览器在 hydrate 后尝试定位到不存在的锚点、URL 也显得脏。
+ *
+ * 修复边界：只在 hash 对应元素确实不存在时才清除，避免误清新文章内同名的有效锚点。
  */
 export default function PostDone({ slug }: Props) {
   const { done } = useNavigationLoading();
+  const lastHashRef = useRef<string | null>(null);
 
   useEffect(() => {
     done();
-    // 目标元素在新文章里不存在 → 移除残留 hash（replaceState 不留历史记录）
-    if (window.location.hash) {
-      const id = window.location.hash.slice(1);
+
+    // 清除残留 hash：只在 hash 目标元素不存在时才清理（避免误清同名锚点）
+    const currentHash = window.location.hash;
+    if (currentHash && currentHash !== lastHashRef.current) {
+      const id = currentHash.slice(1);
       if (id && !document.getElementById(id)) {
         history.replaceState(null, '', window.location.pathname + window.location.search);
       }
+      lastHashRef.current = currentHash;
     }
-    // slug 进依赖：App Router 在同一路由段内换参数时组件实例复用，
-    // 只有 [done] 的话，文章间跳转不会重新 done()（覆盖层会挂到兜底 5s 才消失）
   }, [done, slug]);
 
   return null;

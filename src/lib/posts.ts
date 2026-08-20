@@ -72,8 +72,11 @@ function readPostFile(fileName: string): Post {
 function decodeSlug(slug: string): string {
   try {
     return decodeURIComponent(slug);
-  } catch {
-    return slug;
+  } catch (e) {
+    // 只捕获 URIError：decodeURIComponent 对非法百分号编码抛出 URIError，
+    // 其他异常（内存不足、递归溢出等）应向上抛，不应被静默吞掉
+    if (e instanceof URIError) return slug;
+    throw e;
   }
 }
 

@@ -13,6 +13,7 @@ import { useScrollLock } from '@/components/UI/useScrollLock';
 import { useFocusTrap } from '@/components/UI/useFocusTrap';
 import { useRouter } from 'next/navigation';
 import { searchHotkeyLabel } from '@/lib/platform';
+import { getPostsIndex } from '@/lib/posts-index-cache';
 
 /** 命中词元用 <mark> 高亮（样式 .search-mark 收口在 globals.css） */
 function Highlight({ text, query }: { text: string; query: string }) {
@@ -47,13 +48,15 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
   useFocusTrap(panelRef, open);
 
   // 首次打开时拉取轻量索引（~10KB），不再走 RSC payload。
+  // 使用共享缓存：与 PostsList / HeroParallax 共用同一 Promise，避免重复请求
   // AbortController：关闭/卸载时中断在途请求；AbortError 不落空态，下次打开重试
   useEffect(() => {
     if (!open || posts !== null) return;
     const ac = new AbortController();
-    fetch(`${withBase('/posts-index.json')}`, { signal: ac.signal })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data: PostIndexEntry[]) => setPosts(data))
+    getPostsIndex()
+      .then((data) => {
+        if (!ac.signal.aborted) setPosts(data);
+      })
       .catch((err: unknown) => {
         if ((err as Error)?.name !== 'AbortError') setPosts([]);
       });
@@ -76,17 +79,6 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
     // 用 ref 持有定时器在 cleanup 中清，避免重复触发/卸载后回调
     const t = setTimeout(() => inputRef.current?.focus(), 100);
     return () => clearTimeout(t);
-  }, [open]);
-
-  useEffect(() => {
-    // 模态打开时拦截 ⌘K，避免与 Navbar 的全局监听重复触发
-    const h = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-      }
-    };
-    if (open) window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
   }, [open]);
 
   // 多关键词 AND 过滤（lib/search.ts 纯函数：空格分词，每词子串匹配）
@@ -175,7 +167,10 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                 </div>
               ) : results.length > 0 ? (
                 <div aria-live="polite" aria-atomic="true">
-                  <span className="sr-only">找到 {results.length} 篇文章</span>
+                  {/* 结果数播报只出现一次，避免每条结果都触发读屏重复播报 */}
+                  <span className="sr-only">
+                    {q ? `找到 ${results.length} 篇文章` : '文章列表'}
+                  </span>
                   {results.map((p: PostIndexEntry, i: number) => (
                     <motion.div
                       key={p.slug}

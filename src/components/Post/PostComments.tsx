@@ -75,8 +75,22 @@ export default function PostComments() {
     el.addEventListener('load', syncThemeOnLoad, true);
 
     el.appendChild(script);
+
+    // 兜底：若 iframe 已被缓存快速加载（load 事件在 addEventListener 前就触发了），
+    // 轮询检查 readyState，避免 loadedRef 永远为 false 导致主题无法同步
+    const checkExisting = () => {
+      if (loadedRef.current) return;
+      const frame = el.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+      if (frame && (frame.readyState === 'complete' || frame.srcdoc || frame.src)) {
+        loadedRef.current = true;
+        postTheme(el, themeRef.current);
+      }
+    };
+    const pollTimer = setTimeout(checkExisting, 1000);
+
     return () => {
       el.removeEventListener('load', syncThemeOnLoad, true);
+      clearTimeout(pollTimer);
       script.remove();
     };
   }, []);

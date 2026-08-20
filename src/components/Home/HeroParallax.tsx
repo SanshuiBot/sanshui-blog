@@ -19,8 +19,8 @@ import { Mail, ArrowDown } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
 import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import { siteConfig } from '@/lib/site';
-import { withBase } from '@/lib/basePath';
 import type { PostIndexEntry } from '@/lib/post-index';
+import { getPostsIndex } from '@/lib/posts-index-cache';
 
 export interface HeroStats {
   posts: number;
@@ -140,11 +140,11 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
     : [];
 
   // 运行时 fetch posts-index.json，按 date 倒序取最新 6 篇做拼贴墙
+  // 使用共享缓存：与 PostsList / SearchModal 共用同一 Promise
   const [thumbs, setThumbs] = useState<Thumb[]>([]);
   useEffect(() => {
     let cancelled = false;
-    fetch(withBase('/posts-index.json'))
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    getPostsIndex()
       .then((data: PostIndexEntry[]) => {
         if (cancelled) return;
         const sorted = [...data].sort((a, b) => (a.date < b.date ? 1 : -1));

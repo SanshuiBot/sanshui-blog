@@ -10,12 +10,12 @@ export default function PostLoading() {
 
       {/* 加载文字 + 跳跃点 */}
       <div className="flex items-center justify-center gap-1 mb-10">
-        <span className="text-sm font-medium text-black/40 dark:text-white/40">加载中</span>
+        <span className="text-sm font-medium text-fg-muted">加载中</span>
         <span className="flex gap-[3px]">
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="w-1.5 h-1.5 rounded-full bg-black/30 dark:bg-white/30"
+              className="w-1.5 h-1.5 rounded-full bg-fg-dim"
               style={{
                 animation: 'dot-bounce 0.8s ease-in-out infinite',
                 animationDelay: `${i * 0.15}s`,
@@ -41,7 +41,7 @@ export default function PostLoading() {
             <Skel className="h-4 w-32" />
             <Skel className="h-4 w-28" />
           </div>
-          <div className="h-px mb-10 bg-black/[0.06] dark:bg-white/[0.06]" />
+          <div className="h-px mb-10" style={{ background: 'var(--border-skeleton)' }} />
           <div className="space-y-4">
             <Skel />
             <Skel className="w-11/12" />
@@ -58,7 +58,7 @@ export default function PostLoading() {
         </div>
         <div className="hidden lg:block sticky top-28 w-56 shrink-0 self-start ml-8">
           <Skel className="h-3 w-12 mb-4" />
-          <div className="space-y-2 border-l border-black/[0.06] dark:border-white/[0.06] pl-3">
+          <div className="space-y-2" style={{ borderLeft: '1px solid var(--border-skeleton)', paddingLeft: '0.75rem' }}>
             <Skel className="h-3 w-40" />
             <Skel className="h-3 w-36" />
             <Skel className="h-3 w-44" />
@@ -74,10 +74,11 @@ export default function PostLoading() {
 function Skel({ className }: { className?: string }) {
   return (
     <div
-      className={`relative overflow-hidden rounded bg-black/[0.06] dark:bg-white/[0.06] ${className ?? 'h-4 w-full'}`}
+      className={`relative overflow-hidden rounded ${className ?? 'h-4 w-full'}`}
+      style={{ background: 'var(--bg-skeleton)' }}
     >
       <div
-        className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-black/[0.06] dark:via-white/[0.06] to-transparent"
+        className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[var(--bg-skeleton-shimmer)] to-transparent"
         style={{ animation: 'shimmer 1.8s ease-in-out infinite' }}
       />
     </div>

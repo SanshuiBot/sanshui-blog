@@ -109,6 +109,7 @@ export default function Navbar() {
                   key={l.href}
                   href={l.href}
                   prefetch={l.prefetch}
+                  aria-current={active ? 'page' : undefined}
                   className={`nav-link group relative py-1 text-sm transition-colors duration-200 cursor-pointer ${
                     active
                       ? 'is-active text-white font-semibold'

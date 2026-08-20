@@ -16,10 +16,13 @@ export default function CursorGlow() {
     const animate = () => {
       pos.current.x += (target.current.x - pos.current.x) * 0.12;
       pos.current.y += (target.current.y - pos.current.y) * 0.12;
+      // 合并为单次 style 写入，减少 reflow
+      const tx = pos.current.x;
+      const ty = pos.current.y;
       if (glowRef.current)
-        glowRef.current.style.transform = `translate(${pos.current.x}px,${pos.current.y}px) translate(-50%,-50%)`;
+        glowRef.current.style.transform = `translate(${tx}px,${ty}px) translate(-50%,-50%)`;
       if (dotRef.current)
-        dotRef.current.style.transform = `translate(${target.current.x}px,${target.current.y}px) translate(-50%,-50%)`;
+        dotRef.current.style.transform = `translate(${tx}px,${ty}px) translate(-50%,-50%)`;
       raf = requestAnimationFrame(animate);
     };
     raf = requestAnimationFrame(animate);

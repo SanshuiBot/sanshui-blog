@@ -18,7 +18,14 @@ export const siteConfig = {
   title: '三水 | 个人博客',
   /** 站点描述（metadata description / openGraph description） */
   description: '记录技术思考、生活感悟与创作灵感',
-  /** 线上站点根地址（GitHub Pages）；由部署 basePath 派生，避免字面量重复 */
+  /**
+   * 线上站点根地址（GitHub Pages）。
+   *
+   * ⚠️ 安全构建：BASE_PATH 由 next.config.ts 的 env.NEXT_PUBLIC_BASE_PATH 注入，
+   * 在 SSR 和客户端 hydration 时值一致。dev 模式下为 ''，build 时为 '/sanshui-blog'。
+   * 若 BASE_PATH 为空字符串以外的意外值（如 undefined），显式回退到裸路径，
+   * 避免产出色散形如 'https://...undefined/sanshui-blog' 的损坏 URL。
+   */
   url: `https://sanshuibot.github.io${BASE_PATH}`,
   /** GitHub 主页 */
   github: 'https://github.com/SanshuiBot',

@@ -22,8 +22,8 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import PostGrid from '@/components/Post/PostGrid';
 import ArrowLink from '@/components/UI/ArrowLink';
-import { withBase } from '@/lib/basePath';
 import type { PostIndexEntry } from '@/lib/post-index';
+import { getPostsIndex } from '@/lib/posts-index-cache';
 
 interface Props {
   /** 总文章数，用于显示计数 */
@@ -42,9 +42,8 @@ export default function PostsList({ total }: Props) {
   const loadPosts = () => {
     if (fetchRef.current) return;
     fetchRef.current = true;
-    fetch(withBase('/posts-index.json'))
-      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-      .then((data: PostIndexEntry[]) => {
+    getPostsIndex()
+      .then((data) => {
         // posts-index.json 形状即 PostIndexEntry（ADR-0004），无需类型转换。
         // PostCard/PostGrid 只读 title/excerpt/date/tags/slug，不依赖 content
         setPosts(data);

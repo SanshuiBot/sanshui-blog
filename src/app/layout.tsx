@@ -60,9 +60,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
       <head>
-        {/* 防 FOUC：首屏前同步应用上次的 accent。脚本由 accents.ts 生成，与 resolveAccentColors 共享数据源 */}
+        {/* 防 FOUC：首屏前同步应用上次的 accent。脚本由 accents.ts 生成，与 resolveAccentColors 共享数据源。
+            dangerouslySetInnerHTML 安全：脚本内容由 ACCENT_STORAGE_KEY / CUSTOM_ACCENT_STORAGE_KEY /
+            DEFAULT_ACCENT_ID / ACCENT_PRESETS 等模块级常量拼接，无用户输入，无模板注入风险。 */}
         <script dangerouslySetInnerHTML={{ __html: accentBootstrapScript }} />
-        {/* 防 FOUC：首屏前同步设 .dark 类（next-themes 的 ThemeProvider 渲染在 <body> 内，其内联 script 进不了 <head>） */}
+        {/* 防 FOUC：首屏前同步设 .dark 类（next-themes 的 ThemeProvider 渲染在 <body> 内，其内联 script 进不了 <head>）。
+            dangerouslySetInnerHTML 安全：themeBootstrapScript 是纯字符串常量，无用户输入。 */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body className="min-h-dvh flex flex-col bg-ink text-fg antialiased relative">

@@ -44,7 +44,12 @@ const tagGradients = [
   'from-accent-blue/20 to-accent-teal/20',
   'from-accent-teal/20 to-accent-blue/20',
   'from-accent-gold/20 to-accent-rose/20',
-];
+] as const;
+
+/**
+ * 标签渐变循环语义：共 5 条，第 6 个标签复用第 0 条（index % 5）。
+ * 视觉上 pink→violet→blue→teal→gold 五色循环，rose 作为终点色与起点粉色呼应。
+ */
 
 /**
  * 骨架层——与卡片同尺寸、同圆角，absolute 铺满容器。

@@ -7,6 +7,7 @@
  *  - searchPosts：全词元 AND 匹配（title/excerpt/tags 拼成单个 haystack，
  *    每词只做一次 includes），替代原来的单串子串匹配
  *  - splitByTerms：把文本切成 命中/未命中 片段数组，供 <mark> 高亮渲染
+ *  - compiledRegexCache：模块级正则缓存，避免高频搜索时反复 new RegExp
  */
 import type { PostIndexEntry } from './post-index';
 
@@ -51,12 +52,25 @@ export interface HighlightSegment {
   hit: boolean;
 }
 
+/**
+ * 模块级正则缓存：key 为 join('|') 后的 escaped terms 字符串。
+ * searchPosts 调用 splitByTerms 时高频命中，避免每次按键都 new RegExp。
+ */
+const regexCache = new Map<string, RegExp>();
+
 /** 文本按查询词元切分为高亮片段（大小写不敏感，原样保留大小写） */
 export function splitByTerms(text: string, query: string): HighlightSegment[] {
   const terms = tokenize(query);
   if (terms.length === 0) return [{ text, hit: false }];
   const escaped = terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-  const re = new RegExp(`(${escaped.join('|')})`, 'gi');
+  const cacheKey = escaped.join('|');
+  let re = regexCache.get(cacheKey);
+  if (!re) {
+    re = new RegExp(`(${cacheKey})`, 'gi');
+    // 缓存上限 200 条，避免内存无限增长（搜索历史有限，旧条目自然淘汰）
+    if (regexCache.size >= 200) regexCache.clear();
+    regexCache.set(cacheKey, re);
+  }
   const parts = text.split(re);
   const segs: HighlightSegment[] = [];
   for (const part of parts) {

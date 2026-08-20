@@ -49,7 +49,8 @@ export default function ParticleField() {
     };
     resize();
     window.addEventListener('resize', resize);
-    const count = Math.min(60, Math.floor((w * h) / 15000));
+    // 粒子数量：视口面积/10000 保证主流显示器（~2M px）约 200 个，上限 80 防低端设备
+    const count = Math.min(80, Math.floor((w * h) / 10000));
     for (let i = 0; i < count; i++) {
       particles.push({
         x: Math.random() * w,

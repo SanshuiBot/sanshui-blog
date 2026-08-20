@@ -64,6 +64,7 @@ function createLayer(x: number, y: number): HTMLDivElement {
   layer.style.zIndex = '9999';
   layer.style.pointerEvents = 'none';
   layer.style.transform = 'translate(-50%, -50%)';
+  layer.dataset.effectLayer = 'true';
   document.body.appendChild(layer);
   return layer;
 }
@@ -252,20 +253,31 @@ const EFFECT_RENDERERS: Record<EffectName, (layer: HTMLDivElement) => void> = {
 
 export default function ClickEffect() {
   useEffect(() => {
+    // 活跃层计数器：快速点击时追踪未清理的层，卸载时统一清理
+    let activeLayers = 0;
+
     const handleClick = (e: MouseEvent) => {
       const layer = createLayer(e.clientX, e.clientY);
+      activeLayers++;
       const effect = pick(EFFECTS);
       EFFECT_RENDERERS[effect](layer);
 
       // 所有动画最长不超过 1.5s，到点统一清理
-      window.setTimeout(() => {
-        layer.remove();
+      const timer = window.setTimeout(() => {
+        activeLayers--;
+        if (layer.parentNode) layer.remove();
       }, 1500);
     };
 
     document.addEventListener('click', handleClick, { passive: true });
     return () => {
       document.removeEventListener('click', handleClick);
+      // 卸载时清理所有尚未到期的层（防止内存泄漏）
+      if (activeLayers > 0) {
+        document.querySelectorAll<HTMLDivElement>('div[data-effect-layer="true"]').forEach(
+          (el) => el.remove(),
+        );
+      }
     };
   }, []);
 
