@@ -28,6 +28,9 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
+      - name: Install system fonts（OG 图片中文渲染依赖）
+        run: sudo apt-get update && sudo apt-get install -y fonts-noto-cjk fonts-noto-color-emoji
+
       - name: Install dependencies
         run: npm ci
 
