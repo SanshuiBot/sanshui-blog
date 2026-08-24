@@ -795,6 +795,18 @@
   html:not(.dark) .post-card-title:hover {
     color: rgb(var(--accent-violet-rgb));
   }
+  /* ErrorBoundary 重试按钮 —— accent 联动 hover 走纯 CSS，不交 Framer（#25）+ 双前缀提特异性（#26） */
+  .btn-retry {
+    color: #ffffff;
+    transition: color 0.2s;
+  }
+  html:not(.dark) .btn-retry {
+    color: #1c1917;
+  }
+  html.dark .btn-retry:hover,
+  html:not(.dark) .btn-retry:hover {
+    color: rgb(var(--accent-violet-rgb));
+  }
   .post-card-readmore {
     color: #78716c;
     transition: color 0.2s;

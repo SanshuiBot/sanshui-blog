@@ -9,6 +9,7 @@ import type { MotionValue } from 'framer-motion';
  * 作为无渲染辅助组件：挂载后通过 onRefs 回调向父组件暴露 MotionValue 引用，
  * 避免骨架槽位（skeleton=true）也创建 MotionValue/Spring 实例。
  * 约定 #32：此效果为装饰性 JS 动画，受 AmbientEffects reduced-motion 阀门全局控制。
+ * 约定 #21：cleanup 调用 onRefs(null) 使 StrictMode 双执行下幂等，MotionValue 实例可被 GC。
  */
 export interface SpotlightRefs {
   spotlight: MotionValue<string>;
@@ -23,7 +24,7 @@ export default function CardSpotlight({
   onRefs,
 }: {
   ref: React.RefObject<HTMLDivElement | null>;
-  onRefs: (refs: SpotlightRefs) => void;
+  onRefs: (refs: SpotlightRefs | null) => void;
 }) {
   const mx = useMotionValue(50);
   const my = useMotionValue(50);
@@ -59,7 +60,11 @@ export default function CardSpotlight({
         ry.set(0);
       },
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // 约定 #21：StrictMode 双执行下，cleanup 将引用置 null，
+    // 使第二次 mount 可安全覆盖，且首次 mount 的 MotionValue 实例可被 GC。
+    return () => onRefs(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // onRefs is stable (function ref), dependencies intentionally empty
 
   return null;
 }

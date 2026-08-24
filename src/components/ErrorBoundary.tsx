@@ -44,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-gray-500 text-sm mb-6">页面渲染异常，请重试。</p>
             <button
               onClick={() => this.setState({ hasError: false })}
-              className="px-4 py-2 rounded-lg glass text-sm text-white hover:text-accent-violet transition-colors"
+              className="px-4 py-2 rounded-lg glass btn-retry text-sm"
             >
               重试
             </button>
