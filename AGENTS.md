@@ -22,7 +22,7 @@
 ```
 content/        posts/*.md(x)（文件名即 slug）+ resume.md
 src/app/        App Router 页面（posts/[slug]/loading.tsx 骨架屏）
-src/components/ Providers AmbientEffects AppShell Layout/ Home/ Post/(PostComments Giscus) About/ Links/ Projects/ NotFound/ UI/(SpinRing usePrefersReducedMotion useScrollLock useFocusTrap BackToTop ThemeColorSync) TagList
+src/components/ Providers AmbientEffects AppShell Layout/ Home/ Post/(PostCard Spotlight CardSpotlight PostComments Giscus) About/ Links/ Projects/ NotFound/ UI/(SpinRing usePrefersReducedMotion useScrollLock useFocusTrap BackToTop ThemeColorSync ErrorBoundary) TagList
 src/styles/     globals.css + terminal-*.css + projects.css（集中存放 #35）
 src/lib/        纯函数/读取层（formatDate/search/post-index 为客户端安全模块），职责看文件头注释
 scripts/        predev.js gen-posts-index.js gen-feed.js gen-og-image.js gen-dotted-tag-payloads.js
@@ -31,7 +31,7 @@ public/         静态资源 + 构建产物（posts-index.json feed.xml og.png�
 next.config.ts  .github/workflows/deploy.yml
 ```
 
-## 红线（46 条，展开见 docs/conventions.md）
+## 红线（48 条，展开见 docs/conventions.md）
 
 1. `NEXT_BUILD` 双态：dev 不设、build 必设；别手动设 `output:'export'`。basePath 注入矩阵：`<Link>`/`router.push`/`router.prefetch` **自动注入，别套** `withBase()`（套了双重前缀）；`<Image>` 与原生 `<a>`/`<img>`/`<link>`/`fetch()` **必须套** `withBase()`；metadata 图片（og 图等）走 `metadataBase`，给裸相对路径。**`<Link>` 只用于真实路由**——静态文件（feed.xml 等）用原生 `<a>` + withBase，Link 会做 RSC 预取导致线上 404。
 2. `params` 是 Promise，必须 `await`。
@@ -43,7 +43,7 @@ next.config.ts  .github/workflows/deploy.yml
 8. 构建期不跑 lint，CI/本地单独跑。
 9. `images.unoptimized`：next/image 原图直出，新图自行压缩。
 10. Tailwind v4 CSS-first（`@import 'tailwindcss'` + `@theme`），无 config。
-11. 客户端动效在 `AmbientEffects` 用 `dynamic(...,{ssr:false})` 注册；别自定义 splitChunks。
+11. 客户端动效在 `AmbientEffects` 用 `dynamic(...,{ssr:false})` 注册；别自定义 splitChunks。装饰性 JS 动效组件若创建 MotionValue/Spring（如 PostCard 的 spotlight/3D tilt 收口 `Post/CardSpotlight.tsx`），非骨架模式下才挂载，cleanup 调 onRefs(null) 使 StrictMode 双执行幂等、MotionValue 可被 GC。
 12. 默认亮色（`html:not(.dark)`），改暗色同步查亮色分支。
 13. 导航加载：仅 `/posts/...` 的 `<Link>` 调 `startNavigation`；详情页挂载调 `done()`。
 14. ⌘K 搜索 fetch `posts-index.json`，不序列化进 RSC；与 Pagefind 两套机制。
@@ -79,6 +79,8 @@ next.config.ts  .github/workflows/deploy.yml
 44. 生成脚本收口：`gen-posts-index.js`（索引）/ `gen-feed.js`（RSS）/ `gen-og-image.js`（og 图）都复用 `parse-post.mjs` 解析契约。
 45. CI 门禁：typecheck/lint/test 在 build 前跑；lint/test 加 `if: always()`（前一步失败也全跑，build 默认 success() 兜底）。
 46. 组件测试（jsdom）手动 `afterEach(cleanup)`：vitest 未开 globals，RTL 不自动清 DOM，多 render 会累积。
+47. Hover 变色走纯 CSS（`.btn-retry` / `.toc-link-active` 等自定义类 + `html.dark` / `html:not(.dark)` 双前缀，见 conventions §26）。Tailwind utility（`hover:text-accent-violet` 等）会被裸 CSS 亮色覆盖规则压制，hover 不变色。新增 accent 联动 hover 一律用自定义 CSS 类，不写 Tailwind hover utility。
+48. 全站 Error Boundary 收口在 `src/components/ErrorBoundary.tsx`，包裹 Providers 顶层——任何 client 组件抛异常时显示通用错误 UI + 重试按钮，避免整页白屏。`getDerivedStateFromError` / `componentDidCatch` 加 `override` 关键字（tsconfig `noImplicitOverride`）。
 
 ## 内容编辑
 

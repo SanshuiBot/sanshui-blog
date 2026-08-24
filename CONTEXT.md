@@ -44,6 +44,8 @@
 
 **焦点陷阱**: `useFocusTrap(ref, active)`——模态/抽屉内 Tab 循环 + 关闭后焦点还原到打开者。搜索模态与移动端抽屉共用，补上此前键盘用户 Tab 逃出模态的 a11y 缺口。 _避免_: focus trap、焦点圈住（前者是英文直译，后者是描述）
 
+**Error Boundary**: `src/components/ErrorBoundary.tsx`——全站兜底的 React class 组件，包裹在 Providers 顶层，任何 client 组件抛异常时显示通用错误 UI + 重试按钮，避免整页白屏。`getDerivedStateFromError` / `componentDidCatch` 均加 `override` 关键字（tsconfig `noImplicitOverride`）。 _避免_: 全局错误兜底（泛称）
+
 **返回顶部收口**: `BackToTop` 组件——scrollY 阈值 + 圆钮 + Tooltip + 平滑回顶的单一实现，`className` 决定挂载位置（Footer 顶部居中 / 文章页左下固定）。 _避免_: 回到顶部按钮（描述不是名）
 
 **描边双背景**: `.hero-cta` 的渐变描边实现——`background: linear-gradient(玻璃) padding-box, linear-gradient(渐变) border-box` 双层背景，替代 `::before` + `mask-composite: xor`。少一层伪元素、无 mask-composite 兼容坑；流动动画靠 border-box 层的 `background-position` keyframes。亮色覆盖必须整体重建双背景。 _避免_: mask 描边、渐变边框（前者是旧实现，后者是泛称）
@@ -68,7 +70,7 @@
 
 **RSS feed**: `scripts/gen-feed.js` 生成的 `public/feed.xml`——RSS 2.0 + 全文 CDATA + 标签分类，复用 `parse-post.mjs` 解析契约；站点常量与 `site.ts` 字面一致（改站点信息需同步两处）。Footer 的 Rss 图标是真订阅链接。 _避免_: 订阅源、rss.xml（前者是泛称，后者是路径拼写）
 
-**og 分享图**: `scripts/gen-og-image.js` 生成的 `public/og.png`——1200×630，纯 Node zlib + 手写 PNG chunk 编码（零依赖，不靠 sharp/系统字体），Aurora 对角渐变 + 56px 网格 + 中心辉光，接入 OpenGraph/Twitter Card。 _避免_: 社交卡片图（描述不是名）
+**og 分享图**: `scripts/gen-og-image.js` 生成的 `public/og.png`——1200×630，使用 sharp SVG 光栅化渲染（支持中文文字），Aurora 对角渐变底色 + 56px 网格 + 中心辉光 + 顶部 accent 渐变线 + 「三水」主标题 + 站点描述 + 底部 URL glass 胶囊，接入 OpenGraph/Twitter Card。CI Linux runner 自带 Noto CJK 字体，中文渲染可靠。 _避免_: 社交卡片图（描述不是名）
 
 ### 测试
 

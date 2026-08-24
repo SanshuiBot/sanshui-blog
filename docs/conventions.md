@@ -77,6 +77,8 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 `AmbientEffects.tsx` 用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect` / `ParticleField`，避免打进首屏 chunk；并对 `prefers-reduced-motion` 用户跳过装饰性动效（`CursorGlow`、`ClickEffect` 均受门控；`ScrollProgress` 功能性指示条保留但 spring 平滑入阀；`ParticleField` 内部自检画静态帧）。新增仅客户端、非首屏必需的动效组件，在 `AmbientEffects` 加一行 `dynamic` 注册即可。`experimental.optimizePackageImports: ['framer-motion','lucide-react']` 让大库按需引入——**不要再自定义 `splitChunks`**，会与内置 chunk 策略冲突。
 
+**装饰性 JS 动效实例化开销**：`PostCard` 的 spotlight + 3D tilt 效果收口在 `src/components/Post/CardSpotlight.tsx`——作为无渲染辅助组件，仅在卡片非骨架时挂载（`!skeleton`），骨架槽位不创建 MotionValue/Spring 实例。挂载后通过 `onRefs` 回调向父组件暴露 MotionValue，父组件用 state 存储并在渲染期读取（绕开 ref 在渲染期的访问警告）。**约定 #21**：effect cleanup 必须调用 `onRefs(null)`，使 StrictMode 双执行下第二次 mount 可安全覆盖首次创建的实例，且 MotionValue 可被 GC。
+
 ## 12. 亮色为主、暗色可选
 
 默认 **亮色主题**。机制：`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA 与默认主题一致。
@@ -333,3 +335,37 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
 3. **依赖 mock**：`vi.mock('next/link')` 成纯 `<a>`；`vi.mock('next/navigation')` 提供可控 `useRouter`；fetch 用 `vi.stubGlobal` 并在 `afterEach` 里 `vi.unstubAllGlobals()`。
 
 另外：空查询时组件有意不渲染结果（`searchPosts` 空词元返回 `[]`），断言前必须先输入；断言结果标题用 `getByRole('link')` + textContent 包含（嵌套 `<span>` 会让字符串匹配失败）。
+
+## 47. Hover 变色走纯 CSS（对齐 #25/#26）
+
+Tailwind v4 把 utility 类注入到 `@layer utilities` 里。而 `globals.css` 的亮色覆盖规则（`html:not(.dark)`）是**裸 CSS**——优先级高于 `@layer utilities` 内的同特异性规则。因此 `hover:text-accent-violet` 这类 utility hover 在亮色模式下会被裸覆盖持续压制，hover 不变色。
+
+**正确做法**：accent 联动 hover 变色用自定义 CSS 类 + `html.dark` / `html:not(.dark)` 双前缀，特异性拉到 (0,3,1)，稳压裸覆盖规则。示例——`ErrorBoundary` 重试按钮（`.btn-retry`）：
+
+```css
+.btn-retry {
+  color: #ffffff;
+  transition: color 0.2s;
+}
+html:not(.dark) .btn-retry {
+  color: #1c1917;
+}
+html.dark .btn-retry:hover,
+html:not(.dark) .btn-retry:hover {
+  color: rgb(var(--accent-violet-rgb));
+}
+```
+
+**不要**用 `hover:text-accent-violet transition-colors`——它会被亮色裸覆盖压制失效。同样，Framer Motion 的 `whileHover={{ color: '...' }}` 也会把颜色写成 inline style，CSS 变量在 inline style 中被解析成具体值后不再响应 accent 切换。
+
+## 48. 全站 Error Boundary（`src/components/ErrorBoundary.tsx`）
+
+包裹 `Providers` 顶层，兜底任何未捕获的 client 组件异常（`Navbar` / `SearchModal` / `HeroParallax` 等抛异常会直接白屏整页）。
+
+实现要点：
+
+- **`getDerivedStateFromError` + `componentDidCatch` 加 `override`**：tsconfig 有 `noImplicitOverride: true`，不加会报 TS4114。
+- **`getDerivedStateFromError` 是纯函数**，无副作用，StrictMode 安全（约定 #21）。
+- **生产环境静默**：`componentDidCatch` 只在 `NODE_ENV === 'development'` 时 `console.error`，不暴露内部信息。
+- **重试按钮 hover 走纯 CSS**（见 #47），不能用 `hover:text-accent-violet`。
+- 错误 UI 显示通用文案「出了点问题」+ 重试按钮（调 `setState({ hasError: false })` 触发重渲染）。

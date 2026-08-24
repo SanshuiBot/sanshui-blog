@@ -58,7 +58,7 @@
 | 🎨 **Accent 主题强调色** | 5 个预设调色板 + 6 通道自定义色板，运行时换色全站联动                                                                                 |
 | 🌊 **视差拼贴首屏**      | 3 深度层（流光网格 / 文章缩略图墙 / 标题 CTA）滚动视差，缩略图墙运行时 fetch 最新 6 篇                                                |
 | 📡 **RSS 订阅**          | 构建期自动生成 `feed.xml`（RSS 2.0 + 全文 CDATA + 标签分类），Footer 图标即订阅链接                                                   |
-| 🖼️ **社交分享卡片**      | 纯 Node 零依赖生成 1200×630 `og.png`（Aurora 渐变），接入 OpenGraph / Twitter Card                                                    |
+| 🖼️ **社交分享卡片**      | sharp SVG 光栅化生成 1200×630 `og.png`（Aurora 渐变 + 中文「三水」标题 + URL 胶囊），接入 OpenGraph / Twitter Card                    |
 | ♿ **键盘无障碍**        | 搜索模态/移动抽屉焦点陷阱（Tab 循环 + 关闭还原焦点）、`aria-live` 结果计数、CTA 自定义 focus-visible 焦点环                           |
 
 ---
@@ -116,11 +116,11 @@ sanshui-blog/
 │   │   ├── AppShell.tsx        # 布局壳 (Navbar + main + Footer)
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
 │   │   ├── Home/               # HeroParallax（视差拼贴首屏，3 深度层）· HomeHydration（懒加载入口）· PostsList
-│   │   ├── Post/               # PostCard · PostContent · PostMeta · PostNav · PostDone · PostComments (Giscus 评论) · TableOfContents · CodeCopyInjector
+│   │   ├── Post/               # PostCard · PostContent · PostMeta · PostNav · PostDone · PostComments (Giscus 评论) · TableOfContents · CodeCopyInjector · CardSpotlight (spotlight/3D tilt 延迟挂载)
 │   │   ├── About/              # AboutContent · ResumeTerminal (流式打印简历)
 │   │   ├── Projects/           # ProjectsContent（项目卡片墙，统一尺寸 + 鼠标跟随光晕）
 │   │   ├── Links/ · NotFound/
-│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop · ThemeColorSync · useDismiss · useScrollLock · useFocusTrap · usePrefersReducedMotion · useSafeTimeout
+│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop · ThemeColorSync · useDismiss · useScrollLock · useFocusTrap · usePrefersReducedMotion · useSafeTimeout · ErrorBoundary
 │   └── lib/
 │       ├── types.ts            # Post 类型定义（server-only）
 │       ├── posts.ts            # 文章读取（单次装载，无 mtime 缓存；slug 解码统一兜底）
@@ -142,7 +142,7 @@ sanshui-blog/
 │   ├── predev.js               # ConsoleNinja 兼容：生成 .next/routes-manifest.json
 │   ├── gen-posts-index.js      # 生成 public/posts-index.json 轻量索引 (解析契约来自 parse-post.mjs)
 │   ├── gen-feed.js             # 生成 public/feed.xml（RSS 2.0 + 全文 CDATA + 标签分类）
-│   ├── gen-og-image.js         # 生成 public/og.png（纯 Node 零依赖 PNG 编码，1200×630 Aurora 渐变）
+│   ├── gen-og-image.js         # 生成 public/og.png（sharp SVG 光栅化，1200×630 Aurora 渐变 + 中文标题）
 │   └── gen-dotted-tag-payloads.js # 为含点号标签 (如 Next.js) 补 RSC payload 副本，避免线上 404
 ├── .github/workflows/deploy.yml # GitHub Actions：质量门禁 + 自动部署
 └── public/                     # 静态资源 (favicon.svg/ico · posts-index.json · feed.xml · og.png · _headers)
@@ -179,7 +179,7 @@ npx serve out
 | `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                                                          |
 | `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                                                                     |
 | `npm run typecheck`    | `tsc --noEmit` 类型检查（Next 16 构建不跑 lint，CI/本地须单独跑 lint + typecheck）                                                        |
-| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 112 个）                                                                        |
+| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 124 个）                                                                        |
 | `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                                                                    |
 
 > 🔒 **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`。
@@ -192,7 +192,7 @@ npm run dev
   └─ next dev (HMR，无 basePath/assetPrefix)
 
 npm run build
-  └─ prebuild → 生成 posts-index.json (~10KB 轻量索引) + feed.xml (RSS 2.0) + og.png (1200×630 社交卡片图)
+  └─ prebuild → 生成 posts-index.json (~10KB 轻量索引) + feed.xml (RSS 2.0) + og.png (1200×630 社交卡片图，sharp SVG)
   └─ cross-env NEXT_BUILD=1 next build --webpack → 静态导出 out/
   └─ pagefind --site out → 全文搜索索引（与 ⌘K 的 posts-index.json 是两套独立机制）
   └─ gen-dotted-tag-payloads.js → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
@@ -438,6 +438,10 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
   - **新增动画前 checklist**：① 优先纯 CSS（`transition` + `transform`/`opacity`/`width` 等合成层属性），自动被 0.01ms 降级覆盖；② 避免 `transition: all`（会动画非合成属性，触发 layout/paint）；③ 若用 Framer Motion 驱动可见位移，确认该动画在 reduced-motion 下是否应降级——若应降级，改用纯 CSS 或在 `usePrefersReducedMotion()` 守卫下跳过；④ hover 变色不交给 Framer。
 - **版权年份**：`©` 年份用 `siteConfig.copyrightYear` 常量（`src/lib/site.ts`，每年元旦手动更新）。不要在客户端组件里 `new Date().getFullYear()`——静态导出时 SSR 用构建时年份、hydration 用访问时年份，跨年/跨时区会 mismatch（Footer 与 Navbar 抽屉的版权行都走这个常量）
 - **公共 hook 收口别手抄**：滚动锁 `useScrollLock`、焦点陷阱 `useFocusTrap`、返回顶部 `BackToTop`、主题色同步 `ThemeColorSync`、日期格式化 `formatDate` 都是全站唯一实现（AGENTS.md #40）。此前 Navbar/SearchModal 各写一份 body 滚动锁，同开时还原互相覆盖——新增弹层/模态直接复用
+- **Focus trap 补充（移动端 TOC）**：移动端 TOC 抽屉打开时通过 `useFocusTrap` 将 Tab 焦点限制在抽屉内，关闭后还原焦点，补上键盘用户的 a11y 缺口
+- **Error Boundary 全站兜底**：`src/components/ErrorBoundary.tsx` 包裹 Providers 顶层，任何 client 组件抛异常时显示错误 UI + 重试按钮，避免整页白屏。`getDerivedStateFromError` / `componentDidCatch` 需加 `override` 关键字（tsconfig `noImplicitOverride`）
+- **CardSpotlight 延迟挂载**：PostCard 的 spotlight + 3D tilt 效果收口在 `src/components/Post/CardSpotlight.tsx`，仅在非骨架模式下挂载；effect cleanup 调 `onRefs(null)` 使 StrictMode 双执行幂等、MotionValue 实例可被 GC
+- **搜索框无障碍**：SearchModal 搜索框已添加 `id="search-input"`，消除 Lighthouse 表单字段无障碍警告
 - **搜索匹配逻辑收口 `lib/search.ts`**：⌘K 的匹配（空格分词多关键词 AND、`splitByTerms` 高亮片段）是纯函数，组件只渲染；契约测试在 `tests/search.test.ts`。改匹配规则改 lib，不要动组件
 - **CSS 独立 `scale`/`translate` 属性**：要与 Framer Motion 的 inline `transform`（如 Hero CTA 的跟手 `x/y`）叠加的缩放/位移，用 `scale:` / `translate:` 独立属性——`transform` 会被内联样式覆盖失效。支持 Chrome 104+ / FF 72+ / Safari 14.1+（2026 年无兼容顾虑）
 - **sitemap 静态导出**：`sitemap.ts` 必须 `export const dynamic = 'force-static'`，**不要**再写 `revalidate = 0`（会强制动态渲染、覆盖 force-static，sitemap.xml 不被导出到 `out/`）；中文 slug 记得 `encodeURIComponent`
