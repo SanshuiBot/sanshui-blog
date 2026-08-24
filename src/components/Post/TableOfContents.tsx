@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Menu, X } from 'lucide-react';
 import type { TocItem } from '@/lib/toc';
 import { useScrollThumbGeometry } from '@/components/UI/useScrollThumbGeometry';
+import { useFocusTrap } from '@/components/UI/useFocusTrap';
 
 interface Props {
   items: TocItem[];
@@ -27,10 +28,15 @@ interface Props {
  *    ::-webkit-scrollbar width:0），浮一个 .toc-thumb 绝对定位指示条，按滚动比例
  *    定高度/位置；显隐「只」由 hover 控制（mouseenter 显示 / mouseleave 隐藏），opacity
  *    transition 淡入淡出。浮层 absolute 不占文档流 → 不挤压文字布局。
+ *  - 移动端抽屉：打开时启用焦点陷阱（useFocusTrap），Tab 循环限制在抽屉内。
  */
 export default function TableOfContents({ items }: Props) {
   const [activeId, setActiveId] = useState<string>(items[0]?.id ?? '');
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  // 移动端抽屉焦点陷阱：Tab 循环限制在抽屉可聚焦元素内，关闭后焦点还原
+  useFocusTrap(drawerRef, drawerOpen);
 
   // SPA 文章间跳转时 App Router 复用同一组件实例、传入新的 items 数组，
   // 而 useState 初始值只在首挂载生效 —— 按 React 官方「prev 状态对比」模式
@@ -43,49 +49,53 @@ export default function TableOfContents({ items }: Props) {
   }
 
   // 高亮当前章节 —— 监测视口上 30% 带，取监测带内最靠上的标题
-  useEffect(() => {
-    if (items.length === 0) return;
+  useEffect(
+    () => {
+      if (items.length === 0) return;
 
-    // 首屏/换文章后的高亮首项已由渲染期 prevItems 对比重置（见上方），
-    // 此处 observer 只负责滚动过程的高亮接管；若 URL 已带 hash，浏览器
-    // 原生滚动到位后由 observer 首回调接管高亮。
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible[0]) {
-          setActiveId(visible[0].target.id);
-        } else {
-          // 反向滚动兜底：监测带内空了，找当前已滚过、最靠近视口顶的那个标题
-          // 只取第一个（最靠上）的已滚过标题，避免全量扫描到最后一个时误判
-          let lastAbove: string | null = null;
-          for (const item of items) {
-            const el = document.getElementById(item.id);
-            if (!el) continue;
-            if (el.getBoundingClientRect().top < 80) {
-              lastAbove = item.id;
-            } else {
-              // 遇第一个未滚过标题即停止（标题按顺序排列，后面的也不会已滚过）
-              break;
+      // 首屏/换文章后的高亮首项已由渲染期 prevItems 对比重置（见上方），
+      // 此处 observer 只负责滚动过程的高亮接管；若 URL 已带 hash，浏览器
+      // 原生滚动到位后由 observer 首回调接管高亮。
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+          if (visible[0]) {
+            setActiveId(visible[0].target.id);
+          } else {
+            // 反向滚动兜底：监测带内空了，找当前已滚过、最靠近视口顶的那个标题
+            // 只取第一个（最靠上）的已滚过标题，避免全量扫描到最后一个时误判
+            let lastAbove: string | null = null;
+            for (const item of items) {
+              const el = document.getElementById(item.id);
+              if (!el) continue;
+              if (el.getBoundingClientRect().top < 80) {
+                lastAbove = item.id;
+              } else {
+                // 遇第一个未滚过标题即停止（标题按顺序排列，后面的也不会已滚过）
+                break;
+              }
+            }
+            if (lastAbove && lastAbove !== activeId) {
+              // 防止在同一位置反复 setState
+              setActiveId(lastAbove);
             }
           }
-          if (lastAbove && lastAbove !== activeId) {
-            // 防止在同一位置反复 setState
-            setActiveId(lastAbove);
-          }
-        }
-      },
-      { rootMargin: '-80px 0px -70% 0px', threshold: 0 },
-    );
+        },
+        { rootMargin: '-80px 0px -70% 0px', threshold: 0 },
+      );
 
-    for (const item of items) {
-      const el = document.getElementById(item.id);
-      if (el) observer.observe(el);
-    }
+      for (const item of items) {
+        const el = document.getElementById(item.id);
+        if (el) observer.observe(el);
+      }
 
-    return () => observer.disconnect();
-  }, [items]);
+      return () => observer.disconnect();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [items],
+  ); // activeId 是反向滚动兜底的防抖检查，加入依赖会让 observer 随每次高亮重连，破坏滚动监听
 
   // 点击跳转：平滑滚动 + 写 URL hash，但不触发原生锚点跳转 (P5)
   const handleJump = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -190,6 +200,7 @@ export default function TableOfContents({ items }: Props) {
         </button>
         {drawerOpen && (
           <div
+            ref={drawerRef}
             id="toc-drawer"
             className="mt-3 p-4 rounded-xl glass border border-white/5 max-h-72 overflow-y-auto"
           >

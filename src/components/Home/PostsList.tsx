@@ -59,6 +59,11 @@ export default function PostsList({ total }: Props) {
     loadPosts();
   }, []);
 
+  const handleRetry = () => {
+    setError(false);
+    loadPosts();
+  };
+
   if (error) {
     return (
       <section
@@ -66,7 +71,15 @@ export default function PostsList({ total }: Props) {
         id="posts"
         className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20"
       >
-        <div className="text-center py-16 text-gray-500">文章列表加载失败，请刷新页面</div>
+        <div className="text-center py-16 text-gray-500">
+          <p className="mb-3">文章列表加载失败，请重试</p>
+          <button
+            onClick={handleRetry}
+            className="px-4 py-2 rounded-lg glass text-sm text-white hover:text-accent-violet transition-colors"
+          >
+            重试
+          </button>
+        </div>
       </section>
     );
   }

@@ -61,16 +61,16 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
   useEffect(() => {
     // Hero 区有独立的流光网格（56px），添加 marker 让全局网格（64px）隐藏，避免两层叠加产生摩尔纹
     document.documentElement.classList.add('sanshui-hero-active');
-    return () => document.documentElement.classList.remove('sanshui-hero-active');
-  }, []);
-  useEffect(() => {
     const update = () => {
       setVh(window.innerHeight);
       setW(window.innerWidth);
     };
     update();
     window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    return () => {
+      document.documentElement.classList.remove('sanshui-hero-active');
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
   const { scrollY } = useScroll();

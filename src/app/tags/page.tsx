@@ -14,6 +14,13 @@ import { Hash } from 'lucide-react';
 import ArrowLink from '@/components/UI/ArrowLink';
 import { getTagCounts } from '@/lib/posts';
 import TagList from '@/components/TagList';
+import type { Metadata } from 'next';
+import { siteConfig } from '@/lib/site';
+
+export const metadata: Metadata = {
+  title: '标签',
+  description: `全部标签索引 · ${siteConfig.name}个人博客`,
+};
 
 export default function TagsPage() {
   // 单趟 O(N) 统计（getTagCounts），替代「每个标签一次 getPostsByTag().length」的 O(T×N) 嵌套循环

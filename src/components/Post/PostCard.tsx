@@ -22,21 +22,21 @@
  *     不因标题/摘要行数不同而参差不齐，也不会裁切「时间/阅读」行。
  *     骨架层与卡片层均 absolute 铺满固定容器，通过 opacity 交叉淡入淡出。
  *     骨架模式下卡片层不挂载（避免空 post 撑高度）。
+ *
+ *  6. Spotlight + 3D tilt 由 CardSpotlight 子组件懒初始化：
+ *     skeleton=true 时不挂载 → 不创建 MotionValue/Spring 实例，
+ *     节省同屏多张骨架卡的内存和 rAF 开销。
  */
-import {
-  AnimatePresence,
-  motion,
-  useMotionValue,
-  useMotionTemplate,
-  useSpring,
-} from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpRight, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import { formatDate } from '@/lib/formatDate';
 import { postUrl, type PostIndexEntry } from '@/lib/post-index';
+import CardSpotlight from './CardSpotlight';
+import type { SpotlightRefs } from './CardSpotlight';
 
 const tagGradients = [
   'from-accent-pink/20 to-accent-rose/20',
@@ -108,38 +108,10 @@ export default function PostCard({
     router.prefetch(postHref);
   };
 
-  // Mouse-following spotlight
-  // useMotionTemplate：模板插值只做一次字符串构建，替代 useTransform 每次
-  // mousemove 都重建模板字符串（P1-6）
-  const mx = useMotionValue(50);
-  const my = useMotionValue(50);
-  const sx = useSpring(mx, { stiffness: 100, damping: 20 });
-  const sy = useSpring(my, { stiffness: 100, damping: 20 });
-  const spotlight = useMotionTemplate`radial-gradient(280px circle at ${sx}% ${sy}%, rgb(var(--accent-violet-rgb) / 0.22), rgb(var(--accent-pink-rgb) / 0.12) 30%, transparent 60%)`;
-
-  // 3D tilt values
-  const rx = useMotionValue(0);
-  const ry = useMotionValue(0);
-  const srx = useSpring(rx, { stiffness: 120, damping: 15 });
-  const sry = useSpring(ry, { stiffness: 120, damping: 15 });
-
-  const onMove = (e: React.MouseEvent) => {
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width;
-    const py = (e.clientY - r.top) / r.height;
-    mx.set(px * 100);
-    my.set(py * 100);
-    ry.set((px - 0.5) * 5);
-    rx.set(-(py - 0.5) * 5);
-  };
-  const onLeave = () => {
-    mx.set(50);
-    my.set(50);
-    rx.set(0);
-    ry.set(0);
-  };
+  // 骨架模式不挂载 spotlight 子组件，节省 MotionValue/Spring 实例。
+  // 用 state 存储 refs（而非 ref.current）：CardSpotlight effect 调用 onRefs 后触发重渲染，
+  // 保证渲染期能安全访问 spotlight 值。
+  const [spotlight, setSpotlight] = useState<SpotlightRefs | null>(null);
 
   // 骨架→卡片切换的统一过渡：两层用完全相同的 transition，同步渐隐/渐显，零空白帧。
   // duration 短到 0.25s：骨架快速被卡片覆盖，视觉上是「直接变卡片」而非「缓慢淡入」。
@@ -179,17 +151,23 @@ export default function PostCard({
           >
             <div
               ref={ref}
-              onMouseMove={onMove}
-              onMouseLeave={onLeave}
+              onMouseMove={(e) => spotlight?.onMove(e)}
+              onMouseLeave={() => spotlight?.onLeave()}
               className="group relative h-full"
               style={{ perspective: '800px' }}
             >
-              {/* Spotlight */}
+              {/* Spotlight — 仅在非骨架模式下挂载，节省 MotionValue 实例 */}
+              {!skeleton && <CardSpotlight ref={ref} onRefs={setSpotlight} />}
+
+              {/* Spotlight glow layer */}
               <motion.div
                 aria-hidden
                 className="absolute -inset-px rounded-2xl pointer-events-none"
-                style={{ background: spotlight, opacity: 0 }}
-                animate={{ opacity: 1 }}
+                style={{
+                  background: spotlight?.spotlight ?? '',
+                  opacity: 0,
+                }}
+                animate={{ opacity: spotlight ? 1 : 0 }}
                 initial={{ opacity: 0 }}
               />
 
@@ -197,7 +175,11 @@ export default function PostCard({
               <motion.div
                 whileHover={{ y: -8, scale: 1.01 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 14, mass: 0.8 }}
-                style={{ rotateX: srx, rotateY: sry, transformStyle: 'preserve-3d' }}
+                style={{
+                  rotateX: spotlight?.rotateX,
+                  rotateY: spotlight?.rotateY,
+                  transformStyle: 'preserve-3d',
+                }}
                 className="p-[1px] rounded-2xl bg-white/5 h-full shadow-neon-hover"
               >
                 {/* Border glow */}

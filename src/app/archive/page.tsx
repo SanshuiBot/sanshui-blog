@@ -16,6 +16,13 @@ import PostGrid from '@/components/Post/PostGrid';
 import FilterDropdown from '@/components/Archive/FilterDropdown';
 import ArrowLink from '@/components/UI/ArrowLink';
 import { BookOpen } from 'lucide-react';
+import type { Metadata } from 'next';
+import { siteConfig } from '@/lib/site';
+
+export const metadata: Metadata = {
+  title: '归档',
+  description: `全站文章归档 · ${siteConfig.name}个人博客`,
+};
 
 export default function ArchivePage() {
   const posts = getAllPosts();

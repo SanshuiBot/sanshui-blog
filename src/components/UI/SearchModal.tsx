@@ -143,6 +143,10 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
                   } else if (e.key === 'Escape') {
                     e.preventDefault();
                     onClose();
+                  } else if (e.key === 'Backspace' && q === '') {
+                    // 输入框为空时 Backspace 关闭搜索（与 Gmail 等常见模式一致）
+                    e.preventDefault();
+                    onClose();
                   }
                 }}
                 placeholder="搜索文章（空格分隔多关键词）..."

@@ -1,4 +1,5 @@
 'use client';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MotionConfig } from 'framer-motion';
 import { ThemeProvider } from 'next-themes';
 import { NavigationLoadingProvider } from '@/components/UI/NavigationLoading';
@@ -14,20 +15,22 @@ import ThemeColorSync from '@/components/UI/ThemeColorSync';
  */
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <NavigationLoadingProvider>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        storageKey="aurora-theme"
-        disableTransitionOnChange
-      >
-        <MotionConfig reducedMotion="never">
-          {/* 浏览器地址栏颜色跟随主题（需在 ThemeProvider 内读取 resolvedTheme） */}
-          <ThemeColorSync />
-          {children}
-        </MotionConfig>
-      </ThemeProvider>
-    </NavigationLoadingProvider>
+    <ErrorBoundary>
+      <NavigationLoadingProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          storageKey="aurora-theme"
+          disableTransitionOnChange
+        >
+          <MotionConfig reducedMotion="never">
+            {/* 浏览器地址栏颜色跟随主题（需在 ThemeProvider 内读取 resolvedTheme） */}
+            <ThemeColorSync />
+            {children}
+          </MotionConfig>
+        </ThemeProvider>
+      </NavigationLoadingProvider>
+    </ErrorBoundary>
   );
 }
