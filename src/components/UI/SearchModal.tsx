@@ -118,6 +118,7 @@ export default function SearchModal({ open, onClose }: { open: boolean; onClose:
               <Search size={18} className="text-gray-500 shrink-0" />
               <input
                 ref={inputRef}
+                id="search-input"
                 type="text"
                 name="q"
                 value={q}
