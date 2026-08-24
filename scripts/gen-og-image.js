@@ -144,7 +144,7 @@ function buildSvgContent() {
     <text x="200" y="28" text-anchor="middle"
           fill="rgba(255,255,255,0.55)" font-family="'JetBrains Mono','Fira Code','Consolas',monospace"
           font-size="15" font-weight="400" letter-spacing="0.5">
-      sanshuibot.github.io
+      https://sanshuibot.github.io/sanshui-blog/
     </text>
   </g>
 </svg>`;
