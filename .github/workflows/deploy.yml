@@ -34,9 +34,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Prebuild（生成 posts-index / RSS / og 图）
-        run: npm run prebuild
-
       # 质量门禁：构建不跑 lint（AGENTS.md #8），这里单独补上。
       # 三个门禁按顺序执行；lint/test 加 if: always()：即使前一步失败也会跑完，
       # 一次 CI 能看到全部失败。Build 用默认 success() 条件，任一门禁失败即跳过部署。
