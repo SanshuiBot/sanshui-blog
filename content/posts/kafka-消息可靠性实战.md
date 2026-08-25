@@ -154,7 +154,7 @@ try {
     }
     consumer.commitSync();
 } catch (Exception e) {
-    // 把失败的消息发到死信队列，避免阻塞消费
+    // 把失败的消息发到失败消息队列，避免阻塞消费
     sendToDLQ(records);
     consumer.commitSync();  // commit 包括失败消息的 offset
 }

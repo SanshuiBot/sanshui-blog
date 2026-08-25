@@ -347,7 +347,7 @@ export const useCartStore = defineStore('cart', () => {
 });
 ```
 
-2. **避免循环依赖**。A store 用 B，B 又用 A，会死锁。如果确实有这种需求，把共享的逻辑抽成一个第三方 store 或纯函数。
+2. **避免循环依赖**。A store 用 B，B 又用 A，会陷入循环等待。如果确实有这种需求，把共享的逻辑抽成一个第三方 store 或纯函数。
 
 3. **getter 里用其他 store 要小心性能**。getter 是 computed，会缓存，但如果依赖的另一个 store 的 state 频繁变化，这个 getter 也会频繁重算。
 

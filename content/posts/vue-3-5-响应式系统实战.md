@@ -922,7 +922,7 @@ form.value.username = 'admin'; // 正常触发，因为 ref 会把内部转 reac
 
 ### 案例 6：循环依赖的 computed 导致无限递归
 
-**症状**：两个 computed 互相引用，控制台报 `Maximum recursive calls exceeded` 或页面卡死。
+**症状**：两个 computed 互相引用，控制台报 `Maximum recursive calls exceeded` 或页面无响应。
 
 ```javascript
 import { ref, computed } from 'vue';

@@ -38,7 +38,7 @@
 
 ### 交互收口（hooks / 组件）
 
-**卸载后 setState**: React 组件卸载后定时器仍触发回调、对已死组件调 `setState` 的 bug 类。本仓由 `useSafeTimeout`（ADR-0003）在 hook 层统一管 `useRef` 持 timer ID + effect cleanup 自动 `clearTimeout`。调用方不再手写「ref + cleanup」仪式。 _避免_: timer 泄漏、卸载泄漏（前者是现象，后者是结果）
+**卸载后 setState**: React 组件卸载后定时器仍触发回调、对已卸载组件调 `setState` 的 bug 类。本仓由 `useSafeTimeout`（ADR-0003）在 hook 层统一管 `useRef` 持 timer ID + effect cleanup 自动 `clearTimeout`。调用方不再手写「ref + cleanup」仪式。 _避免_: timer 泄漏、卸载泄漏（前者是现象，后者是结果）
 
 **滚动锁收口**: `useScrollLock(active)`——模态/抽屉打开时锁定 body 滚动，全站唯一实现。此前 Navbar 与 SearchModal 各写一份 overflow 保存/还原，同开时还原互相覆盖；收口后各自记录自己的 prev，幂等。 _避免_: body overflow 锁、滚动锁定（前者是实现细节）
 

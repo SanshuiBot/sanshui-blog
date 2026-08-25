@@ -51,7 +51,7 @@ export function NavigationLoadingProvider({ children }: { children: React.ReactN
 
   const startNavigation = useCallback(() => {
     // 延迟 300ms 显示覆盖层：快跳转（< 300ms）根本看不到覆盖层，
-    // 慢跳转才显示，避免用户误以为卡死。
+    // 慢跳转才显示，避免用户误以为卡住。
     setShowTimer(() => setLoading(true), 300);
     // 兜底 5 秒（正常情况下 PostPage 挂载时 done() 在 ms 级触发）
     setFallbackTimer(clear, 5000);

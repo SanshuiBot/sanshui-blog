@@ -18,7 +18,7 @@ import { useCallback, useEffect, useRef } from 'react';
  * （删「清旧」复杂度只是被推回调用方，不是真缝）。
  *
  * **不覆盖 "inline const" 模式**——SearchModal / CodeCopyInjector / useDismiss 在
- * effect 内 `const t = setTimeout` + cleanup `clearTimeout(t)` 已经安全（闭包绑死 t），
+ * effect 内 `const t = setTimeout` + cleanup `clearTimeout(t)` 已经安全（闭包固定捕获 t），
  * 换 hook 反而多一层间接。
  *
  * @returns `set(fn, delay) => cancel` —— cancel 调未触发的 timer 会被 clearTimeout

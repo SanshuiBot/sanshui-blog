@@ -9,7 +9,7 @@
 ## 关键约束（grilling 收敛）
 
 - **不内置「调用前清旧」**：双向 debounce（Tooltip show/hide 各取消对方）与 replaceable timeout（NavigationLoading 重置 show timer）语义不同，强行内置会让接口比两个独立 cancel 还复杂（删「清旧」复杂度只是被推回调用方，不是真缝）。调用方需要 replaceable 时先调返回的 `cancel()` 再 `set`——hook 内部的 `set` 会先 cancel 上一个未触发 timer，但这是「重排自然清旧」不是编排语义。
-- **"inline const" 模式不在 scope**：SearchModal / CodeCopyInjector / useDismiss 在 effect 内 `const t = setTimeout` + cleanup `clearTimeout(t)` 已经安全（闭包绑死 `t`），换 hook 反而多一层间接。
+- **"inline const" 模式不在 scope**：SearchModal / CodeCopyInjector / useDismiss 在 effect 内 `const t = setTimeout` + cleanup `clearTimeout(t)` 已经安全（闭包固定捕获 `t`），换 hook 反而多一层间接。
 - **ClickEffect 的 fire-and-forget setTimeout 不在 scope**：不对 React state、无卸载泄漏风险，`layer.remove()` 对已脱离 DOM 的 node 是 no-op。
 - **effect `[]` mount-only cleanup**：fn 用 ref 持有，`set`/`cancel` 是 `useCallback` 稳定引用，cleanup 只在 unmount 清遗留 timer——这正是「卸载后 setState」bug 类的修法。
 

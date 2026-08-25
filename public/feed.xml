@@ -2285,7 +2285,7 @@ try {
     }
     consumer.commitSync();
 } catch (Exception e) {
-    // 把失败的消息发到死信队列，避免阻塞消费
+    // 把失败的消息发到失败消息队列，避免阻塞消费
     sendToDLQ(records);
     consumer.commitSync();  // commit 包括失败消息的 offset
 }
@@ -3042,7 +3042,7 @@ SELECT * FROM events WHERE data ? 'user_id';
 
 PostgreSQL 的 MVCC 机制是「标记删除 + 后台 VACUUM 清理」。UPDATE 实际上是「DELETE + INSERT」，旧版本行留在数据文件里，等 VACUUM 回收。
 
-索引膨胀问题：UPDATE 不更新的列也会在索引里留下「死项」。
+索引膨胀问题：UPDATE 不更新的列也会在索引里留下「失效项」。
 
 诊断：
 
@@ -4361,7 +4361,7 @@ end
 **关键点**：
 
 1. **`NX`**：只在 key 不存在时设置
-2. **`EX 10`**：10 秒自动过期，防止死锁
+2. **`EX 10`**：10 秒自动过期，防止锁无法释放
 3. **value 用 UUID**：防止 A 的锁被 B 解开
 4. **解锁用 Lua**：GET + DEL 必须原子
 
@@ -8597,7 +8597,7 @@ form.value.username = 'admin'; // 正常触发，因为 ref 会把内部转 reac
 
 ### 案例 6：循环依赖的 computed 导致无限递归
 
-**症状**：两个 computed 互相引用，控制台报 `Maximum recursive calls exceeded` 或页面卡死。
+**症状**：两个 computed 互相引用，控制台报 `Maximum recursive calls exceeded` 或页面无响应。
 
 ```javascript
 import { ref, computed } from 'vue';
@@ -9944,7 +9944,7 @@ export const useCartStore = defineStore('cart', () => {
 });
 ```
 
-2. **避免循环依赖**。A store 用 B，B 又用 A，会死锁。如果确实有这种需求，把共享的逻辑抽成一个第三方 store 或纯函数。
+2. **避免循环依赖**。A store 用 B，B 又用 A，会陷入循环等待。如果确实有这种需求，把共享的逻辑抽成一个第三方 store 或纯函数。
 
 3. **getter 里用其他 store 要小心性能**。getter 是 computed，会缓存，但如果依赖的另一个 store 的 state 频繁变化，这个 getter 也会频繁重算。
 

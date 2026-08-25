@@ -56,7 +56,7 @@ next.config.ts  .github/workflows/deploy.yml
 21. StrictMode effects 双执行，client 副作用要幂等清理。
 22. `trailingSlash`：路由都以 `/` 结尾。
 23. sharp/postcss 在 overrides 锁版本，升级同步检查。
-24. Accent 色用 `rgb(var(--accent-xxx-rgb)/α)`，不写死 rgba/hex；新预设只改 `ACCENT_PRESETS`。
+24. Accent 色用 `rgb(var(--accent-xxx-rgb)/α)`，不写固定 rgba/hex；新预设只改 `ACCENT_PRESETS`。
 25. hover 变色纯 CSS，不交 Framer（变量会被解析卡色）。
 26. Accent 联动 hover 不用 Tailwind utility，自定义类 + `html.dark`/`:not(.dark)` 双前缀。
 27. globals.css 同一元素规则集中，亮色紧贴暗色基写。

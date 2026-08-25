@@ -179,7 +179,7 @@ SELECT * FROM events WHERE data ? 'user_id';
 
 PostgreSQL 的 MVCC 机制是「标记删除 + 后台 VACUUM 清理」。UPDATE 实际上是「DELETE + INSERT」，旧版本行留在数据文件里，等 VACUUM 回收。
 
-索引膨胀问题：UPDATE 不更新的列也会在索引里留下「死项」。
+索引膨胀问题：UPDATE 不更新的列也会在索引里留下「失效项」。
 
 诊断：
 

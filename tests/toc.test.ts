@@ -57,7 +57,7 @@ describe('extractHeadings', () => {
     expect(items[0]!.id).toBe('同标题-1');
   });
 
-  it('跳过代码围栏内的假标题，避免死锚点', () => {
+  it('跳过代码围栏内的假标题，避免失效锚点', () => {
     const items = extractHeadings('```md\n## 围栏里的假标题\n```\n\n## 真标题');
     expect(items.map((i) => i.text)).toEqual(['真标题']);
   });

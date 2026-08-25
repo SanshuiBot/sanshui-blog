@@ -65,7 +65,7 @@ export default function Navbar() {
   // 抽屉打开时锁定背景滚动：遮罩半透明，避免背景在抽屉下滚动穿帮。
   // （锁定逻辑已收口到 useScrollLock，此处删除手写实现）
   // 视口跨过 md 断点（≥768px）时关闭抽屉：抽屉/遮罩/菜单按钮均 md:hidden，
-  // 不关闭的话 mobileOpen 保持 true，上面的 body 滚动锁会永久泄漏（横屏/拉宽窗口时页面卡死）
+  // 不关闭的话 mobileOpen 保持 true，上面的 body 滚动锁会永久泄漏（横屏/拉宽窗口时页面卡住）
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 768px)');
     const onChange = (e: MediaQueryListEvent) => {

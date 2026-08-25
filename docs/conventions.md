@@ -91,7 +91,7 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 **只有跳转到文章详情页（`/posts/...`）的 `<Link>` 才调用 `startNavigation`**：
 
-- 入口（4 处）：`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link、`SearchModal` 的搜索结果 Link、`FeaturedPost` 的标题/阅读全文 Link——新增时记得补 `onClick={startNavigation}`，漏加的跳转会看不到加载覆盖层，体感「卡死」。
+- 入口（4 处）：`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link、`SearchModal` 的搜索结果 Link、`FeaturedPost` 的标题/阅读全文 Link——新增时记得补 `onClick={startNavigation}`，漏加的跳转会看不到加载覆盖层，体感「卡住」。
 - 出口：`src/app/posts/[slug]/page.tsx` 挂载时调用 `done()` 隐藏覆盖层——新增详情页路由时勿漏，否则 loading 会卡住不消失。
 
 **导航、标签、归档、友链等其他入口一律不加**——非文章详情跳转出现 loading 覆盖层会严重影响体验。
@@ -127,7 +127,7 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 ## 18. TOC 只提取 h2/h3，锚点与渲染侧同源（github-slugger）
 
-`src/lib/toc.ts` 的 `extractHeadings()` 逐行扫描，只把 `##`（h2）与 `###`（h3）放进目录，`#`（h1）和 `####`（h4）不进目录。**id 生成与渲染侧 rehype-slug 共用同一个 `github-slugger`**：先剥 HTML 标签再 `slug()`，h1~h6 全部推进 slugger 状态（重复标题得到 `-1/-2` 后缀），因此目录锚点与正文标题 id **严格一致**——中文/重音拉丁/日文假名都保留（`## 章节标题` → `id="章节标题"`、`## Résumé` → `id="résumé"`）。github-slugger v2 **不**折叠重复连字符、不去边缘连字符（`## A--B` → `id="a--b"`），这是与渲染侧一致的正确行为，**不要**再用旧正则去「修正」。行扫描还会跳过代码围栏（``` / ~~~）内的假标题，避免死锚点。**新增需要进目录的标题，必须用 `##` 或 `###`。**
+`src/lib/toc.ts` 的 `extractHeadings()` 逐行扫描，只把 `##`（h2）与 `###`（h3）放进目录，`#`（h1）和 `####`（h4）不进目录。**id 生成与渲染侧 rehype-slug 共用同一个 `github-slugger`**：先剥 HTML 标签再 `slug()`，h1~h6 全部推进 slugger 状态（重复标题得到 `-1/-2` 后缀），因此目录锚点与正文标题 id **严格一致**——中文/重音拉丁/日文假名都保留（`## 章节标题` → `id="章节标题"`、`## Résumé` → `id="résumé"`）。github-slugger v2 **不**折叠重复连字符、不去边缘连字符（`## A--B` → `id="a--b"`），这是与渲染侧一致的正确行为，**不要**再用旧正则去「修正」。行扫描还会跳过代码围栏（``` / ~~~）内的假标题，避免失效锚点。**新增需要进目录的标题，必须用 `##` 或 `###`。**
 
 TOC 组件（`src/components/Post/TableOfContents.tsx`）的实现约定：
 
@@ -170,7 +170,7 @@ TOC 组件（`src/components/Post/TableOfContents.tsx`）的实现约定：
 
 约定：
 
-- **新增 accent 色的 CSS**：用 `rgb(var(--accent-xxx-rgb) / α)`，**不要**写死 `rgba(168, 85, 247, ...)` 或 `#a855f7`，否则换色不联动。
+- **新增 accent 色的 CSS**：用 `rgb(var(--accent-xxx-rgb) / α)`，**不要**写固定 `rgba(168, 85, 247, ...)` 或 `#a855f7`，否则换色不联动。
 - **新增预设**：在 `ACCENT_PRESETS` 追加一项，**无需改 `layout.tsx`**——但 `presets` JSON 是构建期固化的，**新增预设后必须重新 build** 才能被防 FOUC script 识别。
 - **改默认预设**：改 `DEFAULT_ACCENT_ID`。
 - **亮/暗主题与 accent 正交**：next-themes 管 `.dark` 类，AccentPicker 管 `--accent-*-rgb`，两者互不干扰。
