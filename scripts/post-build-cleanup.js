@@ -2,7 +2,7 @@
 /**
  * 构建产物清理（post-build）
  * -----------------------------------------------
- * 删除 out/ 中三类确认无引用的产物，缩小部署体积：
+ * 删除 out/ 中两类确认无引用的产物，缩小部署体积：
  *
  * 1. 冗余 chunk：`framework-*.js` / `main-*.js`（Pages Router 遗留）。
  *    Next 16 App Router 已把 React 打进 `4bd1b696-*`，framework/main
@@ -10,10 +10,10 @@
  *    webpack runtime 的 chunk URL 映射表中，浏览器永远不会请求。
  * 2. 未引用字体：Next 字体优化生成的 `*.p.woff2` preload 子集，
  *    但 HTML 无 `<link rel="preload" as="font">`、CSS @font-face 也不引用。
- * 3. `__next.*` 调试副本：每个路由目录下与 index.txt 同内容的
- *    `__next._full.txt` / `__next._tree.txt` / `__next.<route>/`。
- *    客户端在静态导出下只请求 `<route>/index.txt`（软导航 RSC payload），
- *    `__next.*` 路径在客户端 JS 中零请求（fetch-server-response.js 拼接逻辑）。
+ *
+ * **注意：`__next.*`（`__next._tree.txt` / `__next.<route>/__PAGE__.txt` 等）
+ * 是 App Router 客户端 prefetch 的路由树/segment RSC payload（线上实测
+ * 请求 `/posts/xxx/__next._tree.txt`），不是调试副本，绝不能删。**
  *
  * 安全校验：删除前收集所有 .html/.css 中的资源引用 + webpack runtime
  * 的 chunk 映射，**被引用到的一律不删**——即使未来 Next 行为变化也不会误删。
@@ -110,30 +110,6 @@ for (const { rel } of allFiles) {
 for (const { rel } of allFiles) {
   if (rel.endsWith('.woff2')) tryDelete(rel, '未引用字体');
 }
-
-// 3. __next.* 调试副本：文件与目录（顶层 + 各路由目录）
-for (const { rel } of allFiles) {
-  if (rel.includes('/__next.') || rel.startsWith('__next.')) tryDelete(rel, '__next 调试副本');
-}
-// 目录形态：__next.<route>/ 目录（如 out/archive/__next.archive/）
-for (const entry of fs.readdirSync(outDir, { withFileTypes: true })) {
-  if (entry.name.startsWith('__next.') && entry.isDirectory()) {
-    fs.rmSync(path.join(outDir, entry.name), { recursive: true, force: true });
-    deleted.push(`${entry.name}/（__next 调试副本目录）`);
-  }
-}
-const walkDirs = (dir) => {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name.startsWith('__next.')) {
-        fs.rmSync(p, { recursive: true, force: true });
-        deleted.push(`${path.relative(outDir, p)}/（__next 调试副本目录）`);
-      } else walkDirs(p);
-    }
-  }
-};
-walkDirs(outDir);
 
 console.log(`[post-build-cleanup] 删除 ${deleted.length} 个，跳过 ${skipped.length} 个`);
 for (const d of deleted) console.log(`  ✂ ${d}`);
