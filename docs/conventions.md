@@ -101,7 +101,6 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 - 入口：`Navbar` 右上角 Search 按钮 + 全局 `⌘K` / `Ctrl+K` 快捷键。**快捷键监听在 `Navbar` 常驻注册**；Esc / 外点关闭在 `SearchModal` 内由 `useDismiss` 处理（约定 #29）。
 - 数据：`SearchModal` 首次打开时 `fetch(withBase('/posts-index.json'))`，拉取轻量索引（~10KB，只含 slug/title/date/excerpt/tags，剔除正文）。**这是刻意设计**：避免全量文章数据被序列化进根 layout 的 RSC payload。
 - 索引生成：`scripts/gen-posts-index.js` 在 `predev` / `prebuild` 时跑。
-- 全文搜索另由 Pagefind 在 build 后扫描 `out/` 生成索引（与 ⌘K 是两套机制）。
 
 ## 15. 文章卡片网格「跟手」流式渲染
 
@@ -204,7 +203,7 @@ Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-vi
 
 Next `<Link>` 对含 `.` 的路径段（如 `/tags/Next.js/`）按「文件路径」处理，**渲染时会剥离尾斜杠**（`/tags/Next.js/` → `/tags/Next.js`），其他标签（如 `/tags/前端/`）不受影响。这导致客户端软导航请求 RSC payload 走 `/tags/Next.js.txt`，而静态导出实际生成在 `/tags/Next.js/index.txt` → 线上 404（页面能打开，但控制台报错、软导航降级）。
 
-**修复**：`scripts/gen-dotted-tag-payloads.js` 在 build 流水线末尾（`pagefind` 之后）扫描 `out/tags/`，把含点号目录的 `index.txt` 复制为 `<名字>.txt`，补齐客户端实际请求的路径。**新增含点号标签后无需改代码**——脚本自动处理；但必须重新 `npm run build` 才生效。
+**修复**：`scripts/gen-dotted-tag-payloads.js` 在 build 流水线末尾扫描 `out/tags/`，把含点号目录的 `index.txt` 复制为 `<名字>.txt`，补齐客户端实际请求的路径。**新增含点号标签后无需改代码**——脚本自动处理；但必须重新 `npm run build` 才生效。
 
 ## 29. 弹层关闭统一走 `useDismiss`
 

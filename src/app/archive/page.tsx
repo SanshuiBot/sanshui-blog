@@ -12,6 +12,7 @@
  *    用于按标签筛选。浮层绝对定位，不挤压下方文章网格。
  */
 import { getAllPosts, getTagCounts } from '@/lib/posts';
+import { toIndexEntry, type PostIndexEntry } from '@/lib/post-index';
 import PostGrid from '@/components/Post/PostGrid';
 import FilterDropdown from '@/components/Archive/FilterDropdown';
 import ArrowLink from '@/components/UI/ArrowLink';
@@ -26,8 +27,11 @@ export const metadata: Metadata = {
 
 export default function ArchivePage() {
   const posts = getAllPosts();
-  const grouped: Record<string, typeof posts> = {};
-  posts.forEach((p) => {
+  // 只把索引 5 字段透传给 client PostGrid——完整 Post 含 content，
+  // 透传会把全部文章正文序列化进 RSC payload（每篇 20-50KB，ADR-0004）
+  const entries = posts.map(toIndexEntry);
+  const grouped: Record<string, PostIndexEntry[]> = {};
+  entries.forEach((p) => {
     const y = new Date(p.date).getFullYear().toString();
     (grouped[y] ??= []).push(p);
   });

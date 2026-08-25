@@ -1,30 +1,19 @@
 ﻿'use client';
-import { useMemo } from 'react';
 import { Clock, Tag, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import ArrowLink from '@/components/UI/ArrowLink';
 import BackToTop from '@/components/UI/BackToTop';
-import readingTime from 'reading-time';
 import CodeCopyInjector from './CodeCopyInjector';
 import { formatDate } from '@/lib/formatDate';
+import type { PostIndexEntry } from '@/lib/post-index';
 
 interface Props {
-  post: {
-    slug: string;
-    title: string;
-    date: string;
-    excerpt: string;
-    tags: string[];
-    content: string;
-  };
+  post: PostIndexEntry;
+  /** 服务端算好的预计阅读分钟数（避免把全文 content 透传给 client 组件） */
+  readingMinutes: number;
 }
 
-export default function PostMeta({ post }: Props) {
-  const rt = useMemo(
-    () => Math.max(1, Math.ceil(readingTime(post.content, { wordsPerMinute: 300 }).minutes)),
-    [post.content],
-  );
-
+export default function PostMeta({ post, readingMinutes }: Props) {
   return (
     <>
       <CodeCopyInjector />
@@ -63,7 +52,7 @@ export default function PostMeta({ post }: Props) {
           <span className="text-fg-dim">&middot;</span>
           <span className="flex items-center gap-1.5">
             <Calendar size={14} />
-            预计阅读 {rt} 分钟
+            预计阅读 {readingMinutes} 分钟
           </span>
         </div>
       </header>

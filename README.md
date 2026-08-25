@@ -49,7 +49,7 @@
 | 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                                                                                                            |
 | 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                                                                            |
 | 🗂️ **项目卡片墙**        | `/projects/` 统一尺寸 Bento 卡片：左侧竖线 URL 哈希取色混主题色 + hover 语言色光晕跟随鼠标                                            |
-| 🔍 **⌘K 全局搜索**       | 空格分词**多关键词 AND** 匹配 + 命中 `<mark>` 高亮 + 键盘流（↑↓/Enter/Esc）+ 无结果态；Pagefind 另建全文索引（两套独立机制）          |
+| 🔍 **⌘K 全局搜索**       | 空格分词**多关键词 AND** 匹配 + 命中 `<mark>` 高亮 + 键盘流（↑↓/Enter/Esc）+ 无结果态，索引 `posts-index.json`（~10KB）               |
 | 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                                                                                                              |
 | 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条                                                    |
 | 💬 **Giscus 评论**       | GitHub Discussions 驱动，零后端；og:title 映射 + strict 摘要查找；亮暗主题联动                                                        |
@@ -74,7 +74,7 @@
 | **动画**   | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                    |
 | **图标**   | Lucide React + 自定义 SVG 图标（无 react-icons 整包依赖）            |
 | **内容**   | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)          |
-| **搜索**   | Pagefind (静态全文搜索，构建时自动索引)                              |
+| **搜索**   | 自研 ⌘K 搜索（`posts-index.json` 轻量索引，构建期预生成）            |
 | **评论**   | Giscus (GitHub Discussions 驱动，零后端)                             |
 | **测试**   | Vitest 4（lib 纯函数/契约 + jsdom 组件测试 RTL，`tests/`）           |
 | **订阅**   | RSS 2.0（构建期生成 `feed.xml`，含全文 CDATA 与标签分类）            |
@@ -160,7 +160,7 @@ npm install
 npm run dev
 # → http://localhost:3000
 
-# 生产构建 (静态导出 + Pagefind 搜索索引)
+# 生产构建 (静态导出)
 npm run build
 
 # 预览构建产物
@@ -172,7 +172,7 @@ npx serve out
 | 命令                   | 作用                                                                                                                                      |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引 + RSS feed（`--webpack` 绕开 Turbopack 的 Tailwind v4.3 CSS 解析问题） |
-| `npm run build`        | prebuild 生成索引/RSS/og 图 → 静态导出 + Pagefind 索引，通过 `NEXT_BUILD=1` 环境变量开启                                                  |
+| `npm run build`        | prebuild 生成索引/RSS/og 图 → 静态导出，通过 `NEXT_BUILD=1` 环境变量开启                                                                  |
 | `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）                                                        |
 | `npm run lint`         | ESLint v9 flat config，只报告不修改                                                                                                       |
 | `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                                                                        |
@@ -194,7 +194,6 @@ npm run dev
 npm run build
   └─ prebuild → 生成 posts-index.json (~10KB 轻量索引) + feed.xml (RSS 2.0) + og.png (1200×630 社交卡片图，sharp SVG)
   └─ cross-env NEXT_BUILD=1 next build --webpack → 静态导出 out/
-  └─ pagefind --site out → 全文搜索索引（与 ⌘K 的 posts-index.json 是两套独立机制）
   └─ gen-dotted-tag-payloads.js → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
 ```
 
@@ -364,8 +363,7 @@ graph LR
   C1 --> D["prebuild: 生成索引 / RSS / og 图"]
   D --> E["npm run build"]
   E --> F["静态导出 out/"]
-  F --> G["Pagefind 搜索索引"]
-  G --> H["Upload ./out Artifact"]
+  F --> H["Upload ./out Artifact"]
   H --> I["Deploy to GitHub Pages"]
 ```
 
@@ -374,9 +372,9 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
 **部署特征：**
 
 - 纯静态 HTML 输出（`output: 'export'`），无需 Node.js 服务器
-- Pagefind 在构建后自动索引全文搜索
+- ⌘K 搜索拉取 `posts-index.json` 轻量索引（~10KB，构建期预生成）
 - 安全响应头走 `public/_headers`（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）；`output: 'export'` 下 `next.config.ts` 的 `headers()` 不生效
-- 静态资源一年长缓存（`/_next/static/*` 与 `/pagefind/*`，`immutable`）
+- 静态资源一年长缓存（`/_next/static/*`，`immutable`）
 
 ---
 

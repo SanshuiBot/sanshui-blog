@@ -4,16 +4,16 @@
 
 ## 命令
 
-| 用途 | 命令                              | 备注                                                                                       |
-| ---- | --------------------------------- | ------------------------------------------------------------------------------------------ |
-| 开发 | `npm run dev`                     | `predev` 建索引/feed；不设 `NEXT_BUILD`；`--webpack`（#31）                                |
-| 构建 | `npm run build`                   | 索引/feed/og → `NEXT_BUILD=1 next build --webpack` 静态导出 → pagefind → dotted-tag（#28） |
-| Lint | `npm run lint` / `lint:fix`       | 构建不跑 lint，须单独跑（#8）                                                              |
-| 格式 | `npm run format` / `format:check` | Prettier                                                                                   |
-| 类型 | `npm run typecheck`               | `tsc --noEmit`（strict）                                                                   |
-| 测试 | `npm run test`                    | Vitest：lib 纯函数/契约 + jsdom 组件测试（RTL）                                            |
-| 预览 | `npx serve out`                   | 构建产物                                                                                   |
-| 提交 | `git commit`                      | Husky：prettier(暂存) → typecheck → test                                                   |
+| 用途 | 命令                              | 备注                                                                            |
+| ---- | --------------------------------- | ------------------------------------------------------------------------------- |
+| 开发 | `npm run dev`                     | `predev` 建索引/feed；不设 `NEXT_BUILD`；`--webpack`（#31）                     |
+| 构建 | `npm run build`                   | 索引/feed/og → `NEXT_BUILD=1 next build --webpack` 静态导出 → dotted-tag（#28） |
+| Lint | `npm run lint` / `lint:fix`       | 构建不跑 lint，须单独跑（#8）                                                   |
+| 格式 | `npm run format` / `format:check` | Prettier                                                                        |
+| 类型 | `npm run typecheck`               | `tsc --noEmit`（strict）                                                        |
+| 测试 | `npm run test`                    | Vitest：lib 纯函数/契约 + jsdom 组件测试（RTL）                                 |
+| 预览 | `npx serve out`                   | 构建产物                                                                        |
+| 提交 | `git commit`                      | Husky：prettier(暂存) → typecheck → test                                        |
 
 > 别用 `npm start`（纯静态导出）。
 
@@ -46,7 +46,7 @@ next.config.ts  .github/workflows/deploy.yml
 11. 客户端动效在 `AmbientEffects` 用 `dynamic(...,{ssr:false})` 注册；别自定义 splitChunks。装饰性 JS 动效组件若创建 MotionValue/Spring（如 PostCard 的 spotlight/3D tilt 收口 `Post/CardSpotlight.tsx`），非骨架模式下才挂载，cleanup 调 onRefs(null) 使 StrictMode 双执行幂等、MotionValue 可被 GC。
 12. 默认亮色（`html:not(.dark)`），改暗色同步查亮色分支。
 13. 导航加载：仅 `/posts/...` 的 `<Link>` 调 `startNavigation`；详情页挂载调 `done()`。
-14. ⌘K 搜索 fetch `posts-index.json`，不序列化进 RSC；与 Pagefind 两套机制。
+14. ⌘K 搜索 fetch `posts-index.json`，不序列化进 RSC。
 15. 卡片流式渲染：同帧叠加、`h-60`、`slot-${i}` key、`prefetchedRef` 随 slug 重置。
 16. MDX：`next-mdx-remote/rsc`+gfm+slug+highlight；文章内不用 React 组件。
 17. 文章样式走 `.prose-article`，不是 Tailwind `prose`。

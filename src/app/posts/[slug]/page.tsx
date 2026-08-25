@@ -15,7 +15,9 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getPostBySlug, getAllPosts, getAdjacentPosts } from '@/lib/posts';
+import { toIndexEntry } from '@/lib/post-index';
 import { extractHeadings } from '@/lib/toc';
+import readingTime from 'reading-time';
 import PostContent from '@/components/Post/PostContent';
 import PostMeta from '@/components/Post/PostMeta';
 import PostNav from '@/components/Post/PostNav';
@@ -50,6 +52,12 @@ export default async function PostPage({ params }: Props) {
 
   const headings = extractHeadings(post.content);
   const { prev, next } = getAdjacentPosts(slug);
+  // 阅读时间在服务端算好再透传——PostMeta 是 client 组件，
+  // 直接传全文 content 会把整篇文章序列化进 RSC payload
+  const readingMinutes = Math.max(
+    1,
+    Math.ceil(readingTime(post.content, { wordsPerMinute: 300 }).minutes),
+  );
 
   return (
     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
@@ -58,7 +66,7 @@ export default async function PostPage({ params }: Props) {
       <div className="lg:flex lg:gap-10">
         <TableOfContents items={headings} />
         <div className="flex-1 min-w-0 max-w-3xl lg:order-1">
-          <PostMeta post={post} />
+          <PostMeta post={toIndexEntry(post)} readingMinutes={readingMinutes} />
           <PostContent content={post.content} />
           <PostNav
             prev={prev ? { slug: prev.slug, title: prev.title } : null}

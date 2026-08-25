@@ -15,6 +15,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getPostsByTag, getAllTags } from '@/lib/posts';
+import { toIndexEntry } from '@/lib/post-index';
 import PostGrid from '@/components/Post/PostGrid';
 import ArrowLink from '@/components/UI/ArrowLink';
 import { Hash } from 'lucide-react';
@@ -36,7 +37,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function TagPage({ params }: Props) {
   const { tag } = await params;
   const decoded = decodeURIComponent(tag);
-  const posts = getPostsByTag(decoded);
+  // 只投影索引 5 字段再透传 client PostGrid，避免全文 markdown 进 RSC payload（ADR-0004）
+  const posts = getPostsByTag(decoded).map(toIndexEntry);
   if (posts.length === 0) notFound();
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">

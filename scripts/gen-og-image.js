@@ -154,7 +154,11 @@ async function generateOG() {
   const svg = buildSvgContent();
   const outPath = path.resolve(__dirname, '..', 'public', 'og.png');
 
-  await sharp(Buffer.from(svg, 'utf-8')).png({ compressionLevel: 9 }).toFile(outPath);
+  // palette 量化：Aurora 渐变用 256 色索引 PNG（实测 306K→175K，-43%），
+  // 社交卡片非首屏资源，肉眼无感；compressionLevel 9 已是 zlib 最高
+  await sharp(Buffer.from(svg, 'utf-8'))
+    .png({ compressionLevel: 9, palette: true })
+    .toFile(outPath);
 
   const stats = fs.statSync(outPath);
   console.log(`✓ 已生成 ${outPath} (${(stats.size / 1024).toFixed(1)} KB, ${W}x${H})`);
