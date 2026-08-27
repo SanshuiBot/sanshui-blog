@@ -19,13 +19,17 @@ export interface SpotlightRefs {
   onLeave: () => void;
 }
 
-export default function CardSpotlight({
-  ref: outerRef,
-  onRefs,
-}: {
+/**
+ * props 用具名 interface 而非内联类型字面量：Next.js TS 插件（client-boundary 规则）
+ * 只检查内联字面量中的函数类型 prop，会误报 onRefs「不是 Server Action」——
+ * 但 onRefs 是纯客户端回调，仅被同为 client 组件的 PostCard 使用，永不跨 Server/Client 边界。
+ */
+interface CardSpotlightProps {
   ref: React.RefObject<HTMLDivElement | null>;
   onRefs: (refs: SpotlightRefs | null) => void;
-}) {
+}
+
+export default function CardSpotlight({ ref: outerRef, onRefs }: CardSpotlightProps) {
   const mx = useMotionValue(50);
   const my = useMotionValue(50);
   const sx = useSpring(mx, { stiffness: 100, damping: 20 });

@@ -31,7 +31,17 @@ function Highlight({ text, query }: { text: string; query: string }) {
   );
 }
 
-export default function SearchModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+/**
+ * props 用具名 interface 而非内联类型字面量：Next.js TS 插件（client-boundary 规则）
+ * 只检查内联字面量中的函数类型 prop，会误报 onClose「不是 Server Action」——
+ * 但 onClose 是纯客户端回调（Navbar 传 () => setSearchOpen(false)），永不跨 Server/Client 边界。
+ */
+interface SearchModalProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [q, setQ] = useState('');
   const [posts, setPosts] = useState<PostIndexEntry[] | null>(null);
   const [activeIdx, setActiveIdx] = useState(-1);
