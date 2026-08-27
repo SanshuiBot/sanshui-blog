@@ -1,5 +1,5 @@
 ﻿'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -9,7 +9,12 @@ import ThemeToggle from '@/components/UI/ThemeToggle';
 import Github from '@/components/UI/GithubIcon';
 import AccentPicker from '@/components/UI/AccentPicker';
 import Tooltip from '@/components/UI/Tooltip';
-import SearchModal from '@/components/UI/SearchModal';
+
+// SearchModal 懒加载：首次 ⌘K/点击打开才拉取搜索代码（~13KB chunk），不占每页首载包。
+// 手动 import 而非 next/dynamic：chunk 加载失败（旧部署哈希 404/网络错误）可关闭并
+// 下次自动重试，避免 dynamic 无错误回退时永久卡在「open 但不渲染」的死态。
+// 条件挂载后关闭动画退化为即时消失（进入动画仍由组件内 AnimatePresence 播放）。
+type SearchModalComponent = typeof import('@/components/UI/SearchModal').default;
 import { useDismiss } from '@/components/UI/useDismiss';
 import { useScrollLock } from '@/components/UI/useScrollLock';
 import { useFocusTrap } from '@/components/UI/useFocusTrap';
@@ -29,6 +34,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  // 懒加载的搜索组件（null = 未加载/加载失败，失败后下次打开自动重试）
+  const [SearchModalComp, setSearchModalComp] = useState<SearchModalComponent | null>(null);
+  const searchLoadingRef = useRef(false);
   const mobileMenuRef = useRef<HTMLElement>(null);
 
   // 移动端菜单仅启用 Esc 关闭：开关按钮在 header（浮层外），mousedown 外点判定会误关，
@@ -49,18 +57,37 @@ export default function Navbar() {
     setMobileOpen(false);
   }
 
-  // 全局 ⌘K / Ctrl+K 打开搜索：监听此前被 SearchModal 的 open 门控导致快捷键失效，
-  // 开关状态与快捷键收敛在同一模块（Navbar 持有 searchOpen）。
+  // 打开搜索：置 open + 首次惰性加载搜索 chunk（成功后挂载组件，失败关闭可重试）
+  const openSearch = useCallback(() => {
+    setSearchOpen(true);
+    if (SearchModalComp !== null || searchLoadingRef.current) return;
+    searchLoadingRef.current = true;
+    import('@/components/UI/SearchModal')
+      .then((m) => setSearchModalComp(() => m.default))
+      .catch(() => {
+        // chunk 加载失败（旧部署哈希 404/网络错误）：关闭模态，下次打开重试，不渲染死态
+        setSearchOpen(false);
+      })
+      .finally(() => {
+        searchLoadingRef.current = false;
+      });
+  }, [SearchModalComp]);
+
+  // 全局 ⌘K / Ctrl+K 打开搜索 + Esc 关闭兜底（开关状态收敛在 Navbar 持有 searchOpen）。
+  // Esc 兜底覆盖「chunk 未到/加载失败」窗口期——此时模态未挂载，组件内 useDismiss
+  // 的 Esc 无处消费；模态挂载后两处 Esc 均触发 setSearchOpen(false)，幂等。
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setSearchOpen(true);
+        openSearch();
+      } else if (e.key === 'Escape' && searchOpen) {
+        setSearchOpen(false);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [openSearch, searchOpen]);
 
   // 抽屉打开时锁定背景滚动：遮罩半透明，避免背景在抽屉下滚动穿帮。
   // （锁定逻辑已收口到 useScrollLock，此处删除手写实现）
@@ -126,7 +153,7 @@ export default function Navbar() {
             <Tooltip label={`搜索 (${searchHotkeyLabel()})`}>
               <button
                 onClick={() => {
-                  setSearchOpen(true);
+                  openSearch();
                   setMobileOpen(false);
                 }}
                 className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5"
@@ -231,7 +258,9 @@ export default function Navbar() {
           </motion.aside>
         )}
       </AnimatePresence>
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {searchOpen && SearchModalComp !== null && (
+        <SearchModalComp open onClose={() => setSearchOpen(false)} />
+      )}
     </>
   );
 }

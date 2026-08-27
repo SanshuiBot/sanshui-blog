@@ -26,7 +26,8 @@ import {
  * 点击调色板图标弹出 Popover：
  *  - 上半：5 个预设配色，点击即应用
  *  - 下半：「自定义」入口，6 个通道各一个 <input type="color">，
- *    任一改变即生成 custom 预设 → saveCustomPreset + applyAccent
+ *    任一改变即生成 custom 预设 → 即时 applyAccent（拖拽实时预览）
+ *    + 尾随防抖持久化（localStorage 同步写合并到松手后一次，避免拖拽卡顿）
  *
  * 防 FOUC 由 layout.tsx 的 inline script 处理（首屏即应用上次的 accent）。
  */
@@ -37,6 +38,37 @@ export default function AccentPicker() {
   const [customHex, setCustomHex] = useState<Record<string, string>>({});
   const popoverRef = useRef<HTMLDivElement>(null);
   const firstButtonRef = useRef<HTMLButtonElement>(null);
+  // 持久化尾随防抖定时器（自定义色拖拽期间只写 CSS 变量，localStorage 合写一次）
+  const persistTimer = useRef<number | null>(null);
+
+  // 卸载时清掉未落盘的定时器（防御性；组件常驻 Navbar，正常不会触发）
+  useEffect(() => {
+    return () => {
+      if (persistTimer.current !== null) window.clearTimeout(persistTimer.current);
+    };
+  }, []);
+
+  /**
+   * 应用 accent（即时视觉）+ 持久化。
+   * immediate=true（预设单选）：立即写 localStorage；false（自定义拖拽）：
+   * 尾随防抖 400ms 合写——拖拽过程每个 onChange 都做同步 localStorage.setItem
+   * 会阻塞主线程造成卡顿，改为松手停顿后写一次。
+   */
+  const persistAccent = (preset: AccentPreset, id: string, immediate: boolean) => {
+    applyAccent(preset);
+    if (persistTimer.current !== null) window.clearTimeout(persistTimer.current);
+    const write = () => {
+      persistTimer.current = null;
+      if (id === CUSTOM_ACCENT_ID) saveCustomPreset(preset);
+      try {
+        window.localStorage.setItem(ACCENT_STORAGE_KEY, id);
+      } catch {
+        // localStorage 不可用（隐私模式等）时静默失败
+      }
+    };
+    if (immediate) write();
+    else persistTimer.current = window.setTimeout(write, 400);
+  };
 
   // 打开时聚焦第一个预设按钮，让键盘用户无需 Tab 导航即可开始
   useEffect(() => {
@@ -73,7 +105,7 @@ export default function AccentPicker() {
   // 点击外部 / Esc 关闭（外点判定 + 延迟绑定统一收口在 useDismiss）
   useDismiss(popoverRef, () => setOpen(false), { enabled: open });
 
-  // 选中预设（预设或自定义）
+  // 选中预设（预设或自定义）——单击，立即持久化
   const handleSelect = (id: string) => {
     let preset: AccentPreset;
     if (id === CUSTOM_ACCENT_ID) {
@@ -83,29 +115,18 @@ export default function AccentPicker() {
       preset = getPreset(id);
     }
     setActiveId(preset.id);
-    applyAccent(preset);
-    try {
-      window.localStorage.setItem(ACCENT_STORAGE_KEY, preset.id);
-    } catch {
-      // localStorage 不可用（隐私模式等）时静默失败
-    }
+    persistAccent(preset, preset.id, true);
     setOpen(false);
   };
 
-  // 自定义通道色值变更
+  // 自定义通道色值变更（拖拽高频触发：即时换色，localStorage 尾随防抖合写）
   const handleCustomChange = (ch: string, hex: string) => {
     const next = { ...customHex, [ch]: hex };
     setCustomHex(next);
     const preset = buildCustomPreset(next);
     if (!preset) return;
     setActiveId(CUSTOM_ACCENT_ID);
-    applyAccent(preset);
-    saveCustomPreset(preset);
-    try {
-      window.localStorage.setItem(ACCENT_STORAGE_KEY, CUSTOM_ACCENT_ID);
-    } catch {
-      // 静默失败
-    }
+    persistAccent(preset, CUSTOM_ACCENT_ID, false);
   };
 
   return (
@@ -170,7 +191,7 @@ export default function AccentPicker() {
                 return (
                   <label
                     key={ch}
-                    className="group relative flex flex-col items-center gap-1 cursor-pointer rounded-lg p-1.5 transition-all hover:bg-white/5"
+                    className="group relative flex flex-col items-center gap-1 cursor-pointer rounded-lg p-1.5 transition-all hover:bg-white/5 focus-within:ring-2 focus-within:ring-accent-violet/50"
                     title={ACCENT_CHANNEL_LABELS[ch]}
                   >
                     {/* 精致色盘：外层微光晕 + 内层当前色圆点 */}
@@ -190,7 +211,6 @@ export default function AccentPicker() {
                       value={hex}
                       onChange={(e) => handleCustomChange(ch, e.target.value)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      tabIndex={-1}
                       aria-label={`${ACCENT_CHANNEL_LABELS[ch]}颜色`}
                     />
                     <span className="text-[10px] text-gray-500 group-hover:text-gray-300 transition-colors">
@@ -200,10 +220,15 @@ export default function AccentPicker() {
                 );
               })}
             </div>
-            {/* 恢复默认：清空自定义预设并重置到 aurora */}
+            {/* 恢复默认：清掉未落盘的防抖写，清空自定义预设并重置到 aurora */}
             {activeId === CUSTOM_ACCENT_ID && (
               <button
                 onClick={() => {
+                  // 先取消 pending 的防抖持久化，防止随后触发覆盖刚恢复的默认色
+                  if (persistTimer.current !== null) {
+                    window.clearTimeout(persistTimer.current);
+                    persistTimer.current = null;
+                  }
                   const defaultPreset = getPreset(DEFAULT_ACCENT_ID);
                   setActiveId(DEFAULT_ACCENT_ID);
                   applyAccent(defaultPreset);

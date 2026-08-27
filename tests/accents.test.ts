@@ -13,6 +13,8 @@ import {
   CUSTOM_ACCENT_STORAGE_KEY,
   resolveAccentColors,
   accentBootstrapScript,
+  themeBootstrapScript,
+  THEME_COLORS,
 } from '@/lib/accents';
 
 describe('hexToRgb', () => {
@@ -230,5 +232,106 @@ describe('globals.css :root 默认 accent 变量与 ACCENT_PRESETS 一致（跨�
       const m = new RegExp(`--accent-${ch}-rgb:\\s*([^;]+);`).exec(css);
       expect(m?.[1]?.trim()).toBe(aurora.colors[ch]);
     }
+  });
+
+  it('亮色下 --color-accent-* 派生加深（对比度增强，不覆盖原始 RGB）', () => {
+    const css = readFileSync(join(process.cwd(), 'src/styles/globals.css'), 'utf-8');
+    for (const ch of ACCENT_CHANNELS) {
+      // 主题令牌在亮色分支 color-mix 加深
+      expect(css).toContain(`--color-accent-${ch}: color-mix`);
+      // 原始 --accent-*-rgb 保持纯值（装饰/辉光走纯色）
+      const m = new RegExp(`--accent-${ch}-rgb:\\s*([^;]+);`).exec(css);
+      expect(m?.[1]?.trim()).toBe(ACCENT_PRESETS[0]!.colors[ch]);
+    }
+  });
+});
+
+describe('accentBootstrapScript 通道名由 ACCENT_CHANNELS 生成（消除硬编码重复）', () => {
+  it('脚本内嵌的 CH 数组与 ACCENT_CHANNELS 完全一致', () => {
+    expect(accentBootstrapScript).toContain(`var CH = ${JSON.stringify(ACCENT_CHANNELS)};`);
+  });
+});
+
+describe('themeBootstrapScript（防 FOUC：.dark 类 + meta theme-color + 遗留迁移）', () => {
+  interface RunResult {
+    classes: string[];
+    metaContent: string | null;
+    colorScheme: string;
+  }
+
+  /** 用 stub 的 window/document 执行 themeBootstrapScript，返回类操作/meta 写入/color-scheme */
+  function runThemeScript(store: Record<string, string | null>, hasMeta = true): RunResult {
+    const classes: string[] = [];
+    const metaContent: string[] = [];
+    const style: Record<string, string> = {};
+    const origWindow = globalThis.window;
+    const origDocument = globalThis.document;
+    const origLocalStorage = (globalThis as { localStorage?: unknown }).localStorage;
+    const storage = {
+      getItem: (k: string) => store[k] ?? null,
+      setItem: (k: string, v: string) => void (store[k] = v),
+    };
+    (globalThis as { window?: unknown }).window = { localStorage: storage };
+    // themeBootstrapScript 用裸 localStorage（非 window.localStorage），
+    // 浏览器里经全局作用域解析，测试环境须同样挂到 globalThis。
+    (globalThis as { localStorage?: unknown }).localStorage = storage;
+    (globalThis as { document?: unknown }).document = {
+      documentElement: {
+        classList: {
+          add: (c: string) => void classes.push(`+${c}`),
+          remove: (c: string) => void classes.push(`-${c}`),
+        },
+        style,
+      },
+      querySelector: (sel: string) => {
+        if (sel === 'meta[name="theme-color"]' && hasMeta) {
+          return { setAttribute: (_k: string, v: string) => void metaContent.push(v) };
+        }
+        return null;
+      },
+    };
+    try {
+      new Function(themeBootstrapScript)();
+    } finally {
+      (globalThis as { window?: unknown }).window = origWindow;
+      (globalThis as { document?: unknown }).document = origDocument;
+      (globalThis as { localStorage?: unknown }).localStorage = origLocalStorage;
+    }
+    return { classes, metaContent: metaContent[0] ?? null, colorScheme: style.colorScheme ?? '' };
+  }
+
+  it('stored dark：加 .dark 类 + meta 写暗色', () => {
+    const r = runThemeScript({ 'aurora-theme': 'dark' });
+    expect(r.classes).toContain('+dark');
+    expect(r.metaContent).toBe(THEME_COLORS.dark);
+    expect(r.colorScheme).toBe('dark');
+  });
+
+  it('stored light：不加 .dark 类 + meta 写亮色', () => {
+    const r = runThemeScript({ 'aurora-theme': 'light' });
+    expect(r.classes).toContain('-dark');
+    expect(r.metaContent).toBe(THEME_COLORS.light);
+    expect(r.colorScheme).toBe('light');
+  });
+
+  it('未存值（null）按默认亮色处理', () => {
+    const r = runThemeScript({});
+    expect(r.classes).toContain('-dark');
+    expect(r.metaContent).toBe(THEME_COLORS.light);
+  });
+
+  it('遗留 stored system：迁移为亮色并改写存储（system 档已下线）', () => {
+    const store: Record<string, string | null> = { 'aurora-theme': 'system' };
+    const r = runThemeScript(store);
+    // 存储值被改写为 light（防止 next-themes 复活 system 逻辑），首屏按亮色渲染
+    expect(store['aurora-theme']).toBe('light');
+    expect(r.classes).toContain('-dark');
+    expect(r.metaContent).toBe(THEME_COLORS.light);
+  });
+
+  it('meta 标签缺失时不抛错（防御性）', () => {
+    const r = runThemeScript({ 'aurora-theme': 'dark' }, false);
+    expect(r.classes).toContain('+dark');
+    expect(r.metaContent).toBeNull();
   });
 });

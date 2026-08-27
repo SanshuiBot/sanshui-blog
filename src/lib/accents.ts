@@ -23,6 +23,14 @@ export interface AccentPreset {
 }
 
 export const ACCENT_STORAGE_KEY = 'aurora-accent';
+
+/** 浏览器地址栏/任务栏 meta theme-color 值（与 globals.css 背景一致：暗=--color-ink，亮=#fafaf9）。
+ *  ThemeColorSync（运行时切换）与 themeBootstrapScript（首屏前防 FOUC）共用这一份常量，魔法 hex 只出现一次。 */
+export const THEME_COLORS = {
+  light: '#fafaf9',
+  dark: '#05050a',
+} as const;
+
 export const ACCENT_CHANNELS: readonly AccentChannel[] = [
   'pink',
   'violet',
@@ -243,7 +251,7 @@ export const accentBootstrapScript = `(function(){
   try {
     var id = window.localStorage.getItem('${ACCENT_STORAGE_KEY}');
     var presets = ${JSON.stringify(ACCENT_PRESETS.map((p) => ({ id: p.id, colors: p.colors })))};
-    var CH = ['pink','violet','blue','teal','gold','rose'];
+    var CH = ${JSON.stringify(ACCENT_CHANNELS)};
     var def = presets.find(function(p){return p.id==='${DEFAULT_ACCENT_ID}';});
     var target;
     if (id === '${CUSTOM_ACCENT_ID}') {
@@ -278,12 +286,17 @@ export const accentBootstrapScript = `(function(){
  * 再被 body 内脚本切暗色 → FOUC 闪屏。
  *
  * 本脚本在 `<head>` 内同步跑（与 accentBootstrapScript 并列），首屏前
- * 设好 `.dark` 类，消除 FOUC。逻辑与 next-themes 内联脚本保持一致：
- *   读 storageKey（默认 'theme'）→ 未设置取 defaultTheme（'system'）
- *   → 'system' 跟随 prefers-color-scheme → 否则直接对应 dark/light
+ * 设好 `.dark` 类 + meta theme-color，消除 FOUC。逻辑与 next-themes
+ * 内联脚本保持一致：
+ *   读 storageKey（'aurora-theme'）→ 未设置取 defaultTheme（'light'）
+ *   → 'dark' 加 .dark 类，否则保持亮色。
+ *
+ * 遗留迁移：旧版支持过 'system'（跟随系统）档，历史存储值在此改写为
+ * 'light'（站点默认亮色），避免 next-themes 读到 'system' 后走
+ * prefers-color-scheme 逻辑（enableSystem 已关，'system' 会挂错类）。
  *
  * 参数化：与 ThemeProvider 的 props 对齐
- *   storageKey='aurora-theme'、defaultTheme='system'、enableSystem=true
+ *   storageKey='aurora-theme'、defaultTheme='light'、enableSystem=false
  *
  * 注意：本脚本只在首屏前跑一次，不影响后续 setTheme 的运行时切换。
  * 点击切换的「等一会才变」由 disableTransitionOnChange 单独解决。
@@ -291,15 +304,18 @@ export const accentBootstrapScript = `(function(){
 export const themeBootstrapScript = `try {
   var key = 'aurora-theme';
   var stored = localStorage.getItem(key);
-  var theme = stored || 'system';
-  var isDark;
-  if (theme === 'system') {
-    isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  } else {
-    isDark = theme === 'dark';
+  // 遗留 'system' 档迁移为亮色（默认亮色），同步改写存储防止 next-themes 复活 system 逻辑
+  if (stored === 'system') {
+    stored = 'light';
+    try { localStorage.setItem(key, 'light'); } catch (e) {}
   }
+  var isDark = stored === 'dark';
   var root = document.documentElement;
   if (isDark) root.classList.add('dark');
   else root.classList.remove('dark');
   root.style.colorScheme = isDark ? 'dark' : 'light';
+  // 地址栏颜色防 FOUC：首屏前同步 meta theme-color（暗色/手动主题下不再先闪亮色地址栏）。
+  // 运行时切换由 ThemeColorSync 接管，两处共用 THEME_COLORS 常量。
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', isDark ? '${THEME_COLORS.dark}' : '${THEME_COLORS.light}');
 } catch (e) {}`;

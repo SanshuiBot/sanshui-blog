@@ -81,7 +81,7 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 ## 12. 亮色为主、暗色可选
 
-默认 **亮色主题**。机制：`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA 与默认主题一致。
+默认 **亮色主题**。机制：`next-themes`（`attribute="class"`、`defaultTheme="light"`、`enableSystem={false}`、`storageKey="aurora-theme"`）——**无「跟随系统」档**：未手动切换时恒为亮色，点 `ThemeToggle` 切换后存 localStorage（历史 `system` 存储值由 layout head 内联 bootstrap 脚本迁移为 `light`）。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA 与默认主题一致。
 
 **改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱。
 
@@ -174,6 +174,7 @@ TOC 组件（`src/components/Post/TableOfContents.tsx`）的实现约定：
 - **新增预设**：在 `ACCENT_PRESETS` 追加一项，**无需改 `layout.tsx`**——但 `presets` JSON 是构建期固化的，**新增预设后必须重新 build** 才能被防 FOUC script 识别。
 - **改默认预设**：改 `DEFAULT_ACCENT_ID`。
 - **亮/暗主题与 accent 正交**：next-themes 管 `.dark` 类，AccentPicker 管 `--accent-*-rgb`，两者互不干扰。
+- **亮色对比度**：`--color-accent-*` 主题令牌在 `html:not(.dark)` 下向正文色 `#1c1917` 派生加深（78% `color-mix`，见 globals.css accent 通道块后），Tailwind utility（`text-accent-*` / `bg-accent-*` / `from-to-accent-*`）自动受益；原始 `--accent-*-rgb` 不变，阴影/辉光等装饰仍走纯色。**纯 CSS 文字用法引用令牌**（`.prose-article a` / `.toc-link-active` 用 `var(--color-accent-violet)`），不要写 `rgb(var(--accent-violet-rgb))`——带 α 的装饰用法（`rgb(var(--accent-violet-rgb) / 0.5)`）保持原样，α 无法套在令牌上。
 
 ## 25. hover 变色不要走 Framer Motion，用纯 CSS
 
@@ -368,3 +369,21 @@ html:not(.dark) .btn-retry:hover {
 - **生产环境静默**：`componentDidCatch` 只在 `NODE_ENV === 'development'` 时 `console.error`，不暴露内部信息。
 - **重试按钮 hover 走纯 CSS**（见 #47），不能用 `hover:text-accent-violet`。
 - 错误 UI 显示通用文案「出了点问题」+ 重试按钮（调 `setState({ hasError: false })` 触发重渲染）。
+
+## 49. 打包体积基线（框架主导，勿误删）
+
+实测（2026-08，`next build` 静态导出产物，gzip）：
+
+- **现代浏览器真实首载 JS ≈ 197KB gz**（12 个 `<script>`，其中 polyfills 带 `noModule` 现代浏览器不下载）。
+- 构成：Next 16 App Router runtime `794-*` 63.9K + React 19 runtime `4bd1b696-*` 61.8K + framer-motion `546-*` 40.6K + 应用代码（layout/681/500/210/not-found/page 等）≈ 28K + webpack runtime 2K。
+- CSS 主文件 14.9K gz；字体为可变字体按 unicode-range 按需下载（中文页仅 latin 子集 ~87KB 两份覆盖全部字重）。
+
+不可削减的原因（避免重复调查/误删）：
+
+- **Next/React runtime（125.7K gz）**：框架硬成本，无配置可减。
+- **framer-motion（40.6K gz）**：库 1.4MB 已被 webpack 摇树至 124KB（实际使用子集）；全站用了手势（whileHover×23 / whileInView×8 / whileTap×5）、`layout`×3、scroll/spring/transform 全 API，LazyMotion 需 `domMax`（=整库）无收益；`motion/react` 与 framer-motion v12 同代码库（同版本同源），迁移无收益。**不要为省体积改 CSS 重写动画**（违背约定 #25/#42 的收口）。
+- **polyfills（112KB raw）**：Next 内置 core-js，`noModule` 脚本——仅无 module 支持的老浏览器下载，而本站 CSS 下限（color-mix/oklab/可变字体）本就是 2022+ 浏览器，**删它零收益且破坏老浏览器兜底**。
+- **服务端库（mdx/rehype/highlight/gray-matter/reading-time）零泄漏进客户端 chunk**（构建后已核实）。
+- **已做的优化**：SearchModal 手动懒加载（13KB chunk 首开才拉）、AmbientEffects 4 动效 `dynamic(ssr:false)`、可变字体、giscus preconnect。
+
+防退化红线：别自定义 `splitChunks`（约定 #11）；别把 SearchModal/AmbientEffects 改回静态导入；别删 `noModule` polyfills；新增客户端依赖前先确认会不会进首载包。

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -8,6 +8,15 @@ import Tooltip from '@/components/UI/Tooltip';
 /** hydration 完成检测：客户端快照 true、SSR 快照 false（替代 mounted effect，避免 setState-in-effect） */
 const subscribeMounted = () => () => {};
 
+/**
+ * 主题切换：亮 / 暗 二态。
+ * -----------------------------
+ * 站点无「跟随系统」档（Providers 设 defaultTheme="light" + enableSystem={false}，
+ * 存储值只可能是 light/dark），因此 `theme` 即实际主题，直接判断即可——
+ * 旧实现曾以 theme==='dark' 判暗，在默认 system 时恒 false 导致图标/文案
+ * 与页面实际明暗不一致，已随 system 档一并移除。
+ * 图标动画由 AnimatePresence 接管（亮暗各一态）。
+ */
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const mounted = useSyncExternalStore(
@@ -23,7 +32,7 @@ export default function ThemeToggle() {
       <button
         onClick={() => setTheme(isDark ? 'light' : 'dark')}
         className="nav-icon-btn relative p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 overflow-hidden"
-        aria-label="切换主题"
+        aria-label={isDark ? '切换到亮色' : '切换到暗色'}
       >
         <AnimatePresence mode="wait" initial={false}>
           <motion.span

@@ -42,6 +42,69 @@
   --accent-rose-rgb: 251 113 133;
 }
 
+/*
+ * 亮色下 accent 对比度增强：`--color-accent-*` 是 @theme 主题令牌（供
+ * text-accent-*/
+bg-accent-*/from-accent-*
+  等
+  Tailwind
+  utility
+  消费），亮色分支
+  *
+  向正文色
+  #1c1917
+  派生加深（78%
+  color-mix），保证浅色背景下文字/描边/渐变可读
+  *
+  （如
+  gold
+  类浅色文字）。暗色下保持主题层原值，无需覆盖。
+  *
+  原始
+  `--accent-*-rgb`
+  不变——阴影/辉光/滚动条等装饰仍走纯色
+  rgb(var(...)/α)。
+  *
+  纯
+  CSS
+  文字用法（.prose-article
+  a
+  /
+  .toc-link-active
+  等）引用令牌以获亮色加深，
+  *
+  不要直接写
+  rgb(var(--accent-violet-rgb))。
+  *
+  @supports
+  守卫：不支持
+  color-mix
+  的浏览器（Chrome<111
+  /
+  Safari<16.2
+  /
+  FF<113）里
+  *
+  该自定义属性值会整体失效导致亮色
+  accent
+  静默丢失，故仅在有支持时覆盖，
+  *
+  旧浏览器保持
+  @theme
+  原值（即改前行为）。
+  */
+  @supports
+  (color: color-mix(in oklab, red 50%, blue)) {
+  html:not(.dark) {
+    --color-accent-pink: color-mix(in oklab, rgb(var(--accent-pink-rgb)) 78%, #1c1917);
+    --color-accent-violet: color-mix(in oklab, rgb(var(--accent-violet-rgb)) 78%, #1c1917);
+    --color-accent-blue: color-mix(in oklab, rgb(var(--accent-blue-rgb)) 78%, #1c1917);
+    --color-accent-teal: color-mix(in oklab, rgb(var(--accent-teal-rgb)) 78%, #1c1917);
+    --color-accent-gold: color-mix(in oklab, rgb(var(--accent-gold-rgb)) 78%, #1c1917);
+    --color-accent-rose: color-mix(in oklab, rgb(var(--accent-rose-rgb)) 78%, #1c1917);
+  }
+}
+
 @layer base {
   :root {
     --glass-bg: rgba(20, 20, 32, 0.6);
@@ -365,7 +428,7 @@
   }
   html.dark .link-back:hover,
   html.dark .link-more:hover {
-    color: rgb(var(--accent-violet-rgb));
+    color: var(--color-accent-violet);
   }
   /* 亮色覆盖 */
   html:not(.dark) .link-back,
@@ -374,7 +437,7 @@
   }
   html:not(.dark) .link-back:hover,
   html:not(.dark) .link-more:hover {
-    color: rgb(var(--accent-violet-rgb));
+    color: var(--color-accent-violet);
   }
 
   /* 箭头位移：由 ArrowLink 组件的 Framer variants 驱动（JS rAF + inline style，
@@ -823,11 +886,11 @@
   }
   html.dark .toc-link:hover,
   html:not(.dark) .toc-link:hover {
-    color: rgb(var(--accent-violet-rgb));
+    color: var(--color-accent-violet);
   }
   html.dark .toc-link-active,
   html:not(.dark) .toc-link-active {
-    color: rgb(var(--accent-violet-rgb));
+    color: var(--color-accent-violet);
     font-weight: 600;
   }
   html.dark .toc-link-active::before,
@@ -911,13 +974,13 @@
     margin-bottom: 1.25em;
   }
   .prose-article a {
-    color: rgb(var(--accent-violet-rgb));
+    color: var(--color-accent-violet);
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s;
   }
   .prose-article a:hover {
-    color: rgb(var(--accent-pink-rgb));
+    color: var(--color-accent-pink);
   }
   .prose-article code {
     background: rgb(var(--accent-violet-rgb) / 0.1);
