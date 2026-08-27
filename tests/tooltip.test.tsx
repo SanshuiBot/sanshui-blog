@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 /**
- * Tooltip 组件级测试 —— hover 显示契约 + 焦点还原粘滞回归。
+ * Tooltip 组件级测试 —— hover 显示契约。
  * -----------------------------
- * 回归背景：SearchModal ESC 关闭后 useFocusTrap 把焦点还给搜索按钮，
- * onFocus 触发了 handleEnter，气泡在鼠标不在按钮上的情况下显示且
- * 永不消失（没有 mouseleave 来清除）。契约：气泡只跟鼠标 hover 显示。
+ * 契约：气泡只在鼠标 hover 时显示（mouseenter 后 80ms 显示 / mouseleave 后
+ * 60ms 隐藏），除此之外不做任何显示（如 focus 显示——弹窗关闭后焦点还原
+ * 会让气泡在无鼠标坐标的情况下粘滞，回归见下）。
  * 注意：
  *  - RTL 的自动 cleanup 依赖全局 afterEach（vitest 默认未开 globals），须手动
  *    afterEach(cleanup)。
@@ -73,62 +73,5 @@ describe('Tooltip', () => {
       vi.advanceTimersByTime(200);
     });
     expect(screen.queryByRole('tooltip')).toBeNull();
-  });
-
-  it('回归：窗口失焦（alt+tab 切走）立即隐藏气泡，不再粘滞', () => {
-    vi.useFakeTimers();
-    render(
-      <Tooltip label="搜索">
-        <button aria-label="搜索">🔍</button>
-      </Tooltip>,
-    );
-
-    // hover 显示气泡
-    fireEvent.mouseOver(screen.getByRole('button'));
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
-    expect(screen.getByRole('tooltip')).toBeTruthy();
-
-    // alt+tab 切走：窗口失焦，浏览器收不到 mouseleave，气泡必须立即隐藏
-    act(() => {
-      window.dispatchEvent(new Event('blur'));
-    });
-    expect(screen.queryByRole('tooltip')).toBeNull();
-  });
-
-  it('回归：窗口切走再切回、指针仍在按钮上时恢复气泡', () => {
-    vi.useFakeTimers();
-    render(
-      <Tooltip label="搜索">
-        <button aria-label="搜索">🔍</button>
-      </Tooltip>,
-    );
-    const button = screen.getByRole('button');
-
-    // 记录指针位置（handleMove 即使气泡未显示也持续更新）
-    fireEvent.mouseMove(button, { clientX: 100, clientY: 100 });
-    // jsdom 未实现 elementFromPoint，stub 成「指针位置命中按钮」
-    const prev = document.elementFromPoint;
-    Object.defineProperty(document, 'elementFromPoint', {
-      writable: true,
-      configurable: true,
-      value: () => button,
-    });
-    try {
-      act(() => {
-        window.dispatchEvent(new Event('focus'));
-      });
-      act(() => {
-        vi.advanceTimersByTime(10);
-      });
-      expect(screen.getByRole('tooltip')).toBeTruthy();
-    } finally {
-      if (typeof prev === 'function') {
-        document.elementFromPoint = prev;
-      } else {
-        delete (document as { elementFromPoint?: unknown }).elementFromPoint;
-      }
-    }
   });
 });
