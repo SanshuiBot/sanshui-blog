@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useSafeTimeout } from '@/components/UI/useSafeTimeout';
 
@@ -21,7 +21,13 @@ import { useSafeTimeout } from '@/components/UI/useSafeTimeout';
  *  - 气泡 createPortal 挂到 document.body：fixed 定位不再受祖先
  *    transform/translate 劫持包含块（Footer 回到顶部按钮曾因此错位出屏）
  *  - 玻璃态背景 + accent 描边，带淡入 + 上浮动画
- *  - hover/focus 显示，延迟 80ms 显示 / 60ms 隐藏，避免快速划过闪烁
+ *  - hover 显示，延迟 80ms 显示 / 60ms 隐藏，避免快速划过闪烁
+ *  - 不做 focus 显示：气泡是鼠标跟随定位，纯键盘/程序焦点（如弹窗关闭后
+ *    焦点还原）没有鼠标坐标，会渲染在陈旧位置且无 mouseleave 清除而粘滞
+ *    （回归：SearchModal ESC 关闭后工具提示残留）；按钮自身均有 aria-label
+ *  - 窗口失焦（alt+tab / 切走 / 最小化）立即隐藏：hover 状态随窗口失焦失效，
+ *    但浏览器收不到 mouseleave，气泡会粘在屏幕上（回归：alt+tab 后残留）；
+ *    重新聚焦时若指针仍在按钮上（elementFromPoint 命中包裹层）则恢复气泡
  *
  * 触屏适配（约定：纯触屏设备不显示气泡，混合设备点击后立即隐藏）：
  *  - 触屏点击只触发「模拟 hover」而没有 mouseleave，气泡会粘在屏幕上。
@@ -61,6 +67,9 @@ export default function Tooltip({
   const [bubbleSize, setBubbleSize] = useState({ w: 80, h: 28 });
   const wrapRef = useRef<HTMLDivElement>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
+  // 主指针在包裹层上的最后位置（不论气泡是否可见都持续记录）：
+  // 窗口重新聚焦时用它判断指针是否仍在按钮上，决定要不要恢复气泡
+  const lastPointerRef = useRef({ x: 0, y: 0 });
   // 3 个卸载安全的定时器（useSafeTimeout 自动 cleanup，见 ADR-0003）：
   // showTimer / hideTimer 双向 debounce；guardTimer 触屏点击后短暂抑制合成 mouseenter
   const setShowTimer = useSafeTimeout();
@@ -77,10 +86,38 @@ export default function Tooltip({
     hoverCapable.current = window.matchMedia('(hover: hover)').matches;
   }, []);
 
-  const clearShowHide = () => {
+  const clearShowHide = useCallback(() => {
     setShowTimer(() => {}, 0); // noop：useSafeTimeout 内部会清上一个未触发 timer
     setHideTimer(() => {}, 0);
-  };
+  }, [setShowTimer, setHideTimer]);
+
+  useEffect(() => {
+    // 窗口失焦（alt+tab 切走 / 点击别的应用 / 最小化）时，浏览器收不到
+    // mouseleave，hover 状态失效但气泡残留。失焦立即清除；重新聚焦时用
+    // 最后指针位置判断是否还在按钮上，在则恢复气泡（不在保持隐藏）。
+    const hideOnLostPointer = () => {
+      clearShowHide();
+      setVisible(false);
+    };
+    const resumeOnFocus = () => {
+      if (disabled || !label || !hoverCapable.current || touchGuard.current) return;
+      // jsdom 测试环境没有 elementFromPoint，直接跳过（窗口聚焦恢复不模拟）
+      if (typeof document.elementFromPoint !== 'function') return;
+      const el = document.elementFromPoint(lastPointerRef.current.x, lastPointerRef.current.y);
+      if (el && wrapRef.current?.contains(el)) {
+        clearShowHide();
+        setShowTimer(() => setVisible(true), 0);
+      }
+    };
+    window.addEventListener('blur', hideOnLostPointer);
+    window.addEventListener('focus', resumeOnFocus);
+    document.addEventListener('visibilitychange', hideOnLostPointer);
+    return () => {
+      window.removeEventListener('blur', hideOnLostPointer);
+      window.removeEventListener('focus', resumeOnFocus);
+      document.removeEventListener('visibilitychange', hideOnLostPointer);
+    };
+  }, [clearShowHide, disabled, label, setShowTimer]);
 
   const handleEnter = () => {
     if (disabled || !label || !hoverCapable.current || touchGuard.current) return;
@@ -89,6 +126,7 @@ export default function Tooltip({
   };
 
   const handleMove = (e: React.MouseEvent) => {
+    lastPointerRef.current = { x: e.clientX, y: e.clientY };
     if (!visible) {
       // 首次移动时先按当前坐标定位，避免气泡闪在 (0,0)
       setPos({ x: e.clientX, y: e.clientY });
@@ -134,8 +172,6 @@ export default function Tooltip({
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
       onMouseMove={handleMove}
-      onFocus={handleEnter}
-      onBlur={handleLeave}
       onPointerDown={handlePointerDown}
     >
       {children}
