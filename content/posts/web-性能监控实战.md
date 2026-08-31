@@ -236,7 +236,7 @@ function reportRUM(data: Record<string, unknown>) {
 
 线上 LCP 中位数 3.8s。LCP 归因发现：
 
-```
+```text
 ttfb: 220ms
 res_load_delay: 1800ms
 res_load_time: 1500ms

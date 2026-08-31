@@ -351,7 +351,7 @@ v4 推荐 `@utility` 指令：
 
 ## 十三、对比：迁移前后 bundle 大小
 
-```
+```text
 v3 CSS 产物：58.2 KB
 v4 CSS 产物：43.1 KB（gzip 后 8.7 KB）
 ```

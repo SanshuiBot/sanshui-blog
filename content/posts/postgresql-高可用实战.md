@@ -140,7 +140,7 @@ max_standby_archive_delay = 30s
 
 Patroni 是 Zalando 开源的 PG 高可用方案：
 
-```
+```text
 Patroni (primary) -- DCS (etcd/consul/zk)
    |
 Patroni (standby1)
@@ -301,7 +301,7 @@ pool_mode = transaction
 
 ## 十一、Patroni + etcd + HAProxy 完整架构
 
-```
+```text
 Application
     ↓
 HAProxy (5432)
@@ -327,7 +327,7 @@ Patroni (primary) -- etcd (DCS) -- Patroni (standby1) -- Patroni (standby2)
 
 ### 故障时间线
 
-```
+```text
 T+0:00   主库 OOM，进程被 kill
 T+0:01   Patroni 检测到 PG 挂了，尝试本地重启，失败
 T+0:05   Patroni demote，DCS 锁释放

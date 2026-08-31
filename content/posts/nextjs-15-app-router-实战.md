@@ -9,7 +9,7 @@ excerpt: Next.js 15 把 params / searchParams 都变成了 Promise。本文讲 A
 
 一个线上项目从 Next.js 14 升到 15，结果整个 dev server 启动后白屏。控制台报：
 
-```
+```text
 Error: Params should be awaited before using its properties.
 ```
 
@@ -107,7 +107,7 @@ export async function GET(req: Request) {
 
 **踩坑**：`output: 'export'` 静态导出模式下 Route Handlers **不能是动态响应**。会报：
 
-```
+```text
 Error: Route "/api/stream" used `req` as a dynamic API.
 This is not supported when using `output: 'export'`.
 ```
@@ -207,7 +207,7 @@ parallelRoutes + intercepting routes 是 Next.js 15 最难理解的特性。**�
 
 ## 十二、踩坑 7：not-found.tsx 的层级
 
-```
+```text
 app/
 ├── not-found.tsx          # 兜底 404
 ├── posts/

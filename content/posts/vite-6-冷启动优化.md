@@ -142,7 +142,7 @@ export default defineConfig({
 
 项目结构：
 
-```
+```text
 my-monorepo/
 ├── apps/
 │   ├── web/    # 主应用

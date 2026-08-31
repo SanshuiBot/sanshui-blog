@@ -272,7 +272,7 @@ RUN apt-get update && \
 
 ## 十三、.dockerignore 必备
 
-```
+```text
 .git
 .gitignore
 node_modules

@@ -33,7 +33,7 @@ Vue 3.5 在这条路上又往前走了一步：编译器产物更紧凑、响应
 
 先看一段最普通的模板：
 
-```html
+```vue
 <template>
   <div class="layout">
     <h1>我的博客</h1>
@@ -166,7 +166,7 @@ export const enum PatchFlags {
 
 看一段带动态 class 的模板：
 
-```html
+```vue
 <template>
   <div :class="active ? 'on' : 'off'" @click="toggle">{{ message }}</div>
 </template>
@@ -194,7 +194,7 @@ export function render(_ctx, _cache) {
 
 下面用一个真实例子对比"有无 PatchFlag 优化"的差异：
 
-```html
+```vue
 <!-- 场景：一个带动态 class 的列表项 -->
 <template>
   <li :class="{ done: item.done }" :data-id="item.id">
@@ -236,7 +236,7 @@ Vue 3 编译器把模板的**根节点**（以及 `v-if` / `v-for` 这样的结�
 
 ### 看个例子
 
-```html
+```vue
 <template>
   <div class="page">
     <header>
@@ -283,7 +283,7 @@ Block Tree 不是免费的。当模板结构非常简单（比如只有一个根
 
 看一段常见的写法：
 
-```html
+```vue
 <template>
   <MyButton @click="count++">点我</MyButton>
 </template>
@@ -373,7 +373,7 @@ onUpdated(() => {
 
 ### v-once：渲染一次后永久缓存
 
-```html
+```vue
 <template>
   <div>
     <!-- 这个头像区域只渲染一次，后续不再 diff -->
@@ -400,7 +400,7 @@ onUpdated(() => {
 
 `v-memo` 是 `v-once` 的"依赖版"：只有当指定的依赖数组发生变化时，才重新 diff 子树；否则直接跳过。
 
-```html
+```vue
 <template>
   <div v-for="item in list" :key="item.id" v-memo="[item.done, item.text]">
     <span>{{ item.text }}</span>
@@ -649,7 +649,7 @@ function onScroll(e: Event) {
 
 **排查**：打开 Vue Devtools 的"Component updates"高亮，发现 Button 在没有任何 props 变化时也在闪烁。检查模板：
 
-```html
+```vue
 <MyButton @click="handleClick">确定</MyButton>
 ```
 

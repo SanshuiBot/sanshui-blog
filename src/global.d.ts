@@ -13,3 +13,10 @@ declare module 'highlightjs-solidity' {
   export { solidity, yul };
   export default languages;
 }
+
+// highlight.js 单语言模块（lib/languages/*）不附带类型声明，统一声明为 LanguageFn
+declare module 'highlight.js/lib/languages/*' {
+  import type { LanguageFn } from 'highlight.js';
+  const fn: LanguageFn;
+  export default fn;
+}

@@ -41,7 +41,7 @@ export default function ServerComp() {
 
 对应的 RSC payload 大概长这样（简化）：
 
-```
+```text
 0:["$","div",null,{"children":[
   ["$","h1",null,{"children":"服务端渲染时间：2026-07-31T..."}],
   ["$","$LClientCounter",null,{"initial":0}]
@@ -88,7 +88,7 @@ export default function ClientBtn() {
 
 把一个用了 `useEffect` 的组件忘记加 `'use client'`，会报一个看起来很奇怪的错：
 
-```
+```text
 Error: useEffect is not defined. This could happen for one of the following reasons:
 1. You might have mismatched versions of React and React DOM.
 ...
@@ -172,7 +172,7 @@ const Comp = dynamic(() => import('./Comp'), { ssr: false });
 
 在 RSC 里，`{ ssr: false }` 的含义变成了 **「这个组件跳过服务端渲染，但仍然在客户端 hydrate」**。如果你在服务端组件里用 `dynamic(..., { ssr: false })`，会报：
 
-```
+```text
 Error: ssr: false is not allowed with next/dynamic in Server Components.
 Please move it into a Client Component.
 ```

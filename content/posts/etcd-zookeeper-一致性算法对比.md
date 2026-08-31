@@ -25,7 +25,7 @@ excerpt: 同样是 CP 系统，etcd 用 Raft，Zookeeper 用 ZAB。本文讲两�
 
 ### 1. 三种角色
 
-```
+```text
 Follower —— 普通节点，被动接收 leader 请求
 Candidate —— 选举中，竞选 leader
 Leader    —— 主节点，处理所有写入
@@ -33,7 +33,7 @@ Leader    —— 主节点，处理所有写入
 
 ### 2. Term（任期）
 
-```
+```text
 Term 1: Leader A
         ↓ A 宕机
 Term 2: 选举超时，B 竞选
@@ -88,7 +88,7 @@ func (r *raft) isLogUpToDate(candidateLastLogIndex, candidateLastLogTerm int) bo
 
 ### 4. 日志复制
 
-```
+```text
 Client → Leader: SET x = 5
 Leader:
   1. 写本地 log (uncommitted)
@@ -118,7 +118,7 @@ func (r *raft) heartbeat() {
 
 ### 1. 四种状态
 
-```
+```text
 LOOKING     —— 正在选举 leader
 FOLLOWING   —— 跟随者
 LEADING     —— 领导者
@@ -127,7 +127,7 @@ OBSERVING   —— 观察者（不参与投票）
 
 ### 2. 三阶段选举
 
-```
+```text
 Phase 1: Discovery
   - 各节点交换自己的 epoch
   - 选出最大的 epoch + 适合的 leader
@@ -143,7 +143,7 @@ Phase 3: Broadcast
 
 ### 3. ZXID：单调递增的全局 ID
 
-```
+```text
 ZXID = (epoch << 32) | counter
 ```
 
@@ -157,7 +157,7 @@ ZXID 保证：
 
 ### 4. 原子广播（Atomic Broadcast）
 
-```
+```text
 Client → Leader: create /node
 Leader:
   1. 分配 ZXID

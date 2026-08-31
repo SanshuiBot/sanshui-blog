@@ -40,7 +40,7 @@ props.put("enable.idempotence", true);
 
 ## 三、踩坑 1：retries 导致消息乱序
 
-```
+```text
 场景：
 1. Producer 发送 m1, m2, m3 到同一分区
 2. m1 失败，producer 重试 m1
@@ -72,7 +72,7 @@ kafka-configs --bootstrap-server kafka:9092 \
 
 **踩坑 2**：min.insync.replicas 太大导致可用性下降
 
-```
+```text
 replication.factor=3, min.insync.replicas=2
 正常：3 副本，写 2 即可
 挂 1：剩 2，写 2 即可

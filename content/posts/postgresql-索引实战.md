@@ -310,14 +310,14 @@ CREATE INDEX idx_audit_log_path_created
 
 效果：
 
-```
+```text
 Before: 12.3s
 After:  80ms
 ```
 
 查询计划：
 
-```
+```text
 Limit  (cost=0.43..1.95 rows=50 width=...)
   ->  Index Scan using idx_audit_log_created_desc on audit_log
         Index Cond: (created_at > (now() - '7 days'::interval))
