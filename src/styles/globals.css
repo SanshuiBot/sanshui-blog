@@ -968,11 +968,14 @@
     left: 1.5rem;
     right: 1.5rem;
     height: 1px;
+    /* 对称居中渐变：两端透明、中段集中紫→粉品牌色——视觉重心居中，
+       正对标题栏居中标题；原左侧锚定（0° 最浓→100° 透明）会显得左重右轻 */
     background: linear-gradient(
       90deg,
-      rgb(var(--accent-violet-rgb) / 0.5),
-      rgb(var(--accent-pink-rgb) / 0.3),
-      transparent
+      transparent 0%,
+      rgb(var(--accent-violet-rgb) / 0.5) 35%,
+      rgb(var(--accent-pink-rgb) / 0.3) 65%,
+      transparent 100%
     );
   }
   /* 注入终端外壳后（CodeCopyInjector 置 data-ci）：布局移交窗口内部，
