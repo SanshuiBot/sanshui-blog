@@ -39,7 +39,7 @@
 
 ## 3. 中文 slug 与 URL 编码
 
-文件名可含中文（如 `深入理解-react-19-并发渲染机制.md`），slug = 文件名去后缀。`getPostBySlug()` 内部已 `decodeURIComponent(slug)`；`generateStaticParams` 返回原始 slug（未编码），路由层拿到的 slug 仍可能是 URL 编码的，跨层传递时注意 decode。`getAdjacentPosts(slug)` 也对 slug 做 `decodeURIComponent`，调用时传原始 slug 即可。
+文件名可含中文（如 `nextjs-15-app-router-实战.md`），slug = 文件名去后缀。`getPostBySlug()` 内部已 `decodeURIComponent(slug)`；`generateStaticParams` 返回原始 slug（未编码），路由层拿到的 slug 仍可能是 URL 编码的，跨层传递时注意 decode。`getAdjacentPosts(slug)` 也对 slug 做 `decodeURIComponent`，调用时传原始 slug 即可。
 
 ## 4. `generateStaticParams` 必须返回所有 slug
 
@@ -81,7 +81,7 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 ## 12. 亮色为主、暗色可选
 
-默认 **亮色主题**。机制：`next-themes`（`attribute="class"`、`defaultTheme="light"`、`enableSystem={false}`、`storageKey="aurora-theme"`）——**无「跟随系统」档**：未手动切换时恒为亮色，点 `ThemeToggle` 切换后存 localStorage（历史 `system` 存储值由 layout head 内联 bootstrap 脚本迁移为 `light`）。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 同步声明亮色值（`colorScheme: 'light'`、`themeColor: '#fafaf9'`），保证浏览器 UA 与默认主题一致。
+默认 **亮色主题**。机制：`next-themes`（`attribute="class"`、`defaultTheme="light"`、`enableSystem={false}`、`storageKey="aurora-theme"`）——**无「跟随系统」档**：未手动切换时恒为亮色，点 `ThemeToggle` 切换后存 localStorage（历史 `system` 存储值由 layout head 内联 bootstrap 脚本迁移为 `light`）。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 用 `colorScheme: 'light dark'` + globals.css 的 `color-scheme`（`:root`/`html.dark`）跟随主题类，`themeColor: '#fafaf9'` 由 `ThemeColorSync` 动态同步（暗 `#05050a` / 亮 `#fafaf9`），原生滚动条/表单控件按站点主题渲染。
 
 **改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱。
 
@@ -307,12 +307,13 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
 
 ## 44. 生成脚本收口（都复用 `parse-post.mjs`）
 
-| 脚本                         | 产物                                                      | 触发              |
-| ---------------------------- | --------------------------------------------------------- | ----------------- |
-| `gen-posts-index.js`         | public/posts-index.json（⌘K 搜索索引）                    | predev / prebuild |
-| `gen-feed.js`                | public/feed.xml（RSS 2.0 + 全文 CDATA + 标签）            | predev / prebuild |
-| `gen-og-image.js`            | public/og.png（1200×630 社交卡片，纯 Node zlib PNG 编码） | prebuild          |
-| `gen-dotted-tag-payloads.js` | out/ 内点号标签 payload 副本（#28）                       | build 后          |
+| 脚本                         | 产物                                                 | 触发              |
+| ---------------------------- | ---------------------------------------------------- | ----------------- |
+| `gen-posts-index.js`         | public/posts-index.json（⌘K 搜索索引）               | predev / prebuild |
+| `gen-feed.js`                | public/feed.xml（RSS 2.0 + 全文 CDATA + 标签）       | predev / prebuild |
+| `gen-og-image.js`            | public/og.png（1200×630 社交卡片，sharp SVG 光栅化） | prebuild          |
+| `gen-dotted-tag-payloads.js` | out/ 内点号标签 payload 副本（#28）                  | build 后          |
+| `post-build-cleanup.js`      | out/ 内未被引用的冗余 chunk/字体删除（带引用校验）   | build 后          |
 
 - 前三者复用 `src/lib/parse-post.mjs` 解析契约（CJS 脚本 `await import` ESM）。
 - `gen-feed.js` 的站点常量与 `site.ts` **字面一致**——改站点信息（title/description/url）需同步两处。

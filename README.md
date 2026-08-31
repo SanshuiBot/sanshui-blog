@@ -88,9 +88,9 @@
 sanshui-blog/
 ├── content/
 │   ├── posts/                  # Markdown 文章 (gray-matter frontmatter)
-│   │   ├── 深入理解-react-19-并发渲染机制.md
-│   │   ├── 金融量化交易系统设计.md
-│   │   └── ...
+│   │   ├── nextjs-15-app-router-实战.md
+│   │   ├── tailwind-v4-迁移实战.md
+│   │   └── ...（共 23 篇，文件名即 slug）
 │   └── resume.md               # 个人简历源文件（流式打印模块读取）
 ├── src/
 │   ├── app/                    # Next.js App Router 页面
@@ -98,6 +98,7 @@ sanshui-blog/
 │   │   ├── layout.tsx          # 根布局 (Providers/AmbientEffects/AppShell + favicon metadata + 防 FOUC accent 脚本)
 │   │   ├── fonts.ts            # Inter + JetBrains Mono 字体配置
 │   │   ├── not-found.tsx       # 404 页面 (粒子动画)
+│   │   ├── sitemap.ts          # sitemap.xml（force-static，中文 slug 编码）
 │   │   ├── about/              # 关于页 (技能条 + 技术栈 + 流式简历)
 │   │   ├── archive/            # 归档 (按年份分组)
 │   │   ├── tags/               # 标签云 + 按标签筛选
@@ -116,20 +117,25 @@ sanshui-blog/
 │   │   ├── AppShell.tsx        # 布局壳 (Navbar + main + Footer)
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
 │   │   ├── Home/               # HeroParallax（视差拼贴首屏，3 深度层）· HomeHydration（懒加载入口）· PostsList
-│   │   ├── Post/               # PostCard · PostContent · PostMeta · PostNav · PostDone · PostComments (Giscus 评论) · TableOfContents · CodeCopyInjector · CardSpotlight (spotlight/3D tilt 延迟挂载)
+│   │   ├── Post/               # PostCard · PostGrid · PostContent · PostMeta · PostNav · PostDone · PostComments (Giscus 评论) · TableOfContents · CodeCopyInjector · CardSpotlight (spotlight/3D tilt 延迟挂载)
 │   │   ├── About/              # AboutContent · ResumeTerminal (流式打印简历)
 │   │   ├── Projects/           # ProjectsContent（项目卡片墙，统一尺寸 + 鼠标跟随光晕）
-│   │   ├── Links/ · NotFound/
-│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop · ThemeColorSync · useDismiss · useScrollLock · useFocusTrap · usePrefersReducedMotion · useSafeTimeout · ErrorBoundary
+│   │   ├── Archive/            # FilterDropdown（归档年份/标签筛选）
+│   │   ├── Links/ · NotFound/ · TagList
+│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop · ThemeColorSync · TerminalShell · useDismiss · useScrollLock · useFocusTrap · usePrefersReducedMotion · useSafeTimeout · useScrollThumbGeometry · ErrorBoundary
 │   └── lib/
 │       ├── types.ts            # Post 类型定义（server-only）
 │       ├── posts.ts            # 文章读取（单次装载，无 mtime 缓存；slug 解码统一兜底）
+│       ├── posts-index-cache.ts# posts-index.json 模块级 Promise 缓存（SearchModal/PostsList/HeroParallax 共用一份 fetch）
 │       ├── parse-post.mjs      # 文章解析契约唯一实现（posts.ts / gen-posts-index / gen-feed 共用）
 │       ├── toc.ts              # h2/h3 提取（github-slugger 与渲染侧 rehype-slug 同源）
 │       ├── resume.ts           # 简历读取（构建期 fs.readFileSync，含 node:fs）
 │       ├── resumeLines.ts      # 简历行切分纯函数（客户端安全）
 │       ├── accents.ts          # Accent 预设/解析/应用 + 防 FOUC 脚本生成
 │       ├── projects.ts         # 项目数据字典（name/url/desc/lang/stars/tags）
+│       ├── links.ts            # 友链数据字典（/links 页唯一数据源）
+│       ├── navLinks.ts         # 主导航项单一真相源（Navbar 抽屉与 Footer 共用）
+│       ├── platform.ts         # 平台检测（SSR 安全，仅 UI 展示差异）
 │       ├── site.ts             # 站点身份配置（url/emailHref/copyrightYear 等派生字段）
 │       ├── basePath.ts         # basePath 中心定义 + withBase()
 │       ├── thumbGeometry.ts    # TOC 滚动指示条几何纯函数
@@ -143,7 +149,8 @@ sanshui-blog/
 │   ├── gen-posts-index.js      # 生成 public/posts-index.json 轻量索引 (解析契约来自 parse-post.mjs)
 │   ├── gen-feed.js             # 生成 public/feed.xml（RSS 2.0 + 全文 CDATA + 标签分类）
 │   ├── gen-og-image.js         # 生成 public/og.png（sharp SVG 光栅化，1200×630 Aurora 渐变 + 中文标题）
-│   └── gen-dotted-tag-payloads.js # 为含点号标签 (如 Next.js) 补 RSC payload 副本，避免线上 404
+│   ├── gen-dotted-tag-payloads.js # 为含点号标签 (如 Next.js) 补 RSC payload 副本，避免线上 404
+│   └── post-build-cleanup.js   # 构建后删除未被引用的冗余 chunk/字体，缩小部署体积
 ├── .github/workflows/deploy.yml # GitHub Actions：质量门禁 + 自动部署
 └── public/                     # 静态资源 (favicon.svg/ico · posts-index.json · feed.xml · og.png · _headers)
 ```
@@ -172,14 +179,14 @@ npx serve out
 | 命令                   | 作用                                                                                                                                      |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引 + RSS feed（`--webpack` 绕开 Turbopack 的 Tailwind v4.3 CSS 解析问题） |
-| `npm run build`        | prebuild 生成索引/RSS/og 图 → 静态导出，通过 `NEXT_BUILD=1` 环境变量开启                                                                  |
+| `npm run build`        | prebuild 生成索引/RSS/og 图 → `NEXT_BUILD=1` 静态导出 → 点号标签补副本 → 冗余产物清理                                                     |
 | `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）                                                        |
 | `npm run lint`         | ESLint v9 flat config，只报告不修改                                                                                                       |
 | `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                                                                        |
 | `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                                                          |
 | `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                                                                     |
 | `npm run typecheck`    | `tsc --noEmit` 类型检查（Next 16 构建不跑 lint，CI/本地须单独跑 lint + typecheck）                                                        |
-| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 124 个）                                                                        |
+| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 144 个）                                                                        |
 | `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                                                                    |
 
 > 🔒 **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`。
@@ -195,13 +202,14 @@ npm run build
   └─ prebuild → 生成 posts-index.json (~10KB 轻量索引) + feed.xml (RSS 2.0) + og.png (1200×630 社交卡片图，sharp SVG)
   └─ cross-env NEXT_BUILD=1 next build --webpack → 静态导出 out/
   └─ gen-dotted-tag-payloads.js → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
+  └─ post-build-cleanup.js → 删除未被引用的冗余 chunk/字体（带引用校验，绝不误删）
 ```
 
 ---
 
 ## 📝 添加文章
 
-在 `content/posts/` 下新建 `.md`（或 `.mdx`）文件即可。文件名即 slug，建议中文+连字符命名以保持 URL 可读性（如 `深入理解-react-19-并发渲染机制.md`）。TOC 自动从 `##` / `###` 提取，rehype-highlight 自动代码高亮，`CodeCopyInjector` 在客户端给代码块注入复制按钮。
+在 `content/posts/` 下新建 `.md`（或 `.mdx`）文件即可。文件名即 slug，建议中文+连字符命名以保持 URL 可读性（如 `nextjs-15-app-router-实战.md`）。TOC 自动从 `##` / `###` 提取，rehype-highlight 自动代码高亮，`CodeCopyInjector` 在客户端给代码块注入复制按钮。
 
 ```markdown
 ---
@@ -359,7 +367,8 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 graph LR
   A["git push main"] --> B["GitHub Actions"]
   B --> C["Node 24 + npm ci"]
-  C --> C1["质量门禁 typecheck / lint / test"]
+  C --> C0["安装 Noto CJK 字体（og 图中文渲染）"]
+  C0 --> C1["质量门禁 typecheck / lint / test"]
   C1 --> D["prebuild: 生成索引 / RSS / og 图"]
   D --> E["npm run build"]
   E --> F["静态导出 out/"]
@@ -367,7 +376,7 @@ graph LR
   H --> I["Deploy to GitHub Pages"]
 ```
 
-CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` 严格安装；构建前先跑 **typecheck / lint / test 质量门禁**——lint/test 加 `if: always()`（前一步失败也全跑，一次 CI 暴露全部失败），Build 用默认 `success()` 条件，任一门禁失败即跳过部署；通过后 `npm run build` 静态导出、`actions/upload-pages-artifact@v5` 上传 `./out`、`actions/deploy-pages@v5` 部署。`concurrency.group: "pages"` + `cancel-in-progress: false` 保证部署串行不中断。
+CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` 严格安装，并先装 Noto CJK 字体（og 图中文渲染依赖）；构建前先跑 **typecheck / lint / test 质量门禁**——lint/test 加 `if: always()`（前一步失败也全跑，一次 CI 暴露全部失败），Build 用默认 `success()` 条件，任一门禁失败即跳过部署；通过后 `npm run build` 静态导出、`actions/upload-pages-artifact@v5` 上传 `./out`、`actions/deploy-pages@v5` 部署。`concurrency.group: "pages"` + `cancel-in-progress: false` 保证部署串行不中断。
 
 **部署特征：**
 
@@ -380,7 +389,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
 
 ## ⚠️ 开发注意事项
 
-- **亮色为主、暗色可选**：默认 **亮色主题**。`next-themes`（`attribute="class"`、`defaultTheme="system"`、`enableSystem`、`storageKey="aurora-theme"`）——未手动切换时跟随系统偏好。CSS 默认状态下 `<html>` 无 `.dark` 类，`src/styles/globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`viewport` 用 `colorScheme: 'light dark'` + globals.css 的 `color-scheme`（`:root`/`html.dark`）跟随主题类，原生滚动条/表单控件按站点主题渲染；`themeColor` 由 `ThemeColorSync` 组件动态同步（暗 `#05050a` / 亮 `#fafaf9`）。**改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱
+- **亮色为主、暗色可选**：默认 **亮色主题**。`next-themes`（`attribute="class"`、`defaultTheme="light"`、`enableSystem={false}`、`disableTransitionOnChange`、`storageKey="aurora-theme"`）——未手动切换时恒为亮色（无「跟随系统」档）。CSS 默认状态下 `<html>` 无 `.dark` 类，`src/styles/globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`viewport` 用 `colorScheme: 'light dark'` + globals.css 的 `color-scheme`（`:root`/`html.dark`）跟随主题类，原生滚动条/表单控件按站点主题渲染；`themeColor` 由 `ThemeColorSync` 组件动态同步（暗 `#05050a` / 亮 `#fafaf9`）。**改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱
 - **Tailwind v4 语法**：使用 `@import "tailwindcss"` / `@plugin` / `@theme`，而非 v3 的 `@tailwind` 指令；PostCSS 插件是 `@tailwindcss/postcss`
 - **TypeScript 严格**：`strict: true` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters`，所有索引访问都需 undefined 检查
 - **中文 Slug**：`getPostBySlug()` / `getAdjacentPosts()` 内部经 `decodeSlug()` 统一做 `decodeURIComponent`（非法编码按原样查找、不抛异常）；`generateStaticParams` 返回原始 slug，新增 slug 查询时保持一致
