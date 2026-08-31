@@ -108,8 +108,8 @@ export default function Navbar() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-          scrolled ? 'glass-heavy border-b border-white/5 shadow-nav' : 'bg-transparent'
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 nav-dotted ${
+          scrolled ? 'nav-scrolled border-b border-white/5 shadow-nav' : ''
         }`}
       >
         <nav className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">

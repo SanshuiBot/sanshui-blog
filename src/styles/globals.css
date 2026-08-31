@@ -221,6 +221,28 @@
     border-color: rgba(0, 0, 0, 0.08);
   }
 
+  /* ── nav-dotted：导航栏像素点阵背景 ──
+     底色近不透明 + radial-gradient(transparent 1px,
+     底色 1px) 4px 间距点阵，正文从透明小孔透出呈「内容像素点」。底色经
+     --nav-dot-bg 局部变量做亮暗双态（暗色接近 #141414，亮色接近
+     #ffffff）。backdrop blur 只在滚动后（.nav-scrolled）启用：正文在导航栏
+     下方时需要它把孔里内容模糊成柔和像素点；顶部 hero 场景 blur 无意义，
+     且 fixed header 常驻 backdrop-filter 会持续付 backdrop 合成成本，故不常开。
+     （滚动叠加的 border/shadow 由 JSX 的 Tailwind utilities 提供。） */
+  .nav-dotted {
+    --nav-dot-bg: rgba(14, 14, 24, 0.9);
+    background-color: var(--nav-dot-bg);
+    background-image: radial-gradient(transparent 1px, var(--nav-dot-bg) 1px);
+    background-size: 4px 4px;
+  }
+  .nav-dotted.nav-scrolled {
+    backdrop-filter: saturate(0.5) blur(4px);
+    -webkit-backdrop-filter: saturate(0.5) blur(4px);
+  }
+  html:not(.dark) .nav-dotted {
+    --nav-dot-bg: rgba(255, 255, 255, 0.9);
+  }
+
   /* ── archive-filter：归档页标题右侧筛选按钮 + 下拉浮层 ──
      颜色收敛：亮暗各定义一次 CSS 变量，子元素规则单条引用，消除整段双份复制。
      btn/chip 的 bg/border 与 .glass/.border-white utility 同值，保留双前缀
