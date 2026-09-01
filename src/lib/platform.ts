@@ -6,7 +6,7 @@
  */
 
 /** 是否为 Apple 修饰键平台（macOS / iPadOS / iOS） */
-export const isApplePlatform = (): boolean => {
+const isApplePlatform = (): boolean => {
   if (typeof navigator === 'undefined') return false;
   const p = (navigator.platform || '').toLowerCase();
   const ua = (navigator.userAgent || '').toLowerCase();

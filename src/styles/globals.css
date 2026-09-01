@@ -82,10 +82,6 @@
 
     /* ── Shadow Design System ── */
     /* B · 彩色霓虹辉光 — 正文卡片 */
-    --shadow-neon:
-      0 4px 12px rgb(var(--accent-violet-rgb) / 0.08),
-      0 12px 32px rgb(var(--accent-violet-rgb) / 0.06),
-      0 0 0 1px rgb(var(--accent-violet-rgb) / 0.04);
     --shadow-neon-hover:
       0 4px 16px rgb(var(--accent-violet-rgb) / 0.15),
       0 16px 40px rgb(var(--accent-violet-rgb) / 0.1),
@@ -108,18 +104,6 @@
     --shadow-soft:
       0 8px 32px rgba(0, 0, 0, 0.04), 0 24px 64px rgba(0, 0, 0, 0.03),
       0 48px 120px rgba(0, 0, 0, 0.02);
-    --shadow-soft-hover:
-      0 8px 40px rgb(var(--accent-violet-rgb) / 0.06),
-      0 32px 80px rgb(var(--accent-violet-rgb) / 0.04),
-      0 64px 160px rgb(var(--accent-violet-rgb) / 0.03);
-
-    /* E · 双色对撞 — 精选/特选卡片 */
-    --shadow-dual:
-      6px 6px 16px rgb(var(--accent-violet-rgb) / 0.08),
-      -6px -6px 16px rgb(var(--accent-blue-rgb) / 0.06), 0 1px 2px rgba(0, 0, 0, 0.15);
-    --shadow-dual-hover:
-      8px 8px 24px rgb(var(--accent-violet-rgb) / 0.14),
-      -8px -8px 24px rgb(var(--accent-blue-rgb) / 0.1), 0 2px 4px rgba(0, 0, 0, 0.15);
   }
   *,
   *::before,
@@ -434,17 +418,8 @@
     transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .shadow-neon {
-    box-shadow: var(--shadow-neon);
-  }
   .shadow-soft {
     box-shadow: var(--shadow-soft);
-  }
-  .shadow-emboss {
-    box-shadow: var(--shadow-emboss);
-  }
-  .shadow-dual {
-    box-shadow: var(--shadow-dual);
   }
   .shadow-nav {
     box-shadow: var(--shadow-nav);
@@ -455,23 +430,11 @@
   .shadow-neon-hover:hover {
     box-shadow: var(--shadow-neon-hover);
   }
-  .shadow-soft-hover {
-    transition: box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .shadow-soft-hover:hover {
-    box-shadow: var(--shadow-soft-hover);
-  }
   .shadow-emboss-hover {
     transition: box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .shadow-emboss-hover:hover {
     box-shadow: var(--shadow-emboss-hover);
-  }
-  .shadow-dual-hover {
-    transition: box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .shadow-dual-hover:hover {
-    box-shadow: var(--shadow-dual-hover);
   }
   .text-aurora {
     background: linear-gradient(
@@ -823,14 +786,6 @@
     transition: color 0.2s;
   }
   .footer-link:hover {
-    color: rgb(var(--accent-violet-rgb));
-  }
-  /* 友链卡片名称 —— hover 变色走纯 CSS（AGENTS.md #24），Framer 不参与插值 */
-  .friend-card-name {
-    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  html.dark .group:hover .friend-card-name,
-  html:not(.dark) .group:hover .friend-card-name {
     color: rgb(var(--accent-violet-rgb));
   }
   .post-card-title {
@@ -1491,9 +1446,6 @@ html:not(.dark) body {
 }
 /* Shadow overrides — light mode */
 html:not(.dark) {
-  --shadow-neon:
-    0 4px 12px rgb(var(--accent-violet-rgb) / 0.06),
-    0 12px 24px rgb(var(--accent-violet-rgb) / 0.04), 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.03);
   --shadow-neon-hover:
     0 6px 20px rgb(var(--accent-violet-rgb) / 0.12),
     0 20px 48px rgb(var(--accent-violet-rgb) / 0.08), 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.06);
@@ -1505,16 +1457,6 @@ html:not(.dark) {
     0 4px 12px rgb(var(--accent-violet-rgb) / 0.04), 0 12px 24px rgba(0, 0, 0, 0.06);
   --shadow-soft:
     0 4px 16px rgba(0, 0, 0, 0.02), 0 16px 48px rgba(0, 0, 0, 0.02), 0 32px 80px rgba(0, 0, 0, 0.01);
-  --shadow-soft-hover:
-    0 6px 24px rgb(var(--accent-violet-rgb) / 0.04),
-    0 24px 64px rgb(var(--accent-violet-rgb) / 0.03),
-    0 48px 120px rgb(var(--accent-violet-rgb) / 0.02);
-  --shadow-dual:
-    4px 4px 12px rgb(var(--accent-violet-rgb) / 0.05),
-    -4px -4px 12px rgb(var(--accent-blue-rgb) / 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-dual-hover:
-    6px 6px 20px rgb(var(--accent-violet-rgb) / 0.1),
-    -6px -6px 20px rgb(var(--accent-blue-rgb) / 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
   --shadow-nav:
     inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 1px 3px rgb(var(--accent-violet-rgb) / 0.03), 0 2px 6px rgba(0, 0, 0, 0.04);

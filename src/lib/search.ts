@@ -19,7 +19,7 @@ export function tokenize(query: string): string[] {
 }
 
 /** 构造单篇索引条目的匹配 haystack（title/excerpt/tags 拼接） */
-export function buildHaystack(post: PostIndexEntry): string {
+function buildHaystack(post: PostIndexEntry): string {
   return [post.title, post.excerpt, ...post.tags].join('\n').toLowerCase();
 }
 

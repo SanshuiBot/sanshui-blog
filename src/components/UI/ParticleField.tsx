@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 
 /**
  * 全局发光粒子背景
@@ -18,6 +19,8 @@ import { useEffect, useRef } from 'react';
  */
 export default function ParticleField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // 检测统一走共享 hook（AGENTS.md #32），不手抄 matchMedia
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -98,7 +101,6 @@ export default function ParticleField() {
       raf = requestAnimationFrame(loop);
     };
     // prefers-reduced-motion：只画一帧静态画面，不跑动画循环
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) {
       draw();
     } else if (!document.hidden) {
@@ -117,7 +119,7 @@ export default function ParticleField() {
       window.removeEventListener('resize', resize);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, []);
+  }, [reduced]);
 
   return (
     <canvas
