@@ -7,7 +7,8 @@ import { useRef, useState } from 'react';
 function TagItem({ name, count, color }: { name: string; count: number; color: string }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const [showRipple, setShowRipple] = useState(false);
+  // 每次进入都 +1，作为涟漪 key：快速重新进入时旧涟漪作废、新涟漪重新播放
+  const [rippleRun, setRippleRun] = useState(0);
 
   // Mouse-following spotlight
   const mx = useMotionValue(50);
@@ -40,7 +41,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
 
   const onHoverStart = () => {
     setIsHovered(true);
-    setShowRipple(true);
+    setRippleRun((r) => r + 1);
   };
   const onLeave = () => {
     setIsHovered(false);
@@ -83,24 +84,21 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
             style={{ rotateX: srx, rotateY: sry, transformStyle: 'preserve-3d' }}
           />
 
-          {/* Ripple ring on hover start */}
-          <AnimatePresence>
-            {showRipple && (
-              <motion.span
-                key="ripple"
-                initial={{ scale: 0, opacity: 0.9 }}
-                animate={{ scale: 2.8, opacity: 0 }}
-                exit={{ opacity: 0 }}
-                onAnimationComplete={() => setShowRipple(false)}
-                transition={{ duration: 1, ease: 'easeOut' }}
-                className="absolute inset-0 rounded-full pointer-events-none"
-                style={{
-                  border: `3px solid color-mix(in srgb, ${color} 95%, transparent)`,
-                  boxShadow: `0 0 28px color-mix(in srgb, ${color} 85%, transparent), inset 0 0 16px color-mix(in srgb, ${color} 40%, transparent)`,
-                }}
-              />
-            )}
-          </AnimatePresence>
+          {/* Ripple ring on hover start（不用 AnimatePresence：key 变化即重建，避免退出动画的 onAnimationComplete 提前清掉新涟漪） */}
+          {rippleRun > 0 && (
+            <motion.span
+              key={rippleRun}
+              initial={{ scale: 0, opacity: 0.9 }}
+              animate={{ scale: 2.8, opacity: 0 }}
+              onAnimationComplete={() => setRippleRun((r) => (r === rippleRun ? 0 : r))}
+              transition={{ duration: 1, ease: 'easeOut' }}
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{
+                border: `3px solid color-mix(in srgb, ${color} 95%, transparent)`,
+                boxShadow: `0 0 28px color-mix(in srgb, ${color} 85%, transparent), inset 0 0 16px color-mix(in srgb, ${color} 40%, transparent)`,
+              }}
+            />
+          )}
 
           {/* Hash icon with colored glow */}
           <motion.span
