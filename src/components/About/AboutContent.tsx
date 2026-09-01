@@ -1,5 +1,31 @@
 'use client';
-import { Mail, Sparkles, Heart, Code2, Server, Wrench, Terminal } from 'lucide-react';
+import {
+  Mail,
+  Sparkles,
+  Heart,
+  Code2,
+  Server,
+  Wrench,
+  Terminal,
+  Braces,
+  Layers,
+  Zap,
+} from 'lucide-react';
+import type { ComponentType } from 'react';
+import {
+  SiNextdotjs,
+  SiReact,
+  SiTypescript,
+  SiTailwindcss,
+  SiFramer,
+  SiNodedotjs,
+  SiPython,
+  SiSqlite,
+  SiGit,
+  SiDocker,
+  SiVite,
+} from 'react-icons/si';
+import { TbBrandVscode } from 'react-icons/tb';
 import Github from '@/components/UI/GithubIcon';
 import ArrowLink from '@/components/UI/ArrowLink';
 import { motion } from 'framer-motion';
@@ -52,6 +78,34 @@ const stack = [
   },
 ];
 
+/** 技术 logo 映射：品牌色做彩色，无品牌色的（Next.js/REST API）用当前文字色或中性灰 */
+const stackIcons: Record<
+  string,
+  { Icon: ComponentType<{ size?: number; className?: string }>; color?: string }
+> = {
+  'Next.js': { Icon: SiNextdotjs },
+  React: { Icon: SiReact, color: '#61DAFB' },
+  TypeScript: { Icon: SiTypescript, color: '#3178C6' },
+  'Tailwind CSS': { Icon: SiTailwindcss, color: '#06B6D4' },
+  'Framer Motion': { Icon: SiFramer, color: '#0055FF' },
+  'Node.js': { Icon: SiNodedotjs, color: '#339933' },
+  Python: { Icon: SiPython, color: '#3776AB' },
+  SQLite: { Icon: SiSqlite, color: '#003B57' },
+  'REST API': { Icon: Braces, color: '#94a3b8' },
+  Git: { Icon: SiGit, color: '#F05032' },
+  Docker: { Icon: SiDocker, color: '#2496ED' },
+  'VS Code': { Icon: TbBrandVscode, color: '#007ACC' },
+  Vite: { Icon: SiVite, color: '#646CFF' },
+};
+
+const fallbackStackIcon: {
+  Icon: ComponentType<{ size?: number; className?: string }>;
+  color?: string;
+} = {
+  Icon: Wrench,
+  color: '#94a3b8',
+};
+
 const btnClass = 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium';
 
 interface AboutContentProps {
@@ -78,14 +132,17 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
           你好，我是<span className="text-aurora">{siteConfig.name}</span>
         </h1>
       </div>
-      <div className="prose-article mb-16">
+      <div className="prose-article mb-10">
         <p>一个热爱技术和写作的人。用文字沉淀知识，用代码改变世界。</p>
         <p>这个博客由 Next.js + MDX 构建，托管在 GitHub Pages 上。</p>
       </div>
 
       {/* Skills */}
-      <div className="mb-16">
-        <h2 className="text-xl font-bold text-white mb-6">技能</h2>
+      <div className="mb-10">
+        <div className="flex items-center gap-2 mb-6">
+          <Zap size={18} className="text-accent-pink" />
+          <h2 className="text-xl font-bold text-white">技能</h2>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {skills.map((s, i) => (
             <motion.div
@@ -114,8 +171,11 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
       </div>
 
       {/* Tech stack cards */}
-      <div className="mb-16">
-        <h2 className="text-xl font-bold text-white mb-6">技术栈</h2>
+      <div className="mb-10">
+        <div className="flex items-center gap-2 mb-6">
+          <Layers size={18} className="text-accent-teal" />
+          <h2 className="text-xl font-bold text-white">技术栈</h2>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {stack.map((s, catIdx) => (
             <motion.div
@@ -125,7 +185,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
               viewport={{ once: true }}
               transition={{ delay: catIdx * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ y: -4 }}
-              className="relative p-5 rounded-2xl glass border border-white/5 hover:border-white/20 overflow-hidden group"
+              className="relative flex flex-col p-5 rounded-2xl glass border border-white/5 hover:border-white/20 overflow-hidden group"
             >
               <motion.div
                 className={`absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${s.color}`}
@@ -145,37 +205,51 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
                   {s.items.length} 项
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {s.items.map((item, i) => (
-                  <motion.div
-                    key={item.name}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.15 + i * 0.06, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                    whileHover={{ y: -2, scale: 1.04 }}
-                    className="relative"
-                  >
-                    <div className="relative px-3 py-1.5 rounded-lg border border-white/5 bg-white/[0.03] hover:bg-white/[0.07] transition-colors cursor-default">
-                      <div
-                        className={`absolute left-0 top-1.5 bottom-1.5 w-[2.5px] rounded-r-full bg-gradient-to-b ${s.color}`}
-                      />
-                      <div className="flex items-center gap-2 pl-2">
-                        <span className="text-sm text-gray-300">{item.name}</span>
-                        <div className="flex items-center gap-[2px]">
-                          {Array.from({ length: 5 }, (_, di) => (
-                            <span
-                              key={di}
-                              className={`w-1 h-1 rounded-full transition-colors ${
-                                di < item.level ? 'bg-white/40' : 'bg-white/10'
-                              }`}
-                            />
-                          ))}
+              <div className="flex flex-1 flex-wrap content-start gap-3">
+                {s.items.map((item, i) => {
+                  const icon = stackIcons[item.name] ?? fallbackStackIcon;
+                  return (
+                    <motion.div
+                      key={item.name}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{
+                        delay: 0.15 + i * 0.06,
+                        duration: 0.35,
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
+                      whileHover={{ y: -2, scale: 1.04 }}
+                      className="relative w-full"
+                    >
+                      <div className="relative px-3 py-2 rounded-lg border border-black/10 bg-black/[0.03] hover:bg-black/[0.06] dark:border-white/5 dark:bg-white/[0.03] dark:hover:bg-white/[0.07] transition-colors cursor-default">
+                        <div className="flex items-center gap-2 pl-2">
+                          <span
+                            className="shrink-0 leading-none"
+                            style={icon.color ? { color: icon.color } : undefined}
+                          >
+                            <icon.Icon size={12} />
+                          </span>
+                          <span className="text-sm text-gray-600 dark:text-gray-300">
+                            {item.name}
+                          </span>
+                          <div className="ml-auto flex items-center gap-1">
+                            {Array.from({ length: 5 }, (_, di) => (
+                              <span
+                                key={di}
+                                className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                  di < item.level
+                                    ? 'bg-gray-700 dark:bg-white/70'
+                                    : 'bg-gray-300 dark:bg-white/15'
+                                }`}
+                              />
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
           ))}
@@ -184,11 +258,11 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
 
       {/* 流式打印简历 */}
       {resumeMarkdown && resumeMarkdown.trim().length > 0 && (
-        <div className="mb-16">
+        <div className="mb-10">
           <div className="flex items-center gap-2 mb-6">
             <Terminal size={18} className="text-accent-violet" />
             <h2 className="text-xl font-bold text-white">个人简历</h2>
-            <span className="ml-auto text-xs text-gray-600 font-mono">streaming output</span>
+            <span className="ml-auto text-xs text-gray-600 font-mono">流式输出</span>
           </div>
           <p className="text-gray-500 text-sm mb-5">
             进入视图后，简历会一行行像终端流式输出般打印出来，直至完整呈现。
