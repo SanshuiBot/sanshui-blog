@@ -17,7 +17,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
   const spotlight = useTransform(
     [sx, sy],
     ([x, y]) =>
-      `radial-gradient(180px circle at ${x}% ${y}%, color-mix(in srgb, ${color} 16%, transparent), transparent 70%)`,
+      `radial-gradient(280px circle at ${x}% ${y}%, color-mix(in srgb, ${color} 45%, transparent) 0%, color-mix(in srgb, ${color} 20%, transparent) 40%, transparent 72%)`,
   );
 
   // 3D tilt
@@ -71,6 +71,9 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
             aria-hidden
             className="absolute inset-0 rounded-full pointer-events-none"
             style={{ background: spotlight }}
+            initial={false}
+            animate={{ opacity: isHovered ? 1 : 0.5 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
           />
 
           {/* 3D tilt layer */}
@@ -85,15 +88,15 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
             {showRipple && (
               <motion.span
                 key="ripple"
-                initial={{ scale: 0, opacity: 0.7 }}
+                initial={{ scale: 0, opacity: 0.9 }}
                 animate={{ scale: 2.8, opacity: 0 }}
                 exit={{ opacity: 0 }}
                 onAnimationComplete={() => setShowRipple(false)}
-                transition={{ duration: 0.9, ease: 'easeOut' }}
+                transition={{ duration: 1, ease: 'easeOut' }}
                 className="absolute inset-0 rounded-full pointer-events-none"
                 style={{
-                  border: `1.5px solid color-mix(in srgb, ${color} 50%, transparent)`,
-                  boxShadow: `0 0 12px color-mix(in srgb, ${color} 31%, transparent)`,
+                  border: `3px solid color-mix(in srgb, ${color} 95%, transparent)`,
+                  boxShadow: `0 0 28px color-mix(in srgb, ${color} 85%, transparent), inset 0 0 16px color-mix(in srgb, ${color} 40%, transparent)`,
                 }}
               />
             )}
@@ -105,7 +108,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
             animate={{
               rotate: isHovered ? 360 : 0,
               filter: isHovered
-                ? `drop-shadow(0 0 6px color-mix(in srgb, ${color} 56%, transparent))`
+                ? `drop-shadow(0 0 8px color-mix(in srgb, ${color} 70%, transparent))`
                 : `drop-shadow(0 0 2px color-mix(in srgb, ${color} 25%, transparent))`,
             }}
             transition={{ type: 'spring', stiffness: 100, damping: 12 }}
@@ -162,7 +165,7 @@ export default function TagList({
   colors: string[];
 }) {
   return (
-    <div className="flex flex-wrap gap-4 justify-center">
+    <div className="flex flex-wrap gap-6 justify-center">
       {tags.map((t, i) => (
         <TagItem key={t.name} name={t.name} count={t.count} color={colors[i % colors.length]!} />
       ))}

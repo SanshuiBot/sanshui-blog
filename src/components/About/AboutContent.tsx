@@ -230,7 +230,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
                           >
                             <icon.Icon size={12} />
                           </span>
-                          <span className="text-sm text-gray-600 dark:text-gray-300">
+                          <span className="text-sm text-gray-800 dark:text-gray-300">
                             {item.name}
                           </span>
                           <div className="ml-auto flex items-center gap-1">
