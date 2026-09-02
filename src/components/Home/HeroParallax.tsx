@@ -83,12 +83,14 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
       document.documentElement.style.setProperty('--sansui-hero-vh', `${h}px`);
     };
     update();
+    // 只监听 resize：旋转时 orientationchange 先于视口重排触发、读到的是旋转前旧尺寸，
+    // 且现代浏览器旋转必然补发 resize（可能连发多次，末次才收敛到最终尺寸）。
+    // update() 整体覆写、后写胜出，中间过渡值会被末次收敛值覆盖自愈；
+    // 去掉 orientationchange 即去掉「必写旧值 + 全量重渲染」那次重复 update。
     window.addEventListener('resize', update);
-    window.addEventListener('orientationchange', update);
     return () => {
       document.documentElement.classList.remove('sanshui-hero-active');
       window.removeEventListener('resize', update);
-      window.removeEventListener('orientationchange', update);
       document.documentElement.style.removeProperty('--sansui-hero-vh');
     };
   }, []);

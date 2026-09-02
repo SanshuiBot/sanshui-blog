@@ -1,5 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
+import { useEffect } from 'react';
 import type { HeroStats } from './HeroParallax';
 
 /**
@@ -40,6 +41,25 @@ const PostsList = dynamic(() => import('@/components/Home/PostsList'), {
 });
 
 export default function HomeHydration({ total, stats }: { total: number; stats: HeroStats }) {
+  useEffect(() => {
+    const syncVar = () => {
+      document.documentElement.style.setProperty('--sansui-hero-vh', `${window.innerHeight}px`);
+    };
+    // 首帧就写入 --sansui-hero-vh 快照：HeroParallax 是 dynamic + ssr:false 的异步 chunk，
+    // 在其挂载（effect 写变量）之前，下方占位 div 会回退到活值 100dvh——正是要规避的
+    // 语义（地址栏显隐导致 spacer 与 Hero 退场阈值不同步）。hydrate 即用 innerHeight
+    // 固定 spacer，并注册一个只写 CSS 变量（不 setState）的 resize 监听，覆盖 HeroParallax
+    // 接管前的异步窗口期——否则窗口期内的 resize/旋转会让 spacer 卡在旧快照。
+    // HeroParallax 挂载后由它自带的监听接管（同一内联值写入，不冲突）。
+    syncVar();
+    window.addEventListener('resize', syncVar);
+    return () => {
+      window.removeEventListener('resize', syncVar);
+      // chunk 加载失败（HeroParallax 永不挂载）或组件卸载时移除变量，避免跨路由残留
+      document.documentElement.style.removeProperty('--sansui-hero-vh');
+    };
+  }, []);
+
   return (
     <>
       <HeroParallax stats={stats} />
@@ -50,7 +70,10 @@ export default function HomeHydration({ total, stats }: { total: number; stats: 
         彻底规避移动端 Safari 100dvh 随地址栏显隐动态变化导致的重叠问题
         （CSS dvh ≠ window.innerHeight，两者不同步时标题与列表会短暂重叠）。
       */}
-      <div className="relative z-10 h-[var(--sansui-hero-vh,100dvh)] pointer-events-none" aria-hidden />
+      <div
+        className="relative z-10 h-[var(--sansui-hero-vh,100dvh)] pointer-events-none"
+        aria-hidden
+      />
       <PostsList total={total} />
     </>
   );
