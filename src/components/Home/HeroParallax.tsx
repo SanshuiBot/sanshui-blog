@@ -50,6 +50,18 @@ const thumbAccents = [
   '--accent-rose-rgb',
 ];
 
+// 中央内容各组退场 opacity 窗口（vh 倍率）：起点依次后移形成「逐层退场」节奏，
+// badge 最先退场、CTA 最后消失（行动点留最久）。终点全部 ≤1，保证滚动一屏后
+// 首屏内容必然全部隐藏——「滚动后首屏必须消失」是功能性契约（#43），
+// 由 tests/hero-parallax-exit.test.ts 锁定，勿随意改动。
+export const EXIT_STAGGER = {
+  badge: [0, 0.5],
+  title: [0.05, 0.9],
+  subtitle: [0.15, 0.85],
+  stats: [0.22, 0.95],
+  cta: [0.3, 1],
+} as const;
+
 export default function HeroParallax({ stats }: { stats?: HeroStats }) {
   // reduced-motion：首屏视差/入场全是 JS 驱动（Framer），全局 CSS 0.01ms 压制管不到，
   // 必须组件内自检（AGENTS.md #32）。reduced 时跳过**装饰性**视差 transform 与入场动画；
@@ -75,22 +87,39 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
 
   const { scrollY } = useScroll();
 
-  // 最近层（标题/CTA）：随 scrollY 平移 + 淡出
-  // opacity / scale 套 useSpring 阻尼——快速滚动时浏览器平滑滚动的惯性会让
-  // scrollY 冲过 vh*0.6 后回弹，raw transform 会瞬时跳变「0→正值→0」导致
-  // 「你好，我是」闪现；spring 平滑收敛，回弹跳变被吸收为不可见的极小值。
-  // 位移 titleY 保留 raw，spring 会让位移有延迟感不跟手。
-  const titleOpacity = useSpring(useTransform(scrollY, [0, vh * 0.6], [1, 0]), {
-    stiffness: 120,
-    damping: 20,
-    restDelta: 0.001,
-  });
-  const titleY = useTransform(scrollY, [0, vh * 0.6], [0, -60]);
-  const titleScale = useSpring(useTransform(scrollY, [0, vh * 0.6], [1, 0.92]), {
-    stiffness: 120,
-    damping: 20,
-    restDelta: 0.001,
-  });
+  // 中央内容退场（A+C 组合）：慢速飘走 + 逐块错峰
+  //  - 容器共享 y 上浮（退场窗口 0→1vh，比原 0.6vh 拉长，滚动时「慢慢隐去」）
+  //  - 各组 opacity 按从上到下错峰淡出（badge 先走 → CTA 最后消失，行动点留最久）
+  // 不在此容器上做 filter blur 失焦：blur(0px) 也是非 none filter，会使容器成为
+  // backdrop root，压平内部 .glass 元素的 backdrop-filter（玻璃失效，code review P2）；
+  // 且滚动时每帧对整块 text-8xl 标题层重栅格化，低端设备掉帧（P3）。
+  // opacity 全部套 useSpring 阻尼——快速滚动时浏览器平滑滚动的惯性会让 scrollY
+  // 冲过区间终点后回弹，raw 值会瞬时跳变「0→正值→0」导致内容闪现；
+  // spring 平滑收敛，回弹跳变被吸收为不可见的极小值。容器 y 是装饰性
+  // （reduced 时跳过，#32/#43），opacity 是功能性（reduced 也保留）。
+  const springSmooth = { stiffness: 120, damping: 20, restDelta: 0.001 };
+  const exitY = useSpring(useTransform(scrollY, [0, vh], [0, -110]), springSmooth);
+  // 各组 opacity 错峰窗口来自 EXIT_STAGGER（vh 倍率 → 像素区间）
+  const badgeOpacity = useSpring(
+    useTransform(scrollY, [EXIT_STAGGER.badge[0] * vh, EXIT_STAGGER.badge[1] * vh], [1, 0]),
+    springSmooth,
+  );
+  const titleOpacity = useSpring(
+    useTransform(scrollY, [EXIT_STAGGER.title[0] * vh, EXIT_STAGGER.title[1] * vh], [1, 0]),
+    springSmooth,
+  );
+  const subtitleOpacity = useSpring(
+    useTransform(scrollY, [EXIT_STAGGER.subtitle[0] * vh, EXIT_STAGGER.subtitle[1] * vh], [1, 0]),
+    springSmooth,
+  );
+  const statsOpacity = useSpring(
+    useTransform(scrollY, [EXIT_STAGGER.stats[0] * vh, EXIT_STAGGER.stats[1] * vh], [1, 0]),
+    springSmooth,
+  );
+  const ctaOpacity = useSpring(
+    useTransform(scrollY, [EXIT_STAGGER.cta[0] * vh, EXIT_STAGGER.cta[1] * vh], [1, 0]),
+    springSmooth,
+  );
 
   // 中间层（缩略图墙）：中速向上飘 + 活微旋转
   // 套 spring（高 stiffness + 高 damping）：吸收手机端慢滚时 scrollY 的亚像素抖动，
@@ -252,128 +281,138 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
       </motion.div>
 
       {/* ── 最近层：标题 / CTA（中央，视差最快） ── */}
-      {/* opacity 淡出（scrollY→0.6vh 归零）保留：滚动后首屏必须隐藏，reduced 也不例外；
-          y/scale 视差位移是装饰性，reduced 时跳过 */}
+      {/* 退场（A+C 组合）：容器共享 y 上浮，滚动时内容「慢慢隐去」；
+          各组 opacity 错峰淡出是功能性（滚动后首屏必须隐藏），reduced 也不例外；
+          y 是装饰性视差，reduced 时跳过（#32/#43） */}
       <motion.div
-        style={
-          reduced
-            ? { opacity: titleOpacity }
-            : { opacity: titleOpacity, y: titleY, scale: titleScale }
-        }
+        style={reduced ? undefined : { y: exitY }}
         className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center will-change-transform"
       >
-        {/* 身份徽章 */}
-        <motion.div
-          initial={reduced ? false : { opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: lineEase }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass hero-badge mb-8"
-        >
-          <span className="hero-badge-dot" aria-hidden />
-          <span className="text-xs font-medium text-gray-300 tracking-wide">
-            Creative Developer · 技术博客
-          </span>
+        {/* 身份徽章（错峰组 1：最先退场） */}
+        <motion.div style={{ opacity: badgeOpacity }}>
+          <motion.div
+            initial={reduced ? false : { opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: lineEase }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass hero-badge mb-8"
+          >
+            <span className="hero-badge-dot" aria-hidden />
+            <span className="text-xs font-medium text-gray-300 tracking-wide">
+              Creative Developer · 技术博客
+            </span>
+          </motion.div>
         </motion.div>
 
-        {/* Title */}
-        <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05] mb-6">
-          <motion.span
-            initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.9, delay: 0.05, ease: lineEase }}
-            className="block text-white"
-          >
-            你好，我是
-          </motion.span>
-          <motion.span
-            initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: 0.9, delay: 0.18, ease: lineEase }}
-            className="block mt-3 text-aurora hero-name-shimmer"
-          >
-            {siteConfig.name}
-          </motion.span>
-        </h1>
+        {/* Title（错峰组 2） */}
+        <motion.div style={{ opacity: titleOpacity }}>
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05] mb-6">
+            <motion.span
+              initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ duration: 0.9, delay: 0.05, ease: lineEase }}
+              className="block text-white"
+            >
+              你好，我是
+            </motion.span>
+            <motion.span
+              initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ duration: 0.9, delay: 0.18, ease: lineEase }}
+              className="block mt-3 text-aurora hero-name-shimmer"
+            >
+              {siteConfig.name}
+            </motion.span>
+          </h1>
+        </motion.div>
 
-        {/* Subtitle */}
-        <motion.p
-          initial={reduced ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed"
-        >
-          用文字沉淀知识，用代码改变世界。
-        </motion.p>
-
-        {/* Stats — 极简 inline 行：数字（单色 accent）· 标签，点分隔 */}
-        {statItems.length > 0 && (
-          <motion.div
-            initial={reduced ? false : { opacity: 0, y: 12 }}
+        {/* Subtitle（错峰组 3） */}
+        <motion.div style={{ opacity: subtitleOpacity }}>
+          <motion.p
+            initial={reduced ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.56 }}
-            className="hero-stats-inline mb-10"
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed"
           >
-            {statItems.map((s, i) => {
-              const accents = [
-                'var(--accent-violet-rgb)',
-                'var(--accent-pink-rgb)',
-                'var(--accent-blue-rgb)',
-              ];
-              const accent = accents[i % accents.length];
-              return (
-                <span key={s.label} className="hero-stat-inline-item">
-                  {i > 0 && (
-                    <span className="hero-stat-sep" aria-hidden>
-                      ·
+            用文字沉淀知识，用代码改变世界。
+          </motion.p>
+        </motion.div>
+
+        {/* Stats（错峰组 4）— 极简 inline 行：数字（单色 accent）· 标签，点分隔 */}
+        {statItems.length > 0 && (
+          <motion.div style={{ opacity: statsOpacity }}>
+            <motion.div
+              initial={reduced ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.56 }}
+              className="hero-stats-inline mb-10"
+            >
+              {statItems.map((s, i) => {
+                const accents = [
+                  'var(--accent-violet-rgb)',
+                  'var(--accent-pink-rgb)',
+                  'var(--accent-blue-rgb)',
+                ];
+                const accent = accents[i % accents.length];
+                return (
+                  <span key={s.label} className="hero-stat-inline-item">
+                    {i > 0 && (
+                      <span className="hero-stat-sep" aria-hidden>
+                        ·
+                      </span>
+                    )}
+                    <span
+                      className="hero-stat-inline-num"
+                      style={{ color: `rgb(${accent} / 0.95)` }}
+                    >
+                      {s.value}
                     </span>
-                  )}
-                  <span className="hero-stat-inline-num" style={{ color: `rgb(${accent} / 0.95)` }}>
-                    {s.value}
+                    <span className="hero-stat-inline-label">{s.label}</span>
                   </span>
-                  <span className="hero-stat-inline-label">{s.label}</span>
-                </span>
-              );
-            })}
+                );
+              })}
+            </motion.div>
           </motion.div>
         )}
 
-        {/* CTA + Social */}
-        <motion.div
-          initial={reduced ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.48 }}
-          className="flex flex-wrap items-center justify-center gap-4 mb-8"
-        >
-          <motion.a
-            ref={btnRef}
-            href="#posts"
-            onMouseMove={onBtnMove}
-            onMouseLeave={() => {
-              btnX.set(0);
-              btnY.set(0);
-            }}
-            style={reduced ? undefined : { x: sBtnX, y: sBtnY }}
-            className="relative inline-flex items-center gap-3 px-7 py-3 rounded-full hero-cta"
+        {/* CTA + Social（错峰组 5：最后退场，行动点留最久） */}
+        <motion.div style={{ opacity: ctaOpacity }}>
+          <motion.div
+            initial={reduced ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.48 }}
+            className="flex flex-wrap items-center justify-center gap-4 mb-8"
           >
-            <span className="hero-cta-glow" />
-            <span className="hero-cta-text relative z-10 font-semibold text-sm">浏览文章</span>
-            <ArrowDown size={15} className="relative z-10 hero-cta-arrow" />
-          </motion.a>
-          {social.map(({ icon: Icon, href, label }, idx) => (
             <motion.a
-              key={label}
-              href={href}
-              target={href.startsWith('http') ? '_blank' : undefined}
-              rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-              aria-label={label}
-              className="block p-3 rounded-full glass hero-social text-gray-400 hover:text-white"
-              initial={reduced ? false : { opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}
+              ref={btnRef}
+              href="#posts"
+              onMouseMove={onBtnMove}
+              onMouseLeave={() => {
+                btnX.set(0);
+                btnY.set(0);
+              }}
+              style={reduced ? undefined : { x: sBtnX, y: sBtnY }}
+              className="relative inline-flex items-center gap-3 px-7 py-3 rounded-full hero-cta"
             >
-              <Icon size={18} />
+              <span className="hero-cta-glow" />
+              <span className="hero-cta-text relative z-10 font-semibold text-sm">浏览文章</span>
+              <ArrowDown size={15} className="relative z-10 hero-cta-arrow" />
             </motion.a>
-          ))}
+            {social.map(({ icon: Icon, href, label }, idx) => (
+              <motion.a
+                key={label}
+                href={href}
+                target={href.startsWith('http') ? '_blank' : undefined}
+                rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                aria-label={label}
+                className="block p-3 rounded-full glass hero-social text-gray-400 hover:text-white"
+                initial={reduced ? false : { opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}
+              >
+                <Icon size={18} />
+              </motion.a>
+            ))}
+          </motion.div>
         </motion.div>
       </motion.div>
 

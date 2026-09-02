@@ -58,7 +58,10 @@ export default function PostLoading() {
         </div>
         <div className="hidden lg:block sticky top-28 w-56 shrink-0 self-start ml-8">
           <Skel className="h-3 w-12 mb-4" />
-          <div className="space-y-2" style={{ borderLeft: '1px solid var(--border-skeleton)', paddingLeft: '0.75rem' }}>
+          <div
+            className="space-y-2"
+            style={{ borderLeft: '1px solid var(--border-skeleton)', paddingLeft: '0.75rem' }}
+          >
             <Skel className="h-3 w-40" />
             <Skel className="h-3 w-36" />
             <Skel className="h-3 w-44" />
