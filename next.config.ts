@@ -1,3 +1,4 @@
+import { networkInterfaces } from 'node:os';
 import type { NextConfig } from 'next';
 
 /**
@@ -6,6 +7,19 @@ import type { NextConfig } from 'next';
  * 原因：output: 'export' 模式下，next.config.ts 的 headers() 不会生效，
  * 因为静态 HTML 文件由托管平台（GitHub Pages）直接返回，不经过 Next。
  */
+
+// dev 模式 HMR 白名单（Next 15.2+ allowedDevOrigins 防 DNS rebinding，仅 dev 生效）：
+// 启动时自动收集本机所有 IPv4 + localhost，克隆后零配置即可用任意本机 IP 访问
+// dev server，DHCP 换 IP 也无需改代码（每次启动重新探测）。
+function collectDevOrigins(): string[] {
+  const origins = new Set<string>(['localhost']);
+  for (const infos of Object.values(networkInterfaces())) {
+    for (const info of infos ?? []) {
+      if (info.family === 'IPv4' && !info.internal) origins.add(info.address);
+    }
+  }
+  return [...origins];
+}
 
 const isBuild = process.env.NEXT_BUILD === '1';
 const BASE_PATH = isBuild ? '/sanshui-blog' : '';
@@ -28,6 +42,9 @@ const nextConfig: NextConfig = {
     unoptimized: true, // 静态导出 — 无服务端优化器
     formats: ['image/avif', 'image/webp'],
   },
+  // 局域网 IP 访问 dev server 的白名单：自动探测本机 IPv4（见 collectDevOrigins），
+  // 不在列表的来源会被拒，表现为 HMR WebSocket failed + 全屏错误 overlay。
+  allowedDevOrigins: collectDevOrigins(),
   trailingSlash: true,
   // optimizePackageImports: 让 framer-motion、lucide-react 等大库按需引入，
   // 减少首屏 JS 体积。Next 16 仍保留在 experimental 下（顶层不存在该键）。
