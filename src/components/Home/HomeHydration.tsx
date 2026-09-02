@@ -46,9 +46,11 @@ export default function HomeHydration({ total, stats }: { total: number; stats: 
       {/*
         第一屏占位：fixed Hero 在它下方显示。
         pointer-events-none 让点击穿透到 Hero 里的 GitHub/邮件按钮；
-        h-[100dvh] 撑出第一屏空白让 fixed Hero 显露，PostsList 紧随其后占第二屏起。
+        h-[var(--sansui-hero-vh)] 与 Hero 组件内部用同一份 JS 快照值，
+        彻底规避移动端 Safari 100dvh 随地址栏显隐动态变化导致的重叠问题
+        （CSS dvh ≠ window.innerHeight，两者不同步时标题与列表会短暂重叠）。
       */}
-      <div className="relative z-10 h-[100dvh] pointer-events-none" aria-hidden />
+      <div className="relative z-10 h-[var(--sansui-hero-vh,100dvh)] pointer-events-none" aria-hidden />
       <PostsList total={total} />
     </>
   );

@@ -74,14 +74,22 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
     // Hero 区有独立的流光网格（56px），添加 marker 让全局网格（64px）隐藏，避免两层叠加产生摩尔纹
     document.documentElement.classList.add('sanshui-hero-active');
     const update = () => {
-      setVh(window.innerHeight);
-      setW(window.innerWidth);
+      const h = window.innerHeight;
+      const w = window.innerWidth;
+      setVh(h);
+      setW(w);
+      // 写入 CSS 变量供占位 div 使用（解决移动端 Safari 100dvh 随地址栏显隐动态变化的问题：
+      // 用 JS 快照统一 Hero 退场阈值和占位高度，避免两者不同步导致首屏内容重叠）
+      document.documentElement.style.setProperty('--sansui-hero-vh', `${h}px`);
     };
     update();
     window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
     return () => {
       document.documentElement.classList.remove('sanshui-hero-active');
       window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+      document.documentElement.style.removeProperty('--sansui-hero-vh');
     };
   }, []);
 
