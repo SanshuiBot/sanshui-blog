@@ -32,19 +32,19 @@ export default function NotFoundContent() {
         <div className="relative mb-6">
           <div className="text-9xl font-black leading-none text-aurora tracking-tighter">404</div>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-3">页面走丢了</h1>
-        <p className="text-gray-500 mb-10">抱歉，你访问的页面不存在。</p>
+        <h1 className="text-2xl font-bold text-stone-900 mb-3 dark:text-white">页面走丢了</h1>
+        <p className="text-stone-500 mb-10 dark:text-gray-500">抱歉，你访问的页面不存在。</p>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl btn-solid text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
           >
             <Home size={16} />
             返回首页
           </Link>
           <Link
             href="/archive/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 text-gray-300 text-sm font-medium border border-white/10 hover:scale-105 active:scale-95 transition-transform hover:border-accent-violet/40"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black/[0.03] text-stone-700 text-sm font-medium border border-black/[0.1] hover:scale-105 active:scale-95 transition-transform dark:bg-white/5 dark:text-gray-300 dark:border-white/10 hover:border-accent-violet/40"
           >
             <ArrowLeft size={16} />
             浏览归档

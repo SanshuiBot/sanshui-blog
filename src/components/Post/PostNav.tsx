@@ -24,7 +24,7 @@ export default function PostNav({ prev, next }: Props) {
             href={`/posts/${prev.slug}/`}
             prefetch={false}
             onClick={startNavigation}
-            className="group flex items-start gap-3 p-4 rounded-xl glass border border-white/5 transition-all duration-300 group-hover:border-accent-violet/30 relative overflow-hidden"
+            className="group flex items-start gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 transition-all duration-300 group-hover:border-accent-violet/30 relative overflow-hidden"
           >
             <span className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl bg-accent-violet/0 group-hover:bg-accent-violet/60 transition-colors duration-300" />
             <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-accent-violet/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -60,7 +60,7 @@ export default function PostNav({ prev, next }: Props) {
             href={`/posts/${next.slug}/`}
             prefetch={false}
             onClick={startNavigation}
-            className="group flex items-start justify-end gap-3 p-4 rounded-xl glass border border-white/5 transition-all duration-300 group-hover:border-accent-violet/30 relative overflow-hidden"
+            className="group flex items-start justify-end gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 transition-all duration-300 group-hover:border-accent-violet/30 relative overflow-hidden"
           >
             <span className="absolute right-0 top-0 bottom-0 w-[3px] rounded-r-xl bg-accent-violet/0 group-hover:bg-accent-violet/60 transition-colors duration-300" />
             <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-accent-violet/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

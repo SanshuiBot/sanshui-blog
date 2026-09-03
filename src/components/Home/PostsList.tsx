@@ -71,11 +71,11 @@ export default function PostsList({ total }: Props) {
         id="posts"
         className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20"
       >
-        <div className="text-center py-16 text-gray-500">
+        <div className="text-center py-16 text-stone-500 dark:text-gray-500">
           <p className="mb-3">文章列表加载失败，请重试</p>
           <button
             onClick={handleRetry}
-            className="px-4 py-2 rounded-lg glass text-sm text-white hover:text-accent-violet transition-colors"
+            className="px-4 py-2 rounded-lg glass glass-flat text-sm text-stone-900 hover:text-accent-violet transition-colors dark:text-white"
           >
             重试
           </button>
@@ -97,8 +97,10 @@ export default function PostsList({ total }: Props) {
           animate={titleInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">最新文章</h2>
-          <p className="mt-2 text-gray-500 text-sm">共 {total} 篇文章</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight dark:text-white">
+            最新文章
+          </h2>
+          <p className="mt-2 text-stone-500 text-sm dark:text-gray-500">共 {total} 篇文章</p>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 16 }}

@@ -59,20 +59,20 @@ const tagGradients = [
 function SkeletonLayer() {
   return (
     <div
-      className="absolute inset-0 rounded-2xl bg-white/10 animate-pulse overflow-hidden"
+      className="absolute inset-0 rounded-2xl bg-black/[0.06] animate-pulse overflow-hidden dark:bg-white/10"
       aria-hidden="true"
     >
-      <div className="h-[2px] bg-white/10 w-full" />
+      <div className="h-[2px] bg-black/[0.06] w-full dark:bg-white/10" />
       <div className="px-5 pt-4 flex gap-1.5">
-        <div className="h-4 w-10 rounded-full bg-white/10" />
-        <div className="h-4 w-8 rounded-full bg-white/10" />
+        <div className="h-4 w-10 rounded-full bg-black/[0.06] dark:bg-white/10" />
+        <div className="h-4 w-8 rounded-full bg-black/[0.06] dark:bg-white/10" />
       </div>
       <div className="px-5 pt-3">
-        <div className="h-5 w-full rounded bg-white/10 mb-2" />
-        <div className="h-4 w-3/4 rounded bg-white/10" />
+        <div className="h-5 w-full rounded bg-black/[0.06] mb-2 dark:bg-white/10" />
+        <div className="h-4 w-3/4 rounded bg-black/[0.06] dark:bg-white/10" />
       </div>
       <div className="px-5 pt-4 mt-auto">
-        <div className="h-px w-full bg-white/10" />
+        <div className="h-px w-full bg-black/[0.06] dark:bg-white/10" />
       </div>
     </div>
   );
@@ -180,7 +180,7 @@ export default function PostCard({
                   rotateY: spotlight?.rotateY,
                   transformStyle: 'preserve-3d',
                 }}
-                className="p-[1px] rounded-2xl bg-white/5 h-full shadow-neon-hover"
+                className="p-[1px] rounded-2xl bg-black/[0.03] h-full shadow-neon-hover dark:bg-white/5"
               >
                 {/* Border glow */}
                 <motion.div
@@ -196,7 +196,7 @@ export default function PostCard({
                 />
 
                 <article
-                  className="relative flex flex-col h-full bg-surface rounded-2xl overflow-hidden"
+                  className="relative flex flex-col h-full bg-white rounded-2xl overflow-hidden dark:bg-surface"
                   style={{ transformStyle: 'preserve-3d' }}
                 >
                   {/* Animated top accent line */}
@@ -231,7 +231,7 @@ export default function PostCard({
                         >
                           <Link
                             href={`/tags/${encodeURIComponent(t)}/`}
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-gray-400 hover:text-white transition-colors`}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-stone-600 hover:text-stone-900 transition-colors dark:text-gray-400 dark:hover:text-white`}
                           >
                             <Tag size={9} />
                             {t}
@@ -259,17 +259,17 @@ export default function PostCard({
                       </motion.h2>
 
                       {/* Excerpt */}
-                      <p className="text-gray-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1 min-h-0">
+                      <p className="text-stone-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1 min-h-0 dark:text-gray-500">
                         {post.excerpt}
                       </p>
 
                       {/* Footer with "阅读" as part of the link */}
                       <motion.div
-                        className="flex items-center justify-between pt-3 border-t border-white/5"
+                        className="flex items-center justify-between pt-3 border-t border-black/[0.06] dark:border-white/5"
                         whileHover="hovered"
                         initial="idle"
                       >
-                        <span className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <span className="flex items-center gap-1.5 text-xs text-stone-400 dark:text-gray-600">
                           <Clock size={11} />
                           {formatDate(post.date)}
                         </span>

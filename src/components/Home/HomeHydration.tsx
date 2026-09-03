@@ -33,7 +33,11 @@ const PostsList = dynamic(() => import('@/components/Home/PostsList'), {
     <section id="posts" className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-48 rounded-2xl bg-white/5 animate-pulse" aria-hidden />
+          <div
+            key={i}
+            className="h-48 rounded-2xl bg-black/[0.03] animate-pulse dark:bg-white/5"
+            aria-hidden
+          />
         ))}
       </div>
     </section>

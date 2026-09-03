@@ -48,10 +48,10 @@ export default function TagsPage() {
           <Hash size={12} />
           标签
         </span>
-        <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-white">
           <span className="text-aurora">全部标签</span>
         </h1>
-        <p className="mt-3 text-gray-500">共 {tags.length} 个标签</p>
+        <p className="mt-3 text-stone-500 dark:text-gray-500">共 {tags.length} 个标签</p>
       </div>
       <TagList tags={tags} colors={colors} />
     </div>

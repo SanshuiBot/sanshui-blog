@@ -30,7 +30,7 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
     <div className="relative shrink-0" ref={containerRef}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="archive-filter-btn group inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full glass border border-white/5 hover:border-accent-violet/40 transition-colors duration-200 cursor-pointer"
+        className="archive-filter-btn group inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full glass glass-flat border border-black/[0.06] hover:border-accent-violet/40 transition-colors duration-200 cursor-pointer dark:border-white/5"
         aria-label="按标签筛选"
         aria-expanded={open}
       >
@@ -50,10 +50,10 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
         <div
           role="dialog"
           aria-label="按标签筛选"
-          className="archive-filter-panel absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl glass-heavy p-4 shadow-soft z-50"
+          className="archive-filter-panel absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl glass-heavy p-4 z-50"
         >
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">
+            <span className="text-xs font-medium text-stone-500 uppercase tracking-widest dark:text-gray-500">
               按标签筛选
             </span>
             <button
@@ -71,7 +71,7 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
                 key={t.name}
                 href={`/tags/${encodeURIComponent(t.name)}/`}
                 onClick={() => setOpen(false)}
-                className="archive-filter-chip archive-filter-chip-name archive-filter-chip-count group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs glass border border-white/5 hover:border-accent-violet/40 transition-colors duration-200"
+                className="archive-filter-chip archive-filter-chip-name archive-filter-chip-count group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs glass glass-flat border border-black/[0.06] hover:border-accent-violet/40 transition-colors duration-200 dark:border-white/5"
               >
                 <Hash
                   size={10}
@@ -87,7 +87,7 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
             ))}
           </div>
 
-          <div className="mt-3 pt-3 border-t border-white/10">
+          <div className="mt-3 pt-3 border-t border-black/[0.1] dark:border-white/10">
             <Link
               href="/tags/"
               onClick={() => setOpen(false)}

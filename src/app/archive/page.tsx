@@ -61,10 +61,10 @@ export default function ArchivePage() {
             <BookOpen size={12} />
             归档
           </span>
-          <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+          <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-white">
             <span className="text-aurora">全部文章</span>
           </h1>
-          <p className="mt-3 text-gray-500">共 {posts.length} 篇文章</p>
+          <p className="mt-3 text-stone-500 dark:text-gray-500">共 {posts.length} 篇文章</p>
         </div>
         {tags.length > 0 && <FilterDropdown tags={tags} />}
       </div>
@@ -72,8 +72,10 @@ export default function ArchivePage() {
       {years.map((year) => (
         <section key={year} className="mb-14 last:mb-0">
           <div className="relative mb-8 flex items-center gap-5">
-            <div className="text-3xl font-bold text-gray-500 tracking-tight">{year}</div>
-            <div className="flex-1 h-px bg-white/5" />
+            <div className="text-3xl font-bold text-stone-500 tracking-tight dark:text-gray-500">
+              {year}
+            </div>
+            <div className="flex-1 h-px bg-black/[0.03] dark:bg-white/5" />
           </div>
           <PostGrid posts={grouped[year] ?? []} />
         </section>

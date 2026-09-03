@@ -34,17 +34,17 @@ export default function PostMeta({ post, readingMinutes }: Props) {
             <Link
               key={t}
               href={`/tags/${encodeURIComponent(t)}/`}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-violet/10 text-gray-400 hover:bg-accent-violet/20 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-violet/10 text-stone-600 hover:bg-accent-violet/20 dark:text-gray-400 transition-colors"
             >
               <Tag size={10} />
               {t}
             </Link>
           ))}
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 dark:text-white tracking-tight leading-tight mb-6">
           {post.title}
         </h1>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-stone-500 dark:text-gray-500">
           <span className="flex items-center gap-1.5">
             <Clock size={14} />
             {formatDate(post.date)}

@@ -13,7 +13,7 @@ export default function Footer() {
   const reduced = usePrefersReducedMotion();
 
   return (
-    <footer className="relative border-t border-white/5 mt-32">
+    <footer className="relative border-t border-black/[0.06] mt-32 dark:border-white/5">
       <div className="absolute top-0 inset-x-0 h-px overflow-hidden">
         <motion.div
           className="h-full w-[200%]"
@@ -36,12 +36,12 @@ export default function Footer() {
             <Link href="/" className="text-xl font-bold tracking-tight text-aurora">
               {siteConfig.name}
             </Link>
-            <p className="mt-3 text-sm text-gray-500 leading-relaxed max-w-xs">
+            <p className="mt-3 text-sm text-stone-500 leading-relaxed max-w-xs dark:text-gray-500">
               记录技术思考与创作灵感。
             </p>
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-5">
+            <h3 className="text-xs font-semibold text-stone-700 uppercase tracking-widest mb-5 dark:text-gray-300">
               导航
             </h3>
             <ul className="space-y-3">
@@ -55,7 +55,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-widest mb-5">
+            <h3 className="text-xs font-semibold text-stone-700 uppercase tracking-widest mb-5 dark:text-gray-300">
               联系
             </h3>
             {/* 链接用 flex gap 对齐，不用 <br /> 硬换行 */}
@@ -79,11 +79,11 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="mt-14 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-gray-600">
+        <div className="mt-14 pt-8 border-t border-black/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 dark:border-white/5">
+          <p className="text-xs text-stone-400 dark:text-gray-600">
             &copy; {siteConfig.copyrightYear} {siteConfig.name}. All rights reserved.
           </p>
-          <p className="text-xs text-gray-600 flex items-center gap-1">
+          <p className="text-xs text-stone-400 dark:text-gray-600 flex items-center gap-1">
             Next.js &bull; MDX &bull; Tailwind CSS
             {/* RSS 订阅真链接（feed.xml 由 scripts/gen-feed.js 生成）。
                 feed.xml 是静态文件不是路由——必须用原生 <a> + withBase()：
@@ -93,7 +93,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="RSS 订阅"
-              className="footer-link inline-flex text-gray-500 hover:text-accent-violet transition-colors"
+              className="footer-link inline-flex text-stone-500 hover:text-accent-violet transition-colors dark:text-gray-500"
             >
               <Rss size={12} />
             </a>

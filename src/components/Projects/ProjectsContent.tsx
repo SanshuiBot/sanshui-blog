@@ -48,11 +48,11 @@ function tagAccentHash(tag: string): number {
 // ── 入场变体 ──────────────────────────────────────────────────────────────────
 const container: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.07 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.03 } },
 };
 const item: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.24, ease: [0.16, 1, 0.3, 1] } },
 };
 
 // ── 仓库卡片 ──────────────────────────────────────────────────────────────────
@@ -155,7 +155,7 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
                     className="tag-accent px-2 py-0.5 rounded-full text-[0.6875rem] font-mono
                                transition-all duration-300
                                dark:border-white/[0.2] dark:bg-white/10 dark:text-white
-                               border-black/[0.08] bg-black/[0.04] text-gray-500
+                               border-black/[0.08] bg-black/[0.04] text-stone-500
                                group-hover:border-transparent"
                   >
                     {tag}
@@ -209,7 +209,7 @@ export default function ProjectsContent() {
           </svg>
           项目
         </span>
-        <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-white">
           <span
             style={{
               background:
@@ -242,7 +242,7 @@ export default function ProjectsContent() {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: mounted ? 1 : 0, y: mounted ? 0 : 8 }}
-        transition={{ delay: 0.45, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ delay: 0.12, duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         className="mt-8 flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-500"
       >
         <span>更多项目欢迎去 GitHub 逛逛</span>

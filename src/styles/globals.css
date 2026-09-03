@@ -90,7 +90,7 @@
     /* C · 内发光微浮雕 — 导航/模态 */
     --shadow-emboss:
       inset 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1);
+      var(--shadow-soft);
     --shadow-emboss-hover:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1),
       0 4px 12px rgb(var(--accent-violet-rgb) / 0.06), 0 12px 24px rgba(0, 0, 0, 0.12);
@@ -100,10 +100,10 @@
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1),
       0 2px 4px rgb(var(--accent-violet-rgb) / 0.03), 0 4px 8px rgba(0, 0, 0, 0.06);
 
-    /* D · 超扩散柔焦 — 统计/通用容器 */
+    /* D · 统一混合档 — 近影清晰 + 远影柔焦（全站内容块/浮层外投影共用，浓度一致） */
     --shadow-soft:
-      0 8px 32px rgba(0, 0, 0, 0.04), 0 24px 64px rgba(0, 0, 0, 0.03),
-      0 48px 120px rgba(0, 0, 0, 0.02);
+      0 4px 12px rgba(0, 0, 0, 0.05), 0 16px 40px rgba(0, 0, 0, 0.06),
+      0 48px 120px rgba(0, 0, 0, 0.03);
   }
   *,
   *::before,
@@ -192,6 +192,21 @@
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-soft);
   }
+  /* 小控件无影变体：chip/小按钮等小尺寸元素不背超扩散柔焦（置于 .glass 之后，同层后者覆盖） */
+  .glass-flat {
+    box-shadow: none;
+  }
+  /* 实心 CTA 按钮：真实白底黑字，亮/暗一致。
+     不用 .bg-white/.text-black utility——它们被下方 html:not(.dark) 反色块
+     翻转成深底白字（站点「utility 亮色覆盖」设计），交互实心钮一律用本语义类。 */
+  .btn-solid {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+  }
+  html.dark .btn-solid {
+    border-color: rgba(255, 255, 255, 0.18);
+  }
   .glass-heavy {
     background: var(--color-glass-heavy);
     backdrop-filter: blur(32px) saturate(1.8);
@@ -205,7 +220,6 @@
     border-color: rgba(0, 0, 0, 0.06);
   }
   html:not(.dark) .glass-heavy {
-    background: rgba(255, 255, 255, 0.85);
     border-color: rgba(0, 0, 0, 0.08);
   }
 
@@ -1439,6 +1453,11 @@ html:not(.dark) body::after {
     );
 }
 
+/* 玻璃重色 token 亮色化（.glass-heavy / 终端交换面板共用，单源） */
+html:not(.dark) {
+  --color-glass-heavy: rgba(255, 255, 255, 0.85);
+}
+
 /* Light mode overrides for components */
 html:not(.dark) body {
   background: #fafaf9;
@@ -1450,56 +1469,14 @@ html:not(.dark) {
     0 6px 20px rgb(var(--accent-violet-rgb) / 0.12),
     0 20px 48px rgb(var(--accent-violet-rgb) / 0.08), 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.06);
   --shadow-emboss:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+    inset 0 0 0 1px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6), var(--shadow-soft);
   --shadow-emboss-hover:
     inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 4px 12px rgb(var(--accent-violet-rgb) / 0.04), 0 12px 24px rgba(0, 0, 0, 0.06);
   --shadow-soft:
-    0 4px 16px rgba(0, 0, 0, 0.02), 0 16px 48px rgba(0, 0, 0, 0.02), 0 32px 80px rgba(0, 0, 0, 0.01);
+    0 4px 12px rgba(0, 0, 0, 0.03), 0 16px 40px rgba(0, 0, 0, 0.04),
+    0 48px 120px rgba(0, 0, 0, 0.015);
   --shadow-nav:
     inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 1px 3px rgb(var(--accent-violet-rgb) / 0.03), 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-/* ── Tailwind utility 亮色覆盖（裸 CSS 压制 utility 层特异性，见 AGENTS.md #23）── */
-/* 颜色替换：Tailwind 预置类在亮色下输出错误语义色，需覆盖为亮色对应值 */
-html:not(.dark) .border-white\/5 {
-  border-color: rgba(0, 0, 0, 0.06);
-}
-html:not(.dark) .border-white\/10 {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-html:not(.dark) .bg-white\/5 {
-  background: rgba(0, 0, 0, 0.03);
-}
-html:not(.dark) .bg-white\/10 {
-  background: rgba(0, 0, 0, 0.06);
-}
-html:not(.dark) .bg-white {
-  background: #1c1917;
-}
-html:not(.dark) .text-white {
-  color: #1c1917;
-}
-html:not(.dark) .text-black {
-  color: #ffffff;
-}
-html:not(.dark) .text-gray-300 {
-  color: #44403c;
-}
-html:not(.dark) .text-gray-400 {
-  color: #57534e;
-}
-html:not(.dark) .text-gray-500 {
-  color: #78716c;
-}
-html:not(.dark) .text-gray-600 {
-  color: #a8a29e;
-}
-html:not(.dark) .text-gray-700 {
-  color: #d6d3d1;
-}
-html:not(.dark) .bg-surface {
-  background: #ffffff;
 }

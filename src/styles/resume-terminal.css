@@ -2,28 +2,29 @@
  * 简历终端（ResumeTerminal）样式
  * -----------------------------
  * 窗口外壳由 TerminalShell（terminal-base.css）提供，此处仅定义内容区样式。
+ * 主题架构：亮色为基准（下方 .resume-terminal 即亮值），暗色走 html.dark 覆盖。
  */
 
-/* ── Resume Terminal：流式打印简历模块 ── 暗/亮双主题 ── */
+/* ── Resume Terminal：流式打印简历模块 ── 亮值为基，html.dark 提供暗值 ── */
 .resume-terminal {
-  --rt-bg: rgba(10, 10, 20, 0.6);
-  --rt-prompt: #8b8b9e;
+  --rt-bg: #ffffff;
+  --rt-prompt: #78716c;
   --rt-heading: rgb(var(--accent-violet-rgb));
-  --rt-text: #d4d4d8;
+  --rt-text: #44403c;
   --rt-quote-border: rgb(var(--accent-pink-rgb));
-  --rt-quote-text: #8b8b9e;
+  --rt-quote-text: #57534e;
   --rt-list-marker: rgb(var(--accent-teal-rgb));
-  --rt-list-text: #d4d4d8;
-  --rt-bold: #ffffff;
-  --rt-code-bg: rgb(var(--accent-violet-rgb) / 0.12);
-  --rt-code-text: rgb(var(--accent-violet-rgb));
-  --rt-code-border: rgb(var(--accent-violet-rgb) / 0.2);
+  --rt-list-text: #44403c;
+  --rt-bold: #1c1917;
+  --rt-code-bg: rgb(var(--accent-violet-rgb) / 0.08);
+  --rt-code-text: #6d28d9;
+  --rt-code-border: rgb(var(--accent-violet-rgb) / 0.15);
   --rt-cursor: rgb(var(--accent-violet-rgb));
-  --rt-cursor-done-opacity: 0.3;
-  --rt-done-border: rgba(255, 255, 255, 0.06);
-  --rt-done-text: #8b8b9e;
+  --rt-cursor-done-opacity: 0.4;
+  --rt-done-border: rgba(0, 0, 0, 0.08);
+  --rt-done-text: #57534e;
   --rt-done-icon: rgb(var(--accent-teal-rgb));
-  --rt-hr: rgba(255, 255, 255, 0.1);
+  --rt-hr: rgba(0, 0, 0, 0.12);
 }
 
 .resume-terminal .resume-body {
@@ -76,24 +77,24 @@
   border-color: var(--rt-hr);
 }
 
-/* ── 亮色主题覆盖：html:not(.dark) ── */
-html:not(.dark) .resume-terminal {
-  --rt-bg: #ffffff;
-  --rt-prompt: #78716c;
+/* ── 暗色主题覆盖：html.dark ── */
+html.dark .resume-terminal {
+  --rt-bg: rgba(10, 10, 20, 0.6);
+  --rt-prompt: #8b8b9e;
   --rt-heading: rgb(var(--accent-violet-rgb));
-  --rt-text: #44403c;
+  --rt-text: #d4d4d8;
   --rt-quote-border: rgb(var(--accent-pink-rgb));
-  --rt-quote-text: #57534e;
+  --rt-quote-text: #8b8b9e;
   --rt-list-marker: rgb(var(--accent-teal-rgb));
-  --rt-list-text: #44403c;
-  --rt-bold: #1c1917;
-  --rt-code-bg: rgb(var(--accent-violet-rgb) / 0.08);
-  --rt-code-text: #6d28d9;
-  --rt-code-border: rgb(var(--accent-violet-rgb) / 0.15);
+  --rt-list-text: #d4d4d8;
+  --rt-bold: #ffffff;
+  --rt-code-bg: rgb(var(--accent-violet-rgb) / 0.12);
+  --rt-code-text: rgb(var(--accent-violet-rgb));
+  --rt-code-border: rgb(var(--accent-violet-rgb) / 0.2);
   --rt-cursor: rgb(var(--accent-violet-rgb));
-  --rt-cursor-done-opacity: 0.4;
-  --rt-done-border: rgba(0, 0, 0, 0.08);
-  --rt-done-text: #57534e;
+  --rt-cursor-done-opacity: 0.3;
+  --rt-done-border: rgba(255, 255, 255, 0.06);
+  --rt-done-text: #8b8b9e;
   --rt-done-icon: rgb(var(--accent-teal-rgb));
-  --rt-hr: rgba(0, 0, 0, 0.12);
+  --rt-hr: rgba(255, 255, 255, 0.1);
 }

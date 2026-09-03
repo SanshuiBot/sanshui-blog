@@ -134,7 +134,7 @@ export default function AccentPicker() {
       <Tooltip label="主题强调色" disabled={open}>
         <button
           onClick={handleOpen}
-          className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-white hover:bg-white/5 cursor-pointer"
+          className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] cursor-pointer dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
           aria-label="选择主题色"
           aria-expanded={open}
         >
@@ -146,9 +146,11 @@ export default function AccentPicker() {
         <div
           role="dialog"
           aria-label="主题强调色"
-          className="absolute right-0 mt-2 w-64 rounded-xl glass-heavy p-2 shadow-soft z-50"
+          className="absolute right-0 mt-2 w-64 rounded-xl glass-heavy p-2 z-50"
         >
-          <div className="px-2 py-1.5 text-xs text-gray-500 font-medium">主题强调色</div>
+          <div className="px-2 py-1.5 text-xs text-stone-500 font-medium dark:text-gray-500">
+            主题强调色
+          </div>
 
           {/* 预设列表 */}
           {ACCENT_PRESETS.map((preset, idx) => {
@@ -160,8 +162,8 @@ export default function AccentPicker() {
                 onClick={() => handleSelect(preset.id)}
                 className={`w-full flex items-center justify-between gap-2 px-2 py-2 rounded-lg transition-all cursor-pointer ${
                   active
-                    ? 'bg-white/10 text-white'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-black/[0.06] text-stone-900 dark:bg-white/10 dark:text-white'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5'
                 }`}
               >
                 <span className="text-sm font-medium">{preset.label}</span>
@@ -169,7 +171,7 @@ export default function AccentPicker() {
                   {(['violet', 'pink', 'blue'] as const).map((ch) => (
                     <span
                       key={ch}
-                      className="w-3 h-3 rounded-full border border-white/10"
+                      className="w-3 h-3 rounded-full border border-black/[0.1] dark:border-white/10"
                       style={{ background: `rgb(${preset.colors[ch]})` }}
                     />
                   ))}
@@ -180,8 +182,8 @@ export default function AccentPicker() {
           })}
 
           {/* 自定义入口 */}
-          <div className="mt-2 pt-2 border-t border-white/10">
-            <div className="px-2 py-1 text-xs text-gray-500 font-medium flex items-center justify-between">
+          <div className="mt-2 pt-2 border-t border-black/[0.1] dark:border-white/10">
+            <div className="px-2 py-1 text-xs text-stone-500 font-medium flex items-center justify-between dark:text-gray-500">
               <span>{CUSTOM_ACCENT_LABEL}</span>
               {activeId === CUSTOM_ACCENT_ID && <Check size={12} />}
             </div>
@@ -191,7 +193,7 @@ export default function AccentPicker() {
                 return (
                   <label
                     key={ch}
-                    className="group relative flex flex-col items-center gap-1 cursor-pointer rounded-lg p-1.5 transition-all hover:bg-white/5 focus-within:ring-2 focus-within:ring-accent-violet/50"
+                    className="group relative flex flex-col items-center gap-1 cursor-pointer rounded-lg p-1.5 transition-all hover:bg-black/[0.03] focus-within:ring-2 focus-within:ring-accent-violet/50 dark:hover:bg-white/5"
                     title={ACCENT_CHANNEL_LABELS[ch]}
                   >
                     {/* 精致色盘：外层微光晕 + 内层当前色圆点 */}
@@ -213,7 +215,7 @@ export default function AccentPicker() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       aria-label={`${ACCENT_CHANNEL_LABELS[ch]}颜色`}
                     />
-                    <span className="text-[10px] text-gray-500 group-hover:text-gray-300 transition-colors">
+                    <span className="text-[10px] text-stone-500 group-hover:text-stone-700 transition-colors dark:text-gray-500 dark:group-hover:text-gray-300">
                       {ACCENT_CHANNEL_LABELS[ch]}
                     </span>
                   </label>
@@ -238,7 +240,7 @@ export default function AccentPicker() {
                     /* 静默失败 */
                   }
                 }}
-                className="mt-2 w-full text-xs text-gray-500 hover:text-accent-violet transition-colors text-center cursor-pointer"
+                className="mt-2 w-full text-xs text-stone-500 hover:text-accent-violet transition-colors text-center cursor-pointer dark:text-gray-500"
               >
                 恢复默认配色
               </button>

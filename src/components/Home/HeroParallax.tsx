@@ -307,7 +307,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass hero-badge mb-8"
           >
             <span className="hero-badge-dot" aria-hidden />
-            <span className="text-xs font-medium text-gray-300 tracking-wide">
+            <span className="text-xs font-medium text-stone-700 tracking-wide dark:text-gray-300">
               Creative Developer · 技术博客
             </span>
           </motion.div>
@@ -320,7 +320,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               transition={{ duration: 0.9, delay: 0.05, ease: lineEase }}
-              className="block text-white"
+              className="block text-stone-900 dark:text-white"
             >
               你好，我是
             </motion.span>
@@ -341,7 +341,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
             initial={reduced ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed"
+            className="text-lg sm:text-xl text-stone-600 max-w-2xl mx-auto mb-8 leading-relaxed dark:text-gray-400"
           >
             用文字沉淀知识，用代码改变世界。
           </motion.p>
@@ -414,7 +414,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
                 target={href.startsWith('http') ? '_blank' : undefined}
                 rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                 aria-label={label}
-                className="block p-3 rounded-full glass hero-social text-gray-400 hover:text-white"
+                className="block p-3 rounded-full glass hero-social text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-white"
                 initial={reduced ? false : { opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}
@@ -430,7 +430,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
       {/* Scroll indicator：淡出（前 15vh 归零）是功能性行为，reduced 也保留 */}
       <motion.div
         style={{ opacity: scrollHintOpacity }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-gray-500 pointer-events-none select-none"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-stone-500 pointer-events-none select-none dark:text-gray-500"
         aria-hidden
       >
         <span className="hero-scroll-label text-[10px] font-medium opacity-60">向下滚动</span>

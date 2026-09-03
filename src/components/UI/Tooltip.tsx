@@ -148,7 +148,7 @@ export default function Tooltip({
           <div
             ref={bubbleRef}
             role="tooltip"
-            className={`fixed z-[60] whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium text-white glass-heavy border border-accent-violet/20 shadow-soft tooltip-fade ${className}`}
+            className={`fixed z-[60] whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium text-stone-900 dark:text-white glass-heavy border border-accent-violet/20 tooltip-fade ${className}`}
             style={{ left, top, pointerEvents: 'none' }}
           >
             {label}

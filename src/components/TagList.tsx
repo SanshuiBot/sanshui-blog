@@ -1,5 +1,12 @@
 'use client';
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  AnimatePresence,
+  type Variants,
+} from 'framer-motion';
 import { Hash } from 'lucide-react';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
@@ -64,7 +71,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
           href={`/tags/${encodeURIComponent(name)}/`}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
-          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass border border-white/5 overflow-hidden"
+          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass glass-flat border border-black/[0.06] overflow-hidden dark:border-white/5"
           style={{ transformStyle: 'preserve-3d' }}
         >
           {/* Spotlight */}
@@ -155,6 +162,16 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
   );
 }
 
+// ── 入场变体：标签云交错浮现（与项目/友链卡片同款节奏） ──
+const container: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.03 } },
+};
+const item: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } },
+};
+
 export default function TagList({
   tags,
   colors,
@@ -163,10 +180,17 @@ export default function TagList({
   colors: string[];
 }) {
   return (
-    <div className="flex flex-wrap gap-6 justify-center">
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="flex flex-wrap gap-6 justify-center"
+    >
       {tags.map((t, i) => (
-        <TagItem key={t.name} name={t.name} count={t.count} color={colors[i % colors.length]!} />
+        <motion.div key={t.name} variants={item}>
+          <TagItem name={t.name} count={t.count} color={colors[i % colors.length]!} />
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }

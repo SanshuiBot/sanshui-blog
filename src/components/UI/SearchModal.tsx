@@ -122,10 +122,10 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-white/10"
+            className="relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-black/[0.1] dark:border-white/10"
           >
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
-              <Search size={18} className="text-gray-500 shrink-0" />
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.06] dark:border-white/5">
+              <Search size={18} className="text-stone-500 shrink-0 dark:text-gray-500" />
               <input
                 ref={inputRef}
                 id="search-input"
@@ -161,22 +161,30 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   }
                 }}
                 placeholder="搜索文章（空格分隔多关键词）..."
-                className="flex-1 bg-transparent text-white placeholder-gray-500 outline-none text-base"
+                className="flex-1 bg-transparent text-stone-900 placeholder-gray-500 outline-none text-base dark:text-white"
               />
               {q && (
-                <button onClick={() => setQ('')} className="text-gray-500 hover:text-white">
+                <button
+                  onClick={() => setQ('')}
+                  className="text-stone-500 hover:text-stone-900 dark:text-gray-500 dark:hover:text-white"
+                >
                   <X size={16} />
                 </button>
               )}
-              <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500">
+              <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/[0.03] text-stone-500 dark:bg-white/5 dark:text-gray-500">
                 ESC
               </kbd>
             </div>
             <div className="max-h-80 overflow-y-auto p-2">
               {posts === null ? (
-                <div className="text-center py-10 text-gray-500 text-sm">加载中...</div>
+                <div className="text-center py-10 text-stone-500 text-sm dark:text-gray-500">
+                  加载中...
+                </div>
               ) : noResults ? (
-                <div className="text-center py-10 text-gray-500 text-sm" aria-live="polite">
+                <div
+                  className="text-center py-10 text-stone-500 text-sm dark:text-gray-500"
+                  aria-live="polite"
+                >
                   未找到与「{q.trim()}」匹配的文章
                 </div>
               ) : results.length > 0 ? (
@@ -201,26 +209,32 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                           startNavigation();
                         }}
                         className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors group ${
-                          i === activeIdx ? 'bg-white/5' : ''
+                          i === activeIdx ? 'bg-black/[0.03] dark:bg-white/5' : ''
                         }`}
                       >
                         <div className="flex-1 min-w-0">
                           <span
                             className={`font-medium transition-colors truncate block ${
-                              i === activeIdx ? 'text-accent-violet' : 'text-white'
+                              i === activeIdx
+                                ? 'text-accent-violet'
+                                : 'text-stone-900 dark:text-white'
                             }`}
                           >
                             <Highlight text={p.title} query={q} />
                           </span>
-                          <span className="block text-xs text-gray-500 truncate mt-0.5">
+                          <span className="block text-xs text-stone-500 truncate mt-0.5 dark:text-gray-500">
                             <Highlight text={p.excerpt} query={q} />
                           </span>
-                          <span className="text-[11px] text-gray-600">{formatDate(p.date)}</span>
+                          <span className="text-[11px] text-stone-400 dark:text-gray-600">
+                            {formatDate(p.date)}
+                          </span>
                         </div>
                         <ArrowRight
                           size={14}
                           className={`shrink-0 transition-colors ${
-                            i === activeIdx ? 'text-accent-violet' : 'text-gray-600'
+                            i === activeIdx
+                              ? 'text-accent-violet'
+                              : 'text-stone-400 dark:text-gray-600'
                           }`}
                         />
                       </Link>
@@ -228,27 +242,27 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-10 text-gray-600 text-sm">
+                <div className="text-center py-10 text-stone-400 text-sm dark:text-gray-600">
                   {searchHotkeyLabel()} 搜索全部文章
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-end px-5 py-3 border-t border-white/5">
-              <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
+            <div className="flex items-center justify-end px-5 py-3 border-t border-black/[0.06] dark:border-white/5">
+              <div className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-gray-500">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-black/[0.03] border border-black/[0.1] font-mono dark:bg-white/5 dark:border-white/10 text-[10px]">
                   {searchHotkeyLabel()}
                 </kbd>
                 <span className="hidden sm:inline">搜索</span>
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-black/[0.03] border border-black/[0.1] font-mono dark:bg-white/5 dark:border-white/10 text-[10px]">
                   ↑↓
                 </kbd>
                 <span className="hidden sm:inline">选择</span>
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/5 border border-white/10 font-mono text-[10px]">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-black/[0.03] border border-black/[0.1] font-mono dark:bg-white/5 dark:border-white/10 text-[10px]">
                   ↵
                 </kbd>
                 <span className="hidden sm:inline">打开</span>
               </div>
-              <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-white/5 text-gray-500 sm:hidden">
+              <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/[0.03] text-stone-500 sm:hidden dark:bg-white/5 dark:text-gray-500">
                 ESC
               </kbd>
             </div>

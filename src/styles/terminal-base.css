@@ -2,6 +2,7 @@
  * 终端窗口基础样式（TerminalShell）
  * ----------------------------------
  * 链接页与简历页共用，提取到 globals.css 避免重复。
+ * 主题架构：亮色为基准（下方主规则即亮值），暗色集中走文件尾部 html.dark 覆盖。
  *
  * 结构：
  *   .terminal-shell            — 外层容器（毛玻璃、边框、阴影）
@@ -11,25 +12,22 @@
  *   .terminal-shell-status     — 右侧状态文本
  */
 
-/* ── 窗口外壳 ── */
+/* ── 窗口外壳（亮基） ── */
 .terminal-shell {
   border-radius: 1rem;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08),
-    0 16px 40px rgb(0 0 0 / 0.35),
-    0 6px 16px rgb(0 0 0 / 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-soft);
 }
 
-/* ── 标题栏 ── */
+/* ── 标题栏（亮基） ── */
 .terminal-shell-titlebar {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   user-select: none;
 }
 
@@ -39,24 +37,14 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+/* 亮色背景下需加深的 macOS 三色圆点（亮基值） */
 .terminal-shell-dot-red {
-  background: #ff5f57;
-}
-.terminal-shell-dot-yellow {
-  background: #febc2e;
-}
-.terminal-shell-dot-green {
-  background: #28c840;
-}
-
-/* ── 亮色模式覆盖（macOS 三色圆点在亮色背景下需加深） ── */
-html:not(.dark) .terminal-shell-dot-red {
   background: #c42b1e;
 }
-html:not(.dark) .terminal-shell-dot-yellow {
+.terminal-shell-dot-yellow {
   background: #b7791f;
 }
-html:not(.dark) .terminal-shell-dot-green {
+.terminal-shell-dot-green {
   background: #166534;
 }
 
@@ -64,7 +52,7 @@ html:not(.dark) .terminal-shell-dot-green {
   flex: 1;
   text-align: center;
   font-size: 0.75rem;
-  color: rgb(255 255 255 / 0.3);
+  color: rgb(0 0 0 / 0.3);
   font-family: var(--font-mono);
   letter-spacing: 0.05em;
 }
@@ -72,24 +60,62 @@ html:not(.dark) .terminal-shell-dot-green {
 .terminal-shell-status {
   font-size: 0.6875rem;
   font-family: var(--font-mono);
-  color: rgb(255 255 255 / 0.25);
+  color: rgb(0 0 0 / 0.25);
 }
 
-/* ── 亮色模式覆盖 ── */
-html:not(.dark) .terminal-shell {
-  border-color: rgba(0, 0, 0, 0.1);
-  box-shadow:
-    0 0 0 1px rgb(var(--accent-violet-rgb) / 0.06),
-    0 10px 28px rgba(0 0 0 / 0.06),
-    0 4px 12px rgba(0 0 0 / 0.04);
+/* ── 终端命令式 CTA 面板（友链交换块 / 关于联系卡共用，亮基） ── */
+.terminal-exchange-box {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  box-shadow: var(--shadow-soft);
 }
-html:not(.dark) .terminal-shell-titlebar {
-  background: rgba(0, 0, 0, 0.04);
-  border-bottom-color: rgba(0, 0, 0, 0.08);
+.terminal-exchange-title {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(var(--accent-violet-rgb));
+  margin-bottom: 0.375rem;
 }
-html:not(.dark) .terminal-shell-title {
-  color: rgb(0 0 0 / 0.3);
+.terminal-exchange-desc {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: rgb(0 0 0 / 0.55);
+  margin-bottom: 1rem;
 }
-html:not(.dark) .terminal-shell-status {
-  color: rgb(0 0 0 / 0.25);
+
+/* ── 暗色主题覆盖：html.dark ── */
+html.dark .terminal-shell {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+html.dark .terminal-shell-titlebar {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+/* macOS 三色圆点：暗色标题栏上恢复明亮原色 */
+html.dark .terminal-shell-dot-red {
+  background: #ff5f57;
+}
+html.dark .terminal-shell-dot-yellow {
+  background: #febc2e;
+}
+html.dark .terminal-shell-dot-green {
+  background: #28c840;
+}
+html.dark .terminal-shell-title {
+  color: rgb(255 255 255 / 0.3);
+}
+html.dark .terminal-shell-status {
+  color: rgb(255 255 255 / 0.25);
+}
+html.dark .terminal-exchange-box {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: var(--color-glass-heavy);
+}
+html.dark .terminal-exchange-desc {
+  color: rgb(255 255 255 / 0.55);
 }

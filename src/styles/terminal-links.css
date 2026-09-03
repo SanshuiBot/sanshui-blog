@@ -3,33 +3,34 @@
  * -----------------------------
  * 融合 Bento 网格 + 终端命令行美学 + 鼠标跟随磁吸光晕。
  * 外层窗口壳由 TerminalShell 组件（terminal-base.css）提供。
+ * 主题架构：亮色为基准（下方主规则即亮值），暗色集中走文件尾部 html.dark 覆盖。
  *
  * 本文件职责：terminal-body / terminal-prompt / terminal-grid / 链接卡片
  */
 
-/* ── 内容区 ── */
+/* ── 内容区（亮基） ── */
 .terminal-body {
-  background: rgba(8, 8, 14, 0.85);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
   padding: 1.25rem;
 }
 
-/* ── 命令提示行 ── */
+/* ── 命令提示行（亮基） ── */
 .terminal-prompt-line {
   font-family: var(--font-mono);
   font-size: 0.8125rem;
-  color: rgb(var(--accent-teal-rgb));
+  color: rgb(var(--accent-teal-rgb) / 0.8);
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   gap: 0.5rem;
   min-height: 1.75rem;
 }
 .terminal-prompt-symbol {
-  color: rgb(var(--accent-violet-rgb));
+  color: rgb(var(--accent-violet-rgb) / 0.8);
   font-weight: 700;
   animation: terminal-blink 1s step-end infinite;
 }
@@ -55,7 +56,7 @@
   }
 }
 
-/* ── 链接卡片 ── */
+/* ── 链接卡片（亮基） ── */
 .terminal-link-card {
   position: relative;
   display: flex;
@@ -63,8 +64,8 @@
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: 0.625rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
   text-decoration: none;
   cursor: pointer;
   overflow: hidden;
@@ -73,7 +74,7 @@
     background 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 磁吸光晕层（随鼠标位置移动） */
+/* 磁吸光晕层（随鼠标位置移动，亮基浓度较暗色低） */
 .terminal-card-glow {
   position: absolute;
   inset: 0;
@@ -83,12 +84,12 @@
   pointer-events: none;
   background: radial-gradient(
     320px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(var(--accent-violet-rgb) / 0.14),
+    rgb(var(--accent-violet-rgb) / 0.08),
     transparent 60%
   );
 }
 
-/* 发光边框层 */
+/* 发光边框层（亮基浓度较暗色低） */
 .terminal-card-border-glow {
   position: absolute;
   inset: 0;
@@ -98,7 +99,7 @@
   pointer-events: none;
   background: radial-gradient(
     320px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(var(--accent-violet-rgb) / 0.25),
+    rgb(var(--accent-violet-rgb) / 0.15),
     transparent 60%
   );
   mask:
@@ -113,8 +114,8 @@
 }
 
 .terminal-link-card:hover {
-  border-color: rgb(var(--accent-violet-rgb) / 0.3);
-  background: rgba(var(--accent-violet-rgb) / 0.04);
+  border-color: rgb(var(--accent-violet-rgb) / 0.35);
+  background: rgb(var(--accent-violet-rgb) / 0.03);
 }
 .terminal-link-card:hover .terminal-card-glow,
 .terminal-link-card:hover .terminal-card-border-glow {
@@ -142,7 +143,7 @@
   width: 0; /* 等同 Tailwind min-w-0，使 text-overflow: ellipsis 生效 */
 }
 
-/* 名称行 */
+/* 名称行（亮基：墨色文字） */
 .terminal-card-name-row {
   display: flex;
   align-items: center;
@@ -150,7 +151,7 @@
   font-family: var(--font-mono);
   font-size: 0.8125rem;
   font-weight: 600;
-  color: rgb(255 255 255 / 0.88);
+  color: rgb(28 25 23 / 0.85);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -160,7 +161,7 @@
   color: rgb(var(--accent-violet-rgb));
 }
 .terminal-card-arrow {
-  color: rgb(255 255 255 / 0.2);
+  color: rgb(0 0 0 / 0.2);
   flex-shrink: 0;
   transition:
     color 0.3s ease,
@@ -171,11 +172,11 @@
   transform: translateX(2px);
 }
 
-/* 描述行 */
+/* 描述行（亮基：深灰文字） */
 .terminal-card-desc {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  color: rgb(255 255 255 / 0.3);
+  color: rgb(0 0 0 / 0.35);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -183,92 +184,51 @@
   transition: color 0.3s ease;
 }
 .terminal-link-card:hover .terminal-card-desc {
+  color: rgb(0 0 0 / 0.55);
+}
+
+/* ── 暗色主题覆盖：html.dark ── */
+html.dark .terminal-body {
+  background: rgba(8, 8, 14, 0.85);
+}
+html.dark .terminal-prompt-line {
+  color: rgb(var(--accent-teal-rgb));
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+html.dark .terminal-prompt-symbol {
+  color: rgb(var(--accent-violet-rgb));
+}
+html.dark .terminal-link-card {
+  border-color: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+}
+html.dark .terminal-link-card:hover {
+  border-color: rgb(var(--accent-violet-rgb) / 0.3);
+  background: rgba(var(--accent-violet-rgb) / 0.04);
+}
+html.dark .terminal-card-name-row {
+  color: rgb(255 255 255 / 0.88);
+}
+html.dark .terminal-card-arrow {
+  color: rgb(255 255 255 / 0.2);
+}
+html.dark .terminal-card-desc {
+  color: rgb(255 255 255 / 0.3);
+}
+html.dark .terminal-link-card:hover .terminal-card-desc {
   color: rgb(255 255 255 / 0.5);
 }
-
-/* ── 亮色模式覆盖 ── */
-html:not(.dark) .terminal-body {
-  background: rgba(255, 255, 255, 0.85);
-}
-html:not(.dark) .terminal-prompt-line {
-  color: rgb(var(--accent-teal-rgb) / 0.8);
-  border-bottom-color: rgba(0, 0, 0, 0.08);
-}
-html:not(.dark) .terminal-prompt-symbol {
-  color: rgb(var(--accent-violet-rgb) / 0.8);
-}
-html:not(.dark) .terminal-link-card {
-  border-color: rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.02);
-}
-html:not(.dark) .terminal-link-card:hover {
-  border-color: rgb(var(--accent-violet-rgb) / 0.35);
-  background: rgb(var(--accent-violet-rgb) / 0.03);
-}
-html:not(.dark) .terminal-card-name-row {
-  color: rgb(28 25 23 / 0.85);
-}
-html:not(.dark) .terminal-link-card:hover .terminal-card-name-row {
-  color: rgb(var(--accent-violet-rgb));
-}
-html:not(.dark) .terminal-card-arrow {
-  color: rgb(0 0 0 / 0.2);
-}
-html:not(.dark) .terminal-card-desc {
-  color: rgb(0 0 0 / 0.35);
-}
-html:not(.dark) .terminal-link-card:hover .terminal-card-desc {
-  color: rgb(0 0 0 / 0.55);
-}
-html:not(.dark) .terminal-card-glow {
+html.dark .terminal-card-glow {
   background: radial-gradient(
     320px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(var(--accent-violet-rgb) / 0.08),
+    rgb(var(--accent-violet-rgb) / 0.14),
     transparent 60%
   );
 }
-html:not(.dark) .terminal-card-border-glow {
+html.dark .terminal-card-border-glow {
   background: radial-gradient(
     320px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(var(--accent-violet-rgb) / 0.15),
+    rgb(var(--accent-violet-rgb) / 0.25),
     transparent 60%
   );
-}
-
-/* ── 交换卡片（延续终端风格）── */
-.terminal-exchange-box {
-  margin-top: 1.5rem;
-  padding: 1.25rem 1.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(var(--accent-violet-rgb) / 0.2);
-  background: rgb(var(--accent-violet-rgb) / 0.02);
-  box-shadow:
-    0 0 24px rgb(var(--accent-violet-rgb) / 0.08),
-    0 8px 24px rgb(0 0 0 / 0.28),
-    0 4px 12px rgb(0 0 0 / 0.16);
-}
-.terminal-exchange-title {
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: rgb(var(--accent-violet-rgb));
-  margin-bottom: 0.375rem;
-}
-.terminal-exchange-desc {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: rgb(255 255 255 / 0.55);
-  margin-bottom: 1rem;
-}
-/* 亮色覆盖 */
-html:not(.dark) .terminal-exchange-box {
-  border-color: rgb(var(--accent-violet-rgb) / 0.25);
-  background: rgb(var(--accent-violet-rgb) / 0.02);
-  box-shadow:
-    0 0 24px rgb(var(--accent-violet-rgb) / 0.06),
-    0 8px 20px rgba(0 0 0 / 0.06),
-    0 4px 12px rgba(0 0 0 / 0.04);
-}
-html:not(.dark) .terminal-exchange-desc {
-  color: rgb(0 0 0 / 0.55);
 }

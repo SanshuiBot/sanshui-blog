@@ -49,7 +49,7 @@ export default function CursorGlow() {
       />
       <div
         ref={dotRef}
-        className="absolute top-0 left-0 w-2.5 h-2.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm"
+        className="absolute top-0 left-0 w-2.5 h-2.5 rounded-full border border-black/10 bg-black/5 backdrop-blur-sm dark:border-white/20 dark:bg-white/10"
         style={{ willChange: 'transform' }}
       />
     </div>

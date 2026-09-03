@@ -5,26 +5,25 @@
  *
  * 配色收敛（2026-09）：
  *   - 卡片装饰色统一用 accent 循环（顶部渐变条 / 圆点 / hover 光晕同源，index % 5），跟随主题联动；
- *   - 卡片文字一律语义色：标题 暗 var(--color-fg) / 亮 #1c1917，描述/元信息 Tailwind 灰阶。
+ *   - 卡片文字一律语义色：标题 亮 #1c1917（基值）/ 暗 html.dark 走 var(--color-fg)，描述/元信息 Tailwind 灰阶。
  *   - 卡片装饰色 --project-accent 由组件按索引循环注入（rgb(var(--accent-xxx-rgb)) 字符串），
  *     跟随 AccentPicker 主题联动；光晕/渐变条共用，hover 变色走纯 CSS（红线 #25/#26/#47）。
- *   - 亮色 hover accent 读 --color-accent-violet 令牌（globals.css @supports 已混黑加深）。
+ *   - hover accent 读 --color-accent-violet 令牌（globals.css @supports：亮值向 #1c1917 混黑加深、
+ *     暗值保持原色），单条规则同时覆盖两主题。
  */
 
-/* ── 卡片标题：亮暗双态正文色 + hover 联动 accent ── */
+/* ── 卡片标题：亮基正文色 + hover 联动 accent ── */
 .project-card-title {
-  color: var(--color-fg);
+  color: #1c1917;
   transition: color 0.3s ease;
 }
-/* 亮色正文色覆盖（body 只改了 body color，--color-fg 仍是暗色白） */
-html:not(.dark) .project-card-title {
-  color: #1c1917;
+/* 暗色正文色：html.dark 下回到 --color-fg（白） */
+html.dark .project-card-title {
+  color: var(--color-fg);
 }
-/* hover 变色：每卡 accent 联动（--project-accent 由组件注入），fallback 为站点 violet */
+/* hover 变色：每卡 accent 联动（--project-accent 由组件注入），fallback 为站点 violet。
+   单条即可——--color-accent-violet 令牌已按主题解析（亮=加深值 / 暗=原色） */
 .projects-content .group:hover .project-card-title {
-  color: var(--project-accent, var(--color-accent-violet));
-}
-html:not(.dark) .projects-content .group:hover .project-card-title {
   color: var(--project-accent, var(--color-accent-violet));
 }
 
@@ -120,13 +119,13 @@ html:not(.dark) .projects-content .group:hover .project-card-title {
   box-shadow:
     var(--shadow-soft, 0 8px 32px rgba(0, 0, 0, 0.04)),
     0 4px 16px rgb(var(--accent-violet-rgb) / 0.06),
-    0 12px 32px rgb(0 0 0 / 0.08);
+    0 8px 24px rgb(0 0 0 / 0.06);
 }
-html:not(.dark) .projects-content .group:hover {
+html.dark .projects-content .group:hover {
   box-shadow:
     var(--shadow-soft, 0 8px 32px rgba(0, 0, 0, 0.04)),
     0 4px 16px rgb(var(--accent-violet-rgb) / 0.06),
-    0 8px 24px rgb(0 0 0 / 0.06);
+    0 12px 32px rgb(0 0 0 / 0.08);
 }
 
 /* ── 标签主题色联动：data-accent-idx 决定颜色，跟随主题循环 5 色 ── */
@@ -190,10 +189,10 @@ html:not(.dark) .projects-content .group:hover {
 /* ── 底部 CTA 幽灵按钮：微填充 + hover 上浮 ───────────────────────────────── */
 
 .cta-ghost-btn {
-  /* 默认：极淡背景 + 细边框 + 灰色文字，不抢卡片风头 */
-  background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 6%, transparent);
-  color: rgb(115 115 115);
-  border: 1px solid rgb(var(--accent-violet-rgb) / 0.18);
+  /* 亮色基值：极淡背景 + 细边框 + 灰色文字，不抢卡片风头（暗色由下方 .dark 覆盖加浓） */
+  background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 6%, white);
+  color: rgb(107 114 128);
+  border: 1px solid rgb(var(--accent-violet-rgb) / 0.2);
   text-decoration: none;
   transition:
     background 0.3s ease,
@@ -201,11 +200,6 @@ html:not(.dark) .projects-content .group:hover {
     border-color 0.3s ease,
     box-shadow 0.3s ease,
     transform 0.3s ease;
-}
-html:not(.dark) .cta-ghost-btn {
-  background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 6%, white);
-  color: rgb(107 114 128);
-  border-color: rgb(var(--accent-violet-rgb) / 0.2);
 }
 .dark .cta-ghost-btn {
   background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 10%, rgb(15 15 20 / 0.4));

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Globe } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import ArrowLink from '@/components/UI/ArrowLink';
 import Github from '@/components/UI/GithubIcon';
 import TerminalShell from '@/components/UI/TerminalShell';
@@ -11,16 +11,16 @@ import type { FriendLink } from '@/lib/links';
 import '@/styles/terminal-links.css';
 
 // ── 变体 ─────────────────────────────────────────────────────────────────────
-const container = {
+const container: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.05 },
+    transition: { staggerChildren: 0.02 },
   },
 };
-const item = {
-  hidden: { opacity: 0, y: 8 },
-  show: { opacity: 1, y: 0 },
+const item: Variants = {
+  hidden: { opacity: 0, y: 6 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
 };
 // 命令提示行逐字打出
 const promptChars = '~ ❯ ls ~/friends';
@@ -57,15 +57,7 @@ function getFaviconUrl(url: string): string {
 }
 
 // ── 卡片 ─────────────────────────────────────────────────────────────────────
-function LinkCard({
-  link,
-  index,
-  ref,
-}: {
-  link: FriendLink;
-  index: number;
-  ref?: (el: HTMLElement | null) => void;
-}) {
+function LinkCard({ link, ref }: { link: FriendLink; ref?: (el: HTMLElement | null) => void }) {
   const dotColor = link.color ?? 'rgb(var(--accent-violet-rgb))';
   const faviconUrl = link.faviconUrl ?? getFaviconUrl(link.url);
   const [faviconErr, setFaviconErr] = useState(false);
@@ -78,7 +70,6 @@ function LinkCard({
       rel="noopener noreferrer"
       variants={item}
       className="terminal-link-card"
-      style={{ transitionDelay: `${index * 30}ms` }}
     >
       {/* 磁吸光晕层 */}
       <div className="terminal-card-glow" />
@@ -201,10 +192,10 @@ export default function LinksContent() {
           </svg>
           友链
         </span>
-        <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-white">
           <span className="text-aurora">友情链接</span>
         </h1>
-        <p className="mt-3 text-gray-500">那些人，那些事</p>
+        <p className="mt-3 text-stone-500 dark:text-gray-500">那些人，那些事</p>
       </div>
 
       {/* 终端窗口 */}
@@ -227,7 +218,6 @@ export default function LinksContent() {
               <LinkCard
                 key={link.url}
                 link={link}
-                index={i}
                 ref={(el) => {
                   cardRefs.current[i] = el;
                 }}
@@ -241,8 +231,8 @@ export default function LinksContent() {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.4 }}
-        className="terminal-exchange-box mt-6"
+        transition={{ delay: 0.2, duration: 0.28 }}
+        className="terminal-exchange-box"
       >
         <div className="terminal-exchange-title">$ cat exchange.md</div>
         <p className="terminal-exchange-desc">想交换友链？在 GitHub 提 Issue 或发邮件。</p>
@@ -251,7 +241,7 @@ export default function LinksContent() {
             href={siteConfig.emailHref}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-sm font-medium font-mono"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg btn-solid text-sm font-medium font-mono"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -275,7 +265,7 @@ export default function LinksContent() {
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 text-gray-300 text-sm font-medium border border-white/10 font-mono"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black/[0.03] text-stone-700 text-sm font-medium border border-black/[0.1] font-mono dark:bg-white/5 dark:text-gray-300 dark:border-white/10"
           >
             <Github size={13} />
             GitHub

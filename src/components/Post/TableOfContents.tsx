@@ -142,7 +142,7 @@ export default function TableOfContents({ items }: Props) {
   if (items.length === 0) return null;
 
   const list = (
-    <ul className="space-y-0.5 border-l border-white/10 pl-3">
+    <ul className="space-y-0.5 border-l border-black/[0.1] pl-3 dark:border-white/10">
       {items.map((item) => (
         <li key={item.id}>
           <a
@@ -166,7 +166,9 @@ export default function TableOfContents({ items }: Props) {
         className="hidden lg:block lg:order-2 sticky top-28 w-56 shrink-0 self-start ml-8"
         aria-label="目录"
       >
-        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">目录</h4>
+        <h4 className="text-xs font-semibold text-stone-600 uppercase tracking-widest mb-4 dark:text-gray-400">
+          目录
+        </h4>
         {/* 长文章目录自身可滚，不挤出视口 (P2 桌面端兜底)。
             .toc-scroll 藏原生滚动条；浮层 .toc-thumb 淡入淡出指示位置，不占文档流 → 不挤压文字 */}
         <div className="relative">
@@ -190,19 +192,19 @@ export default function TableOfContents({ items }: Props) {
       <div className="lg:hidden mb-6">
         <button
           onClick={() => setDrawerOpen((v) => !v)}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg glass border border-white/5 text-sm text-gray-400 transition-colors"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg glass glass-flat border border-black/[0.06] text-sm text-stone-600 transition-colors dark:border-white/5 dark:text-gray-400"
           aria-expanded={drawerOpen}
           aria-controls="toc-drawer"
         >
           {drawerOpen ? <X size={16} /> : <Menu size={16} />}
           目录
-          <span className="text-xs text-gray-600">({items.length})</span>
+          <span className="text-xs text-stone-400 dark:text-gray-600">({items.length})</span>
         </button>
         {drawerOpen && (
           <div
             ref={drawerRef}
             id="toc-drawer"
-            className="mt-3 p-4 rounded-xl glass border border-white/5 max-h-72 overflow-y-auto"
+            className="mt-3 p-4 rounded-xl glass border border-black/[0.06] max-h-72 overflow-y-auto dark:border-white/5"
           >
             {list}
           </div>
