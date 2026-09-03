@@ -4,7 +4,7 @@
  * 作用：GitHub 仓库卡片墙，md 以上两列统一尺寸网格，鼠标跟随光晕。
  *
  * 设计语言：
- *   - 所有卡片统一尺寸与样式，左侧竖线随机色 + 主题色混合（每卡各不相同）
+ *   - 所有卡片统一尺寸与样式，顶部渐变条语言色 → 透明（每卡各不相同）
  *   - hover 光晕随鼠标位置移动（--mx/--my 驱动，语言色径向渐变 + 描边发光）
  *   - 全部 hover 动效纯 CSS（红线 #25/#32，自动合规 prefers-reduced-motion）
  *   - 元信息行：语言圆点 ● / star · fork · 标签
@@ -50,41 +50,10 @@ const item: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
 };
 
-// ── 竖线随机色池（按项目 URL 哈希取色，每卡各不相同且 hydration 稳定） ─────────
-const BAR_COLORS = [
-  '#3178c6',
-  '#f1e05a',
-  '#3572a5',
-  '#b07219',
-  '#00add8',
-  '#dea584',
-  '#f34b7d',
-  '#42b883',
-  '#ff3e00',
-  '#563d7c',
-  '#a855f7',
-  '#ff6ec7',
-  '#38bdf8',
-  '#2dd4bf',
-  '#fbbf36',
-];
-
-/** 确定性哈希：同一 URL 恒得同一色（纯函数，避免渲染期随机触发 react-hooks/purity） */
-function hashBarColor(url: string): string {
-  let h = 0;
-  for (let i = 0; i < url.length; i++) {
-    h = (h * 31 + url.charCodeAt(i)) >>> 0;
-  }
-  return BAR_COLORS[h % BAR_COLORS.length]!;
-}
-
 // ── 仓库卡片 ──────────────────────────────────────────────────────────────────
 // 统一尺寸卡片：语言色光晕背景 + hover 纯 CSS 微展开。
-// 左侧竖线颜色按 URL 哈希取（视觉随机）+ 主题色 color-mix 混合，每卡各不相同。
 function RepoCard({ project }: { project: Project }) {
   const langColor = project.lang ? LANG_COLORS[project.lang] : 'rgb(var(--accent-violet-rgb))';
-  // 竖线色：URL 哈希确定，重渲染不变色
-  const barColor = hashBarColor(project.url);
 
   // 鼠标跟随光晕：把光标相对卡片的坐标写入 --mx/--my，光晕层随鼠标移动（纯 CSS 动画）
   const handleMouseMove = (e: ReactMouseEvent<HTMLAnchorElement>) => {
@@ -106,11 +75,14 @@ function RepoCard({ project }: { project: Project }) {
       variants={item}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="group relative rounded-xl border border-black/[0.08] bg-black/[0.02] overflow-hidden
-                  transition-all duration-500 ease-out hover:scale-[1.01] hover:border-black/[0.16]
-                  hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)]
-                  dark:border-white/[0.06] dark:bg-white/[0.02] dark:hover:border-white/[0.12]
-                  dark:hover:shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+      className="group relative rounded-xl border overflow-hidden
+                  transition-all duration-500 ease-out
+                  dark:border-white/[0.08] dark:bg-white/[0.03] dark:hover:border-white/[0.18]
+                  border-black/[0.06] bg-white/[0.5] hover:border-black/[0.14]
+                  backdrop-blur-sm dark:backdrop-blur-md
+                  hover:scale-[1.015]
+                  dark:hover:shadow-[0_8px_32px_rgb(var(--accent-violet-rgb)/0.12),0_0_0_1px_rgb(var(--accent-violet-rgb)/0.15)]
+                  hover:shadow-[0_8px_32px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.15)]"
     >
       {/* hover 光晕：背景光晕 + 边框发光（语言色，纯 CSS 淡入，红线 #25/#32） */}
       <div
@@ -129,17 +101,18 @@ function RepoCard({ project }: { project: Project }) {
         aria-hidden="true"
       />
 
-      {/* 左侧竖线：随机色 + 主题色混合（color-mix），每卡各不相同 */}
+      {/* 顶部渐变条：语言色 → 透明，标识项目类型 */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-[3px]"
+        className="absolute top-0 left-0 right-0 h-[3px] rounded-t-xl opacity-80 group-hover:opacity-100 transition-opacity"
         style={{
-          background: `linear-gradient(180deg, color-mix(in srgb, ${barColor} 55%, rgb(var(--accent-violet-rgb))), color-mix(in srgb, ${barColor} 12%, rgb(var(--accent-violet-rgb) / 0.4)))`,
+          background: `linear-gradient(90deg, ${langColor}, ${langColor}44)`,
         }}
+        aria-hidden="true"
       />
 
       <div className="relative p-5 pl-6">
         {/* 文字信息区 */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0">
           {/* 头部：名称 + 外链图标 */}
           <div className="flex items-start justify-between gap-2 mb-2">
             <h3
@@ -158,7 +131,7 @@ function RepoCard({ project }: { project: Project }) {
           </div>
 
           {/* 描述 */}
-          <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-2 dark:text-gray-500">
+          <p className="text-sm text-gray-700 dark:text-gray-400 leading-relaxed mb-4 line-clamp-2">
             {project.desc}
           </p>
 
@@ -197,11 +170,12 @@ function RepoCard({ project }: { project: Project }) {
               {project.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-2 py-0.5 rounded text-[0.625rem] font-mono
-                             bg-black/[0.04] text-gray-600 border border-black/[0.08]
-                             transition-colors group-hover:border-black/[0.16] group-hover:text-gray-900
-                             dark:bg-white/5 dark:text-gray-500 dark:border-white/[0.06]
-                             dark:group-hover:border-white/[0.12] dark:group-hover:text-gray-400"
+                  className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono
+                             bg-black/[0.04] text-gray-700 border border-black/[0.08]
+                             transition-all duration-300
+                             group-hover:bg-accent-violet/10 group-hover:text-accent-violet group-hover:border-accent-violet/30
+                             dark:bg-white/5 dark:text-gray-400 dark:border-white/[0.08]
+                             dark:group-hover:bg-accent-violet/20 dark:group-hover:text-accent-violet dark:group-hover:border-accent-violet/40"
                 >
                   {tag}
                 </span>
@@ -287,7 +261,7 @@ export default function ProjectsContent() {
         variants={container}
         initial="hidden"
         animate={mounted ? 'show' : 'hidden'}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        className="grid grid-cols-1 md:grid-cols-2 gap-5"
       >
         {projects.map((project) => (
           <RepoCard key={project.url} project={project} />

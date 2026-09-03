@@ -24,21 +24,21 @@ export interface Project {
 export const projects: Project[] = [
   {
     name: 'project-demo',
-    url: 'https://sanshuibot.github.io/project-demo/confession/index.html',
+    url: 'https://SanshuiBot.github.io/project-demo/love-tree/index.html',
     desc: '爱心树',
     lang: 'JavaScript',
     tags: ['JavaScript', 'HTML', 'CSS'],
   },
   {
     name: 'project-demo',
-    url: 'https://sanshuibot.github.io/project-demo/minions/minions_animation.html',
+    url: 'https://SanshuiBot.github.io/project-demo/css-minions/index.html',
     desc: '小黄人构造器',
     lang: 'CSS3',
     tags: ['CSS3', 'HTML'],
   },
   {
     name: 'project-demo',
-    url: 'https://sanshuibot.github.io/project-demo/3DPeriodicTable/index.html',
+    url: 'https://SanshuiBot.github.io/project-demo/periodic-table-3d/index.html',
     desc: '3D元素周期表',
     lang: 'JavaScript',
     tags: ['Three.js'],
