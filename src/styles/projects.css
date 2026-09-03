@@ -1,45 +1,57 @@
 /**
  * 项目页卡片样式（projects.css）
  * -----------------------------
- * 职责：项目卡片标题渐变 + 语言色文字 + hover 光晕的亮暗双态（暗色基，亮色覆盖紧贴其后）。
- * 语言色由组件通过 --project-lang CSS 变量注入（数据字典 hex，非 accent 变量）。
- * 亮色下语言色本身偏浅（如 #f1e05a），用 color-mix 混黑加深保对比度（约定 #12/#27）。
- * 卡片其余样式（边框/背景/标签）在组件内用 Tailwind dark: 变体，与本文件互补。
+ * 职责：项目卡片标题亮暗双态 + hover accent 联动 + 顶部渐变条/hover 光晕的装饰色。
+ *
+ * 配色收敛（2026-09）：
+ *   - 卡片装饰色统一用 accent 循环（顶部渐变条 / 圆点 / hover 光晕同源，index % 5），跟随主题联动；
+ *   - 卡片文字一律语义色：标题 暗 var(--color-fg) / 亮 #1c1917，描述/元信息 Tailwind 灰阶。
+ *   - 卡片装饰色 --project-accent 由组件按索引循环注入（rgb(var(--accent-xxx-rgb)) 字符串），
+ *     跟随 AccentPicker 主题联动；光晕/渐变条共用，hover 变色走纯 CSS（红线 #25/#26/#47）。
+ *   - 亮色 hover accent 读 --color-accent-violet 令牌（globals.css @supports 已混黑加深）。
  */
 
-/* ── 卡片标题渐变：暗色基（白 → 语言色） ── */
+/* ── 卡片标题：亮暗双态正文色 + hover 联动 accent ── */
 .project-card-title {
-  background: linear-gradient(135deg, #fff 20%, var(--project-lang, #a855f7) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  color: var(--color-fg);
+  transition: color 0.3s ease;
 }
-
-/* ── 卡片标题渐变：亮色覆盖（深墨 → 语言色混黑），避免白字/浅色在浅底隐形 ── */
+/* 亮色正文色覆盖（body 只改了 body color，--color-fg 仍是暗色白） */
 html:not(.dark) .project-card-title {
+  color: #1c1917;
+}
+/* hover 变色：每卡 accent 联动（--project-accent 由组件注入），fallback 为站点 violet */
+.projects-content .group:hover .project-card-title {
+  color: var(--project-accent, var(--color-accent-violet));
+}
+html:not(.dark) .projects-content .group:hover .project-card-title {
+  color: var(--project-accent, var(--color-accent-violet));
+}
+
+/* ── 顶部渐变条：accent 装饰色 → 透明（原语言色条过于抢眼，改为跟随站点强调色循环） ── */
+.project-card-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-radius: 0.75rem 0.75rem 0 0; /* 与父卡圆角同源（父 overflow-hidden 已兜底） */
+  /* 中心峰值、向两侧对称衰减 —— 与 hover 光晕从中心扩散的视觉同源 */
   background: linear-gradient(
-    135deg,
-    #292524 20%,
-    color-mix(in srgb, var(--project-lang, #a855f7) 72%, #000) 100%
+    90deg,
+    transparent,
+    var(--project-accent, rgb(168 85 247)) 50%,
+    transparent
   );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  opacity: 0.85;
+  transition: opacity 0.3s ease;
+}
+.projects-content .group:hover .project-card-bar {
+  opacity: 1;
 }
 
-/* ── 语言色文字（元信息行里的语言名）：暗色基原色 ── */
-.project-lang-text {
-  color: var(--project-lang, #a855f7);
-}
-
-/* ── 语言色文字：亮色覆盖（混黑加深，语言色太浅时仍可读） ── */
-html:not(.dark) .project-lang-text {
-  color: color-mix(in srgb, var(--project-lang, #a855f7) 68%, #000);
-}
-
-/* ── hover 光晕：背景光晕层（语言色径向渐变，随鼠标位置移动） ── */
+/* ── hover 光晕：背景光晕层（accent 径向渐变，随鼠标位置移动，纯 CSS 动画） ── */
+/* fallback：站点 accent-violet（不支持 color-mix 的老浏览器，透明度直接写死） */
 .project-card-glow {
   position: absolute;
   inset: 0;
@@ -49,15 +61,24 @@ html:not(.dark) .project-lang-text {
   pointer-events: none;
   background: radial-gradient(
     320px circle at var(--mx, 50%) var(--my, 50%),
-    var(--project-glow, rgb(168 85 247 / 0.2)),
-    transparent 60%
+    rgb(168 85 247 / 0.16),
+    transparent 62%
   );
 }
-.group:hover .project-card-glow {
+@supports (color: color-mix(in srgb, red 16%, transparent)) {
+  .project-card-glow {
+    background: radial-gradient(
+      320px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in srgb, var(--project-accent, rgb(168 85 247)) 16%, transparent),
+      transparent 62%
+    );
+  }
+}
+.projects-content .group:hover .project-card-glow {
   opacity: 1;
 }
 
-/* ── hover 光晕：边框发光层（mask 只留 1px 边框带，语言色描边，跟随鼠标） ── */
+/* ── hover 光晕：边框发光层（mask 只留 1px 边框带，跟随鼠标） ── */
 .project-card-border-glow {
   position: absolute;
   inset: 0;
@@ -67,8 +88,8 @@ html:not(.dark) .project-lang-text {
   pointer-events: none;
   background: radial-gradient(
     320px circle at var(--mx, 50%) var(--my, 50%),
-    var(--project-border-glow, rgb(168 85 247 / 0.4)),
-    transparent 60%
+    rgb(168 85 247 / 0.4),
+    transparent 62%
   );
   mask:
     linear-gradient(#fff 0 0) content-box,
@@ -80,6 +101,165 @@ html:not(.dark) .project-lang-text {
   -webkit-mask-composite: xor;
   padding: 1px;
 }
-.group:hover .project-card-border-glow {
+@supports (color: color-mix(in srgb, red 40%, transparent)) {
+  .project-card-border-glow {
+    background: radial-gradient(
+      320px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in srgb, var(--project-accent, rgb(168 85 247)) 40%, transparent),
+      transparent 62%
+    );
+  }
+}
+.projects-content .group:hover .project-card-border-glow {
   opacity: 1;
+}
+
+/* ── 卡片 hover 阴影加深（比 Tailwind shadow-soft 多一层 specificity 保证生效） ── */
+/* 限定在项目卡片作用域内，避免影响导航栏等其他使用了 .group 的组件 */
+.projects-content .group:hover {
+  box-shadow:
+    var(--shadow-soft, 0 8px 32px rgba(0, 0, 0, 0.04)),
+    0 4px 16px rgb(var(--accent-violet-rgb) / 0.06),
+    0 12px 32px rgb(0 0 0 / 0.08);
+}
+html:not(.dark) .projects-content .group:hover {
+  box-shadow:
+    var(--shadow-soft, 0 8px 32px rgba(0, 0, 0, 0.04)),
+    0 4px 16px rgb(var(--accent-violet-rgb) / 0.06),
+    0 8px 24px rgb(0 0 0 / 0.06);
+}
+
+/* ── 标签主题色联动：data-accent-idx 决定颜色，跟随主题循环 5 色 ── */
+.tag-accent {
+  color: rgb(var(--accent-violet-rgb));
+  border-color: rgb(var(--accent-violet-rgb) / 0.2);
+  background: rgb(var(--accent-violet-rgb) / 0.06);
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease,
+    background 0.3s ease;
+}
+/* 默认态覆盖（不用 JS 注入时回退到中性灰） */
+.tag-accent[data-accent-idx='0'] {
+  color: rgb(var(--accent-pink-rgb));
+  border-color: rgb(var(--accent-pink-rgb) / 0.5);
+  background: rgb(var(--accent-pink-rgb) / 0.15);
+}
+.tag-accent[data-accent-idx='1'] {
+  color: rgb(var(--accent-violet-rgb));
+  border-color: rgb(var(--accent-violet-rgb) / 0.5);
+  background: rgb(var(--accent-violet-rgb) / 0.15);
+}
+.tag-accent[data-accent-idx='2'] {
+  color: rgb(var(--accent-blue-rgb));
+  border-color: rgb(var(--accent-blue-rgb) / 0.5);
+  background: rgb(var(--accent-blue-rgb) / 0.15);
+}
+.tag-accent[data-accent-idx='3'] {
+  color: rgb(var(--accent-teal-rgb));
+  border-color: rgb(var(--accent-teal-rgb) / 0.5);
+  background: rgb(var(--accent-teal-rgb) / 0.15);
+}
+.tag-accent[data-accent-idx='4'] {
+  color: rgb(var(--accent-gold-rgb));
+  border-color: rgb(var(--accent-gold-rgb) / 0.5);
+  background: rgb(var(--accent-gold-rgb) / 0.15);
+}
+/* hover 时背景加深 + 边框透明（per-index 独立覆盖，不泄漏到其他标签） */
+.projects-content .group:hover .tag-accent[data-accent-idx='0'] {
+  background: rgb(from var(--accent-pink-rgb) r g b / 0.25);
+  border-color: transparent;
+}
+.projects-content .group:hover .tag-accent[data-accent-idx='1'] {
+  background: rgb(from var(--accent-violet-rgb) r g b / 0.25);
+  border-color: transparent;
+}
+.projects-content .group:hover .tag-accent[data-accent-idx='2'] {
+  background: rgb(from var(--accent-blue-rgb) r g b / 0.25);
+  border-color: transparent;
+}
+.projects-content .group:hover .tag-accent[data-accent-idx='3'] {
+  background: rgb(from var(--accent-teal-rgb) r g b / 0.25);
+  border-color: transparent;
+}
+.projects-content .group:hover .tag-accent[data-accent-idx='4'] {
+  background: rgb(from var(--accent-gold-rgb) r g b / 0.25);
+  border-color: transparent;
+}
+
+/* ── 底部 CTA 幽灵按钮：微填充 + hover 上浮 ───────────────────────────────── */
+
+.cta-ghost-btn {
+  /* 默认：极淡背景 + 细边框 + 灰色文字，不抢卡片风头 */
+  background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 6%, transparent);
+  color: rgb(115 115 115);
+  border: 1px solid rgb(var(--accent-violet-rgb) / 0.18);
+  text-decoration: none;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+html:not(.dark) .cta-ghost-btn {
+  background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 6%, white);
+  color: rgb(107 114 128);
+  border-color: rgb(var(--accent-violet-rgb) / 0.2);
+}
+.dark .cta-ghost-btn {
+  background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 10%, rgb(15 15 20 / 0.4));
+  color: rgb(156 163 175);
+  border-color: rgb(var(--accent-violet-rgb) / 0.22);
+}
+
+/* hover：背景加深 + accent 文字 + 轻微投影 */
+.cta-ghost-btn:hover {
+  background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 14%, transparent);
+  color: rgb(var(--accent-violet-rgb));
+  border-color: rgb(var(--accent-violet-rgb) / 0.4);
+  box-shadow: 0 4px 12px rgb(var(--accent-violet-rgb) / 0.12);
+}
+.dark .cta-ghost-btn:hover {
+  background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 18%, rgb(15 15 20 / 0.6));
+  border-color: rgb(var(--accent-violet-rgb) / 0.45);
+}
+
+/* 鼠标跟随光晕：与卡片同源 */
+.cta-ghost-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  background: radial-gradient(
+    260px circle at var(--mx, 0px) var(--my, -40px),
+    rgb(var(--accent-violet-rgb) / 0.12),
+    transparent 65%
+  );
+}
+@supports (color: color-mix(in srgb, red 12%, transparent)) {
+  .cta-ghost-glow {
+    background: radial-gradient(
+      260px circle at var(--mx, 0px) var(--my, -40px),
+      color-mix(in srgb, rgb(var(--accent-violet-rgb)) 12%, transparent),
+      transparent 65%
+    );
+  }
+}
+.cta-ghost-btn:hover .cta-ghost-glow {
+  opacity: 1;
+}
+
+/* 箭头：默认半透明，hover 变实 + 右上位移 */
+.cta-ghost-arrow {
+  opacity: 0.4;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cta-ghost-btn:hover .cta-ghost-arrow {
+  opacity: 1;
+  transform: translate(1px, -1px);
 }

@@ -3,11 +3,12 @@
  * -----------------------------
  * 作用：GitHub 仓库卡片墙，md 以上两列统一尺寸网格，鼠标跟随光晕。
  *
- * 设计语言：
- *   - 所有卡片统一尺寸与样式，顶部渐变条语言色 → 透明（每卡各不相同）
- *   - hover 光晕随鼠标位置移动（--mx/--my 驱动，语言色径向渐变 + 描边发光）
+ * 设计语言（配色收敛版）：
+ *   - 所有卡片统一尺寸与样式，顶部渐变条为 accent 循环色 → 透明（每卡按索引循环 5 色）
+ *   - hover 光晕随鼠标位置移动（--mx/--my 驱动，与渐变条同源 accent 循环色 + 描边发光）
+ *   - 卡片装饰色统一用 accent 循环（顶部渐变条 / 圆点 / hover 光晕同源，index % 5），跟随主题联动
+ *   - 标题亮暗双态纯色，hover 联动 accent（纯 CSS，红线 #25/#26/#47）
  *   - 全部 hover 动效纯 CSS（红线 #25/#32，自动合规 prefers-reduced-motion）
- *   - 元信息行：语言圆点 ● / star · fork · 标签
  *   - 入场交错淡入（framer-motion viewport trigger）
  */
 'use client';
@@ -16,29 +17,33 @@ import {
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
 } from 'react';
-import { Star, GitFork, ExternalLink } from 'lucide-react';
+import { Star, ExternalLink } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import ArrowLink from '@/components/UI/ArrowLink';
-import Github from '@/components/UI/GithubIcon';
+import GithubIcon from '@/components/UI/GithubIcon';
 import { siteConfig } from '@/lib/site';
 import { projects } from '@/lib/projects';
 import type { Project } from '@/lib/projects';
 import '@/styles/projects.css';
 
-// ── 项目语言色盘 ──────────────────────────────────────────────────────────────
-const LANG_COLORS: Record<string, string> = {
-  TypeScript: '#3178c6',
-  JavaScript: '#f1e05a',
-  Python: '#3572a5',
-  Java: '#b07219',
-  Go: '#00add8',
-  Rust: '#dea584',
-  C: '#555555',
-  'C++': '#f34b7d',
-  Vue: '#42b883',
-  Svelte: '#ff3e00',
-  CSS3: '#563d7c',
-};
+// ── 卡片装饰色循环：顶部渐变条 + hover 光晕共用（与 PostCard 标签渐变同语义，index % 5） ──
+// 存 rgb(var(--accent-xxx-rgb)) 字符串 → 跟随 AccentPicker 主题联动，不写固定 hex。
+const BAR_ACCENTS = [
+  'rgb(var(--accent-pink-rgb))',
+  'rgb(var(--accent-violet-rgb))',
+  'rgb(var(--accent-blue-rgb))',
+  'rgb(var(--accent-teal-rgb))',
+  'rgb(var(--accent-gold-rgb))',
+] as const;
+
+// ── Tag 配色循环：用 tag 字符串做确定性哈希，同名 tag 始终同色，跟随主题联动 ──
+function tagAccentHash(tag: string): number {
+  let h = 0;
+  for (let i = 0; i < tag.length; i++) {
+    h = ((h << 5) - h + tag.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h) % BAR_ACCENTS.length;
+}
 
 // ── 入场变体 ──────────────────────────────────────────────────────────────────
 const container: Variants = {
@@ -51,9 +56,10 @@ const item: Variants = {
 };
 
 // ── 仓库卡片 ──────────────────────────────────────────────────────────────────
-// 统一尺寸卡片：语言色光晕背景 + hover 纯 CSS 微展开。
-function RepoCard({ project }: { project: Project }) {
-  const langColor = project.lang ? LANG_COLORS[project.lang] : 'rgb(var(--accent-violet-rgb))';
+// 统一尺寸卡片：accent 循环光晕背景 + hover 纯 CSS 微展开。
+function RepoCard({ project, index }: { project: Project; index: number }) {
+  // 语言圆点 + 顶部渐变条 + hover 光晕共用同一套 accent（按卡片索引循环）
+  const accent = BAR_ACCENTS[index % BAR_ACCENTS.length];
 
   // 鼠标跟随光晕：把光标相对卡片的坐标写入 --mx/--my，光晕层随鼠标移动（纯 CSS 动画）
   const handleMouseMove = (e: ReactMouseEvent<HTMLAnchorElement>) => {
@@ -75,111 +81,87 @@ function RepoCard({ project }: { project: Project }) {
       variants={item}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="group relative rounded-xl border overflow-hidden
+      style={{ '--project-accent': accent } as CSSProperties}
+      className="group relative rounded-xl border overflow-hidden shadow-soft
                   transition-all duration-500 ease-out
                   dark:border-white/[0.08] dark:bg-white/[0.03] dark:hover:border-white/[0.18]
-                  border-black/[0.06] bg-white/[0.5] hover:border-black/[0.14]
+                  border-black/[0.06] bg-white/70 hover:border-black/[0.14]
                   backdrop-blur-sm dark:backdrop-blur-md
-                  hover:scale-[1.015]
-                  dark:hover:shadow-[0_8px_32px_rgb(var(--accent-violet-rgb)/0.12),0_0_0_1px_rgb(var(--accent-violet-rgb)/0.15)]
-                  hover:shadow-[0_8px_32px_rgba(0,0,0,0.1),0_0_0_1px_rgba(0,0,0,0.15)]"
+                  hover:scale-[1.015]"
     >
-      {/* hover 光晕：背景光晕 + 边框发光（语言色，纯 CSS 淡入，红线 #25/#32） */}
-      <div
-        className="project-card-glow"
-        style={
-          {
-            '--project-glow': `${langColor}2e`,
-            '--project-border-glow': `${langColor}59`,
-          } as CSSProperties
-        }
-        aria-hidden="true"
-      />
-      <div
-        className="project-card-border-glow"
-        style={{ '--project-border-glow': `${langColor}59` } as CSSProperties}
-        aria-hidden="true"
-      />
+      {/* hover 光晕：背景光晕 + 边框发光（--project-accent 装饰色，纯 CSS 淡入，红线 #25/#32） */}
+      <div className="project-card-glow" aria-hidden="true" />
+      <div className="project-card-border-glow" aria-hidden="true" />
 
-      {/* 顶部渐变条：语言色 → 透明，标识项目类型 */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[3px] rounded-t-xl opacity-80 group-hover:opacity-100 transition-opacity"
-        style={{
-          background: `linear-gradient(90deg, ${langColor}, ${langColor}44)`,
-        }}
-        aria-hidden="true"
-      />
+      {/* 顶部渐变条：accent 循环色 → 透明，hover 时提亮 */}
+      <div className="project-card-bar" aria-hidden="true" />
 
       <div className="relative p-5 pl-6">
         {/* 文字信息区 */}
         <div className="min-w-0">
           {/* 头部：名称 + 外链图标 */}
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h3
-              className="project-card-title font-semibold leading-snug text-base"
-              style={{ '--project-lang': langColor } as CSSProperties}
-            >
+            <h3 className="project-card-title font-semibold leading-snug text-base">
               {project.name}
             </h3>
             <ExternalLink
               size={14}
-              className="shrink-0 text-black/25 transition-all duration-300
-                         group-hover:text-black/60 group-hover:translate-x-0.5 group-hover:-translate-y-0.5
-                         dark:text-white/10 dark:group-hover:text-white/50"
+              className="shrink-0 text-black/35 transition-all duration-300
+                         group-hover:text-black/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5
+                         dark:text-white/50 dark:group-hover:text-white"
               aria-hidden="true"
             />
           </div>
 
           {/* 描述 */}
-          <p className="text-sm text-gray-700 dark:text-gray-400 leading-relaxed mb-4 line-clamp-2">
+          <p className="text-sm text-gray-500 dark:text-gray-300 leading-relaxed mb-4 line-clamp-2">
             {project.desc}
           </p>
 
-          {/* 元信息行 */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-gray-700 dark:text-gray-600">
-            {project.lang && (
-              <span className="flex items-center gap-1.5">
-                <span
-                  className="inline-block w-2 h-2 rounded-full"
-                  style={{ background: langColor, boxShadow: `0 0 5px ${langColor}99` }}
-                  aria-hidden="true"
-                />
-                <span
-                  className="project-lang-text"
-                  style={{ '--project-lang': langColor } as CSSProperties}
-                >
+          {/* 元信息行：语言圆点（唯一语言色元素）+ 灰阶语言名/star */}
+          {(project.lang || (project.stars !== undefined && project.stars > 0)) && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-gray-500 dark:text-gray-300">
+              {project.lang && (
+                <span className="flex items-center gap-1.5">
+                  <span
+                    className="inline-block w-2 h-2 rounded-full ring-1 ring-black/10 dark:ring-white/15"
+                    style={{
+                      background: accent!,
+                      boxShadow: `0 0 6px ${accent!.replace('))', ') / 0.3)')}`,
+                    }}
+                    aria-hidden="true"
+                  />
                   {project.lang}
                 </span>
-              </span>
-            )}
-            {project.stars !== undefined && project.stars > 0 && (
-              <span className="flex items-center gap-1">
-                <Star size={12} className="text-yellow-400/60" />
-                <span>{project.stars}</span>
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              <GitFork size={12} className="text-gray-600 dark:text-gray-700" />
-              <span>–</span>
-            </span>
-          </div>
+              )}
+              {project.stars !== undefined && project.stars > 0 && (
+                <span className="flex items-center gap-1">
+                  <Star size={12} className="text-amber-500 dark:text-yellow-400/70" />
+                  {project.stars}
+                </span>
+              )}
+            </div>
+          )}
 
           {/* 标签行 */}
           {project.tags && project.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {project.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-2 py-0.5 rounded-full text-[0.625rem] font-mono
-                             bg-black/[0.04] text-gray-700 border border-black/[0.08]
-                             transition-all duration-300
-                             group-hover:bg-accent-violet/10 group-hover:text-accent-violet group-hover:border-accent-violet/30
-                             dark:bg-white/5 dark:text-gray-400 dark:border-white/[0.08]
-                             dark:group-hover:bg-accent-violet/20 dark:group-hover:text-accent-violet dark:group-hover:border-accent-violet/40"
-                >
-                  {tag}
-                </span>
-              ))}
+              {project.tags.map((tag) => {
+                const tagIdx = tagAccentHash(tag);
+                return (
+                  <span
+                    key={tag}
+                    data-accent-idx={tagIdx}
+                    className="tag-accent px-2 py-0.5 rounded-full text-[0.6875rem] font-mono
+                               transition-all duration-300
+                               dark:border-white/[0.2] dark:bg-white/10 dark:text-white
+                               border-black/[0.08] bg-black/[0.04] text-gray-500
+                               group-hover:border-transparent"
+                  >
+                    {tag}
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>
@@ -242,18 +224,6 @@ export default function ProjectsContent() {
             开源项目
           </span>
         </h1>
-        <p className="mt-3 text-gray-600 dark:text-gray-500">
-          托管在{' '}
-          <a
-            href={siteConfig.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-600 hover:text-accent-violet underline underline-offset-2 transition-colors dark:text-gray-400"
-          >
-            GitHub
-          </a>{' '}
-          上
-        </p>
       </div>
 
       {/* Bento 网格：首卡 featured 跨双列，其余单列（窄屏全部单列） */}
@@ -261,10 +231,10 @@ export default function ProjectsContent() {
         variants={container}
         initial="hidden"
         animate={mounted ? 'show' : 'hidden'}
-        className="grid grid-cols-1 md:grid-cols-2 gap-5"
+        className="projects-content grid grid-cols-1 md:grid-cols-2 gap-5"
       >
-        {projects.map((project) => (
-          <RepoCard key={project.url} project={project} />
+        {projects.map((project, index) => (
+          <RepoCard key={project.url} project={project} index={index} />
         ))}
       </motion.div>
 
@@ -273,17 +243,48 @@ export default function ProjectsContent() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: mounted ? 1 : 0, y: mounted ? 0 : 8 }}
         transition={{ delay: 0.45, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        className="mt-8 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-500"
+        className="mt-8 flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-500"
       >
         <span>更多项目欢迎去 GitHub 逛逛</span>
         <a
           href={siteConfig.github}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-black/10 bg-black/[0.04] text-gray-600 hover:text-black hover:border-black/20 transition-colors font-mono text-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:hover:text-white dark:hover:border-white/20"
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            e.currentTarget.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+            e.currentTarget.style.setProperty('--my', `${e.clientY - rect.top}px`);
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.setProperty('--mx', '0px');
+            e.currentTarget.style.setProperty('--my', '-40px');
+          }}
+          className="cta-ghost-btn relative overflow-hidden rounded-lg
+                     transition-all duration-300 ease-out
+                     hover:-translate-y-0.5"
+          style={{ '--mx': '0px', '--my': '-40px' } as CSSProperties}
         >
-          <Github size={14} />
-          查看全部项目
+          {/* 鼠标跟随光晕 */}
+          <span className="cta-ghost-glow" aria-hidden="true" />
+          {/* 内容：图标 + 文字 + 箭头 */}
+          <span className="relative flex items-center gap-1.5 px-4 py-2 font-mono text-sm">
+            <GithubIcon size={13} className="shrink-0" />
+            <span>查看全部项目</span>
+            <svg
+              className="cta-ghost-arrow shrink-0 transition-all duration-300"
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M4 9L9 4" />
+              <path d="M4 4h5v5" />
+            </svg>
+          </span>
         </a>
       </motion.div>
     </>
