@@ -70,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: accentBootstrapScript + themeBootstrapScript }}
         />
       </head>
-      <body className="min-h-dvh flex flex-col bg-ink text-fg antialiased relative">
+      <body className="min-h-dvh flex flex-col antialiased relative">
         <Providers>
           <AmbientEffects />
           <AppShell>{children}</AppShell>

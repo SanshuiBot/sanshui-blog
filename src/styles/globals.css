@@ -18,7 +18,7 @@
   --color-accent-gold: rgb(var(--accent-gold-rgb));
   --color-accent-rose: rgb(var(--accent-rose-rgb));
   --color-glass: rgba(20, 20, 32, 0.7);
-  --color-glass-heavy: rgba(14, 14, 24, 0.85);
+  --color-glass-heavy: rgba(255, 255, 255, 0.85);
   --color-white: #ffffff;
   --color-black: #000000;
   --font-sans: 'Inter', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', sans-serif;
@@ -43,19 +43,19 @@
 }
 
 /*
- * 亮色下 accent 对比度增强：`--color-accent-*` 是 @theme 主题令牌，供
- * text-accent-* / bg-accent-* / from-accent-* 等 Tailwind utility 消费。
- * 亮色分支向正文色 #1c1917 派生加深（78% color-mix），保证浅色背景下
- * 文字/描边/渐变可读（如 gold 类浅色文字）。暗色下保持主题层原值，无需覆盖。
+ * accent 令牌 `--color-accent-*`（@theme）——亮色为基准：默认值即向正文色 #1c1917
+ * 派生加深（78% color-mix），供 text-accent-* / bg-accent-* / from-accent-* 等
+ * Tailwind utility 消费，保证浅色背景下文字/描边/渐变可读；暗色主题由下方
+ * html.dark 覆盖恢复为 @theme 原色。
  * 原始 `--accent-*-rgb` 不变——阴影/辉光/滚动条等装饰仍走纯色 rgb(var(...)/α)。
  * 纯 CSS 文字用法（.prose-article a / .toc-link-active 等）引用令牌以获亮色加深，
  * 不要直接写 rgb(var(--accent-violet-rgb))。
  * @supports 守卫：不支持 color-mix 的浏览器（Chrome<111 / Safari<16.2 / FF<113）里
- * 该自定义属性值会整体失效导致亮色 accent 静默丢失，故仅在有支持时覆盖，
- * 旧浏览器保持 @theme 原值（即改前行为）。
+ * 该自定义属性值会整体失效，故亮色加深仅在有支持时应用；旧浏览器回落 @theme 原色
+ * （即改前亮色行为）。
  */
 @supports (color: color-mix(in oklab, red 50%, blue)) {
-  html:not(.dark) {
+  :root {
     --color-accent-pink: color-mix(in oklab, rgb(var(--accent-pink-rgb)) 78%, #1c1917);
     --color-accent-violet: color-mix(in oklab, rgb(var(--accent-violet-rgb)) 78%, #1c1917);
     --color-accent-blue: color-mix(in oklab, rgb(var(--accent-blue-rgb)) 78%, #1c1917);
@@ -64,11 +64,20 @@
     --color-accent-rose: color-mix(in oklab, rgb(var(--accent-rose-rgb)) 78%, #1c1917);
   }
 }
+/* 暗色主题：accent 恢复 @theme 原色（覆盖层无需 @supports 守卫——均为合法色值） */
+html.dark {
+  --color-accent-pink: rgb(var(--accent-pink-rgb));
+  --color-accent-violet: rgb(var(--accent-violet-rgb));
+  --color-accent-blue: rgb(var(--accent-blue-rgb));
+  --color-accent-teal: rgb(var(--accent-teal-rgb));
+  --color-accent-gold: rgb(var(--accent-gold-rgb));
+  --color-accent-rose: rgb(var(--accent-rose-rgb));
+}
 
 @layer base {
   :root {
-    --glass-bg: rgba(20, 20, 32, 0.6);
-    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(0, 0, 0, 0.06);
     --glow-violet: rgb(var(--accent-violet-rgb) / 0.05);
     /* ── 骨架屏/加载页通用变量 ── */
     --bg-skeleton: rgba(255, 255, 255, 0.06);
@@ -77,33 +86,33 @@
     --fg-dim: #5c5c70;
     --border-skeleton: rgba(255, 255, 255, 0.06);
     --border-skeleton-shimmer: rgba(255, 255, 255, 0.06);
-    /* ── 导航过渡层背景（跟随主题：暗=ink 深，亮=cream）── */
-    --bg-nav-loading: var(--color-ink);
+    /* ── 导航过渡层背景（亮=cream 基值；暗=ink 走文件尾 html.dark 覆盖）── */
+    --bg-nav-loading: #fafaf9;
 
-    /* ── Shadow Design System ── */
+    /* ── Shadow Design System ──（亮色为基；暗色值走文件尾 html.dark 覆盖）── */
     /* B · 彩色霓虹辉光 — 正文卡片 */
     --shadow-neon-hover:
-      0 4px 16px rgb(var(--accent-violet-rgb) / 0.15),
-      0 16px 40px rgb(var(--accent-violet-rgb) / 0.1),
-      0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08);
+      0 6px 20px rgb(var(--accent-violet-rgb) / 0.12),
+      0 20px 48px rgb(var(--accent-violet-rgb) / 0.08),
+      0 0 0 1px rgb(var(--accent-violet-rgb) / 0.06);
 
     /* C · 内发光微浮雕 — 导航/模态 */
     --shadow-emboss:
-      inset 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6),
       var(--shadow-soft);
     --shadow-emboss-hover:
-      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      0 4px 12px rgb(var(--accent-violet-rgb) / 0.06), 0 12px 24px rgba(0, 0, 0, 0.12);
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      0 4px 12px rgb(var(--accent-violet-rgb) / 0.04), 0 12px 24px rgba(0, 0, 0, 0.06);
 
     /* C-nav · 导航栏专用 — 内辉光常亮 + 缩小外阴影 */
     --shadow-nav:
-      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      0 2px 4px rgb(var(--accent-violet-rgb) / 0.03), 0 4px 8px rgba(0, 0, 0, 0.06);
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      0 1px 3px rgb(var(--accent-violet-rgb) / 0.03), 0 2px 6px rgba(0, 0, 0, 0.04);
 
     /* D · 统一混合档 — 近影清晰 + 远影柔焦（全站内容块/浮层外投影共用，浓度一致） */
     --shadow-soft:
-      0 4px 12px rgba(0, 0, 0, 0.05), 0 16px 40px rgba(0, 0, 0, 0.06),
-      0 48px 120px rgba(0, 0, 0, 0.03);
+      0 4px 12px rgba(0, 0, 0, 0.03), 0 16px 40px rgba(0, 0, 0, 0.04),
+      0 48px 120px rgba(0, 0, 0, 0.015);
   }
   *,
   *::before,
@@ -147,8 +156,8 @@
   }
   body {
     font-family: var(--font-sans);
-    background: var(--color-ink);
-    color: var(--color-fg);
+    background: #fafaf9;
+    color: #1c1917;
     min-height: 100dvh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -165,22 +174,20 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(0, 0, 0, 0.12);
     border-radius: 3px;
     cursor: pointer;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.6);
-    cursor: pointer;
-  }
-  /* ── ::-webkit-scrollbar 亮色覆盖 —— 同元素集中 ── */
-  html:not(.dark) ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.12);
-    cursor: pointer;
-  }
-  html:not(.dark) ::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.2);
     cursor: pointer;
+  }
+  /* ── ::-webkit-scrollbar 暗色主题覆盖 —— 同元素集中 ── */
+  html.dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.4);
+  }
+  html.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.6);
   }
 }
 
@@ -197,8 +204,7 @@
     box-shadow: none;
   }
   /* 实心 CTA 按钮：真实白底黑字，亮/暗一致。
-     不用 .bg-white/.text-black utility——它们被下方 html:not(.dark) 反色块
-     翻转成深底白字（站点「utility 亮色覆盖」设计），交互实心钮一律用本语义类。 */
+     不用 .bg-white/.text-black utility——实心钮一律用本语义类，与 utility 层解耦。 */
   .btn-solid {
     background: #ffffff;
     color: #000000;
@@ -211,16 +217,14 @@
     background: var(--color-glass-heavy);
     backdrop-filter: blur(32px) saturate(1.8);
     -webkit-backdrop-filter: blur(32px) saturate(1.8);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(0, 0, 0, 0.08); /* 亮基边框（比 .glass token 略重）；暗色见下 */
     box-shadow: var(--shadow-emboss);
   }
-  /* ── glass / glass-heavy 亮色覆盖 —— 同元素集中 ── */
-  html:not(.dark) .glass {
-    background: rgba(255, 255, 255, 0.7);
-    border-color: rgba(0, 0, 0, 0.06);
-  }
-  html:not(.dark) .glass-heavy {
-    border-color: rgba(0, 0, 0, 0.08);
+  /* 亮色为基：.glass 的 bg/border 走已翻基 token（--glass-bg/--glass-border 默认亮值、
+     html.dark 暗值，见文件头 token 层），无需逐条覆盖 */
+  /* 暗色主题：.glass-heavy 边框回到发丝白 */
+  html.dark .glass-heavy {
+    border-color: rgba(255, 255, 255, 0.06);
   }
 
   /* ── nav-dotted：导航栏像素点阵背景 ──
@@ -232,7 +236,7 @@
      且 fixed header 常驻 backdrop-filter 会持续付 backdrop 合成成本，故不常开。
      （滚动叠加的 border/shadow 由 JSX 的 Tailwind utilities 提供。） */
   .nav-dotted {
-    --nav-dot-bg: rgba(14, 14, 24, 0.9);
+    --nav-dot-bg: rgba(255, 255, 255, 0.9);
     background-color: var(--nav-dot-bg);
     background-image: radial-gradient(transparent 1px, var(--nav-dot-bg) 1px);
     background-size: 4px 4px;
@@ -241,30 +245,21 @@
     backdrop-filter: saturate(0.5) blur(4px);
     -webkit-backdrop-filter: saturate(0.5) blur(4px);
   }
-  html:not(.dark) .nav-dotted {
-    --nav-dot-bg: rgba(255, 255, 255, 0.9);
+  html.dark .nav-dotted {
+    --nav-dot-bg: rgba(14, 14, 24, 0.9);
+  }
+  /* 暗色导航栏：加一层半透明深色底 + 滚动后启用 backdrop blur，与亮色 nav-scrolled 行为对齐 */
+  html.dark .nav-dotted.nav-scrolled {
+    background-color: rgba(10, 10, 18, 0.65);
+    backdrop-filter: saturate(0.5) blur(8px);
+    -webkit-backdrop-filter: saturate(0.5) blur(8px);
   }
 
   /* ── archive-filter：归档页标题右侧筛选按钮 + 下拉浮层 ──
-     颜色收敛：亮暗各定义一次 CSS 变量，子元素规则单条引用，消除整段双份复制。
-     btn/chip 的 bg/border 与 .glass/.border-white utility 同值，保留双前缀
-     html.dark / html:not(.dark) (0,2,1) 稳压裸 CSS 亮色覆盖（AGENTS.md #25）。 */
-  html.dark {
-    --af-hover: rgb(var(--accent-violet-rgb));
-    --af-hover-dim: rgb(var(--accent-violet-rgb) / 0.85);
-    --af-hash: rgb(var(--accent-violet-rgb) / 0.7);
-    --af-text: rgb(168 162 158);
-    --af-text-hover: #fff;
-    --af-count: rgb(120 113 108);
-    --af-chip-text: rgb(214 211 209);
-    --af-chip-text-hover: #fff;
-    --af-panel: rgb(214 211 209);
-    --af-close: rgb(168 162 158);
-    --af-close-bg-hover: rgb(var(--accent-violet-rgb) / 0.08);
-    --af-all: rgb(120 113 108);
-  }
-  html:not(.dark) {
-    --bg-nav-loading: #fafaf9;
+     颜色收敛：亮色为基准——--af-* 变量默认定义在 :root，html.dark 覆盖暗值，
+     子元素规则单条引用、无主题前缀（bg/border 由 glass/glass-heavy + 双主题 border utility 提供）。 */
+  /* ── archive-filter 主题变量：亮色为基（默认 :root），html.dark 覆盖暗值 ── */
+  :root {
     --af-hover: rgb(var(--accent-violet-rgb));
     --af-hover-dim: rgb(var(--accent-violet-rgb) / 0.85);
     --af-hash: rgb(var(--accent-violet-rgb) / 0.75);
@@ -278,149 +273,126 @@
     --af-close-bg-hover: rgb(var(--accent-violet-rgb) / 0.06);
     --af-all: rgb(87 83 78);
   }
+  html.dark {
+    --af-hover: rgb(var(--accent-violet-rgb));
+    --af-hover-dim: rgb(var(--accent-violet-rgb) / 0.85);
+    --af-hash: rgb(var(--accent-violet-rgb) / 0.7);
+    --af-text: rgb(168 162 158);
+    --af-text-hover: #fff;
+    --af-count: rgb(120 113 108);
+    --af-chip-text: rgb(214 211 209);
+    --af-chip-text-hover: #fff;
+    --af-panel: rgb(214 211 209);
+    --af-close: rgb(168 162 158);
+    --af-close-bg-hover: rgb(var(--accent-violet-rgb) / 0.08);
+    --af-all: rgb(120 113 108);
+    --bg-nav-loading: var(--color-ink);
+  }
 
-  /* 筛选按钮基色与 hover（双前缀守特异性） */
-  html.dark .archive-filter-btn,
-  html:not(.dark) .archive-filter-btn {
+  /* 筛选按钮与 chip：颜色走 --af-* 变量（默认亮值 / html.dark 暗值） */
+  .archive-filter-btn {
     color: var(--af-text);
   }
-  html.dark .archive-filter-btn:hover,
-  html:not(.dark) .archive-filter-btn:hover {
+  .archive-filter-btn:hover,
+  .archive-filter-btn[aria-expanded='true'] {
     color: var(--af-text-hover);
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
   }
-  html:not(.dark) .archive-filter-btn {
-    background: rgba(255, 255, 255, 0.7);
-    border-color: rgba(0, 0, 0, 0.06);
-  }
 
   /* 按钮内文字元素 */
-  html.dark .archive-filter-btn-label,
-  html:not(.dark) .archive-filter-btn-label {
+  .archive-filter-btn-label {
     color: var(--af-text);
   }
-  html.dark .archive-filter-btn-count,
-  html:not(.dark) .archive-filter-btn-count {
+  .archive-filter-btn-count {
     color: var(--af-count);
   }
-  html.dark .archive-filter-btn:hover .archive-filter-btn-label,
-  html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label,
-  html:not(.dark) .archive-filter-btn:hover .archive-filter-btn-label,
-  html:not(.dark) .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label {
+  .archive-filter-btn:hover .archive-filter-btn-label,
+  .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-label {
     color: var(--af-hover);
   }
-  html.dark .archive-filter-btn:hover .archive-filter-btn-count,
-  html.dark .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-count,
-  html:not(.dark) .archive-filter-btn:hover .archive-filter-btn-count,
-  html:not(.dark) .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-count {
+  .archive-filter-btn:hover .archive-filter-btn-count,
+  .archive-filter-btn[aria-expanded='true'] .archive-filter-btn-count {
     color: var(--af-hover-dim);
   }
 
   /* chip 基色与 hover */
-  html.dark .archive-filter-chip {
+  .archive-filter-chip {
     color: var(--af-chip-text);
-    background: var(--glass-bg);
-    border-color: var(--glass-border);
   }
-  html:not(.dark) .archive-filter-chip {
-    color: var(--af-chip-text);
-    background: rgba(255, 255, 255, 0.7);
-    border-color: rgba(0, 0, 0, 0.06);
-  }
-  html.dark .archive-filter-chip:hover,
-  html:not(.dark) .archive-filter-chip:hover {
+  .archive-filter-chip:hover {
     color: var(--af-chip-text-hover);
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
+    background: rgb(var(--accent-violet-rgb) / 0.06);
   }
   html.dark .archive-filter-chip:hover {
     background: rgb(var(--accent-violet-rgb) / 0.08);
   }
-  html:not(.dark) .archive-filter-chip:hover {
-    background: rgb(var(--accent-violet-rgb) / 0.06);
-  }
 
-  /* chip 内文字元素（双前缀守特异性，防 tailwind text-accent-violet/70 反压） */
-  html.dark .archive-filter-chip-name-text,
-  html:not(.dark) .archive-filter-chip-name-text {
+  /* chip 内文字元素 */
+  .archive-filter-chip-name-text {
     color: var(--af-chip-text);
   }
-  html.dark .archive-filter-chip:hover .archive-filter-chip-name-text,
-  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-name-text {
+  .archive-filter-chip:hover .archive-filter-chip-name-text {
     color: var(--af-hover);
   }
-  html.dark .archive-filter-chip-count-text,
-  html:not(.dark) .archive-filter-chip-count-text {
+  .archive-filter-chip-count-text {
     color: var(--af-count);
   }
-  html.dark .archive-filter-chip:hover .archive-filter-chip-count-text,
-  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-count-text {
+  .archive-filter-chip:hover .archive-filter-chip-count-text {
     color: var(--af-hover-dim);
   }
-  html.dark .archive-filter-chip-hash,
-  html:not(.dark) .archive-filter-chip-hash {
+  .archive-filter-chip-hash {
     color: var(--af-hash);
   }
-  html.dark .archive-filter-chip:hover .archive-filter-chip-hash,
-  html:not(.dark) .archive-filter-chip:hover .archive-filter-chip-hash {
+  .archive-filter-chip:hover .archive-filter-chip-hash {
     color: var(--af-hover);
   }
 
   /* 浮层标题 / 关闭 / 查看全部 */
-  html.dark .archive-filter-panel,
-  html:not(.dark) .archive-filter-panel {
+  .archive-filter-panel {
     color: var(--af-panel);
   }
-  html.dark .archive-filter-close,
-  html:not(.dark) .archive-filter-close {
+  .archive-filter-close {
     color: var(--af-close);
   }
-  html.dark .archive-filter-close:hover,
-  html:not(.dark) .archive-filter-close:hover {
+  .archive-filter-close:hover {
     color: var(--af-hover);
     background: var(--af-close-bg-hover);
   }
-  html.dark .archive-filter-all,
-  html:not(.dark) .archive-filter-all {
+  .archive-filter-all {
     color: var(--af-all);
   }
-  html.dark .archive-filter-all:hover,
-  html:not(.dark) .archive-filter-all:hover {
+  .archive-filter-all:hover {
     color: var(--af-hover);
   }
 
   /* ── ⌘K 搜索结果关键词高亮（SearchModal 的 <mark>，P1-12）── */
   .search-mark {
-    background: rgb(var(--accent-violet-rgb) / 0.18);
+    background: rgb(var(--accent-violet-rgb) / 0.15);
     color: inherit;
     border-radius: 3px;
     padding: 0 0.15em;
   }
-  html:not(.dark) .search-mark {
-    background: rgb(var(--accent-violet-rgb) / 0.15);
+  html.dark .search-mark {
+    background: rgb(var(--accent-violet-rgb) / 0.18);
   }
 
   /* ── 通用「返回 / 查看全部」链接 ──
      .link-back：ArrowLeft「返回 X」（箭头左移）
      .link-more：ArrowRight「查看全部 X」（箭头右移）
-     默认灰色，hover 联 accent 主题色。
-     双前缀 html.dark / html:not(.dark) 提特异性到 (0,3,1)，
-     稳压 Tailwind utility 裸覆盖（AGENTS.md 约定 #25）。 */
-  /* 暗色基 */
+     默认灰色（亮基 #57534e / 暗色 #78716c），hover 联 accent 主题色。 */
+  .link-back,
+  .link-more {
+    color: rgb(87 83 78);
+  }
   html.dark .link-back,
   html.dark .link-more {
     color: rgb(120 113 108);
   }
+  .link-back:hover,
+  .link-more:hover,
   html.dark .link-back:hover,
   html.dark .link-more:hover {
-    color: var(--color-accent-violet);
-  }
-  /* 亮色覆盖 */
-  html:not(.dark) .link-back,
-  html:not(.dark) .link-more {
-    color: rgb(87 83 78);
-  }
-  html:not(.dark) .link-back:hover,
-  html:not(.dark) .link-more:hover {
     color: var(--color-accent-violet);
   }
 
@@ -466,20 +438,20 @@
     animation: aurora-shift 8s ease-in-out infinite;
   }
 
-  /* ── 首屏 Hero 专用样式 ── 集中一处，亮色覆盖紧贴暗色基（AGENTS.md #27） */
+  /* ── 首屏 Hero 专用样式 ── 集中一处，暗色覆盖紧贴亮色基（AGENTS.md #27） */
 
-  /* 流光网格层：conic-gradient + radial mask，纯 CSS keyframes 流动 */
+  /* 流光网格层：conic-gradient + radial mask，纯 CSS keyframes 流动（亮基：深色细线） */
   .hero-aurora-grid {
     background-image:
       conic-gradient(
         from 0deg at 50% 50%,
-        rgb(var(--accent-violet-rgb) / 0.08),
-        rgb(var(--accent-pink-rgb) / 0.05),
-        rgb(var(--accent-blue-rgb) / 0.06),
-        rgb(var(--accent-violet-rgb) / 0.08)
+        rgb(var(--accent-violet-rgb) / 0.04),
+        rgb(var(--accent-pink-rgb) / 0.03),
+        rgb(var(--accent-blue-rgb) / 0.03),
+        rgb(var(--accent-violet-rgb) / 0.04)
       ),
-      linear-gradient(rgb(255 255 255 / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+      linear-gradient(rgb(0 0 0 / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(0 0 0 / 0.04) 1px, transparent 1px);
     background-size:
       100% 100%,
       56px 56px,
@@ -496,18 +468,18 @@
         56px 56px;
     }
   }
-  /* 亮色覆盖：改用深色线，透明度与暗色基相当 */
-  html:not(.dark) .hero-aurora-grid {
+  /* 暗色覆盖：改用浅色线，透明度与亮色基相当 */
+  html.dark .hero-aurora-grid {
     background-image:
       conic-gradient(
         from 0deg at 50% 50%,
-        rgb(var(--accent-violet-rgb) / 0.04),
-        rgb(var(--accent-pink-rgb) / 0.03),
-        rgb(var(--accent-blue-rgb) / 0.03),
-        rgb(var(--accent-violet-rgb) / 0.04)
+        rgb(var(--accent-violet-rgb) / 0.08),
+        rgb(var(--accent-pink-rgb) / 0.05),
+        rgb(var(--accent-blue-rgb) / 0.06),
+        rgb(var(--accent-violet-rgb) / 0.08)
       ),
-      linear-gradient(rgb(0 0 0 / 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(0 0 0 / 0.04) 1px, transparent 1px);
+      linear-gradient(rgb(255 255 255 / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.03) 1px, transparent 1px);
   }
 
   /* 身份徽章：玻璃态 + accent 边框光 + 呼吸圆点 */
@@ -515,6 +487,17 @@
     box-shadow:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.18),
       0 4px 16px rgb(var(--accent-violet-rgb) / 0.05);
+  }
+  html.dark .hero-badge {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.4),
+      0 4px 20px rgb(var(--accent-violet-rgb) / 0.15);
+  }
+  /* glass token 暗色化：--glass-bg / --glass-border 被 .glass / hero-cta 等通用组件引用 */
+  html.dark {
+    --glass-bg: rgba(14, 14, 24, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
   }
   .hero-badge-dot {
     width: 6px;
@@ -536,7 +519,7 @@
     }
   }
 
-  /* 名字 aurora 光泽扫过：叠在 .text-aurora 之上的伪元素流光 */
+  /* 名字 aurora 光泽扫过：叠在 .text-aurora 之上的伪元素流光（亮基：高光加强） */
   .hero-name-shimmer {
     position: relative;
   }
@@ -547,7 +530,7 @@
     background: linear-gradient(
       100deg,
       transparent 30%,
-      rgb(255 255 255 / 0.22) 50%,
+      rgb(255 255 255 / 0.65) 50%,
       transparent 70%
     );
     background-size: 200% 100%;
@@ -556,6 +539,9 @@
     -webkit-text-fill-color: transparent;
     pointer-events: none;
     animation: hero-shimmer 5.5s ease-in-out infinite;
+  }
+  html.dark .hero-name-shimmer::after {
+    display: none;
   }
   @keyframes hero-shimmer {
     0% {
@@ -568,18 +554,7 @@
       background-position: -120% 0;
     }
   }
-  html:not(.dark) .hero-name-shimmer::after {
-    background: linear-gradient(
-      100deg,
-      transparent 30%,
-      rgb(255 255 255 / 0.65) 50%,
-      transparent 70%
-    );
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+  /* shimmer 亮暗双态已并入基规则 + html.dark（见上） */
 
   /* Stats — 极简 inline 行：数字（单色 accent）· 标签，点分隔 */
   .hero-stats-inline {
@@ -595,31 +570,29 @@
     gap: 0.375rem;
   }
   .hero-stat-sep {
-    color: rgb(255 255 255 / 0.2);
+    color: rgb(0 0 0 / 0.2);
     margin-right: 0.25rem;
   }
-  html:not(.dark) .hero-stat-sep {
-    color: rgb(0 0 0 / 0.2);
+  html.dark .hero-stat-sep {
+    color: rgb(255 255 255 / 0.2);
   }
   .hero-stat-inline-num {
     font-size: 1rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
+    color: #1c1917;
   }
   html.dark .hero-stat-inline-num {
     color: #fff;
   }
-  html:not(.dark) .hero-stat-inline-num {
-    color: #1c1917;
-  }
   .hero-stat-inline-label {
     font-size: 0.7rem;
-    color: rgb(255 255 255 / 0.45);
+    color: rgb(var(--accent-violet-rgb) / 0.5);
     letter-spacing: 0.05em;
   }
-  html:not(.dark) .hero-stat-inline-label {
-    color: rgb(var(--accent-violet-rgb) / 0.5);
+  html.dark .hero-stat-inline-label {
+    color: rgb(255 255 255 / 0.45);
   }
 
   /* CTA：Aurora 渐变描边玻璃按钮，hover 流光带
@@ -627,11 +600,12 @@
      少一层伪元素、兼容性更好；补 focus-visible 焦点环 / active 按压 / hover 放大上浮 /
      文字光晕 / 常驻柔光晕。 */
   .hero-cta {
-    color: #fff;
+    color: #1c1917;
     border: 1px solid transparent;
-    /* 玻璃底 padding-box + 渐变描边 border-box（双背景，替代 mask-composite 方案） */
+    /* 玻璃底 padding-box + 渐变描边 border-box（双背景，替代 mask-composite 方案）；
+       亮色为基：白玻璃 + 柔和描边光；暗色由下方 html.dark 重建深玻璃 */
     background:
-      linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box,
+      linear-gradient(rgb(255 255 255 / 0.7), rgb(255 255 255 / 0.7)) padding-box,
       linear-gradient(
           120deg,
           rgb(var(--accent-pink-rgb) / 0.6),
@@ -644,13 +618,32 @@
       200% 200%;
     animation: hero-cta-border 6s ease-in-out infinite;
     box-shadow:
-      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.22),
-      0 8px 28px rgb(var(--accent-violet-rgb) / 0.08);
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.14),
+      0 8px 28px rgb(var(--accent-violet-rgb) / 0.05);
     /* scale/translate 用独立属性：与 framer 的 inline transform 可叠加，不被覆盖 */
     transition:
       box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
       scale 0.25s cubic-bezier(0.16, 1, 0.3, 1),
       translate 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  /* 暗色主题：深玻璃 + 强内辉光 */
+  html.dark .hero-cta {
+    color: #fff;
+    background:
+      linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box,
+      linear-gradient(
+          120deg,
+          rgb(var(--accent-pink-rgb) / 0.6),
+          rgb(var(--accent-violet-rgb) / 0.6),
+          rgb(var(--accent-blue-rgb) / 0.6)
+        )
+        border-box;
+    background-size:
+      100% 100%,
+      200% 200%;
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.22),
+      0 8px 28px rgb(var(--accent-violet-rgb) / 0.08);
   }
   @keyframes hero-cta-border {
     0%,
@@ -669,12 +662,19 @@
     border-radius: inherit;
     background: radial-gradient(
       70% 70% at 50% 50%,
-      rgb(var(--accent-violet-rgb) / 0.16),
+      rgb(var(--accent-violet-rgb) / 0.1),
       transparent 70%
     );
     filter: blur(6px);
     z-index: -1;
     pointer-events: none;
+  }
+  html.dark .hero-cta::after {
+    background: radial-gradient(
+      70% 70% at 50% 50%,
+      rgb(var(--accent-violet-rgb) / 0.16),
+      transparent 70%
+    );
   }
   .hero-cta-glow {
     position: absolute;
@@ -697,6 +697,11 @@
     scale: 1.02;
     translate: 0 -2px;
     box-shadow:
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.28),
+      0 10px 36px rgb(var(--accent-violet-rgb) / 0.1);
+  }
+  html.dark .hero-cta:hover {
+    box-shadow:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.35),
       0 10px 36px rgb(var(--accent-violet-rgb) / 0.16);
   }
@@ -707,8 +712,11 @@
   }
   /* 键盘焦点环：自定义 accent outline（浏览器默认 outline 与玻璃态脱节） */
   .hero-cta:focus-visible {
-    outline: 2px solid rgb(var(--accent-violet-rgb) / 0.6);
+    outline: 2px solid rgb(var(--accent-violet-rgb) / 0.8);
     outline-offset: 3px;
+  }
+  html.dark .hero-cta:focus-visible {
+    outline-color: rgb(var(--accent-violet-rgb) / 0.6);
   }
   .hero-cta-arrow {
     transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -721,47 +729,13 @@
     transition: text-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .hero-cta:hover .hero-cta-text {
+    text-shadow: 0 0 10px rgb(var(--accent-violet-rgb) / 0.45);
+  }
+  html.dark .hero-cta:hover .hero-cta-text {
     text-shadow: 0 0 12px rgb(var(--accent-violet-rgb) / 0.6);
   }
 
-  /* 亮色 CTA 覆盖：深色字 + 更柔的玻璃（双背景描边须整体重建，rgba→rgb 空格语法） */
-  html:not(.dark) .hero-cta {
-    color: #1c1917;
-    background:
-      linear-gradient(rgb(255 255 255 / 0.7), rgb(255 255 255 / 0.7)) padding-box,
-      linear-gradient(
-          120deg,
-          rgb(var(--accent-pink-rgb) / 0.6),
-          rgb(var(--accent-violet-rgb) / 0.6),
-          rgb(var(--accent-blue-rgb) / 0.6)
-        )
-        border-box;
-    background-size:
-      100% 100%,
-      200% 200%;
-    box-shadow:
-      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.14),
-      0 8px 28px rgb(var(--accent-violet-rgb) / 0.05);
-  }
-  html:not(.dark) .hero-cta:hover {
-    box-shadow:
-      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.28),
-      0 10px 36px rgb(var(--accent-violet-rgb) / 0.1);
-  }
-  /* 亮色下光晕/文字辉光降一档，避免白底上过艳 */
-  html:not(.dark) .hero-cta::after {
-    background: radial-gradient(
-      70% 70% at 50% 50%,
-      rgb(var(--accent-violet-rgb) / 0.1),
-      transparent 70%
-    );
-  }
-  html:not(.dark) .hero-cta:hover .hero-cta-text {
-    text-shadow: 0 0 10px rgb(var(--accent-violet-rgb) / 0.45);
-  }
-  html:not(.dark) .hero-cta:focus-visible {
-    outline-color: rgb(var(--accent-violet-rgb) / 0.8);
-  }
+  /* hero-cta 亮暗双态已并入基规则 + html.dark 覆盖（见上），此处无主题前缀规则 */
 
   /* 社交图标托盘：统一玻璃 + emboss 质感 */
   .hero-social {
@@ -770,6 +744,18 @@
   }
   .hero-social:hover {
     box-shadow: var(--shadow-emboss-hover);
+  }
+  html.dark .hero-social {
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  html.dark .hero-social:hover {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.2),
+      0 4px 16px rgb(var(--accent-violet-rgb) / 0.1);
   }
 
   /* 拼贴卡片墙 —— 手机端位置由 JS 层动态计算（scale=0.55，2列3行），CSS 无需额外缩放 */
@@ -788,6 +774,13 @@
     justify-content: center;
     color: rgb(var(--accent-violet-rgb) / 0.7);
   }
+  html.dark .hero-scroll-label {
+    color: rgb(var(--accent-violet-rgb) / 0.9);
+    text-shadow: 0 0 12px rgb(var(--accent-violet-rgb) / 0.5);
+  }
+  html.dark .hero-scroll-arrow {
+    color: rgb(var(--accent-violet-rgb) / 0.9);
+  }
 
   .glow-violet {
     box-shadow:
@@ -799,57 +792,58 @@
     text-decoration: none;
     transition: color 0.2s;
   }
-  .footer-link:hover {
+  .footer-link:hover,
+  html.dark .footer-link:hover {
     color: rgb(var(--accent-violet-rgb));
   }
-  .post-card-title {
-    color: #ffffff;
+  body .post-card-title {
+    color: #1c1917;
     transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  html:not(.dark) .post-card-title {
-    color: #1c1917;
+  html.dark body .post-card-title {
+    color: #ffffff;
   }
-  html.dark .post-card-title:hover,
-  html:not(.dark) .post-card-title:hover {
+  body .post-card-title:hover,
+  html.dark body .post-card-title:hover {
     color: rgb(var(--accent-violet-rgb));
   }
-  /* ErrorBoundary 重试按钮 —— accent 联动 hover 走纯 CSS，不交 Framer（#25）+ 双前缀提特异性（#26） */
-  .btn-retry {
-    color: #ffffff;
+  /* ErrorBoundary 重试按钮 —— accent 联动 hover 走纯 CSS，不交 Framer（#25） */
+  body .btn-retry {
+    color: #1c1917;
     transition: color 0.2s;
   }
-  html:not(.dark) .btn-retry {
-    color: #1c1917;
+  html.dark body .btn-retry {
+    color: #ffffff;
   }
-  html.dark .btn-retry:hover,
-  html:not(.dark) .btn-retry:hover {
+  body .btn-retry:hover,
+  html.dark body .btn-retry:hover {
     color: rgb(var(--accent-violet-rgb));
   }
-  .post-card-readmore {
+  body .post-card-readmore {
     color: #78716c;
     transition: color 0.2s;
   }
-  html.dark .post-card-link:hover .post-card-readmore,
-  html:not(.dark) .post-card-link:hover .post-card-readmore {
+  html.dark body .post-card-readmore {
+    color: rgb(120 113 108);
+  }
+  body .post-card-link:hover .post-card-readmore,
+  html.dark body .post-card-link:hover .post-card-readmore {
     color: rgb(var(--accent-violet-rgb));
   }
-  /* TOC 链接 —— hover/active 变色走纯 CSS + accent 变量（AGENTS.md #22/#23）
-     双前缀 html.dark / html:not(.dark) 提特异性到 (0,3,1)，稳压亮色裸覆盖规则 */
+  /* TOC 链接 —— hover/active 变色走纯 CSS + accent 变量（AGENTS.md #22/#23） */
   .toc-link {
     color: #78716c;
     transition: color 0.2s;
   }
-  html.dark .toc-link:hover,
-  html:not(.dark) .toc-link:hover {
+  .toc-link:hover,
+  html.dark .toc-link:hover {
     color: var(--color-accent-violet);
   }
-  html.dark .toc-link-active,
-  html:not(.dark) .toc-link-active {
+  .toc-link-active {
     color: var(--color-accent-violet);
     font-weight: 600;
   }
-  html.dark .toc-link-active::before,
-  html:not(.dark) .toc-link-active::before {
+  .toc-link-active::before {
     background: rgb(var(--accent-violet-rgb));
   }
   /* 淡入淡出滚动条 —— 藏原生滚动条，浮一个 .toc-thumb 绝对定位指示条
@@ -867,7 +861,7 @@
     right: 0;
     width: 3px;
     border-radius: 3px;
-    background: rgb(var(--accent-violet-rgb) / 0.5);
+    background: rgb(var(--accent-violet-rgb) / 0.7);
     opacity: 0;
     transition:
       opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
@@ -878,8 +872,8 @@
   .toc-thumb-visible {
     opacity: 1;
   }
-  html:not(.dark) .toc-thumb {
-    background: rgb(var(--accent-violet-rgb) / 0.7);
+  html.dark .toc-thumb {
+    background: rgb(var(--accent-violet-rgb) / 0.5);
   }
   .animate-float {
     animation: float 6s ease-in-out infinite;
@@ -889,21 +883,21 @@
   }
   .prose-article {
     line-height: 1.9;
-    color: var(--color-fg-muted);
+    color: #57534e;
     font-size: 1.0625rem;
     max-width: 72ch;
   }
   .prose-article h1 {
     font-size: 2.5rem;
     font-weight: 800;
-    color: var(--color-fg);
+    color: #1c1917;
     margin: 3rem 0 1.5rem;
     letter-spacing: -0.025em;
   }
   .prose-article h2 {
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--color-fg);
+    color: #1c1917;
     margin: 2.5rem 0 1rem;
     letter-spacing: -0.02em;
     padding-bottom: 0.5rem;
@@ -912,7 +906,7 @@
   .prose-article h3 {
     font-size: 1.35rem;
     font-weight: 600;
-    color: var(--color-fg);
+    color: #1c1917;
     margin: 2rem 0 0.75rem;
   }
   /* 锚点跳转后标题不被 sticky Navbar 遮挡（TOC 点击 / URL hash 共用） */
@@ -943,12 +937,14 @@
     border-radius: 5px;
     font-size: 0.875em;
     font-family: var(--font-mono);
-    color: var(--color-fg);
-    border: 1px solid rgb(var(--accent-violet-rgb) / 0.15);
+    color: #6d28d9;
+    border: 1px solid rgb(var(--accent-violet-rgb) / 0.1);
   }
   .prose-article pre {
-    background: var(--color-ink);
-    border: 1px solid rgb(var(--accent-violet-rgb) / 0.12);
+    /* 亮色为基：柔和深面板（overlay #1a1a28），代码文字 #d4d4d8 对比度充足；
+       暗色主题玻璃面板见 prose 暗色覆盖（html.dark） */
+    background: var(--color-overlay);
+    border: 1px solid rgb(var(--accent-violet-rgb) / 0.1);
     border-radius: 1rem;
     /* 回退态（注入前 / 无 JS / 注入器未命中）：保留自身内边距与原生横向滚动 */
     padding: 1.25rem 1.5rem;
@@ -1054,7 +1050,7 @@
       border-color 0.2s,
       background-color 0.2s;
   }
-  /* hover 走 accent 变量（亮暗一致），单规则即可，无需双前缀（红线 26/47） */
+  /* hover 走 accent 变量（亮暗一致），单规则即可（红线 26/47） */
   .code-window-copy:hover {
     color: rgb(var(--accent-violet-rgb));
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
@@ -1103,8 +1099,7 @@
     padding-left: 0.75em;
     margin-bottom: 0.5em;
   }
-  html.dark .prose-article li::before,
-  html:not(.dark) .prose-article li::before {
+  .prose-article li::before {
     content: '';
     position: absolute;
     left: -0.6em;
@@ -1115,12 +1110,11 @@
     background: rgb(var(--accent-violet-rgb) / 0.7);
   }
   /* 嵌套列表项 —— 指示条换浅色，区分层级 */
-  html.dark .prose-article li li::before,
-  html:not(.dark) .prose-article li li::before {
+  .prose-article li li::before {
     background: rgb(var(--accent-pink-rgb) / 0.6);
   }
   .prose-article strong {
-    color: var(--color-fg);
+    color: #1c1917;
     font-weight: 600;
   }
   .prose-article img {
@@ -1135,7 +1129,7 @@
     width: 100%;
     border-collapse: collapse;
     margin: 1.5em 0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     border-radius: 0.5rem;
     overflow: hidden;
     font-size: 0.95em;
@@ -1143,56 +1137,48 @@
   .prose-article th,
   .prose-article td {
     padding: 0.6em 0.9em;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     text-align: left;
   }
   .prose-article thead th {
-    background: rgb(var(--accent-violet-rgb) / 0.1);
+    background: rgb(var(--accent-violet-rgb) / 0.12);
     font-weight: 600;
-    color: var(--color-fg);
-  }
-  .prose-article tbody tr:nth-child(odd) {
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  /* ── prose-article 亮色覆盖（html:not(.dark)）—— 同元素集中，避免散乱 ── */
-  html:not(.dark) .prose-article {
-    color: #57534e;
-  }
-  html:not(.dark) .prose-article h1,
-  html:not(.dark) .prose-article h2,
-  html:not(.dark) .prose-article h3,
-  html:not(.dark) .prose-article strong {
     color: #1c1917;
   }
-  html:not(.dark) .prose-article pre {
-    /* 亮色下用比 ink 浅一档的柔和深色面板（overlay #1a1a28），
-       代码文字 #d4d4d8 对比度仍充足；暗色模式维持玻璃面板不变 */
-    background: var(--color-overlay);
-    border-color: rgb(var(--accent-violet-rgb) / 0.1);
+  .prose-article tbody tr:nth-child(odd) {
+    background: rgba(0, 0, 0, 0.02);
   }
+
+  /* ── prose-article 暗色主题覆盖（html.dark）—— 同元素集中，避免散乱 ── */
+  html.dark .prose-article {
+    color: var(--color-fg-muted);
+  }
+  html.dark .prose-article h1,
+  html.dark .prose-article h2,
+  html.dark .prose-article h3,
+  html.dark .prose-article strong {
+    color: var(--color-fg);
+  }
+  /* 暗色主题下 pre 维持玻璃面板；亮色为基是 overlay 柔和深面板（见 .prose-article pre 基规则） */
   html.dark .prose-article pre {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.15);
   }
-  html:not(.dark) .prose-article pre code {
-    color: #d4d4d8;
+  html.dark .prose-article code {
+    color: var(--color-fg);
+    border-color: rgb(var(--accent-violet-rgb) / 0.15);
   }
-  html:not(.dark) .prose-article code {
-    border-color: rgb(var(--accent-violet-rgb) / 0.1);
-    color: #6d28d9;
+  html.dark .prose-article table,
+  html.dark .prose-article th,
+  html.dark .prose-article td {
+    border-color: rgba(255, 255, 255, 0.1);
   }
-  html:not(.dark) .prose-article table,
-  html:not(.dark) .prose-article th,
-  html:not(.dark) .prose-article td {
-    border-color: rgba(0, 0, 0, 0.12);
+  html.dark .prose-article tbody tr:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.02);
   }
-  html:not(.dark) .prose-article tbody tr:nth-child(odd) {
-    background: rgba(0, 0, 0, 0.02);
-  }
-  html:not(.dark) .prose-article thead th {
-    background: rgb(var(--accent-violet-rgb) / 0.12);
-    color: #1c1917;
+  html.dark .prose-article thead th {
+    background: rgb(var(--accent-violet-rgb) / 0.1);
+    color: var(--color-fg);
   }
 }
 
@@ -1270,8 +1256,8 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 70%);
   -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 70%);
@@ -1291,17 +1277,17 @@ body::after {
   background:
     radial-gradient(
       ellipse 80% 60% at 50% 35%,
-      rgb(var(--accent-violet-rgb) / 0.3) 0%,
+      rgb(var(--accent-violet-rgb) / 0.14) 0%,
       transparent 65%
     ),
     radial-gradient(
       ellipse 55% 45% at 70% 55%,
-      rgb(var(--accent-pink-rgb) / 0.2) 0%,
+      rgb(var(--accent-pink-rgb) / 0.1) 0%,
       transparent 65%
     ),
     radial-gradient(
       ellipse 50% 40% at 30% 60%,
-      rgb(var(--accent-blue-rgb) / 0.15) 0%,
+      rgb(var(--accent-blue-rgb) / 0.08) 0%,
       transparent 65%
     );
   animation: glow-breathe 8s ease-in-out infinite;
@@ -1428,55 +1414,56 @@ body::after {
   stop-color: rgb(var(--accent-blue-rgb));
 }
 
-/* Light mode grid and glow */
-html:not(.dark) body::before {
+/* Dark mode grid and glow */
+html.dark body::before {
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
-html:not(.dark) body::after {
+html.dark body::after {
   background:
     radial-gradient(
       ellipse 80% 60% at 50% 35%,
-      rgb(var(--accent-violet-rgb) / 0.14) 0%,
+      rgb(var(--accent-violet-rgb) / 0.3) 0%,
       transparent 65%
     ),
     radial-gradient(
       ellipse 55% 45% at 70% 55%,
-      rgb(var(--accent-pink-rgb) / 0.1) 0%,
+      rgb(var(--accent-pink-rgb) / 0.2) 0%,
       transparent 65%
     ),
     radial-gradient(
       ellipse 50% 40% at 30% 60%,
-      rgb(var(--accent-blue-rgb) / 0.08) 0%,
+      rgb(var(--accent-blue-rgb) / 0.15) 0%,
       transparent 65%
     );
 }
 
-/* 玻璃重色 token 亮色化（.glass-heavy / 终端交换面板共用，单源） */
-html:not(.dark) {
-  --color-glass-heavy: rgba(255, 255, 255, 0.85);
+/* 玻璃重色 token 暗色化（.glass-heavy / 终端交换面板共用，单源；亮值在 @theme） */
+html.dark {
+  --color-glass-heavy: rgba(14, 14, 24, 0.85);
 }
 
-/* Light mode overrides for components */
-html:not(.dark) body {
-  background: #fafaf9;
-  color: #1c1917;
+/* Dark mode overrides for components */
+html.dark body {
+  background: var(--color-ink);
+  color: var(--color-fg);
 }
-/* Shadow overrides — light mode */
-html:not(.dark) {
+/* Shadow overrides — dark mode */
+html.dark {
   --shadow-neon-hover:
-    0 6px 20px rgb(var(--accent-violet-rgb) / 0.12),
-    0 20px 48px rgb(var(--accent-violet-rgb) / 0.08), 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.06);
+    0 4px 16px rgb(var(--accent-violet-rgb) / 0.15),
+    0 16px 40px rgb(var(--accent-violet-rgb) / 0.1), 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08);
   --shadow-emboss:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6), var(--shadow-soft);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    var(--shadow-soft);
   --shadow-emboss-hover:
-    inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 4px 12px rgb(var(--accent-violet-rgb) / 0.04), 0 12px 24px rgba(0, 0, 0, 0.06);
-  --shadow-soft:
-    0 4px 12px rgba(0, 0, 0, 0.03), 0 16px 40px rgba(0, 0, 0, 0.04),
-    0 48px 120px rgba(0, 0, 0, 0.015);
+    inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 12px rgb(var(--accent-violet-rgb) / 0.06), 0 12px 24px rgba(0, 0, 0, 0.12);
   --shadow-nav:
-    inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 1px 3px rgb(var(--accent-violet-rgb) / 0.03), 0 2px 6px rgba(0, 0, 0, 0.04);
+    inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 4px rgb(var(--accent-violet-rgb) / 0.03), 0 4px 8px rgba(0, 0, 0, 0.06);
+  --shadow-soft:
+    0 4px 12px rgba(0, 0, 0, 0.05), 0 16px 40px rgba(0, 0, 0, 0.06),
+    0 48px 120px rgba(0, 0, 0, 0.03);
 }

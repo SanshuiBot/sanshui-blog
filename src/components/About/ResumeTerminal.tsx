@@ -22,7 +22,7 @@ interface ResumeTerminalProps {
  * - 进入视口后逐行"打印"简历，最后一行打印完毕时显示完成提示
  * - 支持 markdown 行内高亮：`## 标题` 渲染为紫色高亮，`- 列表项` 渲染为带点列表
  * - 打印过程中底部出现闪烁光标，结束后转为静态展示
- * - 通过 CSS 变量 + html:not(.dark) 适配亮/暗双主题
+ * - 亮/暗双主题：CSS 变量默认亮值，暗色走 resume-terminal.css 的 html.dark 覆盖
  */
 export default function ResumeTerminal({
   source,

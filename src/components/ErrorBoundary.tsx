@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
   override render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-dvh flex items-center justify-center bg-ink text-fg">
+        <div className="min-h-dvh flex items-center justify-center bg-stone-50 text-stone-900">
           <div className="text-center px-4">
             <p className="text-xl font-semibold mb-2">出了点问题</p>
             <p className="text-gray-500 text-sm mb-6">页面渲染异常，请重试。</p>

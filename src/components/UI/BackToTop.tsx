@@ -35,7 +35,7 @@ export default function BackToTop({ threshold = 500, className = '' }: Props) {
           <Tooltip label="回到顶部">
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="p-2.5 rounded-full bg-white border border-black/10 text-stone-600 hover:text-stone-900 dark:bg-surface dark:border-white/10 dark:text-gray-400 dark:hover:text-white hover:glow-violet transition-all active:scale-95"
+              className="p-2.5 rounded-full bg-white border border-black/10 text-stone-600 hover:text-stone-900 dark:bg-stone-100 dark:border-stone-200 dark:text-stone-600 dark:hover:text-stone-900 hover:glow-violet transition-all active:scale-95"
               aria-label="回到顶部"
             >
               <ArrowUp size={16} />

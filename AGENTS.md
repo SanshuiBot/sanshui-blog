@@ -40,7 +40,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 9. `images.unoptimized`：next/image 原图直出，新图自行压缩。
 10. Tailwind v4 CSS-first（`@import 'tailwindcss'` + `@theme`），无 config。
 11. 客户端动效在 `AmbientEffects` 用 `dynamic(...,{ssr:false})` 注册；别自定义 splitChunks。装饰性 JS 动效（PostCard spotlight/3D tilt 收口 `Post/CardSpotlight.tsx`）非骨架才挂载，cleanup 调 onRefs(null)。
-12. 默认亮色（`html:not(.dark)`），改暗色同步查亮色分支。
+12. 亮色为基准（默认无 `.dark` 即亮值），暗色只走 `html.dark` 覆盖；改暗色同步查亮色基。**`<body>` 上绝不能写 `bg-ink` / `bg-surface` / `text-fg` 等暗色 token**——这两个 token 是暗色主题底色（`#05050a` / `#f4f4f7`），写在 body 上会让整个页面容器变成暗色画布，亮色模式下背景变黑。body 应保持透明或仅用 `min-h-dvh flex flex-col antialiased relative`。
 13. 导航加载：仅 `/posts/...` 的 `<Link>` 调 `startNavigation`；详情页挂载调 `done()`。
 14. ⌘K 搜索 fetch `posts-index.json`，不序列化进 RSC。
 15. 卡片流式渲染：同帧叠加、`h-60`、`slot-${i}` key、`prefetchedRef` 随 slug 重置。
@@ -54,8 +54,8 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 23. sharp/postcss 在 overrides 锁版本，升级同步检查。
 24. Accent 色用 `rgb(var(--accent-xxx-rgb)/α)`，不写固定 rgba/hex；新预设只改 `ACCENT_PRESETS`。
 25. hover 变色纯 CSS，不交 Framer（变量会被解析卡色）。
-26. Accent 联动 hover 不用 Tailwind utility，自定义类 + `html.dark`/`:not(.dark)` 双前缀。
-27. globals.css 同一元素规则集中，亮色紧贴暗色基写。
+26. Accent 联动 hover 不用 Tailwind utility，自定义 CSS 类（基规则亮值即默认，暗色覆盖走 `html.dark` 前缀）。
+27. globals.css 同一元素规则集中，亮值为基直书，暗色 `html.dark` 覆盖紧贴其基规则写。
 28. 点号标签（Next.js）由 `gen-dotted-tag-payloads.js` 补副本；新增要重新 build。
 29. 弹层关闭统一 `useDismiss`（ref 包开关+浮层）。
 30. `posts-index.json` 是产物（prettierignore），别手动格式化。
@@ -75,7 +75,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 44. 生成脚本收口：`gen-posts-index.js`/`gen-feed.js`/`gen-og-image.js` 都复用 `parse-post.mjs`。
 45. CI 门禁：typecheck/lint/test 在 build 前跑；lint/test 加 `if: always()`（前一步失败也全跑）。
 46. 组件测试（jsdom）手动 `afterEach(cleanup)`：vitest 未开 globals，RTL 不自动清 DOM。
-47. Hover 变色走纯 CSS（自定义类 + 双前缀，见 conventions §26）。Tailwind hover utility 会被裸 CSS 亮色覆盖压制，不变色。新增 accent 联动 hover 一律用自定义 CSS 类。
+47. Hover 变色走纯 CSS：基规则写亮色默认值，暗色用 `html.dark` 前缀覆盖（见 conventions §26）。已无「utility 亮色覆盖」反压问题（反色块已删、亮色为基）。accent 联动 hover 用自定义 CSS 类。
 48. 全站 Error Boundary 收口 `src/components/ErrorBoundary.tsx`，包裹 Providers 顶层——client 组件抛异常显示通用错误 UI + 重试按钮。class 方法加 `override`（noImplicitOverride）。
 
 ## 内容编辑

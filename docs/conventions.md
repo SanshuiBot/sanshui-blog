@@ -79,11 +79,13 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 **装饰性 JS 动效实例化开销**：`PostCard` 的 spotlight + 3D tilt 效果收口在 `src/components/Post/CardSpotlight.tsx`——作为无渲染辅助组件，仅在卡片非骨架时挂载（`!skeleton`），骨架槽位不创建 MotionValue/Spring 实例。挂载后通过 `onRefs` 回调向父组件暴露 MotionValue，父组件用 state 存储并在渲染期读取（绕开 ref 在渲染期的访问警告）。**约定 #21**：effect cleanup 必须调用 `onRefs(null)`，使 StrictMode 双执行下第二次 mount 可安全覆盖首次创建的实例，且 MotionValue 可被 GC。
 
-## 12. 亮色为主、暗色可选
+## 12. 亮色为基准、暗色为覆盖
 
-默认 **亮色主题**。机制：`next-themes`（`attribute="class"`、`defaultTheme="light"`、`enableSystem={false}`、`storageKey="aurora-theme"`）——**无「跟随系统」档**：未手动切换时恒为亮色，点 `ThemeToggle` 切换后存 localStorage（历史 `system` 存储值由 layout head 内联 bootstrap 脚本迁移为 `light`）。CSS 默认状态下 `<html>` 无 `.dark` 类，`globals.css` 用大量 `html:not(.dark) ...` 选择器把 body 渲染成亮色（背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）。暗色令牌定义在 `@theme` 与 `:root`（`--color-ink` 等），暗色模式下通过 `.dark` 类激活。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 用 `colorScheme: 'light dark'` + globals.css 的 `color-scheme`（`:root`/`html.dark`）跟随主题类，`themeColor: '#fafaf9'` 由 `ThemeColorSync` 动态同步（暗 `#05050a` / 亮 `#fafaf9`），原生滚动条/表单控件按站点主题渲染。
+默认 **亮色主题**，CSS 也以亮色为基准书写。机制：`next-themes`（`attribute="class"`、`defaultTheme="light"`、`enableSystem={false}`、`storageKey="aurora-theme"`）——**无「跟随系统」档**：未手动切换时恒为亮色，点 `ThemeToggle` 切换后存 localStorage（历史 `system` 存储值由 layout head 内联 bootstrap 脚本迁移为 `light`）。CSS 默认状态下 `<html>` 无 `.dark` 类，**基规则一律写亮色值**（body 背景 `#fafaf9`、文字 `#1c1917`、玻璃半透明白、shadow 偏淡）；暗色主题用 `html.dark ...` 覆盖（暗色令牌 `--color-ink` 等经 `html.dark` 生效）。`ThemeToggle` 调 `setTheme(isDark?'light':'dark')`。`layout.tsx` 的 `viewport` 用 `colorScheme: 'light dark'` + globals.css 的 `color-scheme`（`:root`/`html.dark`）跟随主题类，`themeColor: '#fafaf9'` 由 `ThemeColorSync` 动态同步（暗 `#05050a` / 亮 `#fafaf9`），原生滚动条/表单控件按站点主题渲染。
 
-**改暗色变量时同步检查 `html:not(.dark)` 亮色分支**，否则亮色会错乱。
+**⚠️ body 底色陷阱**：`bg-ink`（`#05050a`）、`bg-surface`（`#0c0c14`）、`text-fg`（`#f4f4f7`）是暗色主题专用 token。把它们写在 `<body>` 上会让整个页面容器在亮色模式下变暗，子组件即使写了亮色背景也会透出暗底。**body 上只用 `min-h-dvh flex flex-col antialiased relative`，底色由 globals.css 的 `body { background: #fafaf9; color: #1c1917 }` 控制**，不通过 Tailwind 类覆盖。`ErrorBoundary` 的错误兜底页也应用亮色底（`bg-stone-50 text-stone-900`），避免异常状态下页面呈暗色。
+
+**改亮色基值或新增样式**：基规则写亮值，暗色差异放相邻 `html.dark` 覆盖；全站已无 `html:not(.dark)`——改暗色时同步查亮色基分支。
 
 ## 13. 导航加载状态
 
@@ -136,7 +138,7 @@ TOC 组件（`src/components/Post/TableOfContents.tsx`）的实现约定：
 - **点击跳转**：`e.preventDefault()` + `el.scrollIntoView({behavior:'smooth'})`；`history.replaceState(null,'','#id')` 写 URL hash 但不触发原生锚点跳转。
 - **锚点不被 Navbar 遮挡**：`globals.css` 给 `.prose-article h2, .prose-article h3 { scroll-margin-top: 6rem; }`。
 - **淡入淡出滚动条**：`.toc-scroll` 藏原生滚动条，浮 `.toc-thumb` 指示条按滚动比例算 `top`/`height`。显隐只由 hover 控制，`opacity transition` 淡入淡出。几何用 `ResizeObserver` + `requestAnimationFrame`，`document.fonts.ready` 兜底。
-- **颜色联 Accent 主题**：用自定义 `.toc-link` / `.toc-link-active` 类（双前缀提特异性到 (0,3,1)，见约定 #26），**不用** Tailwind utility `text-accent-violet`。
+- **颜色联 Accent 主题**：用自定义 `.toc-link` / `.toc-link-active` 类（基规则亮值即默认，hover/active 单条 accent 规则，见约定 #26），**不用** Tailwind utility `text-accent-violet`。
 
 ## 19. 文章解析契约在 `parse-post.mjs`，`posts.ts` 只是读取层
 
@@ -174,7 +176,7 @@ TOC 组件（`src/components/Post/TableOfContents.tsx`）的实现约定：
 - **新增预设**：在 `ACCENT_PRESETS` 追加一项，**无需改 `layout.tsx`**——但 `presets` JSON 是构建期固化的，**新增预设后必须重新 build** 才能被防 FOUC script 识别。
 - **改默认预设**：改 `DEFAULT_ACCENT_ID`。
 - **亮/暗主题与 accent 正交**：next-themes 管 `.dark` 类，AccentPicker 管 `--accent-*-rgb`，两者互不干扰。
-- **亮色对比度**：`--color-accent-*` 主题令牌在 `html:not(.dark)` 下向正文色 `#1c1917` 派生加深（78% `color-mix`，见 globals.css accent 通道块后），Tailwind utility（`text-accent-*` / `bg-accent-*` / `from-to-accent-*`）自动受益；原始 `--accent-*-rgb` 不变，阴影/辉光等装饰仍走纯色。**纯 CSS 文字用法引用令牌**（`.prose-article a` / `.toc-link-active` 用 `var(--color-accent-violet)`），不要写 `rgb(var(--accent-violet-rgb))`——带 α 的装饰用法（`rgb(var(--accent-violet-rgb) / 0.5)`）保持原样，α 无法套在令牌上。
+- **亮色对比度**：`--color-accent-*` 主题令牌默认（亮色基值）即向正文色 `#1c1917` 派生加深（78% `color-mix`，见 globals.css accent 通道块），`html.dark` 恢复 `@theme` 原色；Tailwind utility（`text-accent-*` / `bg-accent-*` / `from-to-accent-*`）自动受益；原始 `--accent-*-rgb` 不变，阴影/辉光等装饰仍走纯色。**纯 CSS 文字用法引用令牌**（`.prose-article a` / `.toc-link-active` 用 `var(--color-accent-violet)`），不要写 `rgb(var(--accent-violet-rgb))`——带 α 的装饰用法（`rgb(var(--accent-violet-rgb) / 0.5)`）保持原样，α 无法套在令牌上。
 
 ## 25. hover 变色不要走 Framer Motion，用纯 CSS
 
@@ -182,23 +184,23 @@ Framer Motion 的 `whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}` 会�
 
 **正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore` + `.post-card-link:hover`）就是这么改的。位移动画也一并迁到 CSS `transform`。
 
-## 26. Tailwind v4 utility 的 layer 优先级坑
+## 26. Accent 联动 hover 用自定义 CSS 类，不用 Tailwind utility
 
-Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-violet` 等）注入到 `@layer utilities` 里。而 `globals.css` 中那些 `html:not(.dark) .text-gray-500 { color: #78716c }` 亮色覆盖规则是**裸 CSS**（不在任何 `@layer` 内）。**裸 CSS 优先级高于任何 `@layer` 内的同特异性规则**，所以亮色模式下 `group-hover/link:text-accent-violet` 这类 utility hover 会被裸覆盖规则持续压制，hover 不变色。
+hover 变色需要响应 Accent 主题色时，**不要用 Tailwind utility**（`hover:text-accent-violet` 等）。历史上 globals.css 存在「utility 亮色覆盖」反色块（裸 CSS 稳压 utility，导致 hover 不变色）；该反色块已删除、亮色为基，压制问题不复存在。**当前约定**：accent 联动 hover 用自定义 CSS 类，基规则直接写亮色默认值，暗色差异走 `html.dark` 前缀（需要稳压 utility 时该前缀把特异性拉到 (0,2,1)+）。
 
-**正确做法**：需要响应 Accent 主题色联动的 hover 变色，**不要用 Tailwind utility**（`group-hover/link:text-accent-violet`），改用自定义 CSS 类（如 `.post-card-readmore`），用 `html.dark` / `html:not(.dark)` 双前缀提升特异性到 (0,3,1)，稳压裸覆盖规则。
+**新增 accent 联动 hover**：自定义类（如 `.post-card-readmore`）+ `html.dark` 覆盖，不要用 Tailwind utility。
 
 ## 27. globals.css 内同一元素的规则要集中，不要散乱
 
-同一元素的暗色基与亮色覆盖（`html:not(.dark) ...`）必须写在相邻位置，避免「暗色基在文件头、亮色覆盖在文件尾」式的散乱——查样式要两头翻。**不写重复样式**：同一规则不得字面出现两次。
+同一元素的**亮色基**与其 `html.dark` **暗色覆盖**必须写在相邻位置，避免「基规则在文件头、暗色覆盖在文件尾」式的散乱——查样式要两头翻。**不写重复样式**：同一规则不得字面出现两次。
 
 具体已集中的块：
 
-- `::-webkit-scrollbar-thumb` / `.glass` / `.glass-heavy`：亮色覆盖并入 `@layer base` / `@layer utilities` 内暗色基旁。
-- `.prose-article` 全系列（h1/h2/h3/p/a/code/pre/blockquote/table 等）：亮色覆盖并入 prose-article 块尾。
-- Tailwind utility 亮色覆盖（`border-white/5` / `bg-white/5` / `text-gray-*` / `bg-surface` 等）：单独分组于文件尾，加「Tailwind utility 亮色覆盖」标题。
+- `::-webkit-scrollbar-thumb` / `.glass` / `.glass-heavy`：基规则与 `html.dark` 覆盖并入 `@layer base` / `@layer utilities` 内。
+- `.prose-article` 全系列（h1/h2/h3/p/a/code/pre/blockquote/table 等）：`html.dark` 覆盖并入 prose-article 块尾。
+- 主题相关 CSS 变量（`--glass-*` / `--shadow-*` / `--af-*` / `--color-accent-*` 等）：亮值在 `:root`（或 `@theme`），暗值集中在 `html.dark` 覆盖。
 
-**新增元素的亮色覆盖**：紧贴其暗色基写，不要另起一处散到文件尾。
+**新增元素的暗色覆盖**：紧贴其亮色基规则写，不要另起一处散到文件尾；全站不再使用 `html:not(.dark)`。
 
 ## 28. 含点号标签（如 `Next.js`）的 RSC payload 路径坑
 
@@ -339,25 +341,22 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
 
 ## 47. Hover 变色走纯 CSS（对齐 #25/#26）
 
-Tailwind v4 把 utility 类注入到 `@layer utilities` 里。而 `globals.css` 的亮色覆盖规则（`html:not(.dark)`）是**裸 CSS**——优先级高于 `@layer utilities` 内的同特异性规则。因此 `hover:text-accent-violet` 这类 utility hover 在亮色模式下会被裸覆盖持续压制，hover 不变色。
-
-**正确做法**：accent 联动 hover 变色用自定义 CSS 类 + `html.dark` / `html:not(.dark)` 双前缀，特异性拉到 (0,3,1)，稳压裸覆盖规则。示例——`ErrorBoundary` 重试按钮（`.btn-retry`）：
+hover 变色**不用** `hover:text-accent-violet transition-colors` 这类 Tailwind utility——accent 联动要求颜色由 CSS 变量按当前 accent/主题即时解析（反色块时代的「utility 被裸 CSS 亮色覆盖压制」问题已随反色块删除而消失）。**正确做法**：自定义 CSS 类，基规则写亮色默认值，暗色差异走 `html.dark` 覆盖。示例——`ErrorBoundary` 重试按钮（`.btn-retry`）：
 
 ```css
 .btn-retry {
-  color: #ffffff;
+  color: #1c1917;
   transition: color 0.2s;
 }
-html:not(.dark) .btn-retry {
-  color: #1c1917;
+html.dark .btn-retry {
+  color: #ffffff;
 }
-html.dark .btn-retry:hover,
-html:not(.dark) .btn-retry:hover {
+.btn-retry:hover {
   color: rgb(var(--accent-violet-rgb));
 }
 ```
 
-**不要**用 `hover:text-accent-violet transition-colors`——它会被亮色裸覆盖压制失效。同样，Framer Motion 的 `whileHover={{ color: '...' }}` 也会把颜色写成 inline style，CSS 变量在 inline style 中被解析成具体值后不再响应 accent 切换。
+**不要**用 Framer Motion 的 `whileHover={{ color: '...' }}`——它会把颜色写成 inline style，CSS 变量被解析成具体值后不再响应 accent 切换。
 
 ## 48. 全站 Error Boundary（`src/components/ErrorBoundary.tsx`）
 

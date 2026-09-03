@@ -184,7 +184,7 @@ export default function Navbar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 md:hidden bg-ink/50 backdrop-blur-sm"
+            className="fixed inset-0 z-40 md:hidden bg-stone-900/50 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
         )}

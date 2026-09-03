@@ -5,8 +5,8 @@
  *  - 按钮紧贴「全部文章」标题右侧（archive/page.tsx 的 flex 同行），不占额外垂直空间。
  *  - 点击展开浮层：tag chip 列表 + 「查看全部标签」入口。浮层绝对定位，不挤压文章网格。
  *  - 交互：点击外部 / Esc 关闭；点击 chip 跳转 /tags/[tag]。
- *  - 亮/暗双主题：用 html.dark / html:not(.dark) 双前缀的 .archive-filter-* 类，
- *    特异性 (0,3,1)，稳压 Tailwind utility 裸覆盖（AGENTS.md 约定 #25）。
+ *  - 亮/暗双主题：.archive-filter-* 颜色走 --af-* 变量（默认亮值 / html.dark 暗值），
+ *    bg/border 由 glass/glass-heavy + 双主题 border utility 提供。
  *  - 防御 React 18 StrictMode 双 mount：所有 effect 在 cleanup 里解绑，open 状态用函数式更新。
  */
 import { useState, useRef } from 'react';
