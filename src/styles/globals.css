@@ -82,10 +82,7 @@ html.dark {
     /* ── 骨架屏/加载页通用变量 ── */
     --bg-skeleton: rgba(255, 255, 255, 0.06);
     --bg-skeleton-shimmer: rgba(255, 255, 255, 0.06);
-    --fg-muted: #8b8b9e;
-    --fg-dim: #5c5c70;
     --border-skeleton: rgba(255, 255, 255, 0.06);
-    --border-skeleton-shimmer: rgba(255, 255, 255, 0.06);
     /* ── 导航过渡层背景（亮=cream 基值；暗=ink 走文件尾 html.dark 覆盖）── */
     --bg-nav-loading: #fafaf9;
 
@@ -273,23 +270,8 @@ html.dark {
     --af-close-bg-hover: rgb(var(--accent-violet-rgb) / 0.06);
     --af-all: rgb(87 83 78);
   }
-  html.dark {
-    --af-hover: rgb(var(--accent-violet-rgb));
-    --af-hover-dim: rgb(var(--accent-violet-rgb) / 0.85);
-    --af-hash: rgb(var(--accent-violet-rgb) / 0.7);
-    --af-text: rgb(168 162 158);
-    --af-text-hover: #fff;
-    --af-count: rgb(120 113 108);
-    --af-chip-text: rgb(214 211 209);
-    --af-chip-text-hover: #fff;
-    --af-panel: rgb(214 211 209);
-    --af-close: rgb(168 162 158);
-    --af-close-bg-hover: rgb(var(--accent-violet-rgb) / 0.08);
-    --af-all: rgb(120 113 108);
-    --bg-nav-loading: var(--color-ink);
-  }
 
-  /* 筛选按钮与 chip：颜色走 --af-* 变量（默认亮值 / html.dark 暗值） */
+  /* 筛选按钮与 chip：颜色走 --af-* 变量（默认亮值 / html.dark 暗值，见文件尾部顶层） */
   .archive-filter-btn {
     color: var(--af-text);
   }
@@ -346,6 +328,21 @@ html.dark {
   }
   .archive-filter-chip:hover .archive-filter-chip-hash {
     color: var(--af-hover);
+  }
+  /* filter btn icon + chip hash accent hover（约定 #47：不走 Tailwind utility） */
+  .archive-filter-btn-icon-hover {
+    color: rgb(var(--accent-violet-rgb) / 0.8);
+    transition: color 0.2s;
+  }
+  .archive-filter-btn-icon-hover:hover {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  .archive-filter-chip-hash-hover {
+    color: rgb(var(--accent-violet-rgb) / 0.7);
+    transition: color 0.2s;
+  }
+  .archive-filter-chip:hover .archive-filter-chip-hash-hover {
+    color: rgb(var(--accent-violet-rgb));
   }
 
   /* 浮层标题 / 关闭 / 查看全部 */
@@ -494,11 +491,7 @@ html.dark {
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.4),
       0 4px 20px rgb(var(--accent-violet-rgb) / 0.15);
   }
-  /* glass token 暗色化：--glass-bg / --glass-border 被 .glass / hero-cta 等通用组件引用 */
-  html.dark {
-    --glass-bg: rgba(14, 14, 24, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.08);
-  }
+  /* glass token 暗色化：--glass-bg / --glass-border 走文件尾部顶层 html.dark 块 */
   .hero-badge-dot {
     width: 6px;
     height: 6px;
@@ -796,38 +789,69 @@ html.dark {
   html.dark .footer-link:hover {
     color: rgb(var(--accent-violet-rgb));
   }
-  body .post-card-title {
+  /* post-nav icon/label/title accent hover（约定 #47：不走 Tailwind utility） */
+  .post-nav-icon {
+    color: rgb(115 115 115);
+    transition: color 0.2s;
+  }
+  html.dark .post-nav-icon {
+    color: rgb(163 163 163);
+  }
+  .group:hover .post-nav-icon {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  .post-nav-label {
+    color: rgb(115 115 115);
+    transition: color 0.2s;
+  }
+  html.dark .post-nav-label {
+    color: rgb(163 163 163);
+  }
+  .group:hover .post-nav-label {
+    color: rgb(var(--accent-violet-rgb) / 0.7);
+  }
+  .post-nav-title {
+    color: rgb(140 140 140);
+    transition: color 0.2s;
+  }
+  html.dark .post-nav-title {
+    color: rgb(180 180 180);
+  }
+  .group:hover .post-nav-title {
+    color: rgb(var(--accent-violet-rgb) / 0.8);
+  }
+  .post-card-title {
     color: #1c1917;
     transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  html.dark body .post-card-title {
+  html.dark .post-card-title {
     color: #ffffff;
   }
-  body .post-card-title:hover,
-  html.dark body .post-card-title:hover {
+  .post-card-title:hover,
+  html.dark .post-card-title:hover {
     color: rgb(var(--accent-violet-rgb));
   }
   /* ErrorBoundary 重试按钮 —— accent 联动 hover 走纯 CSS，不交 Framer（#25） */
-  body .btn-retry {
+  .btn-retry {
     color: #1c1917;
     transition: color 0.2s;
   }
-  html.dark body .btn-retry {
+  html.dark .btn-retry {
     color: #ffffff;
   }
-  body .btn-retry:hover,
-  html.dark body .btn-retry:hover {
+  .btn-retry:hover,
+  html.dark .btn-retry:hover {
     color: rgb(var(--accent-violet-rgb));
   }
-  body .post-card-readmore {
+  .post-card-readmore {
     color: #78716c;
     transition: color 0.2s;
   }
-  html.dark body .post-card-readmore {
+  html.dark .post-card-readmore {
     color: rgb(120 113 108);
   }
-  body .post-card-link:hover .post-card-readmore,
-  html.dark body .post-card-link:hover .post-card-readmore {
+  .post-card-link:hover .post-card-readmore,
+  html.dark .post-card-link:hover .post-card-readmore {
     color: rgb(var(--accent-violet-rgb));
   }
   /* TOC 链接 —— hover/active 变色走纯 CSS + accent 变量（AGENTS.md #22/#23） */
@@ -1439,11 +1463,6 @@ html.dark body::after {
     );
 }
 
-/* 玻璃重色 token 暗色化（.glass-heavy / 终端交换面板共用，单源；亮值在 @theme） */
-html.dark {
-  --color-glass-heavy: rgba(14, 14, 24, 0.85);
-}
-
 /* Dark mode overrides for components */
 html.dark body {
   background: var(--color-ink);
@@ -1466,4 +1485,17 @@ html.dark {
   --shadow-soft:
     0 4px 12px rgba(0, 0, 0, 0.05), 0 16px 40px rgba(0, 0, 0, 0.06),
     0 48px 120px rgba(0, 0, 0, 0.03);
+  /* glass / archive-filter token 暗色化 */
+  --glass-bg: rgba(14, 14, 24, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --color-glass-heavy: rgba(14, 14, 24, 0.85);
+  --af-text: rgb(168 162 158);
+  --af-text-hover: #fff;
+  --af-chip-text: rgb(214 211 209);
+  --af-chip-text-hover: #fff;
+  --af-panel: rgb(214 211 209);
+  --af-close: rgb(168 162 158);
+  --af-close-bg-hover: rgb(var(--accent-violet-rgb) / 0.08);
+  --af-all: rgb(120 113 108);
+  --bg-nav-loading: var(--color-ink);
 }

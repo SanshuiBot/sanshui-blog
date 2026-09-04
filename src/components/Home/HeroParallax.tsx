@@ -278,10 +278,10 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               />
               {/* 文字 */}
               <div className="p-3">
-                <div className="text-[10px] font-mono text-gray-400/40 dark:text-white/20 mb-1">
+                <div className="text-[10px] font-mono text-stone-500/60 dark:text-white/40 mb-1">
                   {t.tag}
                 </div>
-                <div className="text-xs font-semibold text-gray-400/50 dark:text-white/25 leading-snug line-clamp-3">
+                <div className="text-xs font-semibold text-stone-400 dark:text-white/35 leading-snug line-clamp-3">
                   {t.title}
                 </div>
               </div>

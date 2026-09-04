@@ -34,10 +34,7 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
         aria-label="按标签筛选"
         aria-expanded={open}
       >
-        <Filter
-          size={13}
-          className="archive-filter-btn-icon text-accent-violet/80 group-hover:text-accent-violet transition-colors"
-        />
+        <Filter size={13} className="archive-filter-btn-icon archive-filter-btn-icon-hover" />
         <span className="archive-filter-btn-label hidden sm:inline transition-colors duration-200">
           筛选
         </span>
@@ -75,7 +72,7 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
               >
                 <Hash
                   size={10}
-                  className="archive-filter-chip-hash text-accent-violet/70 group-hover:text-accent-violet transition-colors"
+                  className="archive-filter-chip-hash archive-filter-chip-hash-hover"
                 />
                 <span className="archive-filter-chip-name-text transition-colors duration-200">
                   {t.name}
