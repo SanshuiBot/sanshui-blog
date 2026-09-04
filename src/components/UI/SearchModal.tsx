@@ -171,9 +171,15 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   <X size={16} />
                 </button>
               )}
-              <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/[0.03] text-stone-500 dark:bg-white/5 dark:text-gray-500">
-                ESC
-              </kbd>
+              <button
+                onClick={onClose}
+                className="search-close-btn flex items-center gap-1.5 text-[11px]"
+              >
+                <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/[0.03] text-stone-500 dark:bg-white/5 dark:text-gray-500">
+                  ESC
+                </kbd>
+                <span>关闭</span>
+              </button>
             </div>
             <div className="max-h-80 overflow-y-auto p-2">
               {posts === null ? (
@@ -261,9 +267,10 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   ↵
                 </kbd>
                 <span className="hidden sm:inline">打开</span>
-                <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/[0.03] text-stone-500 sm:hidden dark:bg-white/5 dark:text-gray-500">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-black/[0.03] border border-black/[0.1] font-mono dark:bg-white/5 dark:border-white/10 text-[10px]">
                   ESC
                 </kbd>
+                <span className="hidden sm:inline">关闭</span>
               </div>
             </div>
           </motion.div>

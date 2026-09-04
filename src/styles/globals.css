@@ -873,6 +873,22 @@ html.dark {
   html.dark .post-card-title:hover {
     color: rgb(var(--accent-violet-rgb));
   }
+  /* 搜索弹窗关闭按钮 —— accent 联动 hover 走纯 CSS（#26/#47），亮色基值、暗色 html.dark 覆盖 */
+  .search-close-btn {
+    color: #78716c;
+    transition: color 0.2s;
+  }
+  html.dark .search-close-btn {
+    color: var(--color-fg-muted);
+  }
+  .search-close-btn:hover,
+  html.dark .search-close-btn:hover {
+    color: var(--color-accent-violet);
+  }
+  .search-close-btn:hover kbd,
+  html.dark .search-close-btn:hover kbd {
+    color: var(--color-accent-violet);
+  }
   /* ErrorBoundary 重试按钮 —— accent 联动 hover 走纯 CSS，不交 Framer（#25） */
   .btn-retry {
     color: #1c1917;
