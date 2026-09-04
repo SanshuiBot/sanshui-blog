@@ -247,7 +247,8 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                 </div>
               ) : (
                 <div className="text-center py-10 text-stone-400 text-sm dark:text-gray-600">
-                  {searchHotkeyLabel()} 搜索全部文章
+                  {/* 快捷键提示仅桌面显示：触屏设备无 ⌘/Ctrl 修饰键（与弹窗底部 kbd 提示同策略） */}
+                  <span className="hidden sm:inline">{searchHotkeyLabel()} </span>搜索全部文章
                 </div>
               )}
             </div>

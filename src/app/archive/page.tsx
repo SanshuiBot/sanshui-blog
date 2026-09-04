@@ -75,7 +75,7 @@ export default function ArchivePage() {
             <div className="text-3xl font-bold text-stone-500 tracking-tight dark:text-gray-500">
               {year}
             </div>
-            <div className="flex-1 h-px bg-black/[0.03] dark:bg-white/5" />
+            <div className="flex-1 h-px bg-black/[0.06] dark:bg-white/10" />
           </div>
           <PostGrid posts={grouped[year] ?? []} />
         </section>

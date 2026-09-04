@@ -86,7 +86,7 @@ html.dark .resume-terminal {
   --rt-code-text: rgb(var(--accent-violet-rgb));
   --rt-code-border: rgb(var(--accent-violet-rgb) / 0.2);
   --rt-cursor: rgb(var(--accent-violet-rgb));
-  --rt-done-border: rgba(255, 255, 255, 0.06);
+  --rt-done-border: rgba(255, 255, 255, 0.1);
   --rt-done-text: #8b8b9e;
   --rt-done-icon: rgb(var(--accent-teal-rgb));
   --rt-hr: rgba(255, 255, 255, 0.1);

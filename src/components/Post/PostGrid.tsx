@@ -53,11 +53,19 @@ const SKELETON_PLACEHOLDER: PostIndexEntry = {
   tags: [],
 };
 
-const Slot = memo(function Slot({ post, skeleton }: { post?: PostIndexEntry; skeleton: boolean }) {
+const Slot = memo(function Slot({
+  post,
+  skeleton,
+  skeletonDelayMs,
+}: {
+  post?: PostIndexEntry;
+  skeleton: boolean;
+  skeletonDelayMs: number;
+}) {
   // 骨架模式下 post 可能不存在，传安全占位对象满足类型；
   // PostCard 内部对所有字段做了 ??/slice 兜底，不会出现 undefined 渲染
   const safePost = skeleton && !post ? SKELETON_PLACEHOLDER : (post ?? SKELETON_PLACEHOLDER);
-  return <PostCard post={safePost} skeleton={skeleton} />;
+  return <PostCard post={safePost} skeleton={skeleton} skeletonDelayMs={skeletonDelayMs} />;
 });
 
 export default function PostGrid({ posts, total }: Props) {
@@ -82,11 +90,20 @@ export default function PostGrid({ posts, total }: Props) {
 
   // 渲染槽位：每个槽位始终是同一个 <Slot> 实例（key=slot-${i} 稳定）
   // i < filled 且有对应 post → 显示真实卡片；否则显示骨架
+  // 骨架入场按槽位错峰（每格 30ms、封顶 450ms）：加载期骨架「一格一格快速铺满」，
+  // 而非整批同时闪现；卡片填充阶段 PostCard 的卡片入场不带 delay，不受此影响。
   const slots = Array.from({ length: slotCount }, (_, i) => {
     const hasPost = i < posts.length;
     const isFilled = i < filled && hasPost;
-    return <Slot key={`slot-${i}`} post={hasPost ? posts[i] : undefined} skeleton={!isFilled} />;
+    return (
+      <Slot
+        key={`slot-${i}`}
+        post={hasPost ? posts[i] : undefined}
+        skeleton={!isFilled}
+        skeletonDelayMs={Math.min(i * 30, 450)}
+      />
+    );
   });
 
-  return <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">{slots}</div>;
+  return <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">{slots}</div>;
 }

@@ -90,7 +90,7 @@
 
 /* ── 暗色主题覆盖：html.dark ── */
 html.dark .terminal-shell {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 html.dark .terminal-shell-titlebar {
   background: rgba(255, 255, 255, 0.03);
@@ -113,7 +113,7 @@ html.dark .terminal-shell-status {
   color: rgb(255 255 255 / 0.25);
 }
 html.dark .terminal-exchange-box {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
   background: var(--color-glass-heavy);
 }
 html.dark .terminal-exchange-desc {

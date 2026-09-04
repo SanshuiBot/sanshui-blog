@@ -30,7 +30,7 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
     <div className="relative shrink-0" ref={containerRef}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="archive-filter-btn group inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full glass glass-flat border border-black/[0.06] hover:border-accent-violet/40 transition-colors duration-200 cursor-pointer dark:border-white/5"
+        className="archive-filter-btn group inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full glass glass-flat border border-black/[0.06] hover:border-accent-violet/40 transition-colors duration-200 cursor-pointer dark:border-white/10"
         aria-label="按标签筛选"
         aria-expanded={open}
       >
@@ -68,7 +68,7 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
                 key={t.name}
                 href={`/tags/${encodeURIComponent(t.name)}/`}
                 onClick={() => setOpen(false)}
-                className="archive-filter-chip archive-filter-chip-name archive-filter-chip-count group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs glass glass-flat border border-black/[0.06] hover:border-accent-violet/40 transition-colors duration-200 dark:border-white/5"
+                className="archive-filter-chip archive-filter-chip-name archive-filter-chip-count group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs glass glass-flat border border-black/[0.06] hover:border-accent-violet/40 transition-colors duration-200 dark:border-white/10"
               >
                 <Hash
                   size={10}

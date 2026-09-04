@@ -53,8 +53,10 @@ const tagGradients = [
 
 /**
  * 骨架层——与卡片同尺寸、同圆角，absolute 铺满容器。
- * animate-pulse 给「正在加载」信号；外层通过 opacity 渐隐它（不是卸载），
- * 这样骨架消失与卡片显现是同一帧的叠加，没有空白间隙。
+ * 结构与真实卡片镜像（顶部渐变条 / 标签行 / 标题 / 摘要 / 底部 footer 分隔线），
+ * 并随断点响应：手机窄卡 2 标签 + 无摘要、≥sm 3 标签 + 两行摘要，与卡片渲染一致，
+ * 避免骨架形态与最终卡片错位。animate-pulse 给「正在加载」信号；外层通过 opacity
+ * 渐隐它（不是卸载），这样骨架消失与卡片显现是同一帧的叠加，没有空白间隙。
  */
 function SkeletonLayer() {
   return (
@@ -63,16 +65,27 @@ function SkeletonLayer() {
       aria-hidden="true"
     >
       <div className="h-[2px] bg-black/[0.06] w-full dark:bg-white/10" />
-      <div className="px-5 pt-4 flex gap-1.5">
-        <div className="h-4 w-10 rounded-full bg-black/[0.06] dark:bg-white/10" />
-        <div className="h-4 w-8 rounded-full bg-black/[0.06] dark:bg-white/10" />
-      </div>
-      <div className="px-5 pt-3">
-        <div className="h-5 w-full rounded bg-black/[0.06] mb-2 dark:bg-white/10" />
-        <div className="h-4 w-3/4 rounded bg-black/[0.06] dark:bg-white/10" />
-      </div>
-      <div className="px-5 pt-4 mt-auto">
-        <div className="h-px w-full bg-black/[0.06] dark:bg-white/10" />
+      <div className="flex h-full flex-col p-4 sm:p-6">
+        {/* 标签行：手机 2 个 / ≥sm 3 个（与卡片 slice 策略一致） */}
+        <div className="mb-3 flex min-h-[1.375rem] gap-1 sm:gap-1.5">
+          <div className="h-4 w-10 rounded-full bg-black/[0.06] dark:bg-white/10" />
+          <div className="h-4 w-8 rounded-full bg-black/[0.06] dark:bg-white/10" />
+          <div className="hidden h-4 w-9 rounded-full bg-black/[0.06] sm:block dark:bg-white/10" />
+        </div>
+        {/* 标题两行（与卡片 line-clamp-2 高度同量级） */}
+        <div className="mb-2 space-y-2">
+          <div className="h-5 w-full rounded bg-black/[0.06] dark:bg-white/10" />
+          <div className="h-5 w-3/4 rounded bg-black/[0.06] dark:bg-white/10" />
+        </div>
+        {/* 摘要：手机卡片无摘要（line-clamp-1 也被 flex 挤压），≥sm 显示两行 */}
+        <div className="mt-2 hidden space-y-2 sm:block">
+          <div className="h-3.5 w-full rounded bg-black/[0.06] dark:bg-white/10" />
+          <div className="h-3.5 w-2/3 rounded bg-black/[0.06] dark:bg-white/10" />
+        </div>
+        {/* footer 分隔线沉底（与卡片 mt-auto footer 对齐） */}
+        <div className="mt-auto pt-4">
+          <div className="h-px w-full bg-black/[0.06] dark:bg-white/10" />
+        </div>
       </div>
     </div>
   );
@@ -81,6 +94,7 @@ function SkeletonLayer() {
 export default function PostCard({
   post,
   skeleton = false,
+  skeletonDelayMs = 0,
 }: {
   post: PostIndexEntry;
   /**
@@ -88,6 +102,11 @@ export default function PostCard({
    * 切到 false 时，两层 opacity 同步反向过渡，骨架直接被卡片覆盖，零空白帧。
    */
   skeleton?: boolean;
+  /**
+   * 骨架首次挂载的入场延迟（ms）。PostGrid 按槽位错峰传入（i * step），
+   * 实现「骨架一格一格快速铺满」的加载节奏；数据到达后的卡片填充不受影响。
+   */
+  skeletonDelayMs?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
@@ -95,6 +114,8 @@ export default function PostCard({
   // 不用 withBase()：next/link 的 <Link> 和 router.prefetch 都会自动注入 basePath
   const postHref = postUrl(post.slug);
   const prefetchedRef = useRef(false);
+  // 标签真实总数：+N 余量胶囊的基数必须与此一致，避免「显示数 + N ≠ 实际标签数」
+  const tags = post.tags ?? [];
 
   // PostGrid 用稳定 slot key 复用 PostCard 实例，
   // post.slug 变化时重置 prefetchedRef，避免新文章 hover 时跳过 prefetch。
@@ -113,23 +134,30 @@ export default function PostCard({
   // 保证渲染期能安全访问 spotlight 值。
   const [spotlight, setSpotlight] = useState<SpotlightRefs | null>(null);
 
-  // 骨架→卡片切换的统一过渡：两层用完全相同的 transition，同步渐隐/渐显，零空白帧。
-  // duration 短到 0.25s：骨架快速被卡片覆盖，视觉上是「直接变卡片」而非「缓慢淡入」。
-  // 不用 y 位移：位移会让卡片在途中「露半张」，配合骨架已消失时观感是空白。
-  const reveal = { duration: 0.25, ease: [0.16, 1, 0.3, 1] as const };
+  // 骨架→卡片切换的过渡：
+  //  - 骨架入场：快速淡入（duration 0.15s）+ 按槽位 delay 错峰（skeletonDelayMs），
+  //    形成「一格一格快速铺满」的加载节奏。
+  //  - 骨架离场 / 卡片入场：同一帧反向开始（同 duration 同步），零空白帧；
+  //    卡片用 scale+opacity（0.96→1）柔和浮现。
+  // 不用 y 位移：位移会让卡片在途中「露半张」，配合骨架已消失时观感是空白（红线 #15）。
+  const skeletonEnter = {
+    duration: 0.15,
+    ease: 'easeOut' as const,
+    delay: skeletonDelayMs / 1000,
+  };
+  const cardReveal = { duration: 0.28, ease: [0.16, 1, 0.3, 1] as const };
 
   return (
-    <div className="relative h-60">
+    <div className="relative h-56 sm:h-60">
       {/* 骨架层：absolute 铺底，skeleton=true 时可见，切到卡片时 opacity 渐隐。
           AnimatePresence 让骨架在 skeleton 切到 false 时淡出，而非瞬间消失。 */}
       <AnimatePresence>
         {skeleton && (
           <motion.div
             className="absolute inset-0"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={reveal}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: skeletonEnter }}
+            exit={{ opacity: 0, transition: cardReveal }}
             style={{ pointerEvents: 'auto' }}
           >
             <SkeletonLayer />
@@ -144,9 +172,8 @@ export default function PostCard({
         {!skeleton && (
           <motion.div
             className="absolute inset-0 h-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={reveal}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1, transition: cardReveal }}
             style={{ pointerEvents: 'auto' }}
           >
             <div
@@ -180,7 +207,7 @@ export default function PostCard({
                   rotateY: spotlight?.rotateY,
                   transformStyle: 'preserve-3d',
                 }}
-                className="p-[1px] rounded-2xl bg-black/[0.03] h-full shadow-neon-hover dark:bg-white/5"
+                className="p-[1px] rounded-2xl bg-black/[0.03] h-full post-card-shell shadow-neon-hover dark:bg-white/10"
               >
                 {/* Border glow */}
                 <motion.div
@@ -208,14 +235,14 @@ export default function PostCard({
                     style={{ transformOrigin: 'left' }}
                   />
 
-                  <div className="flex-1 p-5 sm:p-6 flex flex-col">
+                  <div className="flex-1 p-4 sm:p-6 flex flex-col">
                     {/* Tags — standalone links */}
                     <motion.div
-                      className="flex flex-wrap gap-1.5 mb-3 min-h-[1.375rem]"
+                      className="flex flex-wrap gap-1.5 mb-3 min-h-[1.375rem] max-sm:flex-nowrap max-sm:gap-1"
                       whileHover="hovered"
                       initial="idle"
                     >
-                      {(post.tags ?? []).slice(0, 3).map((t: string, i: number) => (
+                      {tags.slice(0, 3).map((t: string, i: number) => (
                         <motion.div
                           key={t}
                           variants={{
@@ -228,16 +255,39 @@ export default function PostCard({
                             damping: 15,
                             delay: i * 0.03,
                           }}
+                          className={i >= 2 ? 'max-sm:hidden' : 'max-sm:min-w-0'}
                         >
                           <Link
                             href={`/tags/${encodeURIComponent(t)}/`}
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-stone-600 hover:text-stone-900 transition-colors dark:text-gray-400 dark:hover:text-fg`}
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap min-w-0 max-w-full overflow-hidden bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-stone-600 hover:text-stone-900 transition-colors dark:text-gray-400 dark:hover:text-fg`}
                           >
-                            <Tag size={9} />
-                            {t}
+                            <Tag size={9} className="shrink-0" />
+                            {/* 手机窄卡空间不足时标签文字省略（+N 胶囊仍在，不会误导标签总数）。
+                                min-w-0 + truncate：span 是锚点 flex 容器的子项，须 min-w-0 才能收缩出省略号；
+                                锚点须为块级 flex（非 inline-flex）才会随父 wrapper 收缩。 */}
+                            <span className="min-w-0 truncate">{t}</span>
                           </Link>
                         </motion.div>
                       ))}
+                      {/* 余量胶囊：已显示标签数 + N = 真实标签总数，两端自洽。
+                          手机端（<640px）两列窄卡放 2 个 → +{len-2}；桌面端放 3 个 → 若还有更多显示 +{len-3}，
+                          避免用户误以为「只有显示出来的这几个」。 */}
+                      {tags.length > 2 && (
+                        <span
+                          aria-hidden
+                          className="sm:hidden shrink-0 whitespace-nowrap inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/[0.04] text-stone-500 dark:bg-white/10 dark:text-gray-400"
+                        >
+                          +{tags.length - 2}
+                        </span>
+                      )}
+                      {tags.length > 3 && (
+                        <span
+                          aria-hidden
+                          className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-black/[0.04] text-stone-500 dark:bg-white/10 dark:text-gray-400"
+                        >
+                          +{tags.length - 3}
+                        </span>
+                      )}
                     </motion.div>
 
                     {/* Everything below is ONE link to the post — no ambiguity */}
@@ -251,7 +301,7 @@ export default function PostCard({
                       {/* Title — 位移走 Framer whileHover（JS 驱动，绕开 CSS transition 被 reduced-motion 压制，任何环境都有动画）；
                           变色仍走纯 CSS（.post-card-title），避免 inline style 固化颜色导致主题切换失响应 */}
                       <motion.h2
-                        className="post-card-title text-lg font-bold mb-2 line-clamp-2 overflow-hidden h-[3.094rem] tracking-tight leading-snug shrink-0"
+                        className="post-card-title text-base sm:text-lg font-bold mb-2 line-clamp-2 overflow-hidden h-[2.75rem] sm:h-[3.094rem] tracking-tight leading-snug shrink-0"
                         whileHover={{ x: 5 }}
                         transition={{ type: 'spring', stiffness: 220, damping: 15 }}
                       >
@@ -259,22 +309,22 @@ export default function PostCard({
                       </motion.h2>
 
                       {/* Excerpt */}
-                      <p className="text-stone-500 text-sm leading-relaxed mb-5 line-clamp-2 flex-1 min-h-0 dark:text-gray-500">
+                      <p className="text-stone-500 text-sm leading-relaxed mb-5 line-clamp-1 sm:line-clamp-2 flex-1 min-h-0 dark:text-gray-500">
                         {post.excerpt}
                       </p>
 
                       {/* Footer with "阅读" as part of the link */}
                       <motion.div
-                        className="flex items-center justify-between pt-3 border-t border-black/[0.06] dark:border-white/5"
+                        className="mt-auto flex items-center justify-between pt-3 border-t border-black/[0.06] dark:border-white/10"
                         whileHover="hovered"
                         initial="idle"
                       >
-                        <span className="flex items-center gap-1.5 text-xs text-stone-400 dark:text-gray-600">
+                        <span className="flex items-center gap-1.5 text-xs text-stone-400 whitespace-nowrap dark:text-gray-600">
                           <Clock size={11} />
                           {formatDate(post.date)}
                         </span>
                         <motion.span
-                          className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium transition-colors"
+                          className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium whitespace-nowrap transition-colors"
                           variants={{
                             idle: { x: 0 },
                             hovered: { x: 3 },

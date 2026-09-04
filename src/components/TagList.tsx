@@ -71,7 +71,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
           href={`/tags/${encodeURIComponent(name)}/`}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
-          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass glass-flat border border-black/[0.06] overflow-hidden dark:border-white/5"
+          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass glass-flat border border-black/[0.06] overflow-hidden dark:border-white/10"
           style={{ transformStyle: 'preserve-3d' }}
         >
           {/* Spotlight */}
@@ -122,10 +122,10 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
           </motion.span>
 
           {/* Text labels */}
-          <span className="relative text-sm font-medium text-stone-700 dark:text-stone-300 group-hover:text-stone-900 dark:group-hover:text-fg transition-colors duration-300">
+          <span className="relative text-sm font-medium text-stone-700 dark:text-fg group-hover:text-stone-900 dark:group-hover:text-white transition-colors duration-300">
             {name}
           </span>
-          <span className="relative text-xs text-stone-500 dark:text-stone-500 group-hover:text-stone-700 dark:group-hover:text-gray-400 transition-colors duration-300">
+          <span className="relative text-xs text-stone-500 dark:text-stone-400 group-hover:text-stone-700 dark:group-hover:text-gray-300 transition-colors duration-300">
             ({count})
           </span>
 

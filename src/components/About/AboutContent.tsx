@@ -187,7 +187,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
               viewport={{ once: true }}
               transition={{ delay: catIdx * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ y: -4 }}
-              className="relative flex flex-col p-5 rounded-2xl glass border border-black/[0.06] hover:border-black/20 overflow-hidden group dark:border-white/5 dark:hover:border-white/20"
+              className="relative flex flex-col p-5 rounded-2xl glass border border-black/[0.06] hover:border-black/20 overflow-hidden group dark:border-white/10 dark:hover:border-white/25"
             >
               <motion.div
                 className={`absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${s.color}`}
@@ -224,7 +224,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
                       whileHover={{ y: -2, scale: 1.04 }}
                       className="relative w-full"
                     >
-                      <div className="relative px-3 py-2 rounded-lg border border-black/10 bg-black/[0.03] hover:bg-black/[0.06] dark:border-white/5 dark:bg-white/[0.03] dark:hover:bg-white/[0.07] transition-colors cursor-default">
+                      <div className="relative px-3 py-2 rounded-lg border border-black/10 bg-black/[0.03] hover:bg-black/[0.06] dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.07] transition-colors cursor-default">
                         <div className="flex items-center gap-2 pl-2">
                           <span
                             className="shrink-0 leading-none"

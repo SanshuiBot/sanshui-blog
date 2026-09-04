@@ -84,7 +84,7 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
       style={{ '--project-accent': accent } as CSSProperties}
       className="group relative rounded-xl border overflow-hidden shadow-soft
                   transition-all duration-500 ease-out
-                  dark:border-white/[0.08] dark:bg-white/[0.03] dark:hover:border-white/[0.18]
+                  dark:border-white/[0.12] dark:bg-white/[0.03] dark:hover:border-white/[0.22]
                   border-black/[0.06] bg-white/70 hover:border-black/[0.14]
                   backdrop-blur-sm dark:backdrop-blur-md
                   hover:scale-[1.015]"

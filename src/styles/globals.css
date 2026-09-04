@@ -237,7 +237,7 @@ html.dark {
      html.dark 暗值，见文件头 token 层），无需逐条覆盖 */
   /* 暗色主题：.glass-heavy 边框回到发丝白 */
   html.dark .glass-heavy {
-    border-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
   }
   /* 搜索弹窗暗色强化：边框提亮 + 背景更实 + 外阴影，从遮罩背景中明显浮出 */
   html.dark .search-modal-panel {
@@ -435,6 +435,21 @@ html.dark {
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
+  /* ── 文章卡片常驻层次（首页/归档/标签三页共用 PostCard）──
+     亮色：柔和外投影，白卡从 cream 背景浮起（浓度略高于全站 --shadow-soft，
+     无 hover 时也有可见层次）；暗色：复用加浓后的 --shadow-soft + 顶部 1px
+     受光高光（inset 白），不依赖页面氛围光晕也能浮起。
+     hover 霓虹由 .shadow-neon-hover:hover 覆盖（特异性更高，天然生效）。 */
+  .post-card-shell {
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.05),
+      0 12px 28px rgba(0, 0, 0, 0.07);
+  }
+  html.dark .post-card-shell {
+    box-shadow:
+      var(--shadow-soft),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
   .shadow-nav {
     box-shadow: var(--shadow-nav);
   }
@@ -442,6 +457,14 @@ html.dark {
     transition: box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .shadow-neon-hover:hover {
+    box-shadow: var(--shadow-neon-hover);
+  }
+  /* 暗色静止阴影由 .post-card-shell 提供（含 inset 顶部高光，见上）——不要再给
+     .shadow-neon-hover 加静态 box-shadow：同特异性 (0,2,1)、源序靠后会把
+     .post-card-shell 的 inset 高光整个覆盖成死代码（历史教训）。
+     此处只需补 hover 显式覆盖：.post-card-shell 静止规则特异性高于
+     .shadow-neon-hover:hover，不补这条暗色 hover 会被静止规则压掉。 */
+  html.dark .shadow-neon-hover:hover {
     box-shadow: var(--shadow-neon-hover);
   }
   .shadow-emboss-hover {
@@ -1532,20 +1555,21 @@ html.dark {
     0 4px 16px rgb(var(--accent-violet-rgb) / 0.15),
     0 16px 40px rgb(var(--accent-violet-rgb) / 0.1), 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.08);
   --shadow-emboss:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12),
     var(--shadow-soft);
   --shadow-emboss-hover:
-    inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 4px 12px rgb(var(--accent-violet-rgb) / 0.06), 0 12px 24px rgba(0, 0, 0, 0.12);
+    inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 4px 12px rgb(var(--accent-violet-rgb) / 0.08), 0 12px 24px rgba(0, 0, 0, 0.25);
   --shadow-nav:
     inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 2px 4px rgb(var(--accent-violet-rgb) / 0.03), 0 4px 8px rgba(0, 0, 0, 0.06);
+  /* 暗色黑阴影须加浓才能在 #05050a 近黑底上产生「浮起」深度（亮色 3-6% 的浓度不可见） */
   --shadow-soft:
-    0 4px 12px rgba(0, 0, 0, 0.05), 0 16px 40px rgba(0, 0, 0, 0.06),
-    0 48px 120px rgba(0, 0, 0, 0.03);
+    0 4px 12px rgba(0, 0, 0, 0.28), 0 16px 40px rgba(0, 0, 0, 0.36),
+    0 48px 120px rgba(0, 0, 0, 0.22);
   /* glass / archive-filter token 暗色化 */
   --glass-bg: rgba(14, 14, 24, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.12);
   --color-glass-heavy: rgba(14, 14, 24, 0.85);
   --af-text: rgb(168 162 158);
   --af-text-hover: #fff;

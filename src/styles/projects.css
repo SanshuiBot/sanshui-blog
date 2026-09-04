@@ -124,8 +124,8 @@ html.dark .project-card-title {
 html.dark .projects-content .group:hover {
   box-shadow:
     var(--shadow-soft, 0 8px 32px rgba(0, 0, 0, 0.04)),
-    0 4px 16px rgb(var(--accent-violet-rgb) / 0.06),
-    0 12px 32px rgb(0 0 0 / 0.08);
+    0 4px 16px rgb(var(--accent-violet-rgb) / 0.12),
+    0 12px 32px rgb(0 0 0 / 0.28);
 }
 
 /* ── 标签主题色联动：data-accent-idx 决定颜色，跟随主题循环 5 色 ── */

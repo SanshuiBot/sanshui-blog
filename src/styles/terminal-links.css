@@ -189,18 +189,18 @@
 
 /* ── 暗色主题覆盖：html.dark ── */
 html.dark .terminal-body {
-  background: rgba(8, 8, 14, 0.85);
+  background: rgba(14, 14, 24, 0.85);
 }
 html.dark .terminal-prompt-line {
   color: rgb(var(--accent-teal-rgb));
-  border-bottom-color: rgba(255, 255, 255, 0.06);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 html.dark .terminal-prompt-symbol {
   color: rgb(var(--accent-violet-rgb));
 }
 html.dark .terminal-link-card {
-  border-color: rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
 }
 html.dark .terminal-link-card:hover {
   border-color: rgb(var(--accent-violet-rgb) / 0.3);
