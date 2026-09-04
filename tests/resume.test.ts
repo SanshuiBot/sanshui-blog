@@ -15,6 +15,12 @@ describe('splitResumeLines', () => {
     expect(splitResumeLines('a\n\nb')).toEqual(['a', '', 'b']);
   });
 
+  it('去掉末尾换行符产生的尾部空串（避免最后一行后残留空行）', () => {
+    expect(splitResumeLines('a\nb\nc\n')).toEqual(['a', 'b', 'c']);
+    expect(splitResumeLines('a\n\nb\n\n')).toEqual(['a', '', 'b']);
+    expect(splitResumeLines('a\r\nb\r\n')).toEqual(['a', 'b']);
+  });
+
   it('单行输入返回单元素数组', () => {
     expect(splitResumeLines('只有一行')).toEqual(['只有一行']);
   });

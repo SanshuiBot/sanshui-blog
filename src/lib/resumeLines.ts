@@ -5,5 +5,6 @@
  * 打进 bundle；本模块无任何 Node 依赖，客户端/服务端均可安全导入。
  */
 export function splitResumeLines(markdown: string): string[] {
-  return markdown.replace(/\r\n/g, '\n').split('\n');
+  // 末尾换行符会切出尾部空串，导致最后一行之后残留一个空行——先去掉末尾换行
+  return markdown.replace(/\r\n/g, '\n').replace(/\n+$/, '').split('\n');
 }

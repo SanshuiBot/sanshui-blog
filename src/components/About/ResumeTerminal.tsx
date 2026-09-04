@@ -21,7 +21,7 @@ interface ResumeTerminalProps {
  *
  * - 进入视口后逐行"打印"简历，最后一行打印完毕时显示完成提示
  * - 支持 markdown 行内高亮：`## 标题` 渲染为紫色高亮，`- 列表项` 渲染为带点列表
- * - 打印过程中底部出现闪烁光标，结束后转为静态展示
+ * - 打印过程中底部出现闪烁光标，结束后光标消失、显示完成提示
  * - 亮/暗双主题：CSS 变量默认亮值，暗色走 resume-terminal.css 的 html.dark 覆盖
  */
 export default function ResumeTerminal({
@@ -48,10 +48,6 @@ export default function ResumeTerminal({
     const tick = () => {
       idx += 1;
       setPrintedLines(idx);
-      // 自动滚动到底部，模拟终端追加
-      if (scrollBodyRef.current) {
-        scrollBodyRef.current.scrollTop = scrollBodyRef.current.scrollHeight;
-      }
       if (idx >= lines.length) {
         setDone(true);
         return;
@@ -65,6 +61,14 @@ export default function ResumeTerminal({
     };
     tick();
   }, [lines, lineDelay, setTickTimer]);
+
+  // 每打印一行 / 打印完成（含完成提示渲染）后滚动到底，模拟终端追加。
+  // 注意不能在 tick 里同步设 scrollTop：那时 React 还没提交新行，
+  // scrollHeight 是旧值，最终会差一行/把完成提示留在可视区外。
+  useEffect(() => {
+    const body = scrollBodyRef.current;
+    if (body) body.scrollTop = body.scrollHeight;
+  }, [printedLines, done]);
 
   useEffect(() => {
     if (!triggerOnView) {
@@ -115,12 +119,10 @@ export default function ResumeTerminal({
             ))}
           </div>
 
-          {/* 闪烁光标 */}
-          <span
-            className={`resume-cursor inline-block w-2 h-4 align-middle ml-1 ${
-              done ? 'resume-cursor-done' : 'animate-pulse'
-            }`}
-          />
+          {/* 闪烁光标：打印中显示，完成后消失（不再残留静态竖线） */}
+          {!done && (
+            <span className="resume-cursor inline-block w-2 h-4 align-middle ml-1 animate-pulse" />
+          )}
 
           {done && (
             <div className="resume-done mt-4 pt-3 border-t">
