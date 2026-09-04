@@ -106,7 +106,7 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 ## 15. 文章卡片网格「跟手」流式渲染
 
-`PostGrid` + `PostCard` 实现「跟手」流式渐进渲染：骨架渐隐与卡片渐显是**同一 DOM 帧的叠加**，零空白帧。挂载后从第 0 张起每张间隔 80ms 把骨架替换成真实卡片。
+`PostGrid` + `PostCard` 实现「跟手」流式渐进渲染：骨架渐隐与卡片渐显是**同一 DOM 帧的叠加**，零空白帧。数据就绪后从第 0 张起逐张把骨架替换成真实卡片。
 
 关键实现：
 
@@ -114,7 +114,10 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 - **容器用固定 `h-60`（240px）**——所有卡片共享同一高度，不参差不齐
 - **槽位 key 用 `slot-${i}` 稳定不变**——骨架→卡片切换不触发 DOM 卸载/重挂
 - **卡片入场动画用 `animate`（挂载即播放）**——列表场景卡片总是从下方进入视野，等 `IntersectionObserver` 反而不跟手
-- **两层用完全相同的 transition**（`duration: 0.25s`）——骨架快速被卡片覆盖；不用 `y` 位移，位移会让卡片在途中「露半张」
+- **骨架入场错峰**：按槽位 delay `min(i × 45, 675)`ms + 0.15s 淡入——加载期骨架「一格一格快速铺满」，而非整批闪现（错峰步长/封顶改这里）
+- **卡片入场 = scale spring 0.88→1 + opacity tween**：scale 走 spring（`stiffness 3400 / damping 15 / mass 0.25`，欠阻尼 ζ≈0.26）产生「弹入 + 过冲到 ~1.05 回落」的 Duang 效果；opacity 走 tween（`0.28s`，同 `[0.16,1,0.3,1]`）与骨架退场**同 duration 同步**，同一帧完成、零空白帧。两参数收口在 `PostCard` 的 `cardPop` / `cardReveal`
+- **卡片填充节奏动态**：间隔 `max(30, min(100, 3000/文章数))`ms——文章多时加快、少时舒缓（不是固定值）
+- **不用 `y` 位移**：位移会让卡片在途中「露半张」，配合骨架已消失时观感是空白；scale 结束于 1，不残留中间 transform、不与 CardSpotlight 的 rotateX/Y 冲突
 - **`prefetchedRef` 在 `post.slug` 变化时重置**——稳定 slot key 复用 PostCard 实例时，避免新文章 hover 跳过 prefetch
 
 骨架模式：`skeleton === true` 时只渲染骨架层（卡片内容不挂载，避免空 post 撑高度）；`skeleton` 切到 false 时用 `AnimatePresence` 让骨架层淡出、卡片层淡入。

@@ -137,15 +137,28 @@ export default function PostCard({
   // 骨架→卡片切换的过渡：
   //  - 骨架入场：快速淡入（duration 0.15s）+ 按槽位 delay 错峰（skeletonDelayMs），
   //    形成「一格一格快速铺满」的加载节奏。
-  //  - 骨架离场 / 卡片入场：同一帧反向开始（同 duration 同步），零空白帧；
-  //    卡片用 scale+opacity（0.96→1）柔和浮现。
+  //  - 骨架离场 / 卡片入场：同一帧反向开始，零空白帧。
+  //    卡片用 scale 0.88→1（spring 弹性放大）+ opacity 淡入（tween 与骨架退场同 duration 同步）；
+  //    scale 结束于 1，内联 transform 与 CardSpotlight 的 rotateX/Y 同属 transform 属性，
+  //    framer 会合并，不会互相覆盖。
   // 不用 y 位移：位移会让卡片在途中「露半张」，配合骨架已消失时观感是空白（红线 #15）。
   const skeletonEnter = {
     duration: 0.15,
     ease: 'easeOut' as const,
     delay: skeletonDelayMs / 1000,
   };
+  // opacity 走 tween，和骨架退场同 duration/ease，保证同一帧完成、无空白帧
   const cardReveal = { duration: 0.28, ease: [0.16, 1, 0.3, 1] as const };
+  // scale 走 spring：要大而快的回弹（Duang Duang 感），关键是阻尼比 ζ 明显 < 1：
+  //  - stiffness 3400 + mass 0.25 → 固有频率 ~117rad/s，弹入更快（每格 ~55ms）
+  //  - damping 15 → ζ ≈ 0.26（欠阻尼），scale 过冲到 ~1.05 再回落，弹 2~3 次后稳定
+  // 结束位姿 scale 1；opacity 仍由下方 tween 同步控制
+  const cardPop = { type: 'spring' as const, stiffness: 3400, damping: 15, mass: 0.25 };
+  // scale 动画起跳比 1 小 → 结束位姿是 scale 1，framer 不会残留中间 transform
+  const cardEnter = {
+    opacity: { ...cardReveal },
+    scale: { ...cardPop },
+  };
 
   return (
     <div className="relative h-56 sm:h-60">
@@ -172,8 +185,8 @@ export default function PostCard({
         {!skeleton && (
           <motion.div
             className="absolute inset-0 h-full"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1, transition: cardReveal }}
+            initial={{ opacity: 0, scale: 0.88 }}
+            animate={{ opacity: 1, scale: 1, transition: cardEnter }}
             style={{ pointerEvents: 'auto' }}
           >
             <div

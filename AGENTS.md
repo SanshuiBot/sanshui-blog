@@ -43,7 +43,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 12. 亮色为基准（默认无 `.dark` 即亮值），暗色只走 `html.dark` 覆盖；改暗色同步查亮色基。**`<body>` 上绝不能写 `bg-ink` / `bg-surface` / `text-fg` 等暗色 token**——这两个 token 是暗色主题底色（`#05050a` / `#f4f4f7`），写在 body 上会让整个页面容器变成暗色画布，亮色模式下背景变黑。body 应保持透明或仅用 `min-h-dvh flex flex-col antialiased relative`。
 13. 导航加载：仅 `/posts/...` 的 `<Link>` 调 `startNavigation`；详情页挂载调 `done()`。
 14. ⌘K 搜索 fetch `posts-index.json`，不序列化进 RSC。
-15. 卡片流式渲染：同帧叠加、`h-60`、`slot-${i}` key、`prefetchedRef` 随 slug 重置。
+15. 卡片流式渲染：同帧叠加、`h-60`、`slot-${i}` key、`prefetchedRef` 随 slug 重置。骨架入场错峰/卡片入场（scale spring+opacity tween）参数收口 `PostGrid`/`PostCard`。
 16. MDX：`next-mdx-remote/rsc`+gfm+slug+highlight；文章内不用 React 组件。
 17. 文章样式走 `.prose-article`，不是 Tailwind `prose`。
 18. TOC 只提 h2/h3，id 与 rehype-slug 同 github-slugger；进目录标题必须 `##`/`###`。

@@ -6,7 +6,7 @@
  *  - 接收 `posts` 数组（已就绪数据，RSC 透传或客户端 fetch 结果）
  *  - 接收 `total`：网格槽位总数。`total` > `posts.length` 时，超出部分显示骨架占位
  *    （首页 fetch 未完成、归档按年分组但总数已知等场景）
- *  - 挂载后从第 0 张起逐张把骨架替换成真实卡片，每张间隔 80ms
+ *  - 挂载后从第 0 张起逐张把骨架替换成真实卡片，间隔随文章数动态（30–100ms，见下）
  *  - 用户视觉上是「文章一个一个冒出来」，不是「一堆骨架突然变一堆卡片」
  *
  * 「跟手」流式渲染的关键（AGENTS.md #15 / 约定 #11a）：
@@ -40,9 +40,9 @@ interface Props {
  * key 在父级用 `slot-${i}` 稳定不变，所以骨架→卡片切换不会触发 DOM 卸载/重挂，
  * 也就没有「骨架消失、卡片还没出现」的空白帧。
  *
- * React.memo：流式填充每 80ms tick 只改变一个槽位的 skeleton 标志，其余槽位的
- * props（post 引用稳定 + skeleton 未变）全部命中 memo 跳过重渲染——
- * 把每 tick 的 O(槽位数) 全量重渲染降为 O(1)（只重渲染刚填充的那张卡片）。
+ * React.memo：流式填充每次 tick（间隔随文章数动态 30–100ms，见 fillTimer 逻辑）只改变
+ * 一个槽位的 skeleton 标志，其余槽位的 props（post 引用稳定 + skeleton 未变）全部命中
+ * memo 跳过重渲染——把每 tick 的 O(槽位数) 全量重渲染降为 O(1)（只重渲染刚填充的那张卡片）。
  * 不改变任何 DOM 行为，只跳过无变化的 re-render。
  */
 const SKELETON_PLACEHOLDER: PostIndexEntry = {
@@ -90,7 +90,7 @@ export default function PostGrid({ posts, total }: Props) {
 
   // 渲染槽位：每个槽位始终是同一个 <Slot> 实例（key=slot-${i} 稳定）
   // i < filled 且有对应 post → 显示真实卡片；否则显示骨架
-  // 骨架入场按槽位错峰（每格 30ms、封顶 450ms）：加载期骨架「一格一格快速铺满」，
+  // 骨架入场按槽位错峰（每格 45ms、封顶 675ms）：加载期骨架「一格一格快速铺满」，
   // 而非整批同时闪现；卡片填充阶段 PostCard 的卡片入场不带 delay，不受此影响。
   const slots = Array.from({ length: slotCount }, (_, i) => {
     const hasPost = i < posts.length;
@@ -100,7 +100,7 @@ export default function PostGrid({ posts, total }: Props) {
         key={`slot-${i}`}
         post={hasPost ? posts[i] : undefined}
         skeleton={!isFilled}
-        skeletonDelayMs={Math.min(i * 30, 450)}
+        skeletonDelayMs={Math.min(i * 45, 675)}
       />
     );
   });

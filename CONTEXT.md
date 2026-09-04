@@ -14,6 +14,8 @@
 
 **功能性 vs 装饰性动画**: reduced-motion 政策核心二分。功能性（滚动淡出 scrollY→opacity）必须保留——reduced 用户也要「滚动后首屏隐藏」；装饰性（视差/入场/循环）才跳过。Hero 曾全关导致首屏永不消失（bug 根因）。 _Avoid_: 全部跳过
 
+**卡片跟手流式渲染**: 文章列表（首页/归档/标签页）骨架→卡片逐张揭示的实现——骨架层与卡片层 absolute 同挂一 `h-60` 容器、opacity 同帧反向过渡（零空白帧）；卡片入场 = scale spring 0.88→1（`cardPop`）+ opacity tween 0.28s（`cardReveal`），骨架错峰 `min(i×45, 675)`ms。收口 `PostGrid`/`PostCard`。 _Avoid_: 卡片浮现动画、流式加载
+
 **主题色同步**: `ThemeColorSync`——监听 resolvedTheme 动态改 `<meta name="theme-color">`（暗 `#05050a` / 亮 `#fafaf9`）；配合 `viewport.colorScheme: 'light dark'` + `color-scheme` 让原生滚动条/表单控件跟随主题。 _Avoid_: theme-color 同步、地址栏颜色
 
 ## 目录（TOC）
