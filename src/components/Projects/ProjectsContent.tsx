@@ -108,7 +108,7 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
               size={14}
               className="shrink-0 text-black/35 transition-all duration-300
                          group-hover:text-black/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5
-                         dark:text-white/50 dark:group-hover:text-white"
+                         dark:text-fg/50 dark:group-hover:text-fg"
               aria-hidden="true"
             />
           </div>
@@ -154,7 +154,7 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
                     data-accent-idx={tagIdx}
                     className="tag-accent px-2 py-0.5 rounded-full text-[0.6875rem] font-mono
                                transition-all duration-300
-                               dark:border-white/[0.2] dark:bg-white/10 dark:text-white
+                               dark:border-white/[0.2] dark:bg-white/10 dark:text-fg
                                border-black/[0.08] bg-black/[0.04] text-stone-500
                                group-hover:border-transparent"
                   >
@@ -209,7 +209,7 @@ export default function ProjectsContent() {
           </svg>
           项目
         </span>
-        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-white">
+        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-fg">
           <span
             style={{
               background:

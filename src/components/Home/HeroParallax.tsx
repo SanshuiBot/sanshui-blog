@@ -278,10 +278,10 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               />
               {/* 文字 */}
               <div className="p-3">
-                <div className="text-[10px] font-mono text-stone-500/60 dark:text-white/40 mb-1">
+                <div className="text-[10px] font-mono text-stone-500/40 dark:text-fg/25 mb-1">
                   {t.tag}
                 </div>
-                <div className="text-xs font-semibold text-stone-400 dark:text-white/35 leading-snug line-clamp-3">
+                <div className="text-xs font-semibold text-stone-400/70 dark:text-fg/20 leading-snug line-clamp-3">
                   {t.title}
                 </div>
               </div>
@@ -320,7 +320,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               transition={{ duration: 0.9, delay: 0.05, ease: lineEase }}
-              className="block text-stone-900 dark:text-white"
+              className="block text-stone-900 dark:text-fg"
             >
               你好，我是
             </motion.span>
@@ -414,7 +414,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
                 target={href.startsWith('http') ? '_blank' : undefined}
                 rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                 aria-label={label}
-                className="block p-3 rounded-full glass hero-social text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-white"
+                className="block p-3 rounded-full glass hero-social text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-fg"
                 initial={reduced ? false : { opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}

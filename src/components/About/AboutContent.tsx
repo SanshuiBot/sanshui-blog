@@ -95,7 +95,8 @@ const fallbackStackIcon: {
   color: '#94a3b8',
 };
 
-const btnClass = 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium';
+const btnClass =
+  'inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium font-mono';
 
 interface AboutContentProps {
   /** 本地简历 markdown，由服务端页面在构建时读取并注入 */
@@ -129,7 +130,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
           <Sparkles size={12} />
           关于
         </span>
-        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-white">
+        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-fg">
           你好，我是<span className="text-aurora">{siteConfig.name}</span>
         </h1>
       </motion.div>
@@ -142,7 +143,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
       <motion.div variants={item} className="mb-10">
         <div className="flex items-center gap-2 mb-6">
           <Zap size={18} className="text-accent-pink" />
-          <h2 className="text-xl font-bold text-stone-900 dark:text-white">技能</h2>
+          <h2 className="text-xl font-bold text-stone-900 dark:text-fg">技能</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {skills.map((s, i) => (
@@ -175,7 +176,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
       <motion.div variants={item} className="mb-10">
         <div className="flex items-center gap-2 mb-6">
           <Layers size={18} className="text-accent-teal" />
-          <h2 className="text-xl font-bold text-stone-900 dark:text-white">技术栈</h2>
+          <h2 className="text-xl font-bold text-stone-900 dark:text-fg">技术栈</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {stack.map((s, catIdx) => (
@@ -198,7 +199,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <s.icon size={15} className="text-stone-500 dark:text-gray-500" />
-                  <h3 className="text-sm font-semibold text-stone-900 uppercase tracking-widest dark:text-white">
+                  <h3 className="text-sm font-semibold text-stone-900 uppercase tracking-widest dark:text-fg">
                     {s.title}
                   </h3>
                 </div>
@@ -262,7 +263,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
         <motion.div variants={item} className="mb-10">
           <div className="flex items-center gap-2 mb-6">
             <Terminal size={18} className="text-accent-violet" />
-            <h2 className="text-xl font-bold text-stone-900 dark:text-white">个人简历</h2>
+            <h2 className="text-xl font-bold text-stone-900 dark:text-fg">个人简历</h2>
             <span className="ml-auto text-xs text-stone-400 font-mono dark:text-gray-600">
               流式输出
             </span>
@@ -285,18 +286,18 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className={`${btnClass} btn-solid`}
+            className={`${btnClass} btn-solid btn-terminal`}
           >
-            <Github size={16} />
+            <Github size={14} />
             GitHub
           </motion.a>
           <motion.a
             href={siteConfig.emailHref}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className={`${btnClass} bg-black/[0.03] text-stone-700 border border-black/[0.1] hover:border-accent-violet/40 dark:bg-white/5 dark:text-gray-300 dark:border-white/10`}
+            className={`${btnClass} btn-terminal bg-black/[0.03] text-stone-700 border border-black/[0.1] dark:bg-white/5 dark:text-gray-300 dark:border-white/10`}
           >
-            <Mail size={16} />
+            <Mail size={14} />
             Email
           </motion.a>
           <span

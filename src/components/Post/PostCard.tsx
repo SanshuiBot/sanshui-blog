@@ -231,7 +231,7 @@ export default function PostCard({
                         >
                           <Link
                             href={`/tags/${encodeURIComponent(t)}/`}
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-stone-600 hover:text-stone-900 transition-colors dark:text-gray-400 dark:hover:text-white`}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-stone-600 hover:text-stone-900 transition-colors dark:text-gray-400 dark:hover:text-fg`}
                           >
                             <Tag size={9} />
                             {t}

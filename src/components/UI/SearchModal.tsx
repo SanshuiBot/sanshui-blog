@@ -114,7 +114,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/75"
           />
           <motion.div
             ref={panelRef}
@@ -122,7 +122,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-black/[0.1] dark:border-white/10"
+            className="relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-black/[0.1] search-modal-panel"
           >
             <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.06] dark:border-white/5">
               <Search size={18} className="text-stone-500 shrink-0 dark:text-gray-500" />
@@ -161,12 +161,12 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   }
                 }}
                 placeholder="搜索文章（空格分隔多关键词）..."
-                className="flex-1 bg-transparent text-stone-900 placeholder-gray-500 outline-none text-base dark:text-white"
+                className="flex-1 bg-transparent text-stone-900 placeholder-gray-500 outline-none text-base dark:text-fg"
               />
               {q && (
                 <button
                   onClick={() => setQ('')}
-                  className="text-stone-500 hover:text-stone-900 dark:text-gray-500 dark:hover:text-white"
+                  className="text-stone-500 hover:text-stone-900 dark:text-gray-500 dark:hover:text-fg"
                 >
                   <X size={16} />
                 </button>
@@ -215,9 +215,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                         <div className="flex-1 min-w-0">
                           <span
                             className={`font-medium transition-colors truncate block ${
-                              i === activeIdx
-                                ? 'text-accent-violet'
-                                : 'text-stone-900 dark:text-white'
+                              i === activeIdx ? 'text-accent-violet' : 'text-stone-900 dark:text-fg'
                             }`}
                           >
                             <Highlight text={p.title} query={q} />
@@ -247,12 +245,14 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-end px-5 py-3 border-t border-black/[0.06] dark:border-white/5">
+            <div className="flex items-center justify-between px-5 py-3 border-t border-black/[0.06] dark:border-white/5">
               <div className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-gray-500">
                 <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-black/[0.03] border border-black/[0.1] font-mono dark:bg-white/5 dark:border-white/10 text-[10px]">
                   {searchHotkeyLabel()}
                 </kbd>
                 <span className="hidden sm:inline">搜索</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-gray-500">
                 <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-black/[0.03] border border-black/[0.1] font-mono dark:bg-white/5 dark:border-white/10 text-[10px]">
                   ↑↓
                 </kbd>
@@ -261,10 +261,10 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   ↵
                 </kbd>
                 <span className="hidden sm:inline">打开</span>
+                <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/[0.03] text-stone-500 sm:hidden dark:bg-white/5 dark:text-gray-500">
+                  ESC
+                </kbd>
               </div>
-              <kbd className="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-black/[0.03] text-stone-500 sm:hidden dark:bg-white/5 dark:text-gray-500">
-                ESC
-              </kbd>
             </div>
           </motion.div>
         </div>

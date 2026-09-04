@@ -139,8 +139,8 @@ export default function Navbar() {
                   aria-current={active ? 'page' : undefined}
                   className={`nav-link group relative py-1 text-sm transition-colors duration-200 cursor-pointer ${
                     active
-                      ? 'is-active text-stone-900 dark:text-white font-semibold'
-                      : 'text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-white font-normal'
+                      ? 'is-active text-stone-900 dark:text-fg font-semibold'
+                      : 'text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-fg font-normal'
                   }`}
                 >
                   {l.label}
@@ -156,7 +156,7 @@ export default function Navbar() {
                   openSearch();
                   setMobileOpen(false);
                 }}
-                className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-lg text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+                className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-fg dark:hover:bg-white/5"
                 aria-label="搜索"
               >
                 <Search size={16} />
@@ -167,7 +167,7 @@ export default function Navbar() {
             <Tooltip label="菜单" disabled={mobileOpen}>
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-lg text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5 md:hidden"
+                className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-fg dark:hover:bg-white/5 md:hidden"
                 aria-label="菜单"
               >
                 {mobileOpen ? <X size={18} /> : <Menu size={18} />}
@@ -198,7 +198,7 @@ export default function Navbar() {
             transition={{ type: 'spring', stiffness: 380, damping: 34 }}
             className="fixed inset-y-0 right-0 z-40 md:hidden w-[min(20rem,85vw)] glass-heavy border-l border-black/[0.1] flex flex-col px-8 pt-20 pb-8 overflow-y-auto dark:border-white/10"
           >
-            <p className="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3 dark:text-gray-500">
+            <p className="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3 dark:text-gray-400">
               导航
             </p>
             <nav className="flex flex-col gap-1">
@@ -218,7 +218,7 @@ export default function Navbar() {
                       className={`flex items-center gap-3 py-2.5 text-xl font-semibold transition-colors ${
                         active
                           ? 'text-aurora'
-                          : 'text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-white'
+                          : 'text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-fg'
                       }`}
                     >
                       <span
@@ -240,20 +240,20 @@ export default function Navbar() {
                   href={siteConfig.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="footer-link inline-flex items-center gap-2 text-sm text-stone-600 dark:text-gray-400"
+                  className="footer-link footer-link-bright inline-flex items-center gap-2 text-sm text-stone-600"
                 >
                   <Github size={14} />
                   GitHub
                 </a>
                 <a
                   href={siteConfig.emailHref}
-                  className="footer-link inline-flex items-center gap-2 text-sm text-stone-600 dark:text-gray-400"
+                  className="footer-link footer-link-bright inline-flex items-center gap-2 text-sm text-stone-600"
                 >
                   <Mail size={14} />
                   Email
                 </a>
               </div>
-              <p className="mt-3 text-xs text-stone-400 dark:text-gray-600">
+              <p className="mt-6 text-xs text-stone-400 dark:text-gray-500">
                 &copy; {siteConfig.copyrightYear} {siteConfig.name}. All rights reserved.
               </p>
             </div>

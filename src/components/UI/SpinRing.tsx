@@ -19,7 +19,7 @@ export default function SpinRing({ sizeClass, gradId }: { sizeClass: string; gra
         fill="none"
         stroke="currentColor"
         strokeWidth="3"
-        className="text-black/[0.08] dark:text-white/[0.08]"
+        className="text-black/[0.08] dark:text-fg/[0.08]"
       />
       {/* 上层旋转弧 */}
       <circle

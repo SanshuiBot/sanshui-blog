@@ -61,7 +61,7 @@ export default function ArchivePage() {
             <BookOpen size={12} />
             归档
           </span>
-          <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-white">
+          <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-fg">
             <span className="text-aurora">全部文章</span>
           </h1>
           <p className="mt-3 text-stone-500 dark:text-gray-500">共 {posts.length} 篇文章</p>

@@ -41,7 +41,7 @@ export default function PostMeta({ post, readingMinutes }: Props) {
             </Link>
           ))}
         </div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 dark:text-white tracking-tight leading-tight mb-6">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 dark:text-fg tracking-tight leading-tight mb-6">
           {post.title}
         </h1>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-stone-500 dark:text-gray-500">

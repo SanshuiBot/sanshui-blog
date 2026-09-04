@@ -207,7 +207,7 @@ html.dark .terminal-link-card:hover {
   background: rgba(var(--accent-violet-rgb) / 0.04);
 }
 html.dark .terminal-card-name-row {
-  color: rgb(255 255 255 / 0.88);
+  color: var(--color-fg);
 }
 html.dark .terminal-card-arrow {
   color: rgb(255 255 255 / 0.2);

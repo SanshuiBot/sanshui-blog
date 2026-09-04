@@ -192,7 +192,7 @@ export default function LinksContent() {
           </svg>
           友链
         </span>
-        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-white">
+        <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-fg">
           <span className="text-aurora">友情链接</span>
         </h1>
         <p className="mt-3 text-stone-500 dark:text-gray-500">那些人，那些事</p>
@@ -235,18 +235,18 @@ export default function LinksContent() {
         className="terminal-exchange-box"
       >
         <div className="terminal-exchange-title">$ cat exchange.md</div>
-        <p className="terminal-exchange-desc">想交换友链？在 GitHub 提 Issue 或发邮件。</p>
+        <p className="terminal-exchange-desc">想交换友链？发邮件或在 GitHub 提 Issue。</p>
         <div className="flex flex-wrap gap-3">
           <motion.a
             href={siteConfig.emailHref}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg btn-solid text-sm font-medium font-mono"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg btn-solid btn-terminal text-sm font-medium font-mono"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="13"
-              height="13"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -265,9 +265,9 @@ export default function LinksContent() {
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black/[0.03] text-stone-700 text-sm font-medium border border-black/[0.1] font-mono dark:bg-white/5 dark:text-gray-300 dark:border-white/10"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg btn-terminal bg-black/[0.03] text-stone-700 text-sm font-medium border border-black/[0.1] font-mono dark:bg-white/5 dark:text-gray-300 dark:border-white/10"
           >
-            <Github size={13} />
+            <Github size={14} />
             GitHub
           </motion.a>
         </div>

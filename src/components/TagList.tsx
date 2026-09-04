@@ -122,7 +122,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
           </motion.span>
 
           {/* Text labels */}
-          <span className="relative text-sm font-medium text-stone-700 dark:text-stone-300 group-hover:text-stone-900 dark:group-hover:text-white transition-colors duration-300">
+          <span className="relative text-sm font-medium text-stone-700 dark:text-stone-300 group-hover:text-stone-900 dark:group-hover:text-fg transition-colors duration-300">
             {name}
           </span>
           <span className="relative text-xs text-stone-500 dark:text-stone-500 group-hover:text-stone-700 dark:group-hover:text-gray-400 transition-colors duration-300">

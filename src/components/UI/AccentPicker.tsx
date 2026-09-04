@@ -134,7 +134,7 @@ export default function AccentPicker() {
       <Tooltip label="主题强调色" disabled={open}>
         <button
           onClick={handleOpen}
-          className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] cursor-pointer dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+          className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] cursor-pointer dark:text-gray-400 dark:hover:text-fg dark:hover:bg-white/5"
           aria-label="选择主题色"
           aria-expanded={open}
         >
@@ -162,8 +162,8 @@ export default function AccentPicker() {
                 onClick={() => handleSelect(preset.id)}
                 className={`w-full flex items-center justify-between gap-2 px-2 py-2 rounded-lg transition-all cursor-pointer ${
                   active
-                    ? 'bg-black/[0.06] text-stone-900 dark:bg-white/10 dark:text-white'
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5'
+                    ? 'bg-black/[0.06] text-stone-900 dark:bg-white/10 dark:text-fg'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-fg dark:hover:bg-white/5'
                 }`}
               >
                 <span className="text-sm font-medium">{preset.label}</span>

@@ -8,7 +8,7 @@
   --color-overlay: #1a1a28;
   --color-border: rgba(255, 255, 255, 0.06);
   --color-border-hover: rgba(255, 255, 255, 0.12);
-  --color-fg: #f4f4f7;
+  --color-fg: #e4e4e4;
   --color-fg-muted: #8b8b9e;
   --color-fg-dim: #5c5c70;
   --color-accent-pink: rgb(var(--accent-pink-rgb));
@@ -210,6 +210,22 @@ html.dark {
   html.dark .btn-solid {
     border-color: rgba(255, 255, 255, 0.18);
   }
+  /* 终端 CTA 按钮 hover（关于页联系块 / 友链交换块共用，约定 #25/#26/#47）：
+     亮色基规则直书，暗色 html.dark 覆盖；accent 联动走自定义类，不用 utility */
+  .btn-terminal {
+    transition:
+      border-color 0.25s ease,
+      box-shadow 0.3s ease,
+      background-color 0.25s ease;
+  }
+  .btn-terminal:hover {
+    border-color: rgb(var(--accent-violet-rgb) / 0.4);
+    box-shadow: 0 4px 16px rgb(var(--accent-violet-rgb) / 0.12);
+  }
+  html.dark .btn-terminal:hover {
+    border-color: rgb(var(--accent-violet-rgb) / 0.5);
+    box-shadow: 0 4px 16px rgb(var(--accent-violet-rgb) / 0.22);
+  }
   .glass-heavy {
     background: var(--color-glass-heavy);
     backdrop-filter: blur(32px) saturate(1.8);
@@ -222,6 +238,20 @@ html.dark {
   /* 暗色主题：.glass-heavy 边框回到发丝白 */
   html.dark .glass-heavy {
     border-color: rgba(255, 255, 255, 0.06);
+  }
+  /* 搜索弹窗暗色强化：边框提亮 + 背景更实 + 外阴影，从遮罩背景中明显浮出 */
+  html.dark .search-modal-panel {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(16, 16, 26, 0.92);
+    box-shadow:
+      var(--shadow-emboss),
+      0 16px 40px rgba(0, 0, 0, 0.45);
+  }
+  /* 恢复面板 hover 的 emboss-hover 辉光（基规则 box-shadow 特异性更高，须显式覆盖） */
+  html.dark .search-modal-panel:hover {
+    box-shadow:
+      var(--shadow-emboss-hover),
+      0 16px 40px rgba(0, 0, 0, 0.45);
   }
 
   /* ── nav-dotted：导航栏像素点阵背景 ──
@@ -365,13 +395,14 @@ html.dark {
 
   /* ── ⌘K 搜索结果关键词高亮（SearchModal 的 <mark>，P1-12）── */
   .search-mark {
-    background: rgb(var(--accent-violet-rgb) / 0.15);
+    background: rgb(var(--accent-violet-rgb) / 0.25);
     color: inherit;
     border-radius: 3px;
     padding: 0 0.15em;
   }
   html.dark .search-mark {
-    background: rgb(var(--accent-violet-rgb) / 0.18);
+    background: rgb(var(--accent-violet-rgb) / 0.32);
+    box-shadow: inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.3);
   }
 
   /* ── 通用「返回 / 查看全部」链接 ──
@@ -577,7 +608,7 @@ html.dark {
     color: #1c1917;
   }
   html.dark .hero-stat-inline-num {
-    color: #fff;
+    color: var(--color-fg);
   }
   .hero-stat-inline-label {
     font-size: 0.7rem;
@@ -621,7 +652,7 @@ html.dark {
   }
   /* 暗色主题：深玻璃 + 强内辉光 */
   html.dark .hero-cta {
-    color: #fff;
+    color: var(--color-fg);
     background:
       linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box,
       linear-gradient(
@@ -785,6 +816,17 @@ html.dark {
     text-decoration: none;
     transition: color 0.2s;
   }
+  html.dark .footer-link {
+    color: var(--color-fg-muted);
+  }
+  /* RSS 订阅图标：比普通 footer-link 亮一档（与页脚底部文字 gray-400 同级） */
+  html.dark .footer-rss {
+    color: #9ca3af;
+  }
+  /* 移动端抽屉 GitHub/Email：亮于普通 footer-link（与抽屉版权声明 gray-400 同级） */
+  html.dark .footer-link-bright {
+    color: #9ca3af;
+  }
   .footer-link:hover,
   html.dark .footer-link:hover {
     color: rgb(var(--accent-violet-rgb));
@@ -825,7 +867,7 @@ html.dark {
     transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
   html.dark .post-card-title {
-    color: #ffffff;
+    color: var(--color-fg);
   }
   .post-card-title:hover,
   html.dark .post-card-title:hover {
@@ -837,7 +879,7 @@ html.dark {
     transition: color 0.2s;
   }
   html.dark .btn-retry {
-    color: #ffffff;
+    color: var(--color-fg);
   }
   .btn-retry:hover,
   html.dark .btn-retry:hover {

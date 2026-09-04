@@ -118,7 +118,7 @@ export default function PostComments() {
           省掉动态注入 client.js 时的 DNS/TLS 往返（评论加载提速） */}
       <link rel="preconnect" href="https://giscus.app" />
       <div className="mb-6 flex items-center gap-3">
-        <h2 className="text-lg font-semibold text-black/60 dark:text-white/60">评论</h2>
+        <h2 className="text-lg font-semibold text-black/60 dark:text-fg/60">评论</h2>
         <span className="h-px flex-1 bg-black/[0.06] dark:bg-white/[0.06]" />
       </div>
       <div ref={containerRef} className="min-h-40" />

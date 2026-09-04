@@ -32,7 +32,7 @@ export default function NotFoundContent() {
         <div className="relative mb-6">
           <div className="text-9xl font-black leading-none text-aurora tracking-tighter">404</div>
         </div>
-        <h1 className="text-2xl font-bold text-stone-900 mb-3 dark:text-white">页面走丢了</h1>
+        <h1 className="text-2xl font-bold text-stone-900 mb-3 dark:text-fg">页面走丢了</h1>
         <p className="text-stone-500 mb-10 dark:text-gray-500">抱歉，你访问的页面不存在。</p>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Link
