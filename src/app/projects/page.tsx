@@ -15,6 +15,7 @@ import { siteConfig } from '@/lib/site';
 export const metadata: Metadata = {
   title: '项目',
   description: `${siteConfig.name}的GitHub项目列表`,
+  alternates: { canonical: `${siteConfig.url}/projects/` },
 };
 
 export default function ProjectsPage() {

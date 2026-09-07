@@ -63,6 +63,8 @@ export default function Tooltip({
   const [bubbleSize, setBubbleSize] = useState({ w: 80, h: 28 });
   const wrapRef = useRef<HTMLDivElement>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
+  // 最近一次鼠标位置：ref 写入不触发渲染，未显示时只记位置、显示瞬间才同步一次
+  const posRef = useRef({ x: 0, y: 0 });
   // 3 个卸载安全的定时器（useSafeTimeout 自动 cleanup，见 ADR-0003）：
   // showTimer / hideTimer 双向 debounce；guardTimer 触屏点击后短暂抑制合成 mouseenter
   const setShowTimer = useSafeTimeout();
@@ -87,24 +89,33 @@ export default function Tooltip({
   const handleEnter = () => {
     if (disabled || !label || !hoverCapable.current || touchGuard.current) return;
     clearShowHide();
-    setShowTimer(() => setVisible(true), 80);
+    setShowTimer(() => {
+      // 显示瞬间按最新鼠标位置定位（ref 常新），避免气泡从 (0,0)/旧位置闪现
+      setPos(posRef.current);
+      setVisible(true);
+    }, 80);
   };
 
   const handleMove = (e: React.MouseEvent) => {
-    if (!visible) {
-      // 首次移动时先按当前坐标定位，避免气泡闪在 (0,0)
-      setPos({ x: e.clientX, y: e.clientY });
-      return;
-    }
     const x = e.clientX;
     const y = e.clientY;
+    // 原地改写 ref 对象：热路径（导航栏悬停）每事件不分配新对象
+    posRef.current.x = x;
+    posRef.current.y = y;
+    // 未显示时不触发任何 state 更新（此前每次移动都 setPos → 导航栏悬停时高频重渲染）
+    if (!visible) return;
+    // 亚像素移动不重渲染
+    if (Math.abs(x - pos.x) < 0.5 && Math.abs(y - pos.y) < 0.5) return;
     setPos({ x, y });
     // 边缘检测：右边/下边空间不足则翻转
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const bw = bubbleRef.current?.offsetWidth ?? 80;
     const bh = bubbleRef.current?.offsetHeight ?? 28;
-    setBubbleSize({ w: bw, h: bh });
+    // 气泡尺寸只在实测变化时更新，避免每次移动都 setState
+    if (bw !== bubbleSize.w || bh !== bubbleSize.h) {
+      setBubbleSize({ w: bw, h: bh });
+    }
     setFlipX(x + offsetX + bw > vw - 8);
     setFlipY(y + offsetY + bh > vh - 8);
   };

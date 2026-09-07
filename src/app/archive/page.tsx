@@ -23,6 +23,7 @@ import { siteConfig } from '@/lib/site';
 export const metadata: Metadata = {
   title: '归档',
   description: `全站文章归档 · ${siteConfig.name}个人博客`,
+  alternates: { canonical: `${siteConfig.url}/archive/` },
 };
 
 export default function ArchivePage() {

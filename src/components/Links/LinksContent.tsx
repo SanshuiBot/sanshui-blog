@@ -51,9 +51,9 @@ function attachMagneticGlow(el: HTMLElement | null) {
   };
 }
 
-// ── 直接拼 /favicon.svg 路径，无需第三方 API ─────────────────────────────────
+// ── 直接拼 /favicon.svg 路径，无需第三方 API；先归一化尾斜杠，兼容无尾斜杠 URL ──
 function getFaviconUrl(url: string): string {
-  return `${url}favicon.svg`;
+  return `${url.replace(/\/+$/, '')}/favicon.svg`;
 }
 
 // ── 卡片 ─────────────────────────────────────────────────────────────────────

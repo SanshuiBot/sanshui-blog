@@ -9,10 +9,11 @@
  *    bg/border 由 glass/glass-heavy + 双主题 border utility 提供。
  *  - 防御 React 18 StrictMode 双 mount：所有 effect 在 cleanup 里解绑，open 状态用函数式更新。
  */
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Filter, Hash, X } from 'lucide-react';
 import { useDismiss } from '@/components/UI/useDismiss';
+import { useFocusTrap } from '@/components/UI/useFocusTrap';
 
 interface TagItem {
   name: string;
@@ -22,9 +23,17 @@ interface TagItem {
 export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // 点击外部 / Esc 关闭（外点判定 + 延迟绑定统一收口在 useDismiss）
   useDismiss(containerRef, () => setOpen(false), { enabled: open });
+  // 对话框语义补齐：Tab 循环限制在浮层内，关闭后焦点还原（与 TOC 抽屉一致）
+  useFocusTrap(panelRef, open);
+
+  // 打开时聚焦浮层容器（tabIndex=-1）：读屏/键盘用户立即获得对话框上下文
+  useEffect(() => {
+    if (open) panelRef.current?.focus();
+  }, [open]);
 
   return (
     <div className="relative shrink-0" ref={containerRef}>
@@ -45,9 +54,11 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
 
       {open && (
         <div
+          ref={panelRef}
           role="dialog"
           aria-label="按标签筛选"
-          className="archive-filter-panel absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl glass-heavy p-4 z-50"
+          tabIndex={-1}
+          className="archive-filter-panel absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl glass-heavy p-4 z-50 outline-none"
         >
           <div className="mb-3 flex items-center justify-between">
             <span className="text-xs font-medium text-stone-500 uppercase tracking-widest dark:text-gray-500">

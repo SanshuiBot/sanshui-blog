@@ -6,6 +6,9 @@
  * 站点常量与 src/lib/site.ts 字面一致（脚本是 CJS 无法 import TS，靠注释双保险）——
  * 未来站点信息变更需同步此处 + site.ts。
  *
+ * 体积控制：`<content:encoded>` 全文只进最新 10 篇（FULL_CONTENT_LIMIT），
+ * 旧文章仅输出摘要——避免 feed 随文章数无限膨胀（23 篇全量全文约 332KB）。
+ *
  * 触发点：predev / prebuild（生成后 Footer 的 RSS 图标链接到 /feed.xml）。
  */
 const fs = require('node:fs');
@@ -43,6 +46,14 @@ function rfc822(dateStr) {
   return Number.isNaN(d.getTime()) ? EPOCH_RFC822 : d.toUTCString();
 }
 
+// 全文只进最新 N 篇（posts 已按日期降序，前 N 篇即最新）；旧文章只给摘要。
+const FULL_CONTENT_LIMIT = 10;
+
+/** 第 i 篇（按日期降序）是否输出全文：仅最新 FULL_CONTENT_LIMIT 篇 */
+function hasFullContent(index) {
+  return index < FULL_CONTENT_LIMIT;
+}
+
 /** 提取正文首个 h1/h2/代码块外的纯文本前 160 字做 item description（无 frontmatter 的 excerpt 兜底） */
 function plainExcerpt(content, fallback) {
   if (fallback) return fallback;
@@ -50,6 +61,12 @@ function plainExcerpt(content, fallback) {
     .slice(0, 160)
     .replace(/[#*`\[\]]/g, '')
     .trim();
+}
+
+/** CDATA 安全包裹：正文里出现 `]]>` 会提前终止 CDATA 段（如文章内嵌 XML 示例），
+    需拆成两个 CDATA 段拼接，避免产出畸形 XML。 */
+function cdata(s) {
+  return `<![CDATA[${String(s).replace(/]]>/g, ']]]]><![CDATA[>')}]]>`;
 }
 
 async function build() {
@@ -66,16 +83,18 @@ async function build() {
     .sort(sortPostsByDateDesc);
 
   const items = posts
-    .map((p) => {
+    .map((p, i) => {
       const link = `${SITE.baseUrl}/posts/${encodeURIComponent(p.slug)}/`;
       const description = plainExcerpt(p.content, p.excerpt);
+      // 全文只进最新 FULL_CONTENT_LIMIT 篇；旧文章仅摘要，控制 feed 体积
+      const fullContent = hasFullContent(i) ? cdata(p.content) : '';
       return `    <item>
       <title>${esc(p.title)}</title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${rfc822(p.date)}</pubDate>
       <description>${esc(description)}</description>
-      <content:encoded><![CDATA[${p.content}]]></content:encoded>
+      ${fullContent ? `<content:encoded>${fullContent}</content:encoded>` : ''}
       ${p.tags.map((t) => `<category>${esc(t)}</category>`).join('\n      ')}
     </item>`;
     })
@@ -107,7 +126,13 @@ async function build() {
   console.log(`✓ 已生成 public/feed.xml (${posts.length} 篇)`);
 }
 
-build().catch((err) => {
-  console.error('生成 feed.xml 失败:', err);
-  process.exit(1);
-});
+// require.main 守卫：被单测 import 时不触发构建副作用（predev/prebuild 直跑才生成）。
+// 纯函数导出供 tests/gen-feed.test.ts 锁定 CDATA 转义与全文截断契约。
+if (require.main === module) {
+  build().catch((err) => {
+    console.error('生成 feed.xml 失败:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { esc, rfc822, plainExcerpt, cdata, hasFullContent, FULL_CONTENT_LIMIT };

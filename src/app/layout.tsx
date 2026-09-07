@@ -22,6 +22,8 @@ import { accentBootstrapScript, themeBootstrapScript } from '@/lib/accents';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
+  // 全站默认 canonical：子页面各自覆盖（archive/tags/about/projects/links/posts）
+  alternates: { canonical: siteConfig.url },
   title: { default: siteConfig.title, template: `%s | ${siteConfig.name}` },
   description: siteConfig.description,
   keywords: [siteConfig.name, '个人博客', '技术博客', 'Next.js', 'React', 'TypeScript'],

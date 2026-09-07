@@ -10,10 +10,12 @@
  */
 import type { Metadata } from 'next';
 import LinksContent from '@/components/Links/LinksContent';
+import { siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: '友链',
   description: '友情链接',
+  alternates: { canonical: `${siteConfig.url}/links/` },
 };
 
 export default function LinksPage() {

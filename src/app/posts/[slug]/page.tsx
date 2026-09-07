@@ -24,6 +24,7 @@ import PostNav from '@/components/Post/PostNav';
 import PostDone from '@/components/Post/PostDone';
 import PostComments from '@/components/Post/PostComments';
 import TableOfContents from '@/components/Post/TableOfContents';
+import { siteConfig } from '@/lib/site';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -41,6 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: post.title,
     description: post.excerpt,
     keywords: post.tags,
+    alternates: { canonical: `${siteConfig.url}/posts/${encodeURIComponent(post.slug)}/` },
     openGraph: { title: post.title, description: post.excerpt, type: 'article', tags: post.tags },
   };
 }
@@ -61,6 +63,26 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">
+      {/* Article 结构化数据（SEO）：标题/描述/日期/作者，供搜索引擎富结果展示。
+          JSON.stringify 后再转义 <，防止标题/摘要含 </script> 提前闭合破坏页面。 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: post.title,
+            description: post.excerpt,
+            datePublished: post.date,
+            dateModified: post.date,
+            author: { '@type': 'Person', name: siteConfig.name, url: siteConfig.url },
+            mainEntityOfPage: {
+              '@type': 'WebPage',
+              '@id': `${siteConfig.url}/posts/${encodeURIComponent(post.slug)}/`,
+            },
+          }).replace(/</g, '\\u003c'),
+        }}
+      />
       {/* 桌面端：正文左、目录 sticky 右；移动端：目录抽屉在正文上方。
           TOC 在 DOM 中置前，lg 下用 order 恢复「正文左、目录右」 */}
       <div className="lg:flex lg:gap-10">

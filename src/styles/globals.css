@@ -1161,6 +1161,11 @@ html.dark {
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
     background: rgb(var(--accent-violet-rgb) / 0.1);
   }
+  /* 键盘焦点环：复制按钮无文本提示，Tab 聚焦须有可见反馈（与 hero-cta 同款） */
+  .code-window-copy:focus-visible {
+    outline: 2px solid rgb(var(--accent-violet-rgb) / 0.8);
+    outline-offset: 2px;
+  }
   .code-window-body {
     display: flex;
     align-items: stretch;

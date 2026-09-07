@@ -10,12 +10,25 @@ export default function CursorGlow() {
   const target = useRef({ x: -100, y: -100 });
 
   useEffect(() => {
+    let raf: number;
+    let running = false;
+    let lastMoveAt = 0;
     const onMove = (e: MouseEvent) => {
       target.current = { x: e.clientX, y: e.clientY };
+      lastMoveAt = performance.now();
+      // idle 停帧后首次移动恢复循环
+      if (!running) {
+        running = true;
+        raf = requestAnimationFrame(animate);
+      }
     };
     window.addEventListener('mousemove', onMove, { passive: true });
-    let raf: number;
     const animate = () => {
+      // 鼠标停止移动超过 1s 后停帧：光晕已收敛，继续空转只耗电/占主线程
+      if (performance.now() - lastMoveAt > 1000) {
+        running = false;
+        return;
+      }
       // lerp 系数：圆点 0.4（约 40ms 时间常数，几乎跟手）、光晕 0.15（氛围拖尾）
       pos.current.x += (target.current.x - pos.current.x) * 0.4;
       pos.current.y += (target.current.y - pos.current.y) * 0.4;
@@ -28,7 +41,8 @@ export default function CursorGlow() {
         dotRef.current.style.transform = `translate(${pos.current.x}px,${pos.current.y}px) translate(-50%,-50%)`;
       raf = requestAnimationFrame(animate);
     };
-    raf = requestAnimationFrame(animate);
+    // 不再挂载即启动循环：初始 pos/target 同为 (-100,-100)，无鼠标移动时循环是空转，
+    // 改为首次 mousemove 时才启动；恢复前若 lerp 未收敛（快速移动后骤停），重启继续逼近。
     return () => {
       window.removeEventListener('mousemove', onMove);
       cancelAnimationFrame(raf);

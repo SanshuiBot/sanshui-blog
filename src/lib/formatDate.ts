@@ -12,14 +12,30 @@
 
 const cache = new Map<string, string>();
 
+/**
+ * 解析 YYYY-MM-DD 日期字符串为 {y,m,d}；不匹配返回 null（走 Date 回退）。
+ * 原因：`new Date('YYYY-MM-DD')` 按 UTC 午夜解析，再交给 toLocaleDateString
+ * 用**本地时区**格式化——UTC-7~-12 时区的读者会看到前一天，且构建机时区
+ * ≠ 用户时区时产生 hydration mismatch。文章 date 已由 parse-post.mjs 规整为
+ * YYYY-MM-DD，字符串切分结果与 zh-CN long month 格式化逐字一致。
+ */
+function parseISODate(date: string): { y: number; m: number; d: number } | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!m) return null;
+  return { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) };
+}
+
 export function formatDate(date: string): string {
   const cached = cache.get(date);
   if (cached !== undefined) return cached;
-  const s = new Date(date).toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const parts = parseISODate(date);
+  const s = parts
+    ? `${parts.y}年${parts.m}月${parts.d}日`
+    : new Date(date).toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
   cache.set(date, s);
   return s;
 }

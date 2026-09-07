@@ -17,6 +17,7 @@ import { siteConfig } from '@/lib/site';
 export const metadata: Metadata = {
   title: '关于',
   description: `关于${siteConfig.name}个人博客`,
+  alternates: { canonical: `${siteConfig.url}/about/` },
 };
 
 export default function AboutPage() {

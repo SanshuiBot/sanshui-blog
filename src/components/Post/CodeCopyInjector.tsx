@@ -140,7 +140,12 @@ export default function CodeCopyInjector() {
     // 初次注入（延迟一帧，等 MDX 首屏渲染完成）
     const timer = setTimeout(inject, 100);
 
-    // 观察动态添加的 <pre>（MDX 懒渲染 / 客户端路由切页）
+    // 观察范围保持 document.body（不收窄到 article）：
+    // SPA 在文章间跳转时 App Router 复用同一组件实例、effect 不会重跑（见
+    // TableOfContents 同款注释），若只观察挂载时的 article 节点，切文后新
+    // article 的插入不被观察、复制按钮/行号注入静默失效（回归教训）。
+    // inject() 自身已限定 `article pre:not([data-ci])`，body 级观察的额外成本
+    // 只是每次变更批次一次 querySelectorAll，可忽略。
     const observer = new MutationObserver(inject);
     observer.observe(document.body, { childList: true, subtree: true });
 

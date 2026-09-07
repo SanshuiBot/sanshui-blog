@@ -19,6 +19,7 @@ import { toIndexEntry } from '@/lib/post-index';
 import PostGrid from '@/components/Post/PostGrid';
 import ArrowLink from '@/components/UI/ArrowLink';
 import { Hash } from 'lucide-react';
+import { siteConfig } from '@/lib/site';
 
 interface Props {
   params: Promise<{ tag: string }>;
@@ -31,7 +32,11 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tag } = await params;
   const decoded = decodeURIComponent(tag);
-  return { title: `#${decoded}`, description: `${decoded} - 标签页` };
+  return {
+    title: `#${decoded}`,
+    description: `${decoded} - 标签页`,
+    alternates: { canonical: `${siteConfig.url}/tags/${encodeURIComponent(decoded)}/` },
+  };
 }
 
 export default async function TagPage({ params }: Props) {

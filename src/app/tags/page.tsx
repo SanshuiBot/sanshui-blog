@@ -20,6 +20,7 @@ import { siteConfig } from '@/lib/site';
 export const metadata: Metadata = {
   title: '标签',
   description: `全部标签索引 · ${siteConfig.name}个人博客`,
+  alternates: { canonical: `${siteConfig.url}/tags/` },
 };
 
 export default function TagsPage() {
