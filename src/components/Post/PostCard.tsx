@@ -18,7 +18,7 @@
  *  4. hover 变色仍走纯 CSS（`.post-card-title` / `.post-card-readmore`），
  *     位移动画走 Framer Motion（AGENTS.md #24）。
  *
- *  5. 容器用固定 h-60（240px）——所有卡片（含骨架）共享同一高度，
+ *  5. 容器固定高度（移动端 h-56 / 224px、≥sm h-60 / 240px）——所有卡片（含骨架）共享同一高度，
  *     不因标题/摘要行数不同而参差不齐，也不会裁切「时间/阅读」行。
  *     骨架层与卡片层均 absolute 铺满固定容器，通过 opacity 交叉淡入淡出。
  *     骨架模式下卡片层不挂载（避免空 post 撑高度）。
@@ -77,8 +77,8 @@ function SkeletonLayer() {
           <div className="h-5 w-full rounded bg-black/[0.06] dark:bg-white/10" />
           <div className="h-5 w-3/4 rounded bg-black/[0.06] dark:bg-white/10" />
         </div>
-        {/* 摘要：手机卡片无摘要（line-clamp-1 也被 flex 挤压），≥sm 显示两行 */}
-        <div className="mt-2 hidden space-y-2 sm:block">
+        {/* 摘要：两行（与卡片 line-clamp-2 高度同量级） */}
+        <div className="mt-2 space-y-2">
           <div className="h-3.5 w-full rounded bg-black/[0.06] dark:bg-white/10" />
           <div className="h-3.5 w-2/3 rounded bg-black/[0.06] dark:bg-white/10" />
         </div>
@@ -179,7 +179,7 @@ export default function PostCard({
       </AnimatePresence>
 
       {/* 卡片层：absolute 铺底撑满固定容器，skeleton=false 时可见。
-          外层 h-60 固定高度 → 所有卡片高度一致，不再因标题/摘要行数不同而参差不齐。
+          容器固定高度（h-56 sm:h-60）→ 所有卡片高度一致，不再因标题/摘要行数不同而参差不齐。
           骨架模式不挂载（避免空 post 撑高度），切到非骨架时挂载并淡入。 */}
       <AnimatePresence>
         {!skeleton && (
@@ -321,8 +321,10 @@ export default function PostCard({
                         {post.title}
                       </motion.h2>
 
-                      {/* Excerpt */}
-                      <p className="text-stone-500 text-sm leading-relaxed mb-5 line-clamp-1 sm:line-clamp-2 flex-1 min-h-0 dark:text-gray-500">
+                      {/* Excerpt — 固定行高 + shrink-0：flex 布局分配的高度会压过 -webkit-line-clamp
+                          （flex-basis 0% + grow 时 clamp 失效，按盒子高度显示多行），
+                          固定高度后 clamp 才真正生效：移动端与 ≥sm 均两行 */}
+                      <p className="text-stone-500 text-sm leading-relaxed mb-5 line-clamp-2 overflow-hidden h-[46px] shrink-0 dark:text-gray-500">
                         {post.excerpt}
                       </p>
 
