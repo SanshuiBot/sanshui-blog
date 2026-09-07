@@ -54,7 +54,7 @@ const tagGradients = [
 /**
  * 骨架层——与卡片同尺寸、同圆角，absolute 铺满容器。
  * 结构与真实卡片镜像（顶部渐变条 / 标签行 / 标题 / 摘要 / 底部 footer 分隔线），
- * 并随断点响应：手机窄卡 2 标签 + 无摘要、≥sm 3 标签 + 两行摘要，与卡片渲染一致，
+ * 并随断点响应：手机窄卡 2 标签、≥sm 3 标签，摘要各断点均为两行，与卡片渲染一致，
  * 避免骨架形态与最终卡片错位。animate-pulse 给「正在加载」信号；外层通过 opacity
  * 渐隐它（不是卸载），这样骨架消失与卡片显现是同一帧的叠加，没有空白间隙。
  */
@@ -248,7 +248,7 @@ export default function PostCard({
                     style={{ transformOrigin: 'left' }}
                   />
 
-                  <div className="flex-1 p-4 sm:p-6 flex flex-col">
+                  <div className="flex-1 min-h-0 p-4 sm:p-6 flex flex-col">
                     {/* Tags — standalone links */}
                     <motion.div
                       className="flex flex-wrap gap-1.5 mb-3 min-h-[1.375rem] max-sm:flex-nowrap max-sm:gap-1"
@@ -309,7 +309,7 @@ export default function PostCard({
                       prefetch={false}
                       onClick={startNavigation}
                       onMouseEnter={onCardMouseEnter}
-                      className="post-card-link flex-1 flex flex-col"
+                      className="post-card-link flex-1 min-h-0 flex flex-col"
                     >
                       {/* Title — 位移走 Framer whileHover（JS 驱动，绕开 CSS transition 被 reduced-motion 压制，任何环境都有动画）；
                           变色仍走纯 CSS（.post-card-title），避免 inline style 固化颜色导致主题切换失响应 */}
@@ -321,10 +321,12 @@ export default function PostCard({
                         {post.title}
                       </motion.h2>
 
-                      {/* Excerpt — 固定行高 + shrink-0：flex 布局分配的高度会压过 -webkit-line-clamp
-                          （flex-basis 0% + grow 时 clamp 失效，按盒子高度显示多行），
-                          固定高度后 clamp 才真正生效：移动端与 ≥sm 均两行 */}
-                      <p className="text-stone-500 text-sm leading-relaxed mb-5 line-clamp-2 overflow-hidden h-[46px] shrink-0 dark:text-gray-500">
+                      {/* Excerpt — 固定行高保证 clamp 生效：flex 布局分配的高度会压过 -webkit-line-clamp
+                          （flex-basis 0% + grow 时 clamp 失效，按盒子高度显示多行），固定高度后 clamp
+                          才真正生效：移动端与 ≥sm 均两行。
+                          溢出容忍：shrink min-h-0 + 两级 wrapper 的 min-h-0 让摘要成为唯一可收缩元素，
+                          标签换行/字体差异导致内容超高时摘要压缩吸收，footer 不被裁切（回归 flex-1 时代的保证） */}
+                      <p className="text-stone-500 text-sm leading-relaxed mb-5 line-clamp-2 overflow-hidden h-[46px] shrink min-h-0 dark:text-gray-500">
                         {post.excerpt}
                       </p>
 
