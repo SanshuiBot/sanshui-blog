@@ -303,14 +303,14 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
           <span
             aria-hidden="true"
             title="KFC Crazy Thursday, V 50 —— 玩梗的：点个 Star 或写封邮件就好 ☕"
-            className="inline-flex select-none items-center gap-1.5 font-mono text-sm text-gray-600 dark:text-gray-300"
+            className="mt-2 inline-flex w-full select-none items-center gap-1.5 font-mono text-sm text-gray-600 dark:text-gray-300"
           >
             <span className="text-accent-violet">$</span>
             <span>echo &quot;KFC Crazy Thursday, V 50&quot;</span>
           </span>
         </div>
         <p className="mt-4 font-mono text-xs text-stone-500 dark:text-gray-500">
-          # KFC Crazy Thursday, V 50（玩梗的——点个 Star 或写封邮件，就是最好的支持）
+          # 点个 Star 或写封邮件，就是最好的支持
         </p>
       </motion.div>
     </motion.div>
