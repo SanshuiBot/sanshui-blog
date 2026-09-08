@@ -1,7 +1,13 @@
 'use client';
-import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useSafeTimeout } from '@/components/UI/useSafeTimeout';
+
+// 服务端渲染时 useLayoutEffect 会打「does nothing on the server」警告（没有浏览器
+// 绘制阶段），退化为 useEffect；客户端用真实 layout effect：在浏览器绘制前同步
+// 修正气泡尺寸，首帧定位就用实测宽度，避免宽标签（如「搜索 (Ctrl K)」≈120px）
+// 在默认 80×28 判断下先出屏一帧再跳回
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 /**
  * Tooltip —— 跟随鼠标的悬停提示
@@ -17,7 +23,8 @@ import { useSafeTimeout } from '@/components/UI/useSafeTimeout';
  * 特性：
  *  - 跟随鼠标：onMouseMove 实时更新气泡坐标
  *  - 显示在鼠标右下方（offsetX=14, offsetY=14），避开图标
- *  - 屏幕右/下边缘自动反转方向
+ *  - 屏幕右/下边缘自动反转方向，且定位始终钳制在视口内（8px 边距）：
+ *    小屏/长文本（如「搜索 (Ctrl K)」）也不会溢出屏幕
  *  - 气泡 createPortal 挂到 document.body：fixed 定位不再受祖先
  *    transform/translate 劫持包含块（Footer 回到顶部按钮曾因此错位出屏）
  *  - 玻璃态背景 + accent 描边，带淡入 + 上浮动画
@@ -57,9 +64,7 @@ export default function Tooltip({
 }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
-  const [flipX, setFlipX] = useState(false);
-  const [flipY, setFlipY] = useState(false);
-  // 气泡实际尺寸（渲染期不读 ref，由 handleMove 测量后存 state）
+  // 气泡实际尺寸（渲染期不读 ref）：显示瞬间由 effect 实测，handleMove 动态修正
   const [bubbleSize, setBubbleSize] = useState({ w: 80, h: 28 });
   const wrapRef = useRef<HTMLDivElement>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
@@ -81,6 +86,17 @@ export default function Tooltip({
     hoverCapable.current = window.matchMedia('(hover: hover)').matches;
   }, []);
 
+  // 气泡显示后立即实测尺寸：默认 80×28 对长文本（如「搜索 (Ctrl K)」）会让
+  // 翻转判断/钳制用错尺寸；而鼠标停住不动时 handleMove 不会再来修正，
+  // 因此显示瞬间由本 effect 补一次测量。尺寸未变时返回 prev，不触发重渲染。
+  // 用 isomorphic layout effect：绘制前完成修正，首帧定位就不出屏
+  useIsomorphicLayoutEffect(() => {
+    if (!visible || !bubbleRef.current) return;
+    const bw = bubbleRef.current.offsetWidth;
+    const bh = bubbleRef.current.offsetHeight;
+    setBubbleSize((prev) => (prev.w === bw && prev.h === bh ? prev : { w: bw, h: bh }));
+  }, [visible]);
+
   const clearShowHide = useCallback(() => {
     setShowTimer(() => {}, 0); // noop：useSafeTimeout 内部会清上一个未触发 timer
     setHideTimer(() => {}, 0);
@@ -90,8 +106,11 @@ export default function Tooltip({
     if (disabled || !label || !hoverCapable.current || touchGuard.current) return;
     clearShowHide();
     setShowTimer(() => {
-      // 显示瞬间按最新鼠标位置定位（ref 常新），避免气泡从 (0,0)/旧位置闪现
-      setPos(posRef.current);
+      // 显示瞬间按最新鼠标位置定位（ref 常新），避免气泡从 (0,0)/旧位置闪现。
+      // 注意要拷贝坐标而非存 ref 引用：handleMove 会原地改写 posRef.current，
+      // 若 state 持有同一对象，改写会绕过 setPos 且亚像素守卫永远命中
+      // （|x - pos.x| 恒为 0）→ 气泡显示后不再跟随鼠标，也不触发任何重渲染。
+      setPos({ x: posRef.current.x, y: posRef.current.y });
       setVisible(true);
     }, 80);
   };
@@ -107,17 +126,14 @@ export default function Tooltip({
     // 亚像素移动不重渲染
     if (Math.abs(x - pos.x) < 0.5 && Math.abs(y - pos.y) < 0.5) return;
     setPos({ x, y });
-    // 边缘检测：右边/下边空间不足则翻转
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const bw = bubbleRef.current?.offsetWidth ?? 80;
-    const bh = bubbleRef.current?.offsetHeight ?? 28;
-    // 气泡尺寸只在实测变化时更新，避免每次移动都 setState
+    // 气泡尺寸只在实测变化时更新，避免每次移动都 setState（label 变化等场景）。
+    // 翻转判断不在这里做——渲染期从 state 推导（见下方定位计算）：否则鼠标在
+    // 显示定时器（80ms）触发前停住时 flip 永远是 false，小屏右边缘气泡直接出屏
+    const bw = bubbleRef.current?.offsetWidth ?? bubbleSize.w;
+    const bh = bubbleRef.current?.offsetHeight ?? bubbleSize.h;
     if (bw !== bubbleSize.w || bh !== bubbleSize.h) {
       setBubbleSize({ w: bw, h: bh });
     }
-    setFlipX(x + offsetX + bw > vw - 8);
-    setFlipY(y + offsetY + bh > vh - 8);
   };
 
   const handleLeave = () => {
@@ -137,8 +153,25 @@ export default function Tooltip({
     }, 600);
   };
 
-  const left = flipX ? pos.x - offsetX - bubbleSize.w : pos.x + offsetX;
-  const top = flipY ? pos.y - offsetY - bubbleSize.h : pos.y + offsetY;
+  // 定位计算：仅在气泡可见时读取 window（SSR/隐藏时跳过，left/top 用不到）。
+  // 翻转从 state（pos + 实测 bubbleSize）推导，鼠标停住不动时也正确；
+  // 末尾 8px 视口钳制兜底：翻转后仍可能出界（气泡比鼠标另一侧剩余空间还宽）。
+  let left = 0;
+  let top = 0;
+  if (visible) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const flipX = pos.x + offsetX + bubbleSize.w > vw - 8;
+    const flipY = pos.y + offsetY + bubbleSize.h > vh - 8;
+    left = Math.max(
+      8,
+      Math.min(flipX ? pos.x - offsetX - bubbleSize.w : pos.x + offsetX, vw - bubbleSize.w - 8),
+    );
+    top = Math.max(
+      8,
+      Math.min(flipY ? pos.y - offsetY - bubbleSize.h : pos.y + offsetY, vh - bubbleSize.h - 8),
+    );
+  }
 
   return (
     <div

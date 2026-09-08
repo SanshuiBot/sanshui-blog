@@ -31,9 +31,23 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 });
 
+// 窄屏用例会覆盖视口尺寸，记录原值以便 afterEach 还原
+const originalInnerWidth = window.innerWidth;
+const originalInnerHeight = window.innerHeight;
+
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
+  Object.defineProperty(window, 'innerWidth', {
+    writable: true,
+    configurable: true,
+    value: originalInnerWidth,
+  });
+  Object.defineProperty(window, 'innerHeight', {
+    writable: true,
+    configurable: true,
+    value: originalInnerHeight,
+  });
 });
 
 describe('Tooltip', () => {
@@ -73,5 +87,66 @@ describe('Tooltip', () => {
       vi.advanceTimersByTime(200);
     });
     expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('回归：小屏（375px）右边缘 hover 且鼠标停住不动，气泡钳制在视口内', () => {
+    vi.useFakeTimers();
+    // 覆盖 jsdom 默认 1024×768 视口为窄屏（afterEach 还原）
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 375,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      writable: true,
+      configurable: true,
+      value: 667,
+    });
+    render(
+      <Tooltip label="切换到暗色">
+        <button aria-label="暗色">🌙</button>
+      </Tooltip>,
+    );
+
+    // 鼠标贴着右边缘进入后停住：mousemove 发生在显示定时器（80ms）触发前，
+    // 旧实现此时不评估翻转 → 气泡按「鼠标右侧」定位（374px + 气泡宽）直接出屏；
+    // 新实现渲染期从 state 推导翻转 + 8px 钳制，气泡左缘必落在视口内。
+    fireEvent.mouseOver(screen.getByRole('button'), { clientX: 360, clientY: 300 });
+    fireEvent.mouseMove(screen.getByRole('button'), { clientX: 360, clientY: 300 });
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    const tooltip = screen.getByRole('tooltip');
+    const left = Number.parseFloat(tooltip.style.left);
+    expect(left).toBeGreaterThanOrEqual(8);
+    // 气泡左缘 + 气泡宽（jsdom 无布局，offsetWidth 为 0，此处验证左缘钳制）
+    expect(left).toBeLessThanOrEqual(375 - 8);
+
+    // jsdom 没有布局引擎，offsetWidth/offsetHeight 恒为 0，上面的断言只证明
+    // 「有钳制」。下面 mock 一个真实气泡宽（80×28）再移动鼠标，用精确值锁定
+    // 翻转判断与钳制里的 - bubbleSize.w 边界数学（code review 建议）。
+    Object.defineProperty(tooltip, 'offsetWidth', {
+      writable: true,
+      configurable: true,
+      value: 80,
+    });
+    Object.defineProperty(tooltip, 'offsetHeight', {
+      writable: true,
+      configurable: true,
+      value: 28,
+    });
+    // 右边缘（x=355）：355+14+80=449 > 375-8 → 翻转，左缘 = 355-14-80 = 261
+    fireEvent.mouseMove(screen.getByRole('button'), { clientX: 355, clientY: 300 });
+    expect(Number.parseFloat(tooltip.style.left)).toBe(261);
+    // 移出翻转区间（x=200）：200+14+80=294 ≤ 367 → 不翻转，左缘 = 200+14 = 214
+    fireEvent.mouseMove(screen.getByRole('button'), { clientX: 200, clientY: 300 });
+    expect(Number.parseFloat(tooltip.style.left)).toBe(214);
+    // 下边缘（y=650）：650+14+28=692 > 667-8 → 翻转，top = 650-14-28 = 608
+    fireEvent.mouseMove(screen.getByRole('button'), { clientX: 200, clientY: 650 });
+    expect(Number.parseFloat(tooltip.style.top)).toBe(608);
+    // 移出翻转区间（y=300）：300+14+28=342 ≤ 659 → 不翻转，top = 300+14 = 314
+    fireEvent.mouseMove(screen.getByRole('button'), { clientX: 200, clientY: 300 });
+    expect(Number.parseFloat(tooltip.style.top)).toBe(314);
   });
 });
