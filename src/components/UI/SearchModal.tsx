@@ -50,6 +50,16 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
   const router = useRouter();
+  // 手机端渲染减负：全屏 backdrop-blur + scale/y 位移动画在小屏（尤其低端机）
+  // 上的光栅化/合成耗时是「弹窗慢半拍」的元凶，触屏设备改用纯 opacity 过渡
+  // + 面板去 backdrop-filter（面板自身 0.85+ 不透明度，视觉几乎无差）。
+  // 本组件是纯客户端动态加载（Navbar loadChunk），不参与 SSR/水合，
+  // 可安全惰性初始化，无 hydration mismatch 风险。
+  const [touchDevice] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      (window.matchMedia('(hover: none)').matches || navigator.maxTouchPoints > 0),
+  );
 
   // 点击外部 / Esc 关闭（外点判定 + 延迟绑定统一收口在 useDismiss）
   useDismiss(panelRef, onClose, { enabled: open });
@@ -146,15 +156,25 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/75"
+            // 触屏设备：去面板 backdrop-filter（0.85+ 不透明度视觉无差）、入场动画
+            // 退化为纯 opacity——这两处是弹窗出现慢半拍的主因；蒙层保留小半径
+            // backdrop-blur（8px，光栅化开销远小于 32px 面板 blur）+ 75/85 不透明度：
+            // 既要压暗也要糊掉背景文字，否则手机上仍能辨认后面的字
+            className={
+              touchDevice
+                ? 'fixed inset-0 bg-black/75 backdrop-blur dark:bg-black/85'
+                : 'fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/75'
+            }
           />
           <motion.div
             ref={panelRef}
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            initial={touchDevice ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: -20 }}
+            animate={touchDevice ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={touchDevice ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-black/[0.1] search-modal-panel"
+            className={`relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-black/[0.1] search-modal-panel${
+              touchDevice ? ' search-modal-panel--lite' : ''
+            }`}
           >
             <div className="flex items-center gap-3 px-5 py-4 border-b border-black/[0.06] dark:border-white/5">
               <Search size={18} className="text-stone-500 shrink-0 dark:text-gray-500" />

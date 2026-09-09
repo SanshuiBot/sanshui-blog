@@ -131,4 +131,41 @@ describe('SearchModal', () => {
     fireEvent.keyDown(input, { key: 'Escape' });
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('触屏设备：面板挂 lite 变体（去 backdrop-filter），遮罩加压不透出正文', async () => {
+    // 模拟手机：maxTouchPoints > 0（jsdom 默认 0，桌面路径）
+    const proto = Object.getPrototypeOf(window.navigator) as Record<string, unknown>;
+    const desc = Object.getOwnPropertyDescriptor(proto, 'maxTouchPoints');
+    Object.defineProperty(proto, 'maxTouchPoints', { value: 1, configurable: true });
+
+    try {
+      render(<SearchModal open onClose={() => {}} />);
+      await screen.findByPlaceholderText(PLACEHOLDER);
+
+      const panel = document.querySelector('.search-modal-panel');
+      expect(panel).toBeTruthy();
+      expect(panel?.className).toContain('search-modal-panel--lite');
+      // 遮罩：触屏路径挂 8px backdrop-blur 糊掉背景文字（非 -sm 变体），
+      // 75 不透明度压暗背景——既要压暗也要糊掉，否则手机上仍能辨认后面的字
+      const mask = document.querySelector('.fixed.inset-0.bg-black\\/75');
+      expect(mask).toBeTruthy();
+      expect(mask?.className.split(' ')).toContain('backdrop-blur');
+      expect(mask?.className).not.toContain('backdrop-blur-sm');
+    } finally {
+      if (desc) Object.defineProperty(proto, 'maxTouchPoints', desc);
+      else delete proto.maxTouchPoints;
+      cleanup();
+    }
+  });
+
+  it('桌面设备（无触摸点）：不挂 lite 变体，保留 backdrop-blur 遮罩', async () => {
+    render(<SearchModal open onClose={() => {}} />);
+    await screen.findByPlaceholderText(PLACEHOLDER);
+
+    const panel = document.querySelector('.search-modal-panel');
+    expect(panel).toBeTruthy();
+    expect(panel?.className).not.toContain('search-modal-panel--lite');
+    const mask = document.querySelector('.fixed.inset-0.bg-black\\/60');
+    expect(mask?.className).toContain('backdrop-blur-sm');
+  });
 });

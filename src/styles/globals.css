@@ -256,6 +256,13 @@ html.dark {
       var(--shadow-emboss-hover),
       0 16px 40px rgba(0, 0, 0, 0.45);
   }
+  /* 触屏设备变体（SearchModal 内 touchDevice 挂载）：去掉 backdrop-filter ——
+     手机上全屏 blur 的光栅化/合成开销是弹窗「慢半拍」主因；面板底色 0.85+
+     不透明度，视觉几乎无差。桌面不变。 */
+  .search-modal-panel--lite {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 
   /* ── nav-dotted：导航栏像素点阵背景 ──
      底色近不透明 + radial-gradient(transparent 1px,
@@ -453,7 +460,7 @@ html.dark {
       box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .group:hover .post-card-hover-target {
-    translate: 0 -8px;
+    translate: 0 -3px;
     scale: 1.01;
   }
   .post-card-border-glow {
@@ -498,7 +505,7 @@ html.dark {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .tag-item:hover {
-    transform: scale(1.08) translateY(-8px);
+    transform: scale(1.08) translateY(-3px);
   }
   /* Footer 顶部渐变线动画（纯 CSS 替代 Framer Motion，约定 #32） */
   .footer-gradient-line {

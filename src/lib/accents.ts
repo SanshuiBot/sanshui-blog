@@ -358,3 +358,76 @@ export const themeToggleClickScript = `(function(){
   }
   document.addEventListener('click', on, true);
 })();`;
+
+/**
+ * 搜索按钮「移动端首点卡住/点几次才弹」修复（hydration 前原生代劳）。
+ * -----------------------------
+ * 搜索图标按钮由 Navbar（client 组件）渲染，hydration 完成前 onClick 不存在——
+ * 移动端首载 JS 包 + hydration 需要数秒，期间点击全部落空（「点了没反应/点好几次」）；
+ * PC 端执行快无感。与 themeToggleClickScript（8a3f17a）同一根因，同款解法。
+ *
+ * <head> 同步注册 document 级 click 捕获监听（事件委托）：
+ *  - 命中 #search-toggle 且其内**尚无真实 <button>**（React 未接管）时：
+ *    1) 记录意图 window.__searchIntent = true（Navbar 挂载后消费 → 真弹窗打开）；
+ *    2) 注入原生「正在打开搜索…」占位弹层（无 backdrop-filter，手机端轻量），
+ *       用户点击立刻有视觉反馈，不再像无响应；点占位遮罩可取消意图并移除。
+ *  - 其内已出现 <button>（React 已接管）时自注销监听、让位给 Navbar 的 openSearch。
+ * 占位与真弹窗的切换由 Navbar 挂载 effect 移除占位节点完成，无闪烁衔接。
+ */
+export const searchToggleClickScript = `(function(){
+  function placeholder(dark){
+    var panelBg = dark ? 'rgba(16,16,26,.92)' : 'rgba(255,255,255,.92)';
+    var border = dark ? 'rgba(255,255,255,.12)' : 'rgba(0,0,0,.08)';
+    var textColor = dark ? '#a1a1aa' : '#78716c';
+    var track = dark ? 'rgba(255,255,255,.15)' : 'rgba(0,0,0,.1)';
+    return '<div style="margin:0 auto;width:100%;max-width:36rem;border-radius:1rem;background:' + panelBg
+      + ';border:1px solid ' + border + ';box-shadow:0 16px 40px rgba(0,0,0,.18);padding:1.5rem;'
+      + 'display:flex;flex-direction:column;align-items:center;gap:.75rem">'
+      + '<div style="width:1.5rem;height:1.5rem;border-radius:9999px;border:2px solid ' + track
+      + ';border-top-color:rgb(var(--accent-violet-rgb,139 92 246));animation:searchPreSpin .8s linear infinite"></div>'
+      + '<div style="font-size:.875rem;color:' + textColor + '">正在打开搜索…</div></div>';
+  }
+  function show(){
+    if(document.getElementById('search-pre-hydration')) return;
+    var dark = document.documentElement.classList.contains('dark');
+    var ph = document.createElement('div');
+    ph.id = 'search-pre-hydration';
+    // 与 SearchModal 真弹窗触屏蒙层保持一致：75/85 不透明度 + 8px backdrop 模糊，
+    // 既要压暗也要糊掉背景文字（见 SearchModal.tsx 触屏分支注释）
+    ph.setAttribute('style', 'position:fixed;inset:0;z-index:80;display:flex;align-items:flex-start;'
+      + 'justify-content:center;padding:18vh 1rem 0;background:rgba(0,0,0,' + (dark ? '.85' : '.75')
+      + ');-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    ph.innerHTML = placeholder(dark);
+    // 点遮罩取消：清意图 + 移除占位（捕获阶段，防止冒泡干扰）
+    ph.addEventListener('click', function(ev){
+      if(ev.target !== ph) return;
+      window.__searchIntent = false;
+      remove();
+    }, true);
+    (document.body || document.documentElement).appendChild(ph);
+    var st = document.createElement('style');
+    st.id = 'search-pre-hydration-style';
+    st.textContent = '@keyframes searchPreSpin{to{transform:rotate(360deg)}}';
+    document.head.appendChild(st);
+  }
+  function remove(){
+    var ph = document.getElementById('search-pre-hydration');
+    if(ph) ph.remove();
+    var st = document.getElementById('search-pre-hydration-style');
+    if(st) st.remove();
+  }
+  function on(e){
+    var anchor = document.getElementById('search-toggle');
+    if(!anchor) return;
+    var t = e.target;
+    if(!t || !t.closest || t.closest('#search-toggle') !== anchor) return;
+    if(anchor.querySelector('button')){
+      // React 已接管：原生不再代劳，注销自身，交给 Navbar 的 openSearch
+      document.removeEventListener('click', on, true);
+      return;
+    }
+    window.__searchIntent = true;
+    show();
+  }
+  document.addEventListener('click', on, true);
+})();`;

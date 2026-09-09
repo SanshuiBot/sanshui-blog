@@ -11,9 +11,11 @@ import AccentPicker from '@/components/UI/AccentPicker';
 import Tooltip from '@/components/UI/Tooltip';
 
 // SearchModal 懒加载：首次 ⌘K/点击打开才拉取搜索代码（~13KB chunk），不占每页首载包。
-// 手动 import 而非 next/dynamic：chunk 加载失败（旧部署哈希 404/网络错误）可关闭并
-// 下次自动重试，避免 dynamic 无错误回退时永久卡在「open 但不渲染」的死态。
-// 条件挂载后关闭动画退化为即时消失（进入动画仍由组件内 AnimatePresence 播放）。
+// 关键（移动端「点击多次/很久才弹窗」修复）：加载态收口为「共享 Promise」——
+// 挂载后 idle 预取与点击打开共用同一个 import Promise（见下），点击总是先置
+// searchOpen=true，任何时刻 SearchModal 都随 Navbar 渲染（内部按 open 显隐），
+// 不再存在「open=true 但组件分支缺失」的卡住窗口；chunk 加载失败缓存清空，
+// 下次点击自动重试。条件挂载后关闭动画退化为即时消失（进入动画仍由组件内播放）。
 type SearchModalComponent = typeof import('@/components/UI/SearchModal').default;
 import { useDismiss } from '@/components/UI/useDismiss';
 import { useScrollLock } from '@/components/UI/useScrollLock';
@@ -35,12 +37,11 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  // chunk 加载中态：open 为 true 但 SearchModalComp 尚未到位时渲染 loading 占位（见下方渲染段），
-  // 消除「点了没反应/卡住」——任何一次点击都有即时反馈
-  const [searchLoading, setSearchLoading] = useState(false);
-  // 懒加载的搜索组件（null = 未加载/加载失败，失败后下次打开自动重试）
+  // 懒加载的搜索组件（null = 未加载/加载失败，失败后下次打开自动重试）；
+  // chunkPromisesRef 缓存进行中的 import Promise：idle 预取与点击打开共享同一 Promise，
+  // 预取命中后点击时 resolve 已在缓存，setTimeout(0) 内同步 setState 挂载，点击即弹。
   const [SearchModalComp, setSearchModalComp] = useState<SearchModalComponent | null>(null);
-  const searchLoadingRef = useRef(false);
+  const chunkPromisesRef = useRef<Promise<SearchModalComponent> | null>(null);
   const mobileMenuRef = useRef<HTMLElement>(null);
 
   // 移动端菜单仅启用 Esc 关闭：开关按钮在 header（浮层外），mousedown 外点判定会误关，
@@ -61,15 +62,37 @@ export default function Navbar() {
     setMobileOpen(false);
   }
 
-  // 移动端首点「点了没反应/卡住」根治（idle 预取）：
-  // 搜索弹窗是懒加载 chunk + posts-index.json 首次拉取，移动端首点要等下载+解析。
-  // 首屏渲染稳定（idle 回调）后提前拉取：chunk 命中缓存则点开秒出；index 走共享
-  // getPostsIndex Promise 缓存，首页 PostsList/HeroParallax 已触发则直接命中。
-  // iOS Safari 无 requestIdleCallback 时退化为 2s 后执行；均置于 mount 后不阻塞首帧。
+  // 搜索 chunk 懒加载（移动端「点几次才弹/等很久」根治）：
+  //  - loadChunk()：唯一加载入口，Promise 缓存在 ref —— idle 预取与点击打开
+  //    共享同一次 import，不会重复请求；失败清缓存，下次可重试。
+  //  - 挂载后 idle 预取：弱机上滑动手感和粒子动画吃主线程，等用户点击再下载
+  //    chunk 就已经慢了，提前拉取让点击时大概率命中缓存秒开。
+  //  iOS Safari 无 requestIdleCallback 时退化为 2s 后执行；均不阻塞首帧。
+  const loadChunk = useCallback(() => {
+    const cached = chunkPromisesRef.current;
+    if (cached) return cached;
+    const p = import('@/components/UI/SearchModal')
+      .then((m) => m.default)
+      .then((Comp) => {
+        setSearchModalComp(() => Comp);
+        return Comp;
+      })
+      .catch(() => {
+        // chunk 加载失败（旧部署哈希 404/网络错误）：清缓存，下次点击重试；
+        // 已打开的搜索随之关闭，不渲染死态
+        chunkPromisesRef.current = null;
+        setSearchModalComp(null);
+        setSearchOpen(false);
+        throw new Error('search chunk failed');
+      });
+    chunkPromisesRef.current = p;
+    return p;
+  }, []);
+
   useEffect(() => {
     const preload = () => {
-      import('@/components/UI/SearchModal').catch(() => {
-        /* 预取失败静默：真实点击仍走 openSearch 重试路径 */
+      loadChunk().catch(() => {
+        /* 预取失败静默：真实点击仍走 openSearch 的共享 Promise 重试路径 */
       });
       getPostsIndex().catch(() => {
         /* 索引拉取失败留空，SearchModal 打开时按原逻辑自处理 */
@@ -81,27 +104,34 @@ export default function Navbar() {
     }
     const t = setTimeout(preload, 2000);
     return () => clearTimeout(t);
-  }, []);
+  }, [loadChunk]);
 
-  // 打开搜索：置 open + 首次惰性加载搜索 chunk（成功后挂载组件，失败关闭可重试）
+  // 打开搜索：只置 open，首次触发 chunk 加载。SearchModal 始终随 Navbar 渲染
+  // （内部按 open 显隐 + AnimatePresence），不再有「open=true 但组件缺失」的空窗。
   const openSearch = useCallback(() => {
     setSearchOpen(true);
-    if (SearchModalComp !== null) return;
-    if (!searchLoadingRef.current) {
-      // 首次点击置 loading 占位，让用户立刻看到反馈，消除「卡住」假象
-      searchLoadingRef.current = true;
-      setSearchLoading(true);
-      import('@/components/UI/SearchModal')
-        .then((m) => setSearchModalComp(() => m.default))
-        .catch(() => {
-          // chunk 加载失败（旧部署哈希 404/网络错误）：关闭模态，下次打开重试，不渲染死态
-          setSearchOpen(false);
-        })
-        .finally(() => {
-          searchLoadingRef.current = false;
-          setSearchLoading(false);
-        });
-    }
+    loadChunk().catch(() => {
+      /* 失败已在 loadChunk 内关闭并清缓存，下次点击重试 */
+    });
+  }, [loadChunk]);
+
+  // 消费 hydration 前的原生点击意图（见 accents.ts searchToggleClickScript）：
+  // 移动端首载 React 尚未 hydrate 时点搜索图标，委托脚本记 __searchIntent 并显示
+  // 原生「正在打开搜索…」占位；本组件挂载后在此补打开真弹窗，点击意图不丢失。
+  // setTimeout(0)：挂载帧不 setState（set-state-in-effect），下一轮事件循环消费。
+  useEffect(() => {
+    const w = window as typeof window & { __searchIntent?: boolean };
+    if (w.__searchIntent !== true) return;
+    w.__searchIntent = false;
+    const t = setTimeout(openSearch, 0);
+    return () => clearTimeout(t);
+  }, [openSearch]);
+
+  // chunk 就绪（真弹窗可挂载）后移除原生的 hydration 前占位弹层，无缝衔接
+  useEffect(() => {
+    if (SearchModalComp === null) return;
+    document.getElementById('search-pre-hydration')?.remove();
+    document.getElementById('search-pre-hydration-style')?.remove();
   }, [SearchModalComp]);
 
   // 全局 ⌘K / Ctrl+K 打开搜索 + Esc 关闭兜底（开关状态收敛在 Navbar 持有 searchOpen）。
@@ -181,18 +211,22 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-1">
-            <Tooltip label={`搜索 (${searchHotkeyLabel()})`}>
-              <button
-                onClick={() => {
-                  openSearch();
-                  setMobileOpen(false);
-                }}
-                className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-fg dark:hover:bg-white/5"
-                aria-label="搜索"
-              >
-                <Search size={16} />
-              </button>
-            </Tooltip>
+            {/* #search-toggle 锚点：hydration 前由 accents.ts 的 searchToggleClickScript
+                事件委托命中（脚本检测到内部 <button> 即自注销让位给 openSearch） */}
+            <div id="search-toggle" className="contents">
+              <Tooltip label={`搜索 (${searchHotkeyLabel()})`}>
+                <button
+                  onClick={() => {
+                    openSearch();
+                    setMobileOpen(false);
+                  }}
+                  className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-fg dark:hover:bg-white/5"
+                  aria-label="搜索"
+                >
+                  <Search size={16} />
+                </button>
+              </Tooltip>
+            </div>
             <ThemeToggle />
             <AccentPicker />
             <Tooltip label="菜单" disabled={mobileOpen}>
@@ -293,22 +327,10 @@ export default function Navbar() {
           </motion.aside>
         )}
       </AnimatePresence>
-      {searchOpen && SearchModalComp !== null && (
-        <SearchModalComp open onClose={() => setSearchOpen(false)} />
-      )}
-      {/* 搜索 chunk 加载中占位：点击立即反馈（遮罩 + 转圈），消除「点了没反应/卡住」；
-          加载完成由上方 SearchModalComp 接管，加载失败由 openSearch 的 catch 关闭 */}
-      {searchOpen && SearchModalComp === null && searchLoading && (
-        <div className="fixed inset-0 z-[80] flex items-start justify-center pt-[18vh] px-4">
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/75"
-            onClick={() => setSearchOpen(false)}
-          />
-          <div className="relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-black/[0.1] p-6 flex flex-col items-center gap-3">
-            <div className="w-6 h-6 rounded-full border-2 border-black/10 border-t-accent-violet animate-spin dark:border-white/15 dark:border-t-accent-violet" />
-            <span className="text-sm text-stone-500 dark:text-gray-400">加载搜索中…</span>
-          </div>
-        </div>
+      {/* SearchModal 始终随 Navbar 挂载（未加载时为 null 分支），由 open 驱动显隐：
+          点击即置 open=true，chunk 就绪的同一帧组件就在 DOM 里，无「点了没反应」空窗 */}
+      {SearchModalComp !== null && (
+        <SearchModalComp open={searchOpen} onClose={() => setSearchOpen(false)} />
       )}
     </>
   );
