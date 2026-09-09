@@ -21,6 +21,9 @@
   --color-glass-heavy: rgba(255, 255, 255, 0.85);
   --color-white: #ffffff;
   --color-black: #000000;
+  /* 字体栈：next/font 在 <html> 类上注入同名 CSS 变量（fonts.ts variable 选项），
+     实际加载的 woff2 由它管理；此处声明仅作为 Tailwind utility（font-sans/font-mono）
+     的令牌回退，勿在此改字体——改字体改 src/app/fonts.ts。 */
   --font-sans: 'Inter', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -82,10 +85,11 @@ html.dark {
     /* ── 终端风格 backdrop-filter 参数（terminal-base / terminal-links 共用） ── */
     --terminal-blur: 24px;
     --terminal-saturate: 1.4;
-    /* ── 骨架屏/加载页通用变量 ── */
-    --bg-skeleton: rgba(255, 255, 255, 0.06);
-    --bg-skeleton-shimmer: rgba(255, 255, 255, 0.06);
-    --border-skeleton: rgba(255, 255, 255, 0.06);
+    /* ── 骨架屏/加载页通用变量（亮色为基：cream 底上黑系半透明才可见；
+          暗值走文件尾 html.dark 覆盖）── */
+    --bg-skeleton: rgba(0, 0, 0, 0.05);
+    --bg-skeleton-shimmer: rgba(0, 0, 0, 0.04);
+    --border-skeleton: rgba(0, 0, 0, 0.08);
     /* ── 导航过渡层背景（亮=cream 基值；暗=ink 走文件尾 html.dark 覆盖）── */
     --bg-nav-loading: #fafaf9;
 
@@ -1691,6 +1695,10 @@ html.dark {
   /* glass / archive-filter token 暗色化 */
   --glass-bg: rgba(14, 14, 24, 0.7);
   --glass-border: rgba(255, 255, 255, 0.12);
+  /* 骨架屏/加载页变量暗色化：ink 底上白系半透明（亮色基为黑系，见 @layer base :root） */
+  --bg-skeleton: rgba(255, 255, 255, 0.06);
+  --bg-skeleton-shimmer: rgba(255, 255, 255, 0.06);
+  --border-skeleton: rgba(255, 255, 255, 0.06);
   --color-glass-heavy: rgba(14, 14, 24, 0.85);
   --af-text: rgb(168 162 158);
   --af-text-hover: #fff;

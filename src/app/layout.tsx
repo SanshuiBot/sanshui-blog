@@ -27,8 +27,14 @@ import {
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
-  // 全站默认 canonical：子页面各自覆盖（archive/tags/about/projects/links/posts）
-  alternates: { canonical: siteConfig.url },
+  // 全站默认 canonical：子页面各自覆盖（archive/tags/about/projects/links/posts）。
+  // types：RSS 自动发现——浏览器/阅读器扩展据此探测订阅源（feed.xml 由 gen-feed.js 生成）。
+  // 裸路径走 metadataBase 解析（与 og.png 同理，套 withBase 会双重前缀）。
+  alternates: {
+    canonical: siteConfig.url,
+    // types 的值直接是 URL 字符串（AlternateURLs 类型不接受 { url } 包装对象）
+    types: { 'application/rss+xml': '/feed.xml' },
+  },
   title: { default: siteConfig.title, template: `%s | ${siteConfig.name}` },
   description: siteConfig.description,
   keywords: [siteConfig.name, '个人博客', '技术博客', 'Next.js', 'React', 'TypeScript'],

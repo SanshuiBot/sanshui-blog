@@ -55,7 +55,7 @@
 
 ## 7. 静态导出的安全头走 `public/_headers`
 
-`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（HSTS、X-Frame-Options、Permissions-Policy 等）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。**新增响应头改 `public/_headers`，不要改 `next.config.ts`。** 同理 `public/_redirects`。
+`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（HSTS、X-Frame-Options、Permissions-Policy 等）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`。**⚠️ GitHub Pages 本身不支持 `_headers`，线上不生效**（2026-09 实测，见文件头注释）；迁移 Cloudflare Pages / Netlify 后自动生效。**新增响应头改 `public/_headers`，不要改 `next.config.ts`。** 同理 `public/_redirects`。
 
 ## 8. 构建期不执行 lint（Next 16 移除了 `--no-lint`）
 
@@ -321,7 +321,7 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
 | `post-build-cleanup.js`      | out/ 内未被引用的冗余 chunk/字体删除（带引用校验）   | build 后          |
 
 - 前三者复用 `src/lib/parse-post.mjs` 解析契约（CJS 脚本 `await import` ESM）。
-- `gen-feed.js` 的站点常量与 `site.ts` **字面一致**——改站点信息（title/description/url）需同步两处。
+- 站点常量唯一数据源 `src/lib/site-config.mjs`（纯 ESM 常量，client-safe）——`site.ts` 与 `gen-feed.js`/`gen-og-image.js` 经 import/`await import` 共用同一份，改站点信息（name/title/description/url/email）只改它。
 - 产物在 `public/` 且已提交；prebuild 确定性重建，无 git 噪音。
 
 ## 45. CI 质量门禁（对齐 #8）

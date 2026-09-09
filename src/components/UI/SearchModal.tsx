@@ -45,6 +45,8 @@ interface SearchModalProps {
 export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [q, setQ] = useState('');
   const [posts, setPosts] = useState<PostIndexEntry[] | null>(null);
+  /** 索引加载失败标记：true 时显示错误态 + 重试按钮（而非把失败当「无文章」吞掉） */
+  const [loadError, setLoadError] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -69,27 +71,40 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
 
   // 首次打开时拉取轻量索引（~10KB），不再走 RSC payload。
   // 使用共享缓存：与 PostsList / HeroParallax 共用同一 Promise，避免重复请求
-  // AbortController：关闭/卸载时中断在途请求；AbortError 不落空态，下次打开重试
+  // AbortController：关闭/卸载时中断在途请求；AbortError 不落错误态，下次打开重试。
+  // 加载失败进入错误态（loadError=true，posts 保持 null）而非空数组——空数组会
+  // 让本次会话跳过后续 fetch，搜索永久失效。
+  // loadError 同时是 effect 的守卫与依赖：错误态下 bail-out（防「失败→清错误→再失败」
+  // 死循环）；retryFetch 里 setLoadError(false) 改变依赖 → effect 重跑 → 重新 fetch
+  // （缓存层失败即清，天然支持重试）。
   useEffect(() => {
-    if (!open || posts !== null) return;
+    if (!open || posts !== null || loadError) return;
     const ac = new AbortController();
     getPostsIndex()
       .then((data) => {
         if (!ac.signal.aborted) setPosts(data);
       })
       .catch((err: unknown) => {
-        if ((err as Error)?.name !== 'AbortError') setPosts([]);
+        if ((err as Error)?.name !== 'AbortError' && !ac.signal.aborted) setLoadError(true);
       });
     return () => ac.abort();
-  }, [open, posts]);
+  }, [open, posts, loadError]);
 
-  // 关闭时清空搜索词 + 选中态：渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
+  /** 重试：清错误态 → loadError 依赖翻转触发上方 effect 重新 fetch */
+  const retryFetch = () => {
+    setLoadError(false);
+  };
+
+  // 关闭时清空搜索词 + 选中态；打开时清错误态（重新拉索引）：渲染期间调整 state
+  // （React 官方模式，避免 effect 内同步 setState）
   const [prevOpen, setPrevOpen] = useState(open);
   if (prevOpen !== open) {
     setPrevOpen(open);
     if (!open) {
       setQ('');
       setActiveIdx(-1);
+    } else {
+      setLoadError(false);
     }
   }
 
@@ -147,6 +162,12 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
 
   const hasQuery = q.trim().length > 0;
   const noResults = posts !== null && hasQuery && results.length === 0;
+  // 索引面板状态判别：扁平化渲染分支（error > loading > ready），避免三层嵌套三元
+  const indexState: 'error' | 'loading' | 'ready' = loadError
+    ? 'error'
+    : posts === null
+      ? 'loading'
+      : 'ready';
 
   return (
     <AnimatePresence>
@@ -234,18 +255,36 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
               </button>
             </div>
             <div className="max-h-[60dvh] sm:max-h-80 overflow-y-auto p-2">
-              {posts === null ? (
+              {indexState === 'error' && (
+                /* 错误态：提示 + 重试（aria-live 让读屏播报状态变化） */
+                <div
+                  className="text-center py-10 text-sm dark:text-gray-500"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <p className="text-stone-500 mb-3">索引加载失败，请检查网络后重试</p>
+                  <button
+                    onClick={retryFetch}
+                    className="btn-retry px-4 py-1.5 rounded-lg border border-black/[0.1] text-sm dark:border-white/10"
+                  >
+                    重新加载
+                  </button>
+                </div>
+              )}
+              {indexState === 'loading' && (
                 <div className="text-center py-10 text-stone-500 text-sm dark:text-gray-500">
                   加载中...
                 </div>
-              ) : noResults ? (
+              )}
+              {indexState === 'ready' && noResults && (
                 <div
                   className="text-center py-10 text-stone-500 text-sm dark:text-gray-500"
                   aria-live="polite"
                 >
                   未找到与「{q.trim()}」匹配的文章
                 </div>
-              ) : results.length > 0 ? (
+              )}
+              {indexState === 'ready' && results.length > 0 && (
                 <>
                   {/* 结果数播报只出现一次，避免每条结果都触发读屏重复播报。
                       放在 listbox 外：WAI-ARIA 要求 listbox 的子元素只能是 option */}
@@ -304,50 +343,67 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                     ))}
                   </div>
                 </>
-              ) : !hasQuery && posts ? (
-                <div role="listbox" aria-label="最近文章">
-                  <div className="px-3 py-2 text-[11px] font-medium text-stone-400 dark:text-gray-500 uppercase tracking-widest">
+              )}
+              {indexState === 'ready' && !hasQuery && posts && (
+                /* 「最近文章」标题在 listbox 外：WAI-ARIA 要求 listbox 子元素只能是 option/group
+                   （与上方结果分支的 sr-only 播报同一处理方式） */
+                <>
+                  <div
+                    className="px-3 py-2 text-[11px] font-medium text-stone-400 dark:text-gray-500 uppercase tracking-widest"
+                    aria-hidden
+                  >
                     最近文章
                   </div>
-                  {posts.slice(0, 5).map((p, i) => (
-                    <Link
-                      key={p.slug}
-                      href={postUrl(p.slug)}
-                      role="option"
-                      aria-selected={i === activeIdx}
-                      onMouseEnter={() => setActiveIdx(i)}
-                      onClick={() => {
-                        onClose();
-                        startNavigation();
-                      }}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors group ${
-                        i === activeIdx ? 'bg-black/[0.03] dark:bg-white/5' : ''
-                      }`}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <span
-                          className={`font-medium text-sm truncate block transition-colors ${
-                            i === activeIdx ? 'text-accent-violet' : 'text-stone-900 dark:text-fg'
+                  {posts.length === 0 ? (
+                    /* 索引为空（无文章或索引文件异常）：给一句明确提示，不留空白面板 */
+                    <div className="text-center py-10 text-stone-500 text-sm dark:text-gray-500">
+                      暂无文章
+                    </div>
+                  ) : (
+                    <div role="listbox" aria-label="最近文章">
+                      {posts.slice(0, 5).map((p, i) => (
+                        <Link
+                          key={p.slug}
+                          href={postUrl(p.slug)}
+                          role="option"
+                          aria-selected={i === activeIdx}
+                          onMouseEnter={() => setActiveIdx(i)}
+                          onClick={() => {
+                            onClose();
+                            startNavigation();
+                          }}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors group ${
+                            i === activeIdx ? 'bg-black/[0.03] dark:bg-white/5' : ''
                           }`}
                         >
-                          {p.title}
-                        </span>
-                        <span className="text-[11px] text-stone-400 dark:text-gray-600">
-                          {formatDate(p.date)}
-                        </span>
-                      </div>
-                      <ArrowRight
-                        size={12}
-                        className={`shrink-0 transition-colors ${
-                          i === activeIdx
-                            ? 'text-accent-violet'
-                            : 'text-stone-400 dark:text-gray-600 opacity-0 group-hover:opacity-100'
-                        }`}
-                      />
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
+                          <div className="flex-1 min-w-0">
+                            <span
+                              className={`font-medium text-sm truncate block transition-colors ${
+                                i === activeIdx
+                                  ? 'text-accent-violet'
+                                  : 'text-stone-900 dark:text-fg'
+                              }`}
+                            >
+                              {p.title}
+                            </span>
+                            <span className="text-[11px] text-stone-400 dark:text-gray-600">
+                              {formatDate(p.date)}
+                            </span>
+                          </div>
+                          <ArrowRight
+                            size={12}
+                            className={`shrink-0 transition-colors ${
+                              i === activeIdx
+                                ? 'text-accent-violet'
+                                : 'text-stone-400 dark:text-gray-600 opacity-0 group-hover:opacity-100'
+                            }`}
+                          />
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
             <div className="flex items-center justify-between px-5 py-3 border-t border-black/[0.06] dark:border-white/5">
               <div className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-gray-500">

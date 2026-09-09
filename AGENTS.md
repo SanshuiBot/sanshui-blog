@@ -35,7 +35,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 4. `generateStaticParams` 返回全部 slug；新文章要重新 build。
 5. `'server-only'`：posts/toc/types.ts 只在 RSC 用；客户端 fetch posts-index.json。
 6. 索引访问判空（`arr[0]` 是 `T|undefined`）；未用变量是 error。
-7. 安全头/重定向走 `public/_headers`、`_redirects`，不走 next.config。
+7. 安全头/重定向走 `public/_headers`、`_redirects`，不走 next.config。（GitHub Pages 不支持 `_headers`，线上不生效；迁移 CF Pages/Netlify 才生效）
 8. 构建期不跑 lint，CI/本地单独跑。
 9. `images.unoptimized`：next/image 原图直出，新图自行压缩。
 10. Tailwind v4 CSS-first（`@import 'tailwindcss'` + `@theme`），无 config。
@@ -72,7 +72,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 41. sitemap 别设 `revalidate = 0`：会覆盖 `force-static`（历史 bug）。
 42. 与 framer inline transform 叠加的缩放/位移用 CSS 独立 `scale`/`translate`，别用 `transform`（会被内联覆盖）。
 43. reduced-motion 区分功能性/装饰性：滚动淡出（hero 标题/提示）必须保留，只跳视差/入场/循环。
-44. 生成脚本收口：`gen-posts-index.js`/`gen-feed.js`/`gen-og-image.js` 都复用 `parse-post.mjs`。
+44. 生成脚本收口：`gen-posts-index.js`/`gen-feed.js`/`gen-og-image.js` 都复用 `parse-post.mjs`；站点常量唯一源 `lib/site-config.mjs`（site.ts 与脚本共用）。
 45. CI 门禁：typecheck/lint/test 在 build 前跑；lint/test 加 `if: always()`（前一步失败也全跑）。
 46. 组件测试（jsdom）手动 `afterEach(cleanup)`：vitest 未开 globals，RTL 不自动清 DOM。
 47. Hover 变色走纯 CSS：基规则写亮色默认值，暗色用 `html.dark` 前缀覆盖（见 conventions §26）。已无「utility 亮色覆盖」反压问题（反色块已删、亮色为基）。accent 联动 hover 用自定义 CSS 类。

@@ -3,8 +3,8 @@
  * 生成 public/feed.xml —— RSS 2.0 订阅源。
  * -----------------------------
  * 解析契约复用 src/lib/parse-post.mjs（与 posts.ts / gen-posts-index.js 同一实现）。
- * 站点常量与 src/lib/site.ts 字面一致（脚本是 CJS 无法 import TS，靠注释双保险）——
- * 未来站点信息变更需同步此处 + site.ts。
+ * 站点常量收口 src/lib/site-config.mjs（唯一数据源，site.ts 同源）——
+ * 改站点信息只改 site-config.mjs，无需同步本文件。
  *
  * 体积控制：`<content:encoded>` 全文只进最新 10 篇（FULL_CONTENT_LIMIT），
  * 旧文章仅输出摘要——避免 feed 随文章数无限膨胀（23 篇全量全文约 332KB）。
@@ -16,16 +16,6 @@ const path = require('node:path');
 
 const postsDir = path.resolve(__dirname, '..', 'content', 'posts');
 const outPath = path.resolve(__dirname, '..', 'public', 'feed.xml');
-
-// 与 src/lib/site.ts 保持一致的站点常量（BASE_PATH = /sanshui-blog）
-// ⚠️ 改站点信息需同步 src/lib/site.ts（见 AGENTS.md #44 约定）
-const SITE = {
-  title: '三水 | 个人博客',
-  name: '三水',
-  description: '记录技术思考、生活感悟与创作灵感',
-  baseUrl: 'https://sanshuibot.github.io/sanshui-blog',
-  email: 'localhost6@foxmail.com',
-};
 
 /** XML 转义（RSS 内容与属性都需要） */
 function esc(s) {
@@ -77,6 +67,15 @@ async function build() {
   }
   const { parsePostFile, isPostFile, sortPostsByDateDesc } =
     await import('../src/lib/parse-post.mjs');
+  // 站点常量唯一数据源（与 site.ts 共用）；CJS 不能同步 require ESM，在 async 内动态 import
+  const { SITE_TITLE, SITE_DESCRIPTION, SITE_ORIGIN, SITE_BASE_PATH, SITE_EMAIL } =
+    await import('../src/lib/site-config.mjs');
+  const SITE = {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    baseUrl: `${SITE_ORIGIN}${SITE_BASE_PATH}`,
+    email: SITE_EMAIL,
+  };
   const files = fs.readdirSync(postsDir).filter(isPostFile);
 
   const posts = files

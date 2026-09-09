@@ -13,10 +13,15 @@
  *  - 底部 URL 标签：半透明 glass 胶囊 + 浅灰文字
  *
  * 触发点：npm run prebuild（构建前自动重建，确定性输出，无 git 噪音）。
+ *
+ * 增量渲染：对 SVG 源做 SHA-256 签名存根（.og-image-signature，随仓库提交——
+ * CI 全新 clone 也能命中跳过）；签名未变且 og.png 存在时跳过 sharp 渲染。
+ * 站点文案/配色改动会改变 SVG 内容 → 签名失配 → 自动重画，无漏更风险。
  */
 const sharp = require('sharp');
 const fs = require('node:fs');
 const path = require('node:path');
+const crypto = require('node:crypto');
 
 const W = 1200;
 const H = 630;
@@ -153,12 +158,26 @@ function buildSvgContent() {
 async function generateOG() {
   const svg = buildSvgContent();
   const outPath = path.resolve(__dirname, '..', 'public', 'og.png');
+  const sigPath = path.resolve(__dirname, '..', '.og-image-signature');
+
+  // 增量渲染：SVG 内容 SHA-256 与存根一致且产物存在 → 跳过 sharp 渲染（省 1-2s/次构建）。
+  // 站点文案/配色改动会改变 SVG 字符串 → 签名失配 → 重画并更新存根。
+  const signature = crypto.createHash('sha256').update(svg).digest('hex');
+  if (
+    fs.existsSync(outPath) &&
+    fs.existsSync(sigPath) &&
+    fs.readFileSync(sigPath, 'utf-8').trim() === signature
+  ) {
+    console.log('✓ og.png 内容未变化，跳过渲染（签名命中）');
+    return;
+  }
 
   // palette 量化：Aurora 渐变用 256 色索引 PNG（实测 306K→175K，-43%），
   // 社交卡片非首屏资源，肉眼无感；compressionLevel 9 已是 zlib 最高
   await sharp(Buffer.from(svg, 'utf-8'))
     .png({ compressionLevel: 9, palette: true })
     .toFile(outPath);
+  fs.writeFileSync(sigPath, signature + '\n', 'utf-8');
 
   const stats = fs.statSync(outPath);
   console.log(`✓ 已生成 ${outPath} (${(stats.size / 1024).toFixed(1)} KB, ${W}x${H})`);

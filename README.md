@@ -136,7 +136,8 @@ sanshui-blog/
 │       ├── links.ts            # 友链数据字典（/links 页唯一数据源）
 │       ├── navLinks.ts         # 主导航项单一真相源（Navbar 抽屉与 Footer 共用）
 │       ├── platform.ts         # 平台检测（SSR 安全，仅 UI 展示差异）
-│       ├── site.ts             # 站点身份配置（url/emailHref/copyrightYear 等派生字段）
+│       ├── site-config.mjs      # 站点常量唯一数据源（client-safe；site.ts + gen-feed/gen-og 脚本共用）
+│       ├── site.ts             # 站点身份配置（url 含 basePath 双态等派生字段，字面值来自 site-config.mjs）
 │       ├── basePath.ts         # basePath 中心定义 + withBase()
 │       ├── thumbGeometry.ts    # TOC 滚动指示条几何纯函数
 │       ├── clickParticles.ts   # 点击特效粒子物理纯函数
@@ -186,7 +187,7 @@ npx serve out
 | `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                                                          |
 | `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                                                                     |
 | `npm run typecheck`    | `tsc --noEmit` 类型检查（Next 16 构建不跑 lint，CI/本地须单独跑 lint + typecheck）                                                        |
-| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 144 个）                                                                        |
+| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 158 个）                                                                        |
 | `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                                                                    |
 
 > 🔒 **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`。
@@ -411,7 +412,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
   - `trailingSlash: true`：所有路由以 `/` 结尾（如 `/posts/xxx/`），`generateStaticParams` 与内部链接拼接都必须遵守，否则线上 404
   - `experimental.optimizePackageImports: ['framer-motion','lucide-react']`：让大库按需引入，**不要再自定义 `splitChunks`**——会与内置 chunk 策略冲突，反而拆出更多碎 chunk
   - `reactStrictMode: true`：开发模式下 effects 会执行两次（mount → unmount → mount），副作用清理逻辑必须幂等
-- **安全头走 `public/_headers`**：`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`，GitHub Pages 会识别。新增响应头改 `public/_headers`，不要改 `next.config.ts`
+- **安全头走 `public/_headers`**：`output: 'export'` 模式下，`next.config.ts` 的 `headers()` **不会生效**——静态 HTML 由 GitHub Pages 直接返回，不经过 Next。安全响应头（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）通过仓库根的 `public/_headers` 配置，Next 静态导出会原样复制到 `out/_headers`。**⚠️ GitHub Pages 本身不支持 `_headers`，线上不生效**（2026-09 实测；迁移 Cloudflare Pages / Netlify 后自动生效）。新增响应头改 `public/_headers`，不要改 `next.config.ts`
 - **文章卡片网格「跟手」流式渲染**：`PostGrid` + `PostCard` 实现骨架渐隐与卡片渐显**同一 DOM 帧叠加**，零空白帧。关键实现：骨架层与卡片层同时挂载于同一 `h-60`（240px）固定容器，absolute 叠放，只通过 opacity 切换显隐；槽位 key 用 `slot-${i}` 稳定不变，骨架→卡片切换不触发 DOM 卸载/重挂；骨架入场按槽位错峰（`min(i × 45, 675)`ms + 0.15s 淡入）一格一格铺满；卡片入场从 `whileInView` 改为挂载即播放（列表场景卡片总是从下方进入视野，等 `IntersectionObserver` 反而不跟手），用 scale spring（`stiffness 3400 / damping 15 / mass 0.25`，0.88→1 欠阻尼弹入 + 过冲回落）+ opacity tween（0.28s，与骨架退场同 duration 同步）——参数收口在 PostCard 的 `cardPop`/`cardReveal`，不用 `y` 位移（会让卡片在途中「露半张」）；`prefetchedRef` 在 `post.slug` 变化时重置（`useEffect`），避免稳定 slot key 复用 PostCard 实例时新文章 hover 跳过 prefetch
 - **TOC 只提取 h2/h3，锚点与渲染侧同源**：`src/lib/toc.ts` 的 `extractHeadings()` 逐行扫描，只把 `##` / `###` 放进目录，`#` 与 `####` 不进目录；id 与渲染侧 rehype-slug 共用同一个 `github-slugger`（先剥 HTML 再 `slug()`，h1~h6 全部推进状态，重复标题自动 `-1/-2` 后缀，中文/重音/假名都保留，且**不**折叠重复连字符——与渲染侧严格一致），并跳过代码围栏内的假标题。新增需要进目录的标题，必须用 `##` 或 `###`。TOC 组件实现：桌面端目录 sticky 在正文**右边**（`page.tsx` 正文在前、TOC 在后），移动端抽屉式目录在正文上方；`IntersectionObserver` 监测视口上 30% 带取最靠上标题高亮、首屏高亮首项；点击 `scrollIntoView` 平滚 + `history.replaceState` 写 URL hash；`.prose-article h2/h3 { scroll-margin-top: 6rem }` 兜锚点不被 sticky Navbar 遮挡；**淡入淡出滚动条**——`.toc-scroll` 藏原生滚动条，浮 `.toc-thumb` 绝对定位指示条按滚动比例算 `top`/`height`（几何在 `src/lib/thumbGeometry.ts` 纯函数，可单测），显隐只由 hover 控制（`mouseenter` 显示 / `mouseleave` 隐藏），`opacity transition` 淡入淡出，浮层 `absolute` 不占文档流不挤压文字；几何用 `ResizeObserver` + `requestAnimationFrame` 延迟算准 + `document.fonts.ready` 兜底。颜色联 Accent 主题用自定义 `.toc-link` / `.toc-link-active` 类（见下 utility layer 坑），不用 Tailwind utility `text-accent-violet`
 - **CSS 文件集中存放**：所有 `.css` 文件（含 `globals.css`）统一放在 `src/styles/`，组件内通过 JS import 按需引入（`import '@/styles/xxx.css'`），全局样式由 `layout.tsx` 统一 import。**禁止在组件目录里散落 `.css` 文件**。共享外壳（终端窗口）抽为 `TerminalShell` 组件，各页面只传 `title`/`status` prop，不要手抄圆点标题栏

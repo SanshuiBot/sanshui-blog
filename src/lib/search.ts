@@ -1,10 +1,14 @@
 /**
- * 客户端搜索纯函数 —— SearchModal 的匹配/分词/高亮契约（可测试）。
+ * 客户端搜索纯函数 —— 分词/回退匹配/高亮契约（可测试）。
  * -----------------------------
- * 全站唯一搜索机制（⌘K）；本模块是匹配逻辑唯一实现，组件只负责渲染。纯函数、无 DOM、无 React 依赖：
+ * 本模块是分词与高亮逻辑的唯一实现，组件只负责渲染。纯函数、无 DOM、无 React 依赖：
  *  - tokenize：查询词按空白切分为小写词元（支持中文空格分词）
  *  - searchPosts：全词元 AND 匹配（title/excerpt/tags 拼成单个 haystack，
- *    每词只做一次 includes），替代原来的单串子串匹配。默认返回前 20 条。
+ *    每词只做一次 includes），默认返回前 20 条。
+ *    ⚠️ 当前 SearchModal 的实际匹配走组件内的 Fuse.js（模糊容错 + 权重排序，
+ *    仍消费本模块的 tokenize 保持「空格分词 AND」语义），searchPosts 保留为
+ *    精确子串匹配的回退契约（tests/search.test.ts 锁定行为）——若 Fuse 移除或
+ *    需要零依赖精确匹配，可直接切回本函数，语义不变。
  *  - splitByTerms：把文本切成 命中/未命中 片段数组，供 <mark> 高亮渲染
  *  - compiledRegexCache：模块级正则缓存，避免高频搜索时反复 new RegExp
  */

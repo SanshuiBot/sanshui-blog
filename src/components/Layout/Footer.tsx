@@ -74,13 +74,14 @@ export default function Footer() {
             Next.js &bull; MDX &bull; Tailwind CSS
             {/* RSS 订阅真链接（feed.xml 由 scripts/gen-feed.js 生成）。
                 feed.xml 是静态文件不是路由——必须用原生 <a> + withBase()：
-                <Link> 会把它当路由做 RSC 预取（/feed.xml/__next._tree.txt → 线上 404 噪音） */}
+                <Link> 会把它当路由做 RSC 预取（/feed.xml/__next._tree.txt → 线上 404 噪音）。
+                hover 变色由 .footer-link:hover 纯 CSS 提供（红线 #47：accent 联动不走 utility） */}
             <a
               href={withBase('/feed.xml')}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="RSS 订阅"
-              className="footer-link footer-rss inline-flex text-stone-500 hover:text-accent-violet transition-colors"
+              className="footer-link footer-rss inline-flex text-stone-500 transition-colors"
             >
               <Rss size={12} />
             </a>

@@ -66,9 +66,9 @@
 
 **sitemap force-static 陷阱**: `sitemap.ts` 写 `revalidate = 0` 会覆盖 `force-static` 导致 sitemap.xml 不被静态导出（历史 bug：路由表 ƒ、out/ 无文件）。只留 `dynamic = 'force-static'`，中文 slug 记得 `encodeURIComponent`。 _Avoid_: revalidate 定时刷新
 
-**RSS feed**: `scripts/gen-feed.js` 生成 `public/feed.xml`——RSS 2.0 + 全文 CDATA + 标签分类，复用 `parse-post.mjs`；站点常量与 `site.ts` 字面一致（改站点信息同步两处）。 _Avoid_: 订阅源、rss.xml
+**RSS feed**: `scripts/gen-feed.js` 生成 `public/feed.xml`——RSS 2.0 + 全文 CDATA + 标签分类，复用 `parse-post.mjs`；站点常量收口 `lib/site-config.mjs`（`site.ts` 与脚本同源，改站点信息只改它）。 _Avoid_: 订阅源、rss.xml
 
-**og 分享图**: `scripts/gen-og-image.js` 生成 `public/og.png`——1200×630 sharp SVG 光栅化（支持中文），Aurora 渐变 + 56px 网格 + 中心辉光 + 「三水」标题 + URL 胶囊。CI Linux runner 自带 Noto CJK，中文渲染可靠。 _Avoid_: 社交卡片图
+**og 分享图**: `scripts/gen-og-image.js` 生成 `public/og.png`——1200×630 sharp SVG 光栅化（支持中文），Aurora 渐变 + 56px 网格 + 中心辉光 + 「三水」标题 + URL 胶囊。CI Linux runner 自带 Noto CJK，中文渲染可靠；SVG 签名存根 `.og-image-signature` 未变则跳过渲染。 _Avoid_: 社交卡片图
 
 ## 测试
 
