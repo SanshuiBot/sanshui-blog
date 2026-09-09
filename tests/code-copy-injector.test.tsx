@@ -133,7 +133,7 @@ describe('CodeCopyInjector', () => {
       await Promise.resolve();
     });
     expect(writeText).toHaveBeenCalledWith('const x = 1;');
-    expect(copy.textContent).toBe('已复制!');
+    expect(copy.textContent).toBe('✓ 已复制!');
 
     act(() => {
       vi.advanceTimersByTime(2000);

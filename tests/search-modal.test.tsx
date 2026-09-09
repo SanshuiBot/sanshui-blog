@@ -98,11 +98,12 @@ describe('SearchModal', () => {
     expect(screen.queryByRole('link')).toBeNull();
 
     // 双关键词 AND：只有 Redis 那篇两个词元都命中
+    // 结果项在 listbox 下带 role="option"（ARIA 列表模式），不再查询 role="link"
     fireEvent.change(input, { target: { value: 'redis 锁' } });
     await waitFor(() => {
-      const links = screen.getAllByRole('link');
-      expect(links.length).toBe(1);
-      expect(links[0]?.textContent).toContain('Redis 分布式锁实战');
+      const options = screen.getAllByRole('option');
+      expect(options.length).toBe(1);
+      expect(options[0]?.textContent).toContain('Redis 分布式锁实战');
     });
 
     // 键盘流：选中第一项 + Enter 跳转
