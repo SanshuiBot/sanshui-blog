@@ -319,3 +319,42 @@ export const themeBootstrapScript = `try {
   var meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', isDark ? '${THEME_COLORS.dark}' : '${THEME_COLORS.light}');
 } catch (e) {}`;
+
+/**
+ * 主题切换按钮「首点无反应」修复（hydration 前原生代劳）。
+ * -----------------------------
+ * ThemeToggle 用 useSyncExternalStore 的 mounted 阀门，SSR 快照下渲染无交互占位 div；
+ * 移动端首次加载 JS 包 + hydration 需要时间，这期间的首次点击落在占位 div 上、
+ * React handler 尚未挂上 → 「点了没反应」。
+ *
+ * 本脚本在 <head> 同步跑一次，注册 document 级 click 捕获监听（事件委托）：
+ *  - 命中 #theme-toggle 且其内**尚无真实 <button>**（React 未接管）时，原生代劳：
+ *    翻 .dark 类 + 写 localStorage('aurora-theme') + 同步 meta theme-color；
+ *  - 其内已出现 <button>**（React 已接管）**时立即自注销监听、让位给 React 的
+ *    setTheme，不重复切换（监听只在 hydration 前的短暂窗口内有效，不驻留页面生命周期）。
+ * 与 themeBootstrapScript 共用 storageKey('aurora-theme') 与 THEME_COLORS，行为一致。
+ */
+export const themeToggleClickScript = `(function(){
+  var key = 'aurora-theme';
+  function on(e){
+    var anchor = document.getElementById('theme-toggle');
+    if(!anchor) return;
+    var t = e.target;
+    if(!t || !t.closest || t.closest('#theme-toggle') !== anchor) return;
+    if(anchor.querySelector('button')){
+      // React 已接管：原生不再代劳，注销自身，交给 setTheme
+      document.removeEventListener('click', on, true);
+      return;
+    }
+    var next;
+    try { next = localStorage.getItem(key) || 'light'; } catch(_){ next = 'light'; }
+    next = next === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem(key, next); } catch(_){}
+    var root = document.documentElement;
+    if(next === 'dark') root.classList.add('dark'); else root.classList.remove('dark');
+    root.style.colorScheme = next;
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if(meta) meta.setAttribute('content', next === 'dark' ? '${THEME_COLORS.dark}' : '${THEME_COLORS.light}');
+  }
+  document.addEventListener('click', on, true);
+})();`;

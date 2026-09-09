@@ -18,7 +18,7 @@ import AmbientEffects from '@/components/AmbientEffects';
 import AppShell from '@/components/AppShell';
 import { withBase } from '@/lib/basePath';
 import { siteConfig } from '@/lib/site';
-import { accentBootstrapScript, themeBootstrapScript } from '@/lib/accents';
+import { accentBootstrapScript, themeBootstrapScript, themeToggleClickScript } from '@/lib/accents';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -62,14 +62,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
       <head>
-        {/* 防 FOUC（单个阻塞脚本，内联两个 IIFE）：
+        {/* 防 FOUC + 首点（单个阻塞脚本，内联三个 IIFE）：
             1) accent —— 首屏前同步应用上次的强调色；由 accents.ts 生成，与 resolveAccentColors 共享数据源。
             2) theme —— 首屏前同步设 .dark 类 + meta theme-color（next-themes 的 ThemeProvider 渲染在
                <body> 内，其内联 script 进不了 <head>，否则亮暗闪屏 + 地址栏先亮后暗）。
+            3) themeToggleClick —— 主题切换按钮 hydration 前的原生事件委托：移动端首次加载、
+               React 尚未 hydrate 时点击 #theme-toggle 也能即时切主题（ThemeToggle SSR 为占位 div，
+               原首点会落在无交互占位上而「无反应」）。React 接管后脚本自动让位，不重复切换。
             dangerouslySetInnerHTML 安全：脚本内容由 ACCENT_STORAGE_KEY / CUSTOM_ACCENT_STORAGE_KEY /
             DEFAULT_ACCENT_ID / ACCENT_PRESETS / THEME_COLORS 等模块级常量拼接，无用户输入，无模板注入风险。 */}
         <script
-          dangerouslySetInnerHTML={{ __html: accentBootstrapScript + themeBootstrapScript }}
+          dangerouslySetInnerHTML={{
+            __html: accentBootstrapScript + themeBootstrapScript + themeToggleClickScript,
+          }}
         />
       </head>
       <body className="min-h-dvh flex flex-col antialiased relative">
