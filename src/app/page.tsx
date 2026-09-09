@@ -19,7 +19,6 @@ import HomeHydration from '@/components/Home/HomeHydration';
 
 export default function Home() {
   const posts = getAllPosts();
-  const firstPost = posts[0];
 
   // 首屏 Hero 统计胶囊：服务端一次性算好，避免客户端再 fetch
   const lastUpdated = posts[0]?.date ?? '';
@@ -29,13 +28,13 @@ export default function Home() {
     lastUpdated,
   };
 
-  // 预取范围：仅第一篇文章（1 篇），减少 HTML 体积
-  const prefetchSlugs = firstPost ? [firstPost.slug] : [];
+  // 预取范围：前 3 篇文章（移动端无 hover，靠 prefetch 提前缓存 HTML）
+  const prefetchSlugs = posts.slice(0, 3).map((p) => p.slug);
 
   return (
     <>
-      {/* 批量预取第一篇文章页 HTML：用户点击卡片前，目标 HTML 已在浏览器 HTTP 缓存。
-          低优先级、空闲时拉取，不阻塞首屏。 */}
+      {/* 批量预取前 3 篇文章页 HTML：用户点击卡片前，目标 HTML 已在浏览器 HTTP 缓存。
+          低优先级、空闲时拉取，不阻塞首屏。移动端无 hover prefetch，此项尤为重要。 */}
       {prefetchSlugs.map((slug) => (
         <link key={slug} rel="prefetch" href={withBase(`/posts/${slug}/`)} fetchPriority="low" />
       ))}

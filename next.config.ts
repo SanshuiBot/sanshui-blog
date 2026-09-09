@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     unoptimized: true, // 静态导出 — 无服务端优化器
-    formats: ['image/avif', 'image/webp'],
+    // formats 在 unoptimized 模式下不生效（Next.js 优化器被跳过），省略避免误导
   },
   // 局域网 IP 访问 dev server 的白名单：自动探测本机 IPv4（见 collectDevOrigins），
   // 不在列表的来源会被拒，表现为 HMR WebSocket failed + 全屏错误 overlay。

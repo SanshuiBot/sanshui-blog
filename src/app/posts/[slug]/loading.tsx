@@ -25,8 +25,20 @@ export default function PostLoading() {
         </span>
       </div>
 
-      <div className="flex gap-10">
-        <div className="flex-1 min-w-0 max-w-3xl">
+      <div className="lg:flex lg:gap-10">
+        <div className="hidden lg:block sticky top-28 w-56 shrink-0 self-start ml-8">
+          <Skel className="h-3 w-12 mb-4" />
+          <div
+            className="space-y-2"
+            style={{ borderLeft: '1px solid var(--border-skeleton)', paddingLeft: '0.75rem' }}
+          >
+            <Skel className="h-3 w-40" />
+            <Skel className="h-3 w-36" />
+            <Skel className="h-3 w-44" />
+            <Skel className="h-3 w-32" />
+          </div>
+        </div>
+        <div className="flex-1 min-w-0 max-w-3xl lg:order-1">
           <Skel className="mb-8 h-4 w-20" />
           <div className="flex gap-2 mb-5">
             <Skel className="h-6 w-16 !rounded-full" />
@@ -54,18 +66,6 @@ export default function PostLoading() {
             <Skel className="w-2/3" />
             <Skel />
             <Skel className="w-4/5" />
-          </div>
-        </div>
-        <div className="hidden lg:block sticky top-28 w-56 shrink-0 self-start ml-8">
-          <Skel className="h-3 w-12 mb-4" />
-          <div
-            className="space-y-2"
-            style={{ borderLeft: '1px solid var(--border-skeleton)', paddingLeft: '0.75rem' }}
-          >
-            <Skel className="h-3 w-40" />
-            <Skel className="h-3 w-36" />
-            <Skel className="h-3 w-44" />
-            <Skel className="h-3 w-32" />
           </div>
         </div>
       </div>

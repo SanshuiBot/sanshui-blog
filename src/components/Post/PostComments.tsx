@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 
 /**
@@ -43,8 +43,8 @@ export default function PostComments() {
   const { resolvedTheme } = useTheme();
   const theme = resolvedTheme === 'dark' ? 'dark' : 'light';
   const themeRef = useRef(theme);
-  // 记录 giscus iframe 是否已加载完成：加载完成前（about:blank）向它
-  // postMessage 会抛「target origin 不匹配」异常（接收窗口源是父页面）
+  // 记录 giscus iframe 是否已加载完成
+  const [loaded, setLoaded] = useState(false);
   const loadedRef = useRef(false);
   // 主题变化时同步到 ref（脚本注入 / iframe load 兜底读取最新值，绕开闭包过期）
   useEffect(() => {
@@ -70,6 +70,7 @@ export default function PostComments() {
     const syncThemeOnLoad = (event: Event) => {
       if (!(event.target instanceof HTMLIFrameElement)) return;
       loadedRef.current = true;
+      setLoaded(true);
       postTheme(el, themeRef.current);
     };
     el.addEventListener('load', syncThemeOnLoad, true);
@@ -94,6 +95,7 @@ export default function PostComments() {
       } catch {}
       if (frame && doc === null) {
         loadedRef.current = true;
+        setLoaded(true);
         postTheme(el, themeRef.current);
       }
     };
@@ -121,7 +123,15 @@ export default function PostComments() {
         <h2 className="text-lg font-semibold text-black/60 dark:text-fg/60">评论</h2>
         <span className="h-px flex-1 bg-black/[0.06] dark:bg-white/[0.06]" />
       </div>
-      <div ref={containerRef} className="min-h-40" />
+      <div ref={containerRef} className="min-h-40">
+        {!loaded && (
+          <div className="animate-pulse space-y-4 py-4">
+            <div className="h-4 w-48 rounded bg-black/[0.06] dark:bg-white/[0.06]" />
+            <div className="h-20 w-full rounded-xl bg-black/[0.04] dark:bg-white/[0.04]" />
+            <div className="h-4 w-32 rounded bg-black/[0.04] dark:bg-white/[0.04]" />
+          </div>
+        )}
+      </div>
     </section>
   );
 }

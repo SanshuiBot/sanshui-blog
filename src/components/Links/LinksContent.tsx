@@ -237,11 +237,9 @@ export default function LinksContent() {
         <div className="terminal-exchange-title">$ cat exchange.md</div>
         <p className="terminal-exchange-desc">想交换友链？发邮件或在 GitHub 提 Issue。</p>
         <div className="flex flex-wrap gap-3">
-          <motion.a
+          <a
             href={siteConfig.emailHref}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg btn-solid btn-terminal text-sm font-medium font-mono"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg btn-solid btn-terminal text-sm font-medium font-mono btn-hover-scale"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -258,18 +256,16 @@ export default function LinksContent() {
               <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
             </svg>
             联系我
-          </motion.a>
-          <motion.a
+          </a>
+          <a
             href={siteConfig.github}
             target="_blank"
             rel="noopener noreferrer"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg btn-terminal bg-black/[0.03] text-stone-700 text-sm font-medium border border-black/[0.1] font-mono dark:bg-white/5 dark:text-gray-300 dark:border-white/10"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg btn-terminal bg-black/[0.03] text-stone-700 text-sm font-medium border border-black/[0.1] font-mono dark:bg-white/5 dark:text-gray-300 dark:border-white/10 btn-hover-scale"
           >
             <Github size={14} />
             GitHub
-          </motion.a>
+          </a>
         </div>
       </motion.div>
     </>

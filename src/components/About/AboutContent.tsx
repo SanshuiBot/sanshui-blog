@@ -1,20 +1,24 @@
 'use client';
-import { Mail, Sparkles, Code2, Server, Wrench, Terminal, Braces, Layers, Zap } from 'lucide-react';
-import type { ComponentType } from 'react';
 import {
-  SiNextdotjs,
-  SiReact,
-  SiTypescript,
-  SiTailwindcss,
-  SiFramer,
-  SiNodedotjs,
-  SiPython,
-  SiSqlite,
-  SiGit,
-  SiDocker,
-  SiVite,
-} from 'react-icons/si';
-import { TbBrandVscode } from 'react-icons/tb';
+  Mail,
+  Sparkles,
+  Code2,
+  Server,
+  Wrench,
+  Terminal,
+  Braces,
+  Layers,
+  Zap,
+  Atom,
+  FileCode2,
+  Paintbrush,
+  Frame,
+  Hexagon,
+  Database,
+  GitBranch,
+  Box,
+} from 'lucide-react';
+import type { ComponentType } from 'react';
 import Github from '@/components/UI/GithubIcon';
 import ArrowLink from '@/components/UI/ArrowLink';
 import { motion, type Variants } from 'framer-motion';
@@ -67,24 +71,25 @@ const stack = [
   },
 ];
 
-/** 技术 logo 映射：品牌色做彩色，无品牌色的（Next.js/REST API）用当前文字色或中性灰 */
+/** 技术 logo 映射：品牌色做彩色，无品牌色的（Next.js/REST API）用当前文字色或中性灰。
+ *  已从 react-icons 迁移到 lucide-react 通用图标（减少 ~300KB 依赖）。 */
 const stackIcons: Record<
   string,
   { Icon: ComponentType<{ size?: number; className?: string }>; color?: string }
 > = {
-  'Next.js': { Icon: SiNextdotjs },
-  React: { Icon: SiReact, color: '#61DAFB' },
-  TypeScript: { Icon: SiTypescript, color: '#3178C6' },
-  'Tailwind CSS': { Icon: SiTailwindcss, color: '#06B6D4' },
-  'Framer Motion': { Icon: SiFramer, color: '#0055FF' },
-  'Node.js': { Icon: SiNodedotjs, color: '#339933' },
-  Python: { Icon: SiPython, color: '#3776AB' },
-  SQLite: { Icon: SiSqlite, color: '#003B57' },
+  'Next.js': { Icon: Code2 },
+  React: { Icon: Atom, color: '#61DAFB' },
+  TypeScript: { Icon: FileCode2, color: '#3178C6' },
+  'Tailwind CSS': { Icon: Paintbrush, color: '#06B6D4' },
+  'Framer Motion': { Icon: Frame, color: '#0055FF' },
+  'Node.js': { Icon: Hexagon, color: '#339933' },
+  Python: { Icon: Terminal, color: '#3776AB' },
+  SQLite: { Icon: Database, color: '#003B57' },
   'REST API': { Icon: Braces, color: '#94a3b8' },
-  Git: { Icon: SiGit, color: '#F05032' },
-  Docker: { Icon: SiDocker, color: '#2496ED' },
-  'VS Code': { Icon: TbBrandVscode, color: '#007ACC' },
-  Vite: { Icon: SiVite, color: '#646CFF' },
+  Git: { Icon: GitBranch, color: '#F05032' },
+  Docker: { Icon: Box, color: '#2496ED' },
+  'VS Code': { Icon: Code2, color: '#007ACC' },
+  Vite: { Icon: Zap, color: '#646CFF' },
 };
 
 const fallbackStackIcon: {
@@ -179,22 +184,13 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
           <h2 className="text-xl font-bold text-stone-900 dark:text-fg">技术栈</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {stack.map((s, catIdx) => (
-            <motion.div
+          {stack.map((s) => (
+            <div
               key={s.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: catIdx * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -4 }}
-              className="relative flex flex-col p-5 rounded-2xl glass border border-black/[0.06] hover:border-black/20 overflow-hidden group dark:border-white/10 dark:hover:border-white/25"
+              className="about-stack-card relative flex flex-col p-5 rounded-2xl glass border border-black/[0.06] hover:border-black/20 overflow-hidden group dark:border-white/10 dark:hover:border-white/25"
             >
-              <motion.div
-                className={`absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${s.color}`}
-                initial={{ scaleX: 0, opacity: 0 }}
-                whileHover={{ scaleX: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 180, damping: 16 }}
-                style={{ transformOrigin: 'left' }}
+              <div
+                className={`about-accent-line absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${s.color}`}
               />
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -208,22 +204,10 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
                 </span>
               </div>
               <div className="flex flex-1 flex-wrap content-start gap-3">
-                {s.items.map((item, i) => {
+                {s.items.map((item) => {
                   const icon = stackIcons[item.name] ?? fallbackStackIcon;
                   return (
-                    <motion.div
-                      key={item.name}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{
-                        delay: 0.15 + i * 0.06,
-                        duration: 0.35,
-                        ease: [0.16, 1, 0.3, 1],
-                      }}
-                      whileHover={{ y: -2, scale: 1.04 }}
-                      className="relative w-full"
-                    >
+                    <div key={item.name} className="about-stack-item relative w-full">
                       <div className="relative px-3 py-2 rounded-lg border border-black/10 bg-black/[0.03] hover:bg-black/[0.06] dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.07] transition-colors cursor-default">
                         <div className="flex items-center gap-2 pl-2">
                           <span
@@ -249,11 +233,11 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
                           </div>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </motion.div>
@@ -280,26 +264,22 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
         <div className="terminal-exchange-title">$ cat contact.md</div>
         <p className="terminal-exchange-desc">如果你有任何问题或想法，欢迎通过以下方式联系我。</p>
         <div className="flex flex-wrap gap-3">
-          <motion.a
+          <a
             href={siteConfig.github}
             target="_blank"
             rel="noopener noreferrer"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className={`${btnClass} btn-solid btn-terminal`}
+            className={`${btnClass} btn-solid btn-terminal btn-hover-scale`}
           >
             <Github size={14} />
             GitHub
-          </motion.a>
-          <motion.a
+          </a>
+          <a
             href={siteConfig.emailHref}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className={`${btnClass} btn-terminal bg-black/[0.03] text-stone-700 border border-black/[0.1] dark:bg-white/5 dark:text-gray-300 dark:border-white/10`}
+            className={`${btnClass} btn-terminal bg-black/[0.03] text-stone-700 border border-black/[0.1] dark:bg-white/5 dark:text-gray-300 dark:border-white/10 btn-hover-scale`}
           >
             <Mail size={14} />
             Email
-          </motion.a>
+          </a>
           <span
             aria-hidden="true"
             title="KFC Crazy Thursday, V 50 —— 玩梗的：点个 Star 或写封邮件就好 ☕"

@@ -55,7 +55,6 @@ const LANG_LABELS: Record<string, string> = {
   diff: 'Diff',
   markdown: 'Markdown',
   md: 'Markdown',
-  solidity: 'Solidity',
   plaintext: 'Text',
   text: 'Text',
 };
@@ -100,9 +99,11 @@ export default function CodeCopyInjector() {
         copy.onclick = async () => {
           try {
             await navigator.clipboard.writeText(code.textContent ?? '');
-            copy.textContent = '已复制!';
+            copy.textContent = '✓ 已复制!';
+            copy.classList.add('code-window-copy-done');
             setTimeout(() => {
               copy.textContent = '复制';
+              copy.classList.remove('code-window-copy-done');
             }, 2000);
           } catch {
             // Clipboard API 不可用时静默失败（同原实现）

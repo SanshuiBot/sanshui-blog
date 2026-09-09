@@ -18,6 +18,7 @@ const postsDir = path.resolve(__dirname, '..', 'content', 'posts');
 const outPath = path.resolve(__dirname, '..', 'public', 'feed.xml');
 
 // 与 src/lib/site.ts 保持一致的站点常量（BASE_PATH = /sanshui-blog）
+// ⚠️ 改站点信息需同步 src/lib/site.ts（见 AGENTS.md #44 约定）
 const SITE = {
   title: '三水 | 个人博客',
   name: '三水',

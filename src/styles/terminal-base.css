@@ -63,6 +63,42 @@
   color: rgb(0 0 0 / 0.25);
 }
 
+/* ── 按钮 hover 缩放（纯 CSS 替代 Framer whileHover/whileTap，约定 #25/#32） ── */
+.btn-hover-scale {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.btn-hover-scale:hover {
+  transform: scale(1.03);
+}
+.btn-hover-scale:active {
+  transform: scale(0.97);
+}
+/* ── 关于页技术栈卡片 hover（纯 CSS 替代 Framer whileHover） ── */
+.about-stack-card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.about-stack-card:hover {
+  transform: translateY(-4px);
+}
+.about-stack-card .about-accent-line {
+  transform: scaleX(0);
+  opacity: 0;
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.3s ease;
+  transform-origin: left;
+}
+.about-stack-card:hover .about-accent-line {
+  transform: scaleX(1);
+  opacity: 1;
+}
+.about-stack-item {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.about-stack-item:hover {
+  transform: translateY(-2px) scale(1.04);
+}
+
 /* ── 终端命令式 CTA 面板（友链交换块 / 关于联系卡共用，亮基） ── */
 .terminal-exchange-box {
   margin-top: 1.5rem;
@@ -70,8 +106,8 @@
   border-radius: 1rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(var(--terminal-blur)) saturate(var(--terminal-saturate));
+  -webkit-backdrop-filter: blur(var(--terminal-blur)) saturate(var(--terminal-saturate));
   box-shadow: var(--shadow-soft);
 }
 .terminal-exchange-title {

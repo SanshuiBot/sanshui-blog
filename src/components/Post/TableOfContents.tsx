@@ -200,15 +200,21 @@ export default function TableOfContents({ items }: Props) {
           目录
           <span className="text-xs text-stone-400 dark:text-gray-600">({items.length})</span>
         </button>
-        {drawerOpen && (
-          <div
-            ref={drawerRef}
-            id="toc-drawer"
-            className="mt-3 p-4 rounded-xl glass border border-black/[0.06] max-h-72 overflow-y-auto dark:border-white/5"
-          >
-            {list}
-          </div>
-        )}
+        <div
+          ref={drawerRef}
+          id="toc-drawer"
+          // 折叠动画用常驻渲染 + max-height 过渡；关闭态用 inert 防止键盘 Tab
+          // 聚焦到 opacity:0 的隐藏链接（focus trap 仅开启态生效，兜不住关闭态）
+          inert={!drawerOpen}
+          className="mt-3 rounded-xl glass border border-black/[0.06] overflow-y-auto dark:border-white/5 transition-all duration-300 ease-out"
+          style={{
+            maxHeight: drawerOpen ? '288px' : '0px',
+            padding: drawerOpen ? '1rem' : '0 1rem',
+            opacity: drawerOpen ? 1 : 0,
+          }}
+        >
+          <div className="py-1">{list}</div>
+        </div>
       </div>
     </>
   );

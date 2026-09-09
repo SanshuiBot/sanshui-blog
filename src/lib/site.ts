@@ -6,6 +6,7 @@
  *
  * 注意：本模块会被客户端组件（Navbar/Footer 等）引用，
  * 因此不能加 'server-only' 导入，与 basePath.ts 相同。
+ * ⚠️ 改站点信息需同步 scripts/gen-feed.js（见 AGENTS.md #44 约定）
  */
 import { BASE_PATH } from './basePath';
 

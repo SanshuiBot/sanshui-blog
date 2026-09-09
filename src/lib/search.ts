@@ -4,7 +4,7 @@
  * 全站唯一搜索机制（⌘K）；本模块是匹配逻辑唯一实现，组件只负责渲染。纯函数、无 DOM、无 React 依赖：
  *  - tokenize：查询词按空白切分为小写词元（支持中文空格分词）
  *  - searchPosts：全词元 AND 匹配（title/excerpt/tags 拼成单个 haystack，
- *    每词只做一次 includes），替代原来的单串子串匹配
+ *    每词只做一次 includes），替代原来的单串子串匹配。默认返回前 20 条。
  *  - splitByTerms：把文本切成 命中/未命中 片段数组，供 <mark> 高亮渲染
  *  - compiledRegexCache：模块级正则缓存，避免高频搜索时反复 new RegExp
  */
@@ -30,7 +30,7 @@ function buildHaystack(post: PostIndexEntry): string {
 export function searchPosts(
   entries: readonly PostIndexEntry[],
   query: string,
-  limit = 8,
+  limit = 20,
 ): PostIndexEntry[] {
   const terms = tokenize(query);
   if (terms.length === 0) return [];

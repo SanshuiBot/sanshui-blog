@@ -211,28 +211,23 @@ export default function PostCard({
                 initial={{ opacity: 0 }}
               />
 
-              {/* Card wrapper with spring hover */}
-              <motion.div
-                whileHover={{ y: -8, scale: 1.01 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 14, mass: 0.8 }}
+              {/* Card wrapper with CSS hover（纯 CSS 替代 Framer whileHover，约定 #25/#32/#42）
+                  用独立 scale/translate 属性（非 transform），与 framer 的 rotateX/Y 内联 transform 叠加 */}
+              <div
+                className="post-card-hover-target p-[1px] rounded-2xl bg-black/[0.03] h-full post-card-shell shadow-neon-hover dark:bg-white/10"
                 style={{
-                  rotateX: spotlight?.rotateX,
-                  rotateY: spotlight?.rotateY,
+                  transform: `perspective(800px) rotateX(${spotlight?.rotateX ?? 0}deg) rotateY(${spotlight?.rotateY ?? 0}deg)`,
                   transformStyle: 'preserve-3d',
                 }}
-                className="p-[1px] rounded-2xl bg-black/[0.03] h-full post-card-shell shadow-neon-hover dark:bg-white/10"
               >
                 {/* Border glow */}
-                <motion.div
+                <div
                   aria-hidden
-                  className="absolute -inset-[1px] rounded-2xl pointer-events-none"
+                  className="post-card-border-glow absolute -inset-[1px] rounded-2xl pointer-events-none"
                   style={{
                     background:
                       'linear-gradient(135deg, rgb(var(--accent-pink-rgb) / 0.4), rgb(var(--accent-violet-rgb) / 0.3), rgb(var(--accent-blue-rgb) / 0.2))',
-                    opacity: 0,
                   }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 150, damping: 18 }}
                 />
 
                 <article
@@ -240,35 +235,16 @@ export default function PostCard({
                   style={{ transformStyle: 'preserve-3d' }}
                 >
                   {/* Animated top accent line */}
-                  <motion.div
-                    className="h-[2px] bg-gradient-to-r from-accent-pink via-accent-violet to-accent-blue"
-                    initial={{ scaleX: 0, opacity: 0 }}
-                    whileHover={{ scaleX: 1, opacity: 1 }}
-                    transition={{ type: 'spring', stiffness: 180, damping: 16 }}
-                    style={{ transformOrigin: 'left' }}
-                  />
+                  <div className="post-card-accent-line h-[2px] bg-gradient-to-r from-accent-pink via-accent-violet to-accent-blue" />
 
                   <div className="flex-1 min-h-0 p-4 sm:p-6 flex flex-col">
                     {/* Tags — standalone links */}
-                    <motion.div
-                      className="flex flex-wrap gap-1.5 mb-3 min-h-[1.375rem] max-sm:flex-nowrap max-sm:gap-1"
-                      whileHover="hovered"
-                      initial="idle"
-                    >
+                    <div className="flex flex-wrap gap-1.5 mb-3 min-h-[1.375rem] max-sm:flex-nowrap max-sm:gap-1">
                       {tags.slice(0, 3).map((t: string, i: number) => (
-                        <motion.div
+                        <div
                           key={t}
-                          variants={{
-                            idle: { y: 0, opacity: 1 },
-                            hovered: { y: -2, opacity: 1 },
-                          }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 200,
-                            damping: 15,
-                            delay: i * 0.03,
-                          }}
-                          className={i >= 2 ? 'max-sm:hidden' : 'max-sm:min-w-0'}
+                          className={`post-card-tag ${i >= 2 ? 'max-sm:hidden' : 'max-sm:min-w-0'}`}
+                          style={{ transitionDelay: `${i * 30}ms` }}
                         >
                           <Link
                             href={`/tags/${encodeURIComponent(t)}/`}
@@ -280,7 +256,7 @@ export default function PostCard({
                                 锚点须为块级 flex（非 inline-flex）才会随父 wrapper 收缩。 */}
                             <span className="min-w-0 truncate">{t}</span>
                           </Link>
-                        </motion.div>
+                        </div>
                       ))}
                       {/* 余量胶囊：已显示标签数 + N = 真实标签总数，两端自洽。
                           手机端（<640px）两列窄卡放 2 个 → +{len-2}；桌面端放 3 个 → 若还有更多显示 +{len-3}，
@@ -301,7 +277,7 @@ export default function PostCard({
                           +{tags.length - 3}
                         </span>
                       )}
-                    </motion.div>
+                    </div>
 
                     {/* Everything below is ONE link to the post — no ambiguity */}
                     <Link
@@ -311,15 +287,10 @@ export default function PostCard({
                       onMouseEnter={onCardMouseEnter}
                       className="post-card-link flex-1 min-h-0 flex flex-col"
                     >
-                      {/* Title — 位移走 Framer whileHover（JS 驱动，绕开 CSS transition 被 reduced-motion 压制，任何环境都有动画）；
-                          变色仍走纯 CSS（.post-card-title），避免 inline style 固化颜色导致主题切换失响应 */}
-                      <motion.h2
-                        className="post-card-title text-base sm:text-lg font-bold mb-2 line-clamp-2 overflow-hidden h-[2.75rem] sm:h-[3.094rem] tracking-tight leading-snug shrink-0"
-                        whileHover={{ x: 5 }}
-                        transition={{ type: 'spring', stiffness: 220, damping: 15 }}
-                      >
+                      {/* Title — 位移走纯 CSS（.post-card-title:hover），变色也走纯 CSS */}
+                      <h2 className="post-card-title text-base sm:text-lg font-bold mb-2 line-clamp-2 overflow-hidden h-[2.75rem] sm:h-[3.094rem] tracking-tight leading-snug shrink-0">
                         {post.title}
-                      </motion.h2>
+                      </h2>
 
                       {/* Excerpt — 固定行高保证 clamp 生效：flex 布局分配的高度会压过 -webkit-line-clamp
                           （flex-basis 0% + grow 时 clamp 失效，按盒子高度显示多行），固定高度后 clamp
@@ -331,39 +302,22 @@ export default function PostCard({
                       </p>
 
                       {/* Footer with "阅读" as part of the link */}
-                      <motion.div
-                        className="mt-auto flex items-center justify-between pt-3 border-t border-black/[0.06] dark:border-white/10"
-                        whileHover="hovered"
-                        initial="idle"
-                      >
+                      <div className="mt-auto flex items-center justify-between pt-3 border-t border-black/[0.06] dark:border-white/10">
                         <span className="flex items-center gap-1.5 text-xs text-stone-400 whitespace-nowrap dark:text-gray-600">
                           <Clock size={11} />
                           {formatDate(post.date)}
                         </span>
-                        <motion.span
-                          className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium whitespace-nowrap transition-colors"
-                          variants={{
-                            idle: { x: 0 },
-                            hovered: { x: 3 },
-                          }}
-                          transition={{ type: 'spring', stiffness: 180, damping: 15 }}
-                        >
+                        <span className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium whitespace-nowrap transition-colors">
                           阅读
-                          <motion.span
-                            variants={{
-                              idle: { x: 0, y: 0 },
-                              hovered: { x: 2, y: -2 },
-                            }}
-                            transition={{ type: 'spring', stiffness: 250, damping: 14 }}
-                          >
+                          <span className="post-card-readmore-arrow">
                             <ArrowUpRight size={12} />
-                          </motion.span>
-                        </motion.span>
-                      </motion.div>
+                          </span>
+                        </span>
+                      </div>
                     </Link>
                   </div>
                 </article>
-              </motion.div>
+              </div>
             </div>
           </motion.div>
         )}

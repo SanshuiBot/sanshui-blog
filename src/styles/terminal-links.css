@@ -11,8 +11,8 @@
 /* ── 内容区（亮基） ── */
 .terminal-body {
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(var(--terminal-blur)) saturate(var(--terminal-saturate));
+  -webkit-backdrop-filter: blur(var(--terminal-blur)) saturate(var(--terminal-saturate));
   padding: 1.25rem;
 }
 

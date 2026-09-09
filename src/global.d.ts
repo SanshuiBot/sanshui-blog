@@ -4,16 +4,6 @@ declare module '*.css' {
   export default content;
 }
 
-// highlightjs-solidity 没有官方类型，这里声明其结构
-declare module 'highlightjs-solidity' {
-  import type { LanguageFn } from 'highlight.js';
-  const solidity: LanguageFn;
-  const yul: LanguageFn;
-  const languages = { solidity, yul };
-  export { solidity, yul };
-  export default languages;
-}
-
 // highlight.js 单语言模块（lib/languages/*）不附带类型声明，统一声明为 LanguageFn
 declare module 'highlight.js/lib/languages/*' {
   import type { LanguageFn } from 'highlight.js';

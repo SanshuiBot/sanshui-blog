@@ -1,30 +1,17 @@
 'use client';
 import Link from 'next/link';
 import { Mail, Rss } from 'lucide-react';
-import { motion } from 'framer-motion';
 import Github from '@/components/UI/GithubIcon';
 import BackToTop from '@/components/UI/BackToTop';
-import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import { siteConfig } from '@/lib/site';
 import { navLinks } from '@/lib/navLinks';
 import { withBase } from '@/lib/basePath';
 
 export default function Footer() {
-  const reduced = usePrefersReducedMotion();
-
   return (
     <footer className="relative border-t border-black/[0.06] mt-32 dark:border-white/5">
       <div className="absolute top-0 inset-x-0 h-px overflow-hidden">
-        <motion.div
-          className="h-full w-[200%]"
-          style={{
-            background:
-              'linear-gradient(90deg,transparent,rgb(var(--accent-violet-rgb)),rgb(var(--accent-pink-rgb)),rgb(var(--accent-blue-rgb)),transparent)',
-            backgroundSize: '50% 100%',
-          }}
-          animate={reduced ? { x: '0%' } : { x: ['0%', '-50%'] }}
-          transition={reduced ? { duration: 0 } : { duration: 4, repeat: Infinity, ease: 'linear' }}
-        />
+        <div className="footer-gradient-line h-full w-[200%]" />
       </div>
 
       {/* 回到顶部：滚动超过 500px 出现（定位/显隐统一收口在 BackToTop） */}

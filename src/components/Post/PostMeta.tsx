@@ -1,7 +1,6 @@
-﻿'use client';
-import { Clock, Tag, Calendar } from 'lucide-react';
+﻿import { Clock, Tag, Calendar } from 'lucide-react';
 import Link from 'next/link';
-import ArrowLink from '@/components/UI/ArrowLink';
+import BackButton from '@/components/UI/BackButton';
 import BackToTop from '@/components/UI/BackToTop';
 import CodeCopyInjector from './CodeCopyInjector';
 import { formatDate } from '@/lib/formatDate';
@@ -19,13 +18,7 @@ export default function PostMeta({ post, readingMinutes }: Props) {
       <CodeCopyInjector />
 
       <div className="mb-8">
-        <ArrowLink
-          href="/"
-          dir="back"
-          className="link-back inline-flex items-center gap-1.5 text-sm transition-colors duration-200 group/back"
-        >
-          返回首页
-        </ArrowLink>
+        <BackButton />
       </div>
 
       <header className="mb-10">

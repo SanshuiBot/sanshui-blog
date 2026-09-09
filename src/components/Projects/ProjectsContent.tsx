@@ -210,19 +210,7 @@ export default function ProjectsContent() {
           项目
         </span>
         <h1 className="text-4xl sm:text-5xl font-bold text-stone-900 tracking-tight dark:text-fg">
-          <span
-            style={{
-              background:
-                'linear-gradient(135deg, rgb(var(--accent-pink-rgb)), rgb(var(--accent-violet-rgb)) 30%, rgb(var(--accent-blue-rgb)) 60%, rgb(var(--accent-teal-rgb)) 80%, rgb(var(--accent-gold-rgb)))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              backgroundSize: '300% 300%',
-              animation: 'aurora-shift 8s ease-in-out infinite',
-            }}
-          >
-            开源项目
-          </span>
+          <span className="text-aurora">开源项目</span>
         </h1>
       </div>
 

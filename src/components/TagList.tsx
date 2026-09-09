@@ -59,12 +59,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
   };
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.08, y: -8 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 14, mass: 0.7 }}
-      onHoverStart={onHoverStart}
-      onHoverEnd={onLeave}
-    >
+    <motion.div onHoverStart={onHoverStart} onHoverEnd={onLeave} className="tag-item">
       <div style={{ perspective: '600px' }}>
         <Link
           ref={ref}

@@ -23,6 +23,7 @@ import PostMeta from '@/components/Post/PostMeta';
 import PostNav from '@/components/Post/PostNav';
 import PostDone from '@/components/Post/PostDone';
 import PostComments from '@/components/Post/PostComments';
+import ReadingProgress from '@/components/Post/ReadingProgress';
 import TableOfContents from '@/components/Post/TableOfContents';
 import { siteConfig } from '@/lib/site';
 
@@ -73,6 +74,7 @@ export default async function PostPage({ params }: Props) {
             '@type': 'Article',
             headline: post.title,
             description: post.excerpt,
+            image: `${siteConfig.url}/og.png`,
             datePublished: post.date,
             dateModified: post.date,
             author: { '@type': 'Person', name: siteConfig.name, url: siteConfig.url },
@@ -98,6 +100,7 @@ export default async function PostPage({ params }: Props) {
         </div>
       </div>
       <PostDone slug={slug} />
+      <ReadingProgress />
     </div>
   );
 }

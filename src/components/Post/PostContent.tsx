@@ -3,7 +3,6 @@ import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
 import { common as languages } from 'lowlight';
-import hljsSolidity from 'highlightjs-solidity';
 // lowlight common 之外的补充语言（文章围栏实际用到，见 CodeCopyInjector 语言统计）：
 import hljsDockerfile from 'highlight.js/lib/languages/dockerfile';
 import hljsProtobuf from 'highlight.js/lib/languages/protobuf';
@@ -23,7 +22,6 @@ const vueGrammar: typeof hljsXml = (hljs) => {
 
 const blogLanguages = {
   ...languages,
-  solidity: hljsSolidity.solidity,
   dockerfile: hljsDockerfile,
   protobuf: hljsProtobuf,
   http: hljsHttp,

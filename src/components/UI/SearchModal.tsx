@@ -3,8 +3,9 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import Fuse from 'fuse.js';
 import { postUrl, type PostIndexEntry } from '@/lib/post-index';
-import { searchPosts, splitByTerms } from '@/lib/search';
+import { tokenize, splitByTerms } from '@/lib/search';
 import { formatDate } from '@/lib/formatDate';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import { useDismiss } from '@/components/UI/useDismiss';
@@ -90,8 +91,39 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     return () => clearTimeout(t);
   }, [open]);
 
-  // 多关键词 AND 过滤（lib/search.ts 纯函数：空格分词，每词子串匹配）
-  const results = useMemo(() => searchPosts(posts ?? [], q), [posts, q]);
+  // fuse.js 模糊搜索：支持 typo 容错、权重排序。保留 lib/search.ts 的
+  // 「空格分词 AND」语义——每个词元独立搜索，取所有词元结果的交集，
+  // 保证 placeholder「空格分隔多关键词」文案与实际行为一致。
+  const fuse = useMemo(() => {
+    if (!posts) return null;
+    return new Fuse(posts, {
+      keys: [
+        { name: 'title', weight: 0.5 },
+        { name: 'excerpt', weight: 0.3 },
+        { name: 'tags', weight: 0.2 },
+      ],
+      threshold: 0.35,
+      includeMatches: true,
+    });
+  }, [posts]);
+
+  const results = useMemo(() => {
+    if (!fuse) return [];
+    const terms = tokenize(q);
+    if (terms.length === 0) return [];
+    // 多词元 AND：每词独立模糊搜索（各取 20 条），按 slug 交集合并；
+    // 单词元直接取搜索结果（保持 fuse 的相关度排序）
+    const [firstTerm] = terms;
+    if (terms.length === 1 && firstTerm) {
+      return fuse.search(firstTerm, { limit: 20 }).map((r) => r.item);
+    }
+    const perTerm = terms
+      .map((t) => fuse.search(t, { limit: 20 }).map((r) => r.item as PostIndexEntry))
+      .filter((list): list is PostIndexEntry[] => list.length > 0);
+    const [first, ...rest] = perTerm;
+    if (!first) return [];
+    return first.filter((p) => rest.every((list) => list.some((r) => r.slug === p.slug)));
+  }, [fuse, q]);
 
   // query/posts 变化时重置选中到第一项（有结果时），保持键盘流连续
   const [prevQuery, setPrevQuery] = useState<readonly [string, PostIndexEntry[] | null]>([
@@ -181,7 +213,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                 <span>关闭</span>
               </button>
             </div>
-            <div className="max-h-80 overflow-y-auto p-2">
+            <div className="max-h-[60dvh] sm:max-h-80 overflow-y-auto p-2">
               {posts === null ? (
                 <div className="text-center py-10 text-stone-500 text-sm dark:text-gray-500">
                   加载中...
@@ -194,63 +226,108 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   未找到与「{q.trim()}」匹配的文章
                 </div>
               ) : results.length > 0 ? (
-                <div aria-live="polite" aria-atomic="true">
-                  {/* 结果数播报只出现一次，避免每条结果都触发读屏重复播报 */}
-                  <span className="sr-only">
+                <>
+                  {/* 结果数播报只出现一次，避免每条结果都触发读屏重复播报。
+                      放在 listbox 外：WAI-ARIA 要求 listbox 的子元素只能是 option */}
+                  <span className="sr-only" aria-live="polite" aria-atomic="true">
                     {q ? `找到 ${results.length} 篇文章` : '文章列表'}
                   </span>
-                  {results.map((p: PostIndexEntry, i: number) => (
-                    <motion.div
-                      key={p.slug}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                    >
-                      <Link
-                        href={postUrl(p.slug)}
-                        data-active={i === activeIdx}
-                        onMouseEnter={() => setActiveIdx(i)}
-                        onClick={() => {
-                          onClose();
-                          startNavigation();
-                        }}
-                        className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors group ${
-                          i === activeIdx ? 'bg-black/[0.03] dark:bg-white/5' : ''
-                        }`}
+                  <div role="listbox" aria-label="搜索结果">
+                    {results.map((p: PostIndexEntry, i: number) => (
+                      <motion.div
+                        key={p.slug}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.015 }}
                       >
-                        <div className="flex-1 min-w-0">
-                          <span
-                            className={`font-medium transition-colors truncate block ${
-                              i === activeIdx ? 'text-accent-violet' : 'text-stone-900 dark:text-fg'
-                            }`}
-                          >
-                            <Highlight text={p.title} query={q} />
-                          </span>
-                          <span className="block text-xs text-stone-500 truncate mt-0.5 dark:text-gray-500">
-                            <Highlight text={p.excerpt} query={q} />
-                          </span>
-                          <span className="text-[11px] text-stone-400 dark:text-gray-600">
-                            {formatDate(p.date)}
-                          </span>
-                        </div>
-                        <ArrowRight
-                          size={14}
-                          className={`shrink-0 transition-colors ${
-                            i === activeIdx
-                              ? 'text-accent-violet'
-                              : 'text-stone-400 dark:text-gray-600'
+                        <Link
+                          href={postUrl(p.slug)}
+                          data-active={i === activeIdx}
+                          role="option"
+                          aria-selected={i === activeIdx}
+                          onMouseEnter={() => setActiveIdx(i)}
+                          onClick={() => {
+                            onClose();
+                            startNavigation();
+                          }}
+                          className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors group ${
+                            i === activeIdx ? 'bg-black/[0.03] dark:bg-white/5' : ''
                           }`}
-                        />
-                      </Link>
-                    </motion.div>
+                        >
+                          <div className="flex-1 min-w-0">
+                            <span
+                              className={`font-medium transition-colors truncate block ${
+                                i === activeIdx
+                                  ? 'text-accent-violet'
+                                  : 'text-stone-900 dark:text-fg'
+                              }`}
+                            >
+                              <Highlight text={p.title} query={q} />
+                            </span>
+                            <span className="block text-xs text-stone-500 truncate mt-0.5 dark:text-gray-500">
+                              <Highlight text={p.excerpt} query={q} />
+                            </span>
+                            <span className="text-[11px] text-stone-400 dark:text-gray-600">
+                              {formatDate(p.date)}
+                            </span>
+                          </div>
+                          <ArrowRight
+                            size={14}
+                            className={`shrink-0 transition-colors ${
+                              i === activeIdx
+                                ? 'text-accent-violet'
+                                : 'text-stone-400 dark:text-gray-600'
+                            }`}
+                          />
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+                </>
+              ) : !hasQuery && posts ? (
+                <div role="listbox" aria-label="最近文章">
+                  <div className="px-3 py-2 text-[11px] font-medium text-stone-400 dark:text-gray-500 uppercase tracking-widest">
+                    最近文章
+                  </div>
+                  {posts.slice(0, 5).map((p, i) => (
+                    <Link
+                      key={p.slug}
+                      href={postUrl(p.slug)}
+                      role="option"
+                      aria-selected={i === activeIdx}
+                      onMouseEnter={() => setActiveIdx(i)}
+                      onClick={() => {
+                        onClose();
+                        startNavigation();
+                      }}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors group ${
+                        i === activeIdx ? 'bg-black/[0.03] dark:bg-white/5' : ''
+                      }`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <span
+                          className={`font-medium text-sm truncate block transition-colors ${
+                            i === activeIdx ? 'text-accent-violet' : 'text-stone-900 dark:text-fg'
+                          }`}
+                        >
+                          {p.title}
+                        </span>
+                        <span className="text-[11px] text-stone-400 dark:text-gray-600">
+                          {formatDate(p.date)}
+                        </span>
+                      </div>
+                      <ArrowRight
+                        size={12}
+                        className={`shrink-0 transition-colors ${
+                          i === activeIdx
+                            ? 'text-accent-violet'
+                            : 'text-stone-400 dark:text-gray-600 opacity-0 group-hover:opacity-100'
+                        }`}
+                      />
+                    </Link>
                   ))}
                 </div>
-              ) : (
-                <div className="text-center py-10 text-stone-400 text-sm dark:text-gray-600">
-                  {/* 快捷键提示仅桌面显示：触屏设备无 ⌘/Ctrl 修饰键（与弹窗底部 kbd 提示同策略） */}
-                  <span className="hidden sm:inline">{searchHotkeyLabel()} </span>搜索全部文章
-                </div>
-              )}
+              ) : null}
             </div>
             <div className="flex items-center justify-between px-5 py-3 border-t border-black/[0.06] dark:border-white/5">
               <div className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-gray-500">

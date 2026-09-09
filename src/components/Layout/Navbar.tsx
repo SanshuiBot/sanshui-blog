@@ -169,6 +169,8 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(!mobileOpen)}
                 className="nav-icon-btn p-2 w-9 h-9 flex items-center justify-center rounded-xl text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-fg dark:hover:bg-white/5 md:hidden"
                 aria-label="菜单"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-drawer"
               >
                 {mobileOpen ? <X size={18} /> : <Menu size={18} />}
               </button>
