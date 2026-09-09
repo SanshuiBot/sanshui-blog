@@ -22,6 +22,7 @@ import { siteConfig } from '@/lib/site';
 import { withBase } from '@/lib/basePath';
 import { searchHotkeyLabel } from '@/lib/platform';
 import { navLinks } from '@/lib/navLinks';
+import { getPostsIndex } from '@/lib/posts-index-cache';
 
 /** 导航链接激活判定：精确匹配 / 去尾斜杠匹配 / 非首页前缀匹配（桌面导航与移动抽屉共用） */
 const isActive = (pathname: string, href: string) =>
@@ -34,6 +35,9 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  // chunk 加载中态：open 为 true 但 SearchModalComp 尚未到位时渲染 loading 占位（见下方渲染段），
+  // 消除「点了没反应/卡住」——任何一次点击都有即时反馈
+  const [searchLoading, setSearchLoading] = useState(false);
   // 懒加载的搜索组件（null = 未加载/加载失败，失败后下次打开自动重试）
   const [SearchModalComp, setSearchModalComp] = useState<SearchModalComponent | null>(null);
   const searchLoadingRef = useRef(false);
@@ -57,20 +61,47 @@ export default function Navbar() {
     setMobileOpen(false);
   }
 
+  // 移动端首点「点了没反应/卡住」根治（idle 预取）：
+  // 搜索弹窗是懒加载 chunk + posts-index.json 首次拉取，移动端首点要等下载+解析。
+  // 首屏渲染稳定（idle 回调）后提前拉取：chunk 命中缓存则点开秒出；index 走共享
+  // getPostsIndex Promise 缓存，首页 PostsList/HeroParallax 已触发则直接命中。
+  // iOS Safari 无 requestIdleCallback 时退化为 2s 后执行；均置于 mount 后不阻塞首帧。
+  useEffect(() => {
+    const preload = () => {
+      import('@/components/UI/SearchModal').catch(() => {
+        /* 预取失败静默：真实点击仍走 openSearch 重试路径 */
+      });
+      getPostsIndex().catch(() => {
+        /* 索引拉取失败留空，SearchModal 打开时按原逻辑自处理 */
+      });
+    };
+    if (typeof requestIdleCallback !== 'undefined') {
+      const id = requestIdleCallback(preload, { timeout: 1500 });
+      return () => cancelIdleCallback(id);
+    }
+    const t = setTimeout(preload, 2000);
+    return () => clearTimeout(t);
+  }, []);
+
   // 打开搜索：置 open + 首次惰性加载搜索 chunk（成功后挂载组件，失败关闭可重试）
   const openSearch = useCallback(() => {
     setSearchOpen(true);
-    if (SearchModalComp !== null || searchLoadingRef.current) return;
-    searchLoadingRef.current = true;
-    import('@/components/UI/SearchModal')
-      .then((m) => setSearchModalComp(() => m.default))
-      .catch(() => {
-        // chunk 加载失败（旧部署哈希 404/网络错误）：关闭模态，下次打开重试，不渲染死态
-        setSearchOpen(false);
-      })
-      .finally(() => {
-        searchLoadingRef.current = false;
-      });
+    if (SearchModalComp !== null) return;
+    if (!searchLoadingRef.current) {
+      // 首次点击置 loading 占位，让用户立刻看到反馈，消除「卡住」假象
+      searchLoadingRef.current = true;
+      setSearchLoading(true);
+      import('@/components/UI/SearchModal')
+        .then((m) => setSearchModalComp(() => m.default))
+        .catch(() => {
+          // chunk 加载失败（旧部署哈希 404/网络错误）：关闭模态，下次打开重试，不渲染死态
+          setSearchOpen(false);
+        })
+        .finally(() => {
+          searchLoadingRef.current = false;
+          setSearchLoading(false);
+        });
+    }
   }, [SearchModalComp]);
 
   // 全局 ⌘K / Ctrl+K 打开搜索 + Esc 关闭兜底（开关状态收敛在 Navbar 持有 searchOpen）。
@@ -264,6 +295,20 @@ export default function Navbar() {
       </AnimatePresence>
       {searchOpen && SearchModalComp !== null && (
         <SearchModalComp open onClose={() => setSearchOpen(false)} />
+      )}
+      {/* 搜索 chunk 加载中占位：点击立即反馈（遮罩 + 转圈），消除「点了没反应/卡住」；
+          加载完成由上方 SearchModalComp 接管，加载失败由 openSearch 的 catch 关闭 */}
+      {searchOpen && SearchModalComp === null && searchLoading && (
+        <div className="fixed inset-0 z-[80] flex items-start justify-center pt-[18vh] px-4">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm dark:bg-black/75"
+            onClick={() => setSearchOpen(false)}
+          />
+          <div className="relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-black/[0.1] p-6 flex flex-col items-center gap-3">
+            <div className="w-6 h-6 rounded-full border-2 border-black/10 border-t-accent-violet animate-spin dark:border-white/15 dark:border-t-accent-violet" />
+            <span className="text-sm text-stone-500 dark:text-gray-400">加载搜索中…</span>
+          </div>
+        </div>
       )}
     </>
   );
