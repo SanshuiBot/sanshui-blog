@@ -443,11 +443,14 @@ html.dark {
      无 hover 时也有可见层次）；暗色：复用加浓后的 --shadow-soft + 顶部 1px
      受光高光（inset 白），不依赖页面氛围光晕也能浮起。
      hover 霓虹由 .shadow-neon-hover:hover 覆盖（特异性更高，天然生效）。 */
-  /* PostCard hover（纯 CSS 替代 Framer whileHover，约定 #25/#32/#42/#47） */
+  /* PostCard hover（纯 CSS 替代 Framer whileHover，约定 #25/#32/#42/#47）
+     卡片主体过渡集中在 .post-card-hover-target 一条 transition 里（translate/scale 抬起 +
+     box-shadow 霓虹），避免与 .shadow-neon-hover 各写一条简写在同元素上互相覆盖。 */
   .post-card-hover-target {
     transition:
       translate 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-      scale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      scale 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .group:hover .post-card-hover-target {
     translate: 0 -8px;
@@ -480,9 +483,6 @@ html.dark {
   }
   .post-card-link:hover .post-card-tag {
     transform: translateY(-2px);
-  }
-  .post-card-readmore {
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .post-card-link:hover .post-card-readmore {
     transform: translateX(3px);
@@ -534,17 +534,14 @@ html.dark {
   .shadow-nav {
     box-shadow: var(--shadow-nav);
   }
-  .shadow-neon-hover {
-    transition: box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  }
+  /* .shadow-neon-hover：只给 hover 时的霓虹阴影取值。box-shadow 过渡统一由卡片主体
+     .post-card-hover-target 声明（translate/scale/box-shadow），这里不再写 transition，
+     避免同元素多条 transition 简写互相覆盖。静止阴影由 .post-card-shell 提供（暗色含
+     inset 高光）；因 .post-card-shell 静止规则特异性高于 .shadow-neon-hover:hover，
+     暗色 hover 需加 html.dark 前缀显式覆盖，否则被静止规则压掉。 */
   .shadow-neon-hover:hover {
     box-shadow: var(--shadow-neon-hover);
   }
-  /* 暗色静止阴影由 .post-card-shell 提供（含 inset 顶部高光，见上）——不要再给
-     .shadow-neon-hover 加静态 box-shadow：同特异性 (0,2,1)、源序靠后会把
-     .post-card-shell 的 inset 高光整个覆盖成死代码（历史教训）。
-     此处只需补 hover 显式覆盖：.post-card-shell 静止规则特异性高于
-     .shadow-neon-hover:hover，不补这条暗色 hover 会被静止规则压掉。 */
   html.dark .shadow-neon-hover:hover {
     box-shadow: var(--shadow-neon-hover);
   }
@@ -976,7 +973,9 @@ html.dark {
   }
   .post-card-title {
     color: #1c1917;
-    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+      color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   html.dark .post-card-title {
     color: var(--color-fg);
@@ -1015,7 +1014,9 @@ html.dark {
   }
   .post-card-readmore {
     color: #78716c;
-    transition: color 0.2s;
+    transition:
+      color 0.2s,
+      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   html.dark .post-card-readmore {
     color: rgb(120 113 108);
@@ -1478,7 +1479,9 @@ html.sanshui-hero-active body::before {
 }
 
 /* ═══ CENTER GLOW OVERLAY ═══ */
-/* 仅首页 HeroParallax 挂载时（sanshui-hero-active）才渲染，非首页禁用以节省 GPU */
+/* 首页 HeroParallax 挂载时（sanshui-hero-active）上全亮 + glow-breathe 呼吸动画；
+   非首页保留静态低值光晕（opacity 0.25、animation none），全站视觉一致，
+   常驻合成层不跑无限动画，成本可忽略。 */
 body::after {
   content: '';
   position: fixed;
@@ -1501,7 +1504,7 @@ body::after {
       rgb(var(--accent-blue-rgb) / 0.08) 0%,
       transparent 65%
     );
-  opacity: 0;
+  opacity: 0.25;
   animation: none;
 }
 html.sanshui-hero-active body::after {
