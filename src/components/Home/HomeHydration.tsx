@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import type { HeroStats } from './HeroParallax';
+import { useReloadScrollRestore } from './useReloadScrollRestore';
 
 /**
  * 首屏动效组件懒加载入口（client wrapper）。
@@ -45,6 +46,9 @@ const PostsList = dynamic(() => import('@/components/Home/PostsList'), {
 });
 
 export default function HomeHydration({ total, stats }: { total: number; stats: HeroStats }) {
+  // 刷新滚动还原：内容全部异步渲染，原生滚动恢复会被 clamp 到顶部（见 hook 文件头）
+  useReloadScrollRestore();
+
   useEffect(() => {
     const syncVar = () => {
       document.documentElement.style.setProperty('--sansui-hero-vh', `${window.innerHeight}px`);
