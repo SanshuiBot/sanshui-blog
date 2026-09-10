@@ -25,8 +25,13 @@ const isBuild = process.env.NEXT_BUILD === '1';
 // 双端部署 basePath 双态（AGENTS.md 约定 #1 的扩展）：
 //  - GitHub Pages 端：默认 /sanshui-blog（子路径部署）
 //  - Cloudflare Pages 端：不支持子路径，必须根路径部署 → 构建时设环境变量
-//    SITE_BASE_PATH=''（空字符串），产物资源链接不再带 /sanshui-blog 前缀
-const BASE_PATH = process.env.SITE_BASE_PATH ?? (isBuild ? '/sanshui-blog' : '');
+//    SITE_BASE_PATH='/'（CF 面板不允许空字符串值，用 '/' 标记根路径；
+//    空字符串 '' 同样兼容），产物资源链接不再带 /sanshui-blog 前缀
+const envBasePath = process.env.SITE_BASE_PATH;
+const BASE_PATH =
+  envBasePath === '' || envBasePath === '/'
+    ? ''
+    : (envBasePath ?? (isBuild ? '/sanshui-blog' : ''));
 
 const nextConfig: NextConfig = {
   // `output: 'export'` / basePath / assetPrefix 仅在构建时启用。

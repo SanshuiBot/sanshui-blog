@@ -35,8 +35,12 @@ export const SITE_DESCRIPTION = '记录技术思考、生活感悟与创作灵�
 export const SITE_ORIGIN = process.env.SITE_ORIGIN ?? 'https://sanshuibot.github.io';
 
 /** 生产 basePath（仅脚本侧拼线上 URL 用；运行时以 basePath.ts 的双态值为准）。
- *  CF 端设 SITE_BASE_PATH=''（根路径）；GitHub Pages 端默认 /sanshui-blog */
-export const SITE_BASE_PATH = process.env.SITE_BASE_PATH ?? '/sanshui-blog';
+ *  CF 端设 SITE_BASE_PATH='/'（CF 面板不允许空字符串值，用 '/' 标记根路径；
+ *  空字符串 '' 同样兼容，归一化为无前缀）；GitHub Pages 端默认 /sanshui-blog */
+export const SITE_BASE_PATH =
+  process.env.SITE_BASE_PATH === '' || process.env.SITE_BASE_PATH === '/'
+    ? ''
+    : (process.env.SITE_BASE_PATH ?? '/sanshui-blog');
 
 /** GitHub 主页 */
 export const SITE_GITHUB = 'https://github.com/SanshuiBot';

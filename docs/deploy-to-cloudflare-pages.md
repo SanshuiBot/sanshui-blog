@@ -30,14 +30,17 @@ GitHub Pages 不支持 `_headers` 文件，实测线上响应头：
 
 因此采用**环境变量双态**（代码已实现，2026-09）：
 
-| 部署端                                  | 构建环境变量                                                       | basePath 效果                           |
-| --------------------------------------- | ------------------------------------------------------------------ | --------------------------------------- |
-| GitHub Pages（deploy.yml / 本地 build） | **不设**（默认）                                                   | `/sanshui-blog`（子路径，线上现状不变） |
-| Cloudflare Pages（面板构建设置）        | `SITE_BASE_PATH=''` + `SITE_ORIGIN=https://sanshui-blog.pages.dev` | 根路径（无前缀）                        |
+| 部署端                                  | 构建环境变量                                                        | basePath 效果                           |
+| --------------------------------------- | ------------------------------------------------------------------- | --------------------------------------- |
+| GitHub Pages（deploy.yml / 本地 build） | **不设**（默认）                                                    | `/sanshui-blog`（子路径，线上现状不变） |
+| Cloudflare Pages（面板构建设置）        | `SITE_BASE_PATH='/'` + `SITE_ORIGIN=https://sanshui-blog.pages.dev` | 根路径（无前缀）                        |
+
+> ℹ️ `SITE_BASE_PATH` 用 **`/`**（正斜杠）标记根路径——CF 面板**不允许空字符串值**，
+> 用 `/` 代替，代码会归一化为无前缀（`''` 同样兼容）。
 
 代码改动（已完成）：
 
-1. `next.config.ts`：`BASE_PATH = process.env.SITE_BASE_PATH ?? (isBuild ? '/sanshui-blog' : '')`，basePath/assetPrefix 为空时不注入
+1. `next.config.ts`：`SITE_BASE_PATH` 为 `''` 或 `'/'` 时归一化为无前缀（basePath/assetPrefix 不注入），未设置时默认 `/sanshui-blog`
 2. `src/lib/site-config.mjs`：`SITE_ORIGIN` / `SITE_BASE_PATH` 支持环境变量覆盖（脚本侧 feed/og 图 URL 同步）
 3. `scripts/gen-og-image.js`：og 图底部 URL 不再硬编码，改读 site-config
 4. `src/app/sitemap.ts` / `robots.ts`：去硬编码 origin，改用 `siteConfig.url`
@@ -60,14 +63,14 @@ GitHub Pages 不支持 `_headers` 文件，实测线上响应头：
    - 请选 **Framework preset: None（不使用预设）**，再手动填下面的构建配置。
 4. 构建配置（手动填写）：
 
-| 项                        | 值                                                                                                  |
-| ------------------------- | --------------------------------------------------------------------------------------------------- |
-| Build command             | `npm run build`                                                                                     |
-| Build output directory    | `out`                                                                                               |
-| Node.js 版本              | 22（与现有 CI 一致；`npm ci` 需要 lockfile）                                                        |
-| **Environment variables** | `SITE_BASE_PATH` = （**空字符串**，根路径部署）<br>`SITE_ORIGIN` = `https://sanshui-blog.pages.dev` |
+| 项                        | 值                                                                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Build command             | `npm run build`                                                                                                        |
+| Build output directory    | `out`                                                                                                                  |
+| Node.js 版本              | 22（与现有 CI 一致；`npm ci` 需要 lockfile）                                                                           |
+| **Environment variables** | `SITE_BASE_PATH` = **`/`**（CF 面板不允许空值，用 `/` 标记根路径）<br>`SITE_ORIGIN` = `https://sanshui-blog.pages.dev` |
 
-> ⚠️ 这两个环境变量**必填**：CF Pages 不支持子路径，不设 `SITE_BASE_PATH=''` 时构建产物仍带
+> ⚠️ 这两个环境变量**必填**：CF Pages 不支持子路径，不设 `SITE_BASE_PATH='/'` 时构建产物仍带
 > `/sanshui-blog` 前缀 → 所有资源 404（本次踩坑根因）。`SITE_ORIGIN` 用于 feed.xml / og.png /
 > sitemap / canonical 里的线上 URL。
 
@@ -183,10 +186,10 @@ curl -sI -H 'Accept-Encoding: br, gzip' https://sanshui-blog.pages.dev/ | grep -
 
 ## 7. 决策清单
 
-| #   | 决策     | 选项                                                  | 状态                                                                                  |
-| --- | -------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 1   | 平台     | Cloudflare Pages（推荐）/ Netlify                     | ✅ **已选 Cloudflare Pages**                                                          |
-| 2   | 路径     | ~~A 子路径（零改码）~~ / **B 根路径（环境变量双态）** | ✅ **已选根路径**（CF 不支持子路径；`SITE_BASE_PATH=''` + `SITE_ORIGIN`，代码已实现） |
-| 3   | 部署方式 | Git 集成（零配置）/ Actions + Wrangler（保留门禁）    | ✅ **已选 Git 集成（deploy.yml 不动，旧端保留）**                                     |
-| 4   | 域名     | 保持 pages.dev 子域 / 绑定自定义域                    | ✅ **已选默认 pages.dev 子域（不绑自定义域）**                                        |
-| 5   | 旧端下线 | 灰度后停用 GitHub Pages                               | ✅ **已选双端长期共存（GitHub Pages 与 Cloudflare 同时存在）**                        |
+| #   | 决策     | 选项                                                  | 状态                                                                                   |
+| --- | -------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 1   | 平台     | Cloudflare Pages（推荐）/ Netlify                     | ✅ **已选 Cloudflare Pages**                                                           |
+| 2   | 路径     | ~~A 子路径（零改码）~~ / **B 根路径（环境变量双态）** | ✅ **已选根路径**（CF 不支持子路径；`SITE_BASE_PATH='/'` + `SITE_ORIGIN`，代码已实现） |
+| 3   | 部署方式 | Git 集成（零配置）/ Actions + Wrangler（保留门禁）    | ✅ **已选 Git 集成（deploy.yml 不动，旧端保留）**                                      |
+| 4   | 域名     | 保持 pages.dev 子域 / 绑定自定义域                    | ✅ **已选默认 pages.dev 子域（不绑自定义域）**                                         |
+| 5   | 旧端下线 | 灰度后停用 GitHub Pages                               | ✅ **已选双端长期共存（GitHub Pages 与 Cloudflare 同时存在）**                         |
