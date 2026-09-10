@@ -21,30 +21,26 @@ GitHub Pages 不支持 `_headers` 文件，实测线上响应头：
 
 **前提**：`public/_headers` 与 `public/_redirects` 均已存在且为 CF/Netlify 兼容格式，迁移后自动生效，**无需改文件内容**。
 
-## 2. 迁移决策点：路径策略（先决定，再部署）
+## 2. 路径策略（重要：Cloudflare Pages 不支持子路径）
 
-> ✅ **已选定：方案 A（子路径，零代码改动）**（2026-09 决策）
+> ⚠️ **2026-09 更正**：最初选了「方案 A 子路径零改码」，但 Cloudflare Pages **不支持子路径部署**
+> （Git 集成的构建产物只能挂在根路径 `https://<project>.pages.dev/`）。若 basePath 仍为
+> `/sanshui-blog`，页面里所有资源链接（`/_next/static/*`、`logo.svg`）都会 404。
+> 实测症状：页面骨架能渲染，但 CSS/JS 全部 `ERR_ABORTED` + MIME 拒绝。
 
-站点的 basePath 是 `/sanshui-blog`（构建时经 `NEXT_BUILD=1` 开启，见 `next.config.ts`）。迁移后有两种部署形态：
+因此采用**环境变量双态**（代码已实现，2026-09）：
 
-### 方案 A：保持子路径（✅ 已选定，最小改动，推荐先做）
+| 部署端                                  | 构建环境变量                                                       | basePath 效果                           |
+| --------------------------------------- | ------------------------------------------------------------------ | --------------------------------------- |
+| GitHub Pages（deploy.yml / 本地 build） | **不设**（默认）                                                   | `/sanshui-blog`（子路径，线上现状不变） |
+| Cloudflare Pages（面板构建设置）        | `SITE_BASE_PATH=''` + `SITE_ORIGIN=https://sanshui-blog.pages.dev` | 根路径（无前缀）                        |
 
-继续部署在 `/sanshui-blog` 路径下（换平台不换路径），代码零修改：
+代码改动（已完成）：
 
-- CF Pages：项目设置为「Build output directory: `out`」，站点 URL 形如 `https://<project>.pages.dev/sanshui-blog/`
-- 自定义域时，路径仍为 `https://<your-domain>/sanshui-blog/`
-- `next.config.ts` / `site-config.mjs` / `og.png` **全部不用改**
-
-### 方案 B：根路径（`/`，需改 3 处）
-
-若想部署到根路径（`https://<your-domain>/`），必须同步修改：
-
-1. `next.config.ts` L24-25：构建时 `BASE_PATH` 改为 `''`（`output: 'export'` 保留，去掉 basePath/assetPrefix）
-2. `src/lib/site-config.mjs` L31：`SITE_BASE_PATH` 改为 `''`；L28 `SITE_ORIGIN` 改为新域名
-3. `scripts/gen-og-image.js` L152：SVG 底部 URL 文本是**硬编码**的 `https://sanshuibot.github.io/sanshui-blog/`，改为新站点 URL（改后签名失配，prebuild 自动重画）
-4. `README.md` 徽章/链接若引用旧 URL 需同步更新
-
-> ⚠️ 方案 B 改 basePath 后，`robots.ts` / `sitemap.ts` 用 `BASE_PATH` 派生 URL，自动跟随，无需手改。改 `SITE_BASE_PATH` 后 feed.xml 的链接也会跟随（脚本从 site-config.mjs 读取）。
+1. `next.config.ts`：`BASE_PATH = process.env.SITE_BASE_PATH ?? (isBuild ? '/sanshui-blog' : '')`，basePath/assetPrefix 为空时不注入
+2. `src/lib/site-config.mjs`：`SITE_ORIGIN` / `SITE_BASE_PATH` 支持环境变量覆盖（脚本侧 feed/og 图 URL 同步）
+3. `scripts/gen-og-image.js`：og 图底部 URL 不再硬编码，改读 site-config
+4. `src/app/sitemap.ts` / `robots.ts`：去硬编码 origin，改用 `siteConfig.url`
 
 ## 3. Cloudflare Pages 部署步骤（推荐）
 
@@ -56,17 +52,27 @@ GitHub Pages 不支持 `_headers` 文件，实测线上响应头：
 
 1. Cloudflare Dashboard → Workers & Pages → Create → Pages → Connect to Git
 2. 授权 GitHub，选择 `SanshuiBot/sanshui-blog` 仓库
-3. 构建配置：
+3. **⚠️ 关键：Framework preset 必须选「无」**（不要选 Next.js！）
+   - 选 Next.js 预设会自动套用 OpenNext 构建命令 `npx opennextjs-cloudflare build`，
+     它要求 Next 的 `standalone` 输出（`.next/standalone/...`），而本项目是
+     `output: 'export'` 纯静态导出（产物在 `out/`，无 standalone）→ 必然报
+     `ENOENT ... .next/standalone/.next/server/pages-manifest.json`。
+   - 请选 **Framework preset: None（不使用预设）**，再手动填下面的构建配置。
+4. 构建配置（手动填写）：
 
-| 项                     | 值                                                    |
-| ---------------------- | ----------------------------------------------------- |
-| Build command          | `npm run build`                                       |
-| Build output directory | `out`                                                 |
-| Node.js 版本           | 22（与现有 CI 一致；`npm ci` 需要 lockfile）          |
-| Environment variables  | 方案 A 无需添加；方案 B 不涉及（basePath 改在代码里） |
+| 项                        | 值                                                                                                  |
+| ------------------------- | --------------------------------------------------------------------------------------------------- |
+| Build command             | `npm run build`                                                                                     |
+| Build output directory    | `out`                                                                                               |
+| Node.js 版本              | 22（与现有 CI 一致；`npm ci` 需要 lockfile）                                                        |
+| **Environment variables** | `SITE_BASE_PATH` = （**空字符串**，根路径部署）<br>`SITE_ORIGIN` = `https://sanshui-blog.pages.dev` |
 
-4. 首次构建成功后访问站点，验证 `_headers` 生效（见 §5）。
-5. 现有 `.github/workflows/deploy.yml`（GitHub Pages 端）**保持不变**：`main` 分支 push 时两边同时构建，灰度期两边都能访问；旧端下线时机见 §6。
+> ⚠️ 这两个环境变量**必填**：CF Pages 不支持子路径，不设 `SITE_BASE_PATH=''` 时构建产物仍带
+> `/sanshui-blog` 前缀 → 所有资源 404（本次踩坑根因）。`SITE_ORIGIN` 用于 feed.xml / og.png /
+> sitemap / canonical 里的线上 URL。
+
+5. 首次构建成功后访问站点，验证 `_headers` 生效（见 §5）。
+6. 现有 `.github/workflows/deploy.yml`（GitHub Pages 端）**保持不变**：`main` 分支 push 时两边同时构建，灰度期两边都能访问；旧端下线时机见 §6。
 
 **方式 2：GitHub Actions（保留 CI 门禁链路）**
 
@@ -124,7 +130,9 @@ jobs:
 
 ### 3.2 自定义域名（可选）
 
-> ✅ **已决策：不绑定自定义域**（2026-09）——直接使用 Cloudflare Pages 默认子域 `https://<project>.pages.dev`，访问路径为 `https://<project>.pages.dev/sanshui-blog/`。省去 DNS 配置，迁移更快。
+> ✅ **已决策：不绑定自定义域**（2026-09）——直接使用 Cloudflare Pages 默认子域。
+> 根路径部署后访问地址为 **`https://sanshui-blog.pages.dev/`**（不再带 `/sanshui-blog` 子路径）。
+> 省去 DNS 配置，迁移更快。
 
 如未来想绑自定义域：Dashboard → 项目 → Custom domains → 添加域名，按提示配置 DNS（Cloudflare 代理可顺便获得 CDN + 自动 HTTPS）。
 
@@ -144,18 +152,18 @@ jobs:
 
 ## 5. 迁移后验证清单
 
-> 线上访问地址（方案 A + 不绑自定义域）：`https://<project>.pages.dev/sanshui-blog/`（`<project>` 为 CF 项目名，如 `sanshui-blog`）
+> 线上访问地址（根路径 + 不绑自定义域）：`https://sanshui-blog.pages.dev/`
 
 ```bash
 # 1. 安全头（应看到完整 CSP 等）
-curl -sI https://<project>.pages.dev/sanshui-blog/ | grep -iE 'content-security|x-content-type|x-frame|referrer|permissions'
+curl -sI https://sanshui-blog.pages.dev/ | grep -iE 'content-security|x-content-type|x-frame|referrer|permissions'
 
 # 2. 静态资源长缓存
-curl -sI https://<project>.pages.dev/sanshui-blog/_next/static/chunks/<某js> | grep -i cache-control
+curl -sI https://sanshui-blog.pages.dev/_next/static/chunks/<某js> | grep -i cache-control
 # 期望: public, max-age=31536000, immutable
 
 # 3. 压缩编码（应出现 br 或 gzip）
-curl -sI -H 'Accept-Encoding: br, gzip' https://<project>.pages.dev/sanshui-blog/ | grep -i content-encoding
+curl -sI -H 'Accept-Encoding: br, gzip' https://sanshui-blog.pages.dev/ | grep -i content-encoding
 
 # 4. 页面与资源
 #    - 首页/归档/标签/关于/项目/友链 均可访问，路由带尾斜杠（trailingSlash）
@@ -175,10 +183,10 @@ curl -sI -H 'Accept-Encoding: br, gzip' https://<project>.pages.dev/sanshui-blog
 
 ## 7. 决策清单
 
-| #   | 决策     | 选项                                                 | 状态                                                           |
-| --- | -------- | ---------------------------------------------------- | -------------------------------------------------------------- |
-| 1   | 平台     | Cloudflare Pages（推荐）/ Netlify                    | ✅ **已选 Cloudflare Pages**                                   |
-| 2   | 路径     | A 子路径（零改码）/ B 根路径（改 3 处 + 硬编码 URL） | ✅ **已选 A（子路径，零代码改动）**                            |
-| 3   | 部署方式 | Git 集成（零配置）/ Actions + Wrangler（保留门禁）   | ✅ **已选 Git 集成（deploy.yml 不动，旧端保留）**              |
-| 4   | 域名     | 保持 pages.dev 子域 / 绑定自定义域                   | ✅ **已选默认 pages.dev 子域（不绑自定义域）**                 |
-| 5   | 旧端下线 | 灰度后停用 GitHub Pages                              | ✅ **已选双端长期共存（GitHub Pages 与 Cloudflare 同时存在）** |
+| #   | 决策     | 选项                                                  | 状态                                                                                  |
+| --- | -------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1   | 平台     | Cloudflare Pages（推荐）/ Netlify                     | ✅ **已选 Cloudflare Pages**                                                          |
+| 2   | 路径     | ~~A 子路径（零改码）~~ / **B 根路径（环境变量双态）** | ✅ **已选根路径**（CF 不支持子路径；`SITE_BASE_PATH=''` + `SITE_ORIGIN`，代码已实现） |
+| 3   | 部署方式 | Git 集成（零配置）/ Actions + Wrangler（保留门禁）    | ✅ **已选 Git 集成（deploy.yml 不动，旧端保留）**                                     |
+| 4   | 域名     | 保持 pages.dev 子域 / 绑定自定义域                    | ✅ **已选默认 pages.dev 子域（不绑自定义域）**                                        |
+| 5   | 旧端下线 | 灰度后停用 GitHub Pages                               | ✅ **已选双端长期共存（GitHub Pages 与 Cloudflare 同时存在）**                        |

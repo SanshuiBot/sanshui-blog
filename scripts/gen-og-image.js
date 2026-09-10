@@ -53,8 +53,9 @@ const GRADIENT_STOPS = [
 
 /**
  * 绘制 Aurora 对角渐变底色 + 网格 + 暗角（SVG 方式）
+ * @param {string} siteUrl 线上站点 URL（origin + basePath），渲染进底部胶囊
  */
-function buildSvgContent() {
+function buildSvgContent(siteUrl) {
   // 对角渐变：左下(0,1) → 右上(1,0)，用 linearGradient x1 y1 x2 y2 控制
   const gradientStops = GRADIENT_STOPS.map(
     (s) => `<stop offset="${s.offset}" stop-color="${s.color}" stop-opacity="0.35"/>`,
@@ -149,14 +150,18 @@ function buildSvgContent() {
     <text x="200" y="28" text-anchor="middle"
           fill="rgba(255,255,255,0.55)" font-family="'JetBrains Mono','Fira Code','Consolas',monospace"
           font-size="15" font-weight="400" letter-spacing="0.5">
-      https://sanshuibot.github.io/sanshui-blog/
+      ${siteUrl}
     </text>
   </g>
 </svg>`;
 }
 
 async function generateOG() {
-  const svg = buildSvgContent();
+  // 线上站点 URL 读 site-config.mjs（双端部署：GitHub 默认 /sanshui-blog，
+  // CF 端由 SITE_ORIGIN / SITE_BASE_PATH 环境变量覆盖，og 图上 URL 与站点一致）
+  const { SITE_ORIGIN, SITE_BASE_PATH } = await import('../src/lib/site-config.mjs');
+  const siteUrl = `${SITE_ORIGIN}${SITE_BASE_PATH}/`;
+  const svg = buildSvgContent(siteUrl);
   const outPath = path.resolve(__dirname, '..', 'public', 'og.png');
   const sigPath = path.resolve(__dirname, '..', '.og-image-signature');
 

@@ -1,8 +1,10 @@
 import type { MetadataRoute } from 'next';
-import { BASE_PATH } from '@/lib/basePath';
 import { getAllPosts } from '@/lib/posts';
+import { siteConfig } from '@/lib/site';
 
-const baseUrl = 'https://sanshuibot.github.io' + BASE_PATH;
+// 站点 URL 唯一来源 siteConfig.url（= SITE_ORIGIN + BASE_PATH，双端部署自动跟随：
+// GitHub 端 https://sanshuibot.github.io/sanshui-blog、CF 端由环境变量覆盖）。
+const baseUrl = siteConfig.url;
 
 // 配合 output: 'export' 静态导出：显式声明 force-static，
 // 否则 Next 默认按 dynamic 处理，导出时报错。

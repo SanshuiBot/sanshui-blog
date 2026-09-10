@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
-import { BASE_PATH } from '@/lib/basePath';
+import { siteConfig } from '@/lib/site';
 
-const baseUrl = 'https://sanshuibot.github.io' + BASE_PATH;
+// 站点 URL 唯一来源 siteConfig.url（双端部署自动跟随，见 sitemap.ts 注释）
+const baseUrl = siteConfig.url;
 
 // 配合 output: 'export' 静态导出：显式声明 force-static
 export const dynamic = 'force-static' as const;

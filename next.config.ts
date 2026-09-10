@@ -22,13 +22,21 @@ function collectDevOrigins(): string[] {
 }
 
 const isBuild = process.env.NEXT_BUILD === '1';
-const BASE_PATH = isBuild ? '/sanshui-blog' : '';
+// 双端部署 basePath 双态（AGENTS.md 约定 #1 的扩展）：
+//  - GitHub Pages 端：默认 /sanshui-blog（子路径部署）
+//  - Cloudflare Pages 端：不支持子路径，必须根路径部署 → 构建时设环境变量
+//    SITE_BASE_PATH=''（空字符串），产物资源链接不再带 /sanshui-blog 前缀
+const BASE_PATH = process.env.SITE_BASE_PATH ?? (isBuild ? '/sanshui-blog' : '');
 
 const nextConfig: NextConfig = {
   // `output: 'export'` / basePath / assetPrefix 仅在构建时启用。
   // dev 模式下不设置 NEXT_BUILD，避免 HMR 失败。
+  // basePath 为 '' 时（CF 端）仍保持 output: 'export'，只是不带前缀。
   ...(isBuild
-    ? { output: 'export' as const, basePath: '/sanshui-blog', assetPrefix: '/sanshui-blog' }
+    ? {
+        output: 'export' as const,
+        ...(BASE_PATH ? { basePath: BASE_PATH, assetPrefix: BASE_PATH } : {}),
+      }
     : {}),
   // 把 basePath 通过 NEXT_PUBLIC_ 变量 inline 到客户端 bundle，
   // 让 src/lib/basePath.ts 在 SSR 和客户端 hydration 时拿到一致的值。
