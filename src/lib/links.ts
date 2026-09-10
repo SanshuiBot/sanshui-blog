@@ -36,7 +36,7 @@ export const friendLinks: FriendLink[] = [
   },
   {
     name: '三水博客 · Cloudflare',
-    url: 'https://sanshui-blog.pages.dev/sanshui-blog/',
+    url: 'https://sanshui-blog.pages.dev/',
     desc: '博客 Cloudflare Pages 镜像站',
     color: '#f6821f',
   },
