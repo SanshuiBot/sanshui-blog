@@ -37,8 +37,9 @@ jobs:
       # Next.js 构建缓存（.next/cache）：webpack 构建产物缓存，重复构建大幅提速。
       # key 含 package-lock + 内容 hash——依赖或文章变化才重建；restore-keys 部分命中兜底。
       # 注意：.next/ 整体是 gitignore 的，这里只缓存 cache 子目录，out/ 是部署产物不缓存。
+      # actions/cache 最新标签是 v4（v5+ 不存在，勿升级）。
       - name: Cache Next.js build
-        uses: actions/cache@v7
+        uses: actions/cache@v4
         with:
           path: .next/cache
           key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('content/posts/**', 'content/resume.md') }}

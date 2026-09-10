@@ -106,8 +106,8 @@ jobs:
       - run: npm run test
         if: always()
       - run: npm run build
-      # 缓存 Next 构建
-      - uses: actions/cache@v7
+      # 缓存 Next 构建（actions/cache 最新标签 v4）
+      - uses: actions/cache@v4
         with:
           path: .next/cache
           key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('content/**') }}
