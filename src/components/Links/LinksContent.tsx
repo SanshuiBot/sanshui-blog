@@ -51,15 +51,9 @@ function attachMagneticGlow(el: HTMLElement | null) {
   };
 }
 
-// ── 直接拼 /favicon.svg 路径，无需第三方 API；先归一化尾斜杠，兼容无尾斜杠 URL ──
-function getFaviconUrl(url: string): string {
-  return `${url.replace(/\/+$/, '')}/favicon.svg`;
-}
-
 // ── 卡片 ─────────────────────────────────────────────────────────────────────
 function LinkCard({ link, ref }: { link: FriendLink; ref?: (el: HTMLElement | null) => void }) {
   const dotColor = link.color ?? 'rgb(var(--accent-violet-rgb))';
-  const faviconUrl = link.faviconUrl ?? getFaviconUrl(link.url);
   const [faviconErr, setFaviconErr] = useState(false);
 
   return (
@@ -79,18 +73,19 @@ function LinkCard({ link, ref }: { link: FriendLink; ref?: (el: HTMLElement | nu
       {/* 彩色圆点 */}
       <span className="terminal-card-dot" style={{ background: dotColor, color: dotColor }} />
 
-      {/* 图标区：自定义图标 > favicon > Globe */}
+      {/* 图标区：自定义 icon > 显式配置的 faviconUrl > 默认 Globe。
+          不自动拼 /favicon.svg 抓取外部图标——省请求数（2026-09 调整） */}
       <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center relative">
         {link.icon ? (
           <link.icon size={13} className="opacity-60" />
-        ) : (
+        ) : link.faviconUrl ? (
           <>
-            {/* 外部 favicon：静态导出无优化器，用原生 img + state 降级，符合约定 #33/#34 */}
+            {/* 显式配置的 favicon：静态导出无优化器，用原生 img + state 降级，符合约定 #33/#34 */}
             {/* favicon 加载失败时 display:none 释放占位，Globe 兜底（仅此时渲染，避免盖住已加载的图标） */}
             {/* loading="eager"：显式退出 Chromium 懒加载干预（该干预会推迟视口外图片的 load/error 事件），保证 onError 降级立即触发 */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={faviconUrl}
+              src={link.faviconUrl}
               alt=""
               loading="eager"
               fetchPriority="low"
@@ -100,6 +95,8 @@ function LinkCard({ link, ref }: { link: FriendLink; ref?: (el: HTMLElement | nu
             />
             {faviconErr && <Globe size={13} className="opacity-40 absolute inset-0 m-auto" />}
           </>
+        ) : (
+          <Globe size={13} className="opacity-40" />
         )}
       </div>
 

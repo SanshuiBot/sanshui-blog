@@ -3,7 +3,6 @@ import { useCallback, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Search, Menu, X, Mail } from 'lucide-react';
 import ThemeToggle from '@/components/UI/ThemeToggle';
 import Github from '@/components/UI/GithubIcon';
@@ -51,10 +50,14 @@ export default function Navbar() {
   useScrollLock(mobileOpen);
   useFocusTrap(mobileMenuRef, mobileOpen);
 
-  // 用 useMotionValueEvent 替代原生 scroll listener：与 ParticleField 等 rAF 循环共享
-  // 同一事件循环批次，减少 scroll 事件分发开销
-  const { scrollY } = useScroll();
-  useMotionValueEvent(scrollY, 'change', (v) => setScrolled(v > 20));
+  // 原生 passive scroll listener（framer-motion 已移出首屏 layout，约定 #32 CSS 优先）；
+  // setScrolled 同值时 React 自动 bail-out，只在跨过 20px 阈值时触发一次重渲染
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   // 路由切换时关闭移动端菜单：渲染期间调整 state（React 官方模式，避免 effect 内同步 setState）
   const [prevPathname, setPrevPathname] = useState(pathname);
   if (prevPathname !== pathname) {
@@ -165,11 +168,8 @@ export default function Navbar() {
 
   return (
     <>
-      <motion.header
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 nav-dotted ${
+      <header
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 nav-dotted nav-fade-in ${
           scrolled ? 'nav-scrolled border-b border-black/[0.06] shadow-nav dark:border-white/5' : ''
         }`}
       >
@@ -242,91 +242,90 @@ export default function Navbar() {
             </Tooltip>
           </div>
         </nav>
-      </motion.header>
+      </header>
 
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            key="mobile-menu-mask"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 md:hidden bg-stone-900/50 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
-        {mobileOpen && (
-          <motion.aside
-            key="mobile-menu-drawer"
-            ref={mobileMenuRef}
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', stiffness: 380, damping: 34 }}
-            className="fixed inset-y-0 right-0 z-40 md:hidden w-[min(20rem,85vw)] glass-heavy border-l border-black/[0.1] flex flex-col px-8 pt-20 pb-8 overflow-y-auto dark:border-white/10"
-          >
-            <p className="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3 dark:text-gray-400">
-              导航
-            </p>
-            <nav className="flex flex-col gap-1">
-              {navLinks.map((l, i) => {
-                const active = isActive(pathname, l.href);
-                return (
-                  <motion.div
-                    key={l.href}
-                    initial={{ opacity: 0, x: 24 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.08 + i * 0.05 }}
-                  >
-                    <Link
-                      href={l.href}
-                      prefetch={l.prefetch}
-                      onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-3 py-2.5 text-xl font-semibold transition-colors ${
-                        active
-                          ? 'text-aurora'
-                          : 'text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-fg'
-                      }`}
-                    >
-                      <span
-                        className={`h-4 w-1 rounded-full transition-opacity duration-300 ${
-                          active ? 'opacity-100' : 'opacity-0'
-                        }`}
-                        style={{ background: 'rgb(var(--accent-violet-rgb))' }}
-                      />
-                      {l.label}
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </nav>
-
-            <div className="mt-auto pt-8 border-t border-black/[0.1] dark:border-white/10">
-              <div className="flex items-center gap-5">
-                <a
-                  href={siteConfig.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="footer-link footer-link-bright inline-flex items-center gap-2 text-sm text-stone-600"
+      {/* 移动端抽屉：常驻渲染 + CSS transition（framer-motion 已移出首屏 layout）。
+          遮罩 opacity 过渡 + 关闭态 pointer-events-none；抽屉 translate-x 过渡，
+          关闭态 translate-x-full 移出视口 + inert 禁用交互（TOC 抽屉同款模式）。
+          reduced-motion 下全局 0.01ms 压制自动合规（约定 #32）。 */}
+      <div
+        aria-hidden={!mobileOpen}
+        onClick={() => setMobileOpen(false)}
+        className={`fixed inset-0 z-40 md:hidden bg-stone-900/50 backdrop-blur-sm transition-opacity duration-300 ${
+          mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      />
+      <aside
+        ref={mobileMenuRef}
+        inert={!mobileOpen}
+        aria-hidden={!mobileOpen}
+        className={`fixed inset-y-0 right-0 z-40 md:hidden w-[min(20rem,85vw)] glass-heavy border-l border-black/[0.1] flex flex-col px-8 pt-20 pb-8 overflow-y-auto transition-transform duration-300 ease-out dark:border-white/10 ${
+          mobileOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <p className="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3 dark:text-gray-400">
+          导航
+        </p>
+        <nav className="flex flex-col gap-1">
+          {navLinks.map((l, i) => {
+            const active = isActive(pathname, l.href);
+            // 链接错峰入场：CSS transition-delay 替代 framer 的 delay variants；
+            // 关闭时 delay 归零（立即收回），reduced-motion 全局压制自动合规
+            return (
+              <div
+                key={l.href}
+                className={`transition-all duration-300 ease-out ${
+                  mobileOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'
+                }`}
+                style={{ transitionDelay: mobileOpen ? `${0.08 + i * 0.05}s` : '0s' }}
+              >
+                <Link
+                  href={l.href}
+                  prefetch={l.prefetch}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 py-2.5 text-xl font-semibold transition-colors ${
+                    active
+                      ? 'text-aurora'
+                      : 'text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-fg'
+                  }`}
                 >
-                  <Github size={14} />
-                  GitHub
-                </a>
-                <a
-                  href={siteConfig.emailHref}
-                  className="footer-link footer-link-bright inline-flex items-center gap-2 text-sm text-stone-600"
-                >
-                  <Mail size={14} />
-                  Email
-                </a>
+                  <span
+                    className={`h-4 w-1 rounded-full transition-opacity duration-300 ${
+                      active ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    style={{ background: 'rgb(var(--accent-violet-rgb))' }}
+                  />
+                  {l.label}
+                </Link>
               </div>
-              <p className="mt-6 text-xs text-stone-400 dark:text-gray-500">
-                &copy; {siteConfig.copyrightYear} {siteConfig.name}. All rights reserved.
-              </p>
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+            );
+          })}
+        </nav>
+
+        <div className="mt-auto pt-8 border-t border-black/[0.1] dark:border-white/10">
+          <div className="flex items-center gap-5">
+            <a
+              href={siteConfig.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-link footer-link-bright inline-flex items-center gap-2 text-sm text-stone-600"
+            >
+              <Github size={14} />
+              GitHub
+            </a>
+            <a
+              href={siteConfig.emailHref}
+              className="footer-link footer-link-bright inline-flex items-center gap-2 text-sm text-stone-600"
+            >
+              <Mail size={14} />
+              Email
+            </a>
+          </div>
+          <p className="mt-6 text-xs text-stone-400 dark:text-gray-500">
+            &copy; {siteConfig.copyrightYear} {siteConfig.name}. All rights reserved.
+          </p>
+        </div>
+      </aside>
       {/* SearchModal 始终随 Navbar 挂载（未加载时为 null 分支），由 open 驱动显隐：
           点击即置 open=true，chunk 就绪的同一帧组件就在 DOM 里，无「点了没反应」空窗 */}
       {SearchModalComp !== null && (

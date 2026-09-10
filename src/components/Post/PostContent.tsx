@@ -20,8 +20,30 @@ const vueGrammar: typeof hljsXml = (hljs) => {
   return grammar;
 };
 
+// 语言白名单：只注册文章围栏实际用到的语言（content/posts 全量统计，
+// 见 CodeCopyInjector 语言统计），不再展开 lowlight common 全量 37 种——
+// 构建期 rehype-highlight 逐围栏解析 + detect 兜底只遍历注册表，白名单越小
+// 构建越快、内存越低。别名命中：ts/tsx→typescript、js→javascript、html→xml、
+// text→plaintext、objc→objectivec。promql/haproxy 无接近语法，走下方
+// rehypeHighlightOptions.plainText 纯文本输出（L5 裁剪，2026-09）。
 const blogLanguages = {
-  ...languages,
+  typescript: languages.typescript, // ts / tsx
+  javascript: languages.javascript, // js
+  go: languages.go,
+  css: languages.css,
+  bash: languages.bash,
+  sql: languages.sql,
+  java: languages.java,
+  yaml: languages.yaml,
+  ini: languages.ini,
+  python: languages.python,
+  objectivec: languages.objectivec, // objc
+  ruby: languages.ruby,
+  json: languages.json,
+  diff: languages.diff,
+  xml: languages.xml, // html 别名
+  plaintext: languages.plaintext, // text 别名
+  // common 之外的补充语言（文章围栏实际用到）：
   dockerfile: hljsDockerfile,
   protobuf: hljsProtobuf,
   http: hljsHttp,

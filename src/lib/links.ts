@@ -19,7 +19,8 @@ export interface FriendLink {
   desc: string;
   /** 自定义图标组件（可选） */
   icon?: React.ComponentType<{ size?: number; className?: string }>;
-  /** 手动指定的 favicon URL（可选），不填则自动从 url 域名获取 */
+  /** 手动指定的 favicon URL（可选），不填则不请求 favicon——用默认 Globe 图标，
+      避免友链卡片自动抓取外部 /favicon.svg 产生额外请求数 */
   faviconUrl?: string;
   /** 卡片左侧圆点颜色，默认使用 accent-violet */
   color?: string;
@@ -32,6 +33,12 @@ export const friendLinks: FriendLink[] = [
     desc: '三水github项目仓库',
     icon: GithubIcon,
     color: '#58a6ff',
+  },
+  {
+    name: '三水博客 · Cloudflare',
+    url: 'https://sanshui-blog.pages.dev/sanshui-blog/',
+    desc: '博客 Cloudflare Pages 镜像站',
+    color: '#f6821f',
   },
   {
     name: 'dreamxj-个人网站',

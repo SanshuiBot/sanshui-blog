@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react';
 import type { TocItem } from '@/lib/toc';
 import { useScrollThumbGeometry } from '@/components/UI/useScrollThumbGeometry';
 import { useFocusTrap } from '@/components/UI/useFocusTrap';
+import { useScrollLock } from '@/components/UI/useScrollLock';
 
 interface Props {
   items: TocItem[];
@@ -37,6 +38,8 @@ export default function TableOfContents({ items }: Props) {
 
   // 移动端抽屉焦点陷阱：Tab 循环限制在抽屉可聚焦元素内，关闭后焦点还原
   useFocusTrap(drawerRef, drawerOpen);
+  // 移动端抽屉打开时锁定背景滚动（与 Navbar 抽屉/SearchModal 同一收口 hook）
+  useScrollLock(drawerOpen);
 
   // SPA 文章间跳转时 App Router 复用同一组件实例、传入新的 items 数组，
   // 而 useState 初始值只在首挂载生效 —— 按 React 官方「prev 状态对比」模式

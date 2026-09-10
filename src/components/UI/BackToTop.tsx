@@ -1,7 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import Tooltip from '@/components/UI/Tooltip';
 
 interface Props {
@@ -17,21 +16,25 @@ interface Props {
  * 之前 Footer 与 PostMeta 各自复制了一份几乎相同的
  * 「scrollY 阈值监听 + Tooltip + 圆钮 + active:scale-95」，
  * 收口后只保留挂载位置（className）与阈值（threshold）两个差异点。
+ *
+ * 入场动画走 CSS（.backtotop-fade-in，globals.css），不依赖 framer-motion——
+ * framer-motion 已移出首屏 layout，只随懒加载 chunk 进入。
  */
 export default function BackToTop({ threshold = 500, className = '' }: Props) {
   const [show, setShow] = useState(false);
-  const { scrollY } = useScroll();
-  // 与 Navbar/PostMeta 共用同一 useMotionValueEvent 事件循环批次
-  useMotionValueEvent(scrollY, 'change', (v) => setShow(v > threshold));
+  // 原生 passive scroll listener（替代 framer useScroll/useMotionValueEvent）；
+  // 同值 setState React 自动 bail-out，只跨阈值时触发一次重渲染
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > threshold);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [threshold]);
 
   return (
     <>
       {show && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={className}
-        >
+        <div className={`${className} backtotop-fade-in`}>
           <Tooltip label="回到顶部">
             <button
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -41,7 +44,7 @@ export default function BackToTop({ threshold = 500, className = '' }: Props) {
               <ArrowUp size={16} />
             </button>
           </Tooltip>
-        </motion.div>
+        </div>
       )}
     </>
   );

@@ -189,7 +189,7 @@ html.dark .projects-content .group:hover {
 /* ── 底部 CTA 幽灵按钮：微填充 + hover 上浮 ───────────────────────────────── */
 
 .cta-ghost-btn {
-  /* 亮色基值：极淡背景 + 细边框 + 灰色文字，不抢卡片风头（暗色由下方 .dark 覆盖加浓） */
+  /* 亮色基值：极淡背景 + 细边框 + 灰色文字，不抢卡片风头（暗色由下方 html.dark 覆盖加浓） */
   background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 6%, white);
   color: rgb(107 114 128);
   border: 1px solid rgb(var(--accent-violet-rgb) / 0.2);
@@ -201,7 +201,7 @@ html.dark .projects-content .group:hover {
     box-shadow 0.3s ease,
     transform 0.3s ease;
 }
-.dark .cta-ghost-btn {
+html.dark .cta-ghost-btn {
   background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 10%, rgb(15 15 20 / 0.4));
   color: rgb(156 163 175);
   border-color: rgb(var(--accent-violet-rgb) / 0.22);
@@ -214,7 +214,7 @@ html.dark .projects-content .group:hover {
   border-color: rgb(var(--accent-violet-rgb) / 0.4);
   box-shadow: 0 4px 12px rgb(var(--accent-violet-rgb) / 0.12);
 }
-.dark .cta-ghost-btn:hover {
+html.dark .cta-ghost-btn:hover {
   background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 18%, rgb(15 15 20 / 0.6));
   border-color: rgb(var(--accent-violet-rgb) / 0.45);
 }

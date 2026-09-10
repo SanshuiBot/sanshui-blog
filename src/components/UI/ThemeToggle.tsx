@@ -1,7 +1,6 @@
 'use client';
 import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useSyncExternalStore } from 'react';
 import Tooltip from '@/components/UI/Tooltip';
 
@@ -47,18 +46,9 @@ export default function ThemeToggle() {
             className="nav-icon-btn relative p-2 w-9 h-9 flex items-center justify-center rounded-xl text-stone-600 hover:text-stone-900 hover:bg-black/[0.03] dark:text-gray-400 dark:hover:text-fg dark:hover:bg-white/5 overflow-hidden"
             aria-label={label}
           >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={isDark ? 'sun' : 'moon'}
-                initial={{ y: -14, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: 14, opacity: 0 }}
-                transition={{ duration: 0.08, ease: [0.4, 0, 0.2, 1] }}
-                className="block"
-              >
-                {isDark ? <Sun size={16} /> : <Moon size={16} />}
-              </motion.span>
-            </AnimatePresence>
+            <span key={isDark ? 'sun' : 'moon'} className="block animate-icon-swap">
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </span>
           </button>
         </Tooltip>
       ) : (
