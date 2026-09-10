@@ -50,6 +50,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const [activeIdx, setActiveIdx] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
   const router = useRouter();
   // 手机端渲染减负：全屏 backdrop-blur + scale/y 位移动画在小屏（尤其低端机）
@@ -115,6 +116,17 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     const t = setTimeout(() => inputRef.current?.focus(), 100);
     return () => clearTimeout(t);
   }, [open]);
+
+  // 键盘上下选择时把选中项滚进可视区（block:'nearest' 只在目标被裁剪时滚动，
+  // 不劫持用户的滚动位置）；切换搜索词时 activeIdx 重置为 0，同样生效
+  useEffect(() => {
+    if (activeIdx < 0) return;
+    // jsdom 未实现 scrollIntoView，typeof 守卫兜底（真实浏览器恒有）
+    const el = listRef.current?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (el && typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView({ block: 'nearest' });
+    }
+  }, [activeIdx]);
 
   // fuse.js 模糊搜索：支持 typo 容错、权重排序。保留 lib/search.ts 的
   // 「空格分词 AND」语义——每个词元独立搜索，取所有词元结果的交集，
@@ -254,7 +266,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                 <span>关闭</span>
               </button>
             </div>
-            <div className="max-h-[60dvh] sm:max-h-80 overflow-y-auto p-2">
+            <div ref={listRef} className="max-h-[60dvh] sm:max-h-80 overflow-y-auto p-2">
               {indexState === 'error' && (
                 /* 错误态：提示 + 重试（aria-live 让读屏播报状态变化） */
                 <div
