@@ -50,7 +50,7 @@
 | 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                                                                            |
 | 🗂️ **项目卡片墙**        | `/projects/` 统一尺寸 Bento 卡片：左侧竖线 URL 哈希取色混主题色 + hover 语言色光晕跟随鼠标                                            |
 | 🔍 **⌘K 全局搜索**       | 空格分词**多关键词 AND** 匹配 + 命中 `<mark>` 高亮 + 键盘流（↑↓/Enter/Esc）+ 无结果态，索引 `posts-index.json`（~10KB）               |
-| 📜 **阅读进度条**        | 滚动驱动的渐变进度指示器                                                                                                              |
+| 📜 **阅读进度**          | 顶部渐变进度条 + 文章页**环形进度回顶按钮**（弧线进度 + 圆心「↑ 百分比」+ 点击回顶，右下角固定）                                      |
 | 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条                                                    |
 | 💬 **Giscus 评论**       | GitHub Discussions 驱动，零后端；og:title 映射 + strict 摘要查找；亮暗主题联动                                                        |
 | 🎯 **三水 favicon**      | 三片紫蓝渐变椭圆花瓣 + 中心圆点，配米白背景，呼应「三水」之名                                                                         |
@@ -65,20 +65,20 @@
 
 ## 🔧 技术栈
 
-| 类别       | 技术                                                                 |
-| ---------- | -------------------------------------------------------------------- |
-| **框架**   | Next.js 16.3 (App Router, SSG 静态导出)                              |
-| **运行时** | React 19 (Server Components / Hooks，`react-dom` 服务端渲染)         |
-| **语言**   | TypeScript 5 (strict 模式 + `noUncheckedIndexedAccess`)              |
-| **样式**   | Tailwind CSS v4 (`@theme` 自定义设计令牌，无 tailwind.config.js)     |
-| **动画**   | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                    |
-| **图标**   | Lucide React + 自定义 SVG 图标（无 react-icons 整包依赖）            |
-| **内容**   | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)          |
-| **搜索**   | 自研 ⌘K 搜索（`posts-index.json` 轻量索引，构建期预生成）            |
-| **评论**   | Giscus (GitHub Discussions 驱动，零后端)                             |
-| **测试**   | Vitest 4（lib 纯函数/契约 + jsdom 组件测试 RTL，`tests/`）           |
-| **订阅**   | RSS 2.0（构建期生成 `feed.xml`，含全文 CDATA 与标签分类）            |
-| **部署**   | GitHub Pages + GitHub Actions（typecheck/lint/test 门禁 + 自动部署） |
+| 类别       | 技术                                                                                                          |
+| ---------- | ------------------------------------------------------------------------------------------------------------- |
+| **框架**   | Next.js 16.3 (App Router, SSG 静态导出)                                                                       |
+| **运行时** | React 19 (Server Components / Hooks，`react-dom` 服务端渲染)                                                  |
+| **语言**   | TypeScript 5 (strict 模式 + `noUncheckedIndexedAccess`)                                                       |
+| **样式**   | Tailwind CSS v4 (`@theme` 自定义设计令牌，无 tailwind.config.js)                                              |
+| **动画**   | Framer Motion 12 (spring 物理、滚动驱动、3D 倾斜)                                                             |
+| **图标**   | Lucide React + 自定义 SVG 图标（无 react-icons 整包依赖）                                                     |
+| **内容**   | MDX (`next-mdx-remote/rsc` + remark-gfm + rehype-highlight)                                                   |
+| **搜索**   | 自研 ⌘K 搜索（`posts-index.json` 轻量索引，构建期预生成）                                                     |
+| **评论**   | Giscus (GitHub Discussions 驱动，零后端)                                                                      |
+| **测试**   | Vitest 4（lib 纯函数/契约 + jsdom 组件测试 RTL，`tests/`）                                                    |
+| **订阅**   | RSS 2.0（构建期生成 `feed.xml`，含全文 CDATA 与标签分类）                                                     |
+| **部署**   | GitHub Pages（GH Actions 门禁 + 自动部署）+ Cloudflare Pages（根路径双端部署，`SITE_BASE_PATH` 环境变量切换） |
 
 ---
 
@@ -112,17 +112,17 @@ sanshui-blog/
 │   │   ├── resume-terminal.css # 简历内容区（变量 + 暗/亮双主题覆盖）
 │   │   └── projects.css        # 项目卡片（标题渐变 / 语言色文字 / hover 光晕的亮暗双态）
 │   ├── components/
-│   │   ├── Providers.tsx       # 纯 Context 组合 (next-themes + 导航加载 + MotionConfig)
+│   │   ├── Providers.tsx       # 纯 Context 组合 (ErrorBoundary + next-themes + 导航加载，无 framer 依赖)
 │   │   ├── AmbientEffects.tsx  # 全局动效注册表 (懒加载 + reduced-motion 兜底)
 │   │   ├── AppShell.tsx        # 布局壳 (Navbar + main + Footer)
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
 │   │   ├── Home/               # HeroParallax（视差拼贴首屏，3 深度层）· HomeHydration（懒加载入口）· PostsList
-│   │   ├── Post/               # PostCard · PostGrid · PostContent · PostMeta · PostNav · PostDone · PostComments (Giscus 评论) · TableOfContents · CodeCopyInjector · CardSpotlight (spotlight/3D tilt 延迟挂载)
+│   │   ├── Post/               # PostCard · PostGrid · PostContent · PostMeta · PostNav · PostDone · PostComments (Giscus 评论) · TableOfContents · CodeCopyInjector · CardSpotlight (spotlight/3D tilt 延迟挂载) · ReadingProgress (环形进度回顶按钮)
 │   │   ├── About/              # AboutContent · ResumeTerminal (流式打印简历)
 │   │   ├── Projects/           # ProjectsContent（项目卡片墙，统一尺寸 + 鼠标跟随光晕）
 │   │   ├── Archive/            # FilterDropdown（归档年份/标签筛选）
 │   │   ├── Links/ · NotFound/ · TagList
-│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop · ThemeColorSync · TerminalShell · useDismiss · useScrollLock · useFocusTrap · usePrefersReducedMotion · useSafeTimeout · useScrollThumbGeometry · ErrorBoundary
+│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop (现仅 Footer 用) · ThemeColorSync · TerminalShell · useDismiss · useScrollLock · useIsBodyScrollLocked (进度判锁基元) · useFocusTrap · usePrefersReducedMotion · useSafeTimeout · useScrollThumbGeometry · ErrorBoundary
 │   └── lib/
 │       ├── types.ts            # Post 类型定义（server-only）
 │       ├── posts.ts            # 文章读取（单次装载，无 mtime 缓存；slug 解码统一兜底）
@@ -151,7 +151,8 @@ sanshui-blog/
 │   ├── gen-feed.js             # 生成 public/feed.xml（RSS 2.0 + 全文 CDATA + 标签分类）
 │   ├── gen-og-image.js         # 生成 public/og.png（sharp SVG 光栅化，1200×630 Aurora 渐变 + 中文标题）
 │   ├── gen-dotted-tag-payloads.js # 为含点号标签 (如 Next.js) 补 RSC payload 副本，避免线上 404
-│   └── post-build-cleanup.js   # 构建后删除未被引用的冗余 chunk/字体，缩小部署体积
+│   ├── post-build-cleanup.js   # 构建后删除未被引用的冗余 chunk/字体，缩小部署体积
+│   └── post-build-font-preload.js # 构建后注入字体 preload（Next 16 静态导出缺失字体预取的框架 bug 修复，消除首屏 FOUT）
 ├── .github/workflows/deploy.yml # GitHub Actions：质量门禁 + 自动部署
 └── public/                     # 静态资源 (favicon.svg/ico · posts-index.json · feed.xml · og.png · _headers)
 ```
@@ -180,14 +181,14 @@ npx serve out
 | 命令                   | 作用                                                                                                                                      |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run dev`          | 开发模式，`predev` 自动生成 ConsoleNinja 兼容的路由清单 + 文章索引 + RSS feed（`--webpack` 绕开 Turbopack 的 Tailwind v4.3 CSS 解析问题） |
-| `npm run build`        | prebuild 生成索引/RSS/og 图 → `NEXT_BUILD=1` 静态导出 → 点号标签补副本 → 冗余产物清理                                                     |
+| `npm run build`        | prebuild 生成索引/RSS/og 图 → `NEXT_BUILD=1` 静态导出 → 点号标签补副本 → 冗余产物清理 → 字体 preload 注入                                 |
 | `npm run start`        | Next.js 生产服务器（本项目为纯静态导出，通常不用，静态托管在任意 HTTP 服务器即可）                                                        |
 | `npm run lint`         | ESLint v9 flat config，只报告不修改                                                                                                       |
 | `npm run lint:fix`     | 运行 ESLint 并自动修复可修复的问题                                                                                                        |
 | `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                                                          |
 | `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                                                                     |
 | `npm run typecheck`    | `tsc --noEmit` 类型检查（Next 16 构建不跑 lint，CI/本地须单独跑 lint + typecheck）                                                        |
-| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 158 个）                                                                        |
+| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 179 个）                                                                        |
 | `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                                                                    |
 
 > 🔒 **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`。
@@ -202,8 +203,9 @@ npm run dev
 npm run build
   └─ prebuild → 生成 posts-index.json (~10KB 轻量索引) + feed.xml (RSS 2.0) + og.png (1200×630 社交卡片图，sharp SVG)
   └─ cross-env NEXT_BUILD=1 next build --webpack → 静态导出 out/
-  └─ gen-dotted-tag-payloads.js → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
-  └─ post-build-cleanup.js → 删除未被引用的冗余 chunk/字体（带引用校验，绝不误删）
+  ├─ gen-dotted-tag-payloads.js → 为含点号标签（如 Next.js）补 RSC payload 副本，避免线上 404
+  ├─ post-build-cleanup.js → 删除未被引用的冗余 chunk/字体（带引用校验，绝不误删）
+  └─ post-build-font-preload.js → 注入字体 preload（Next 16 静态导出缺失字体预取的框架 bug 修复，浏览器提前拉取消除 FOUT）
 ```
 
 ---
@@ -386,6 +388,8 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
 - 安全响应头走 `public/_headers`（`X-Content-Type-Options: nosniff`、`X-Frame-Options: DENY`、`Referrer-Policy`、`Permissions-Policy`）；`output: 'export'` 下 `next.config.ts` 的 `headers()` 不生效
 - 静态资源一年长缓存（`/_next/static/*`，`immutable`）
 
+**双端部署（Cloudflare Pages 备选）**：CF Pages 不支持子路径，构建时设环境变量 `SITE_BASE_PATH='/'`（归一化为无前缀；CF 面板不允许空字符串值）与 `SITE_ORIGIN=https://<项目>.pages.dev` 即可根路径部署；`feed.xml` / `og.png` / `sitemap` / canonical / metadataBase 全部随环境变量自动切换（`lib/site-config.mjs` 是脚本侧唯一源，改站点信息只改它）。GitHub Pages 端保持默认（不设环境变量 → `/sanshui-blog` 子路径）。`public/_headers` 安全头在 CF Pages 上**生效**（GitHub Pages 不支持）。详见 `docs/deploy-to-cloudflare-pages.md`。
+
 ---
 
 ## ⚠️ 开发注意事项
@@ -403,7 +407,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
 - **Giscus 评论**：配置集中在 `src/components/Post/PostComments.tsx` 的 `GISCUS_ATTRS`（属性名必须 kebab-case；`mapping='og:title'` + `strict='1'`，讨论按文章标题关联，**改文章标题会使历史评论失联**）；主题用官方 `light`/`dark`；Edge 的「Images loaded lazily」干预警告来自 widget 内部懒加载头像，属 giscus 自身行为、宿主页无法消除
 - **重组件懒加载**：`CursorGlow`、`ScrollProgress`、`ClickEffect`、`ParticleField` 等非首屏必需的 client 组件由 `AmbientEffects.tsx` 通过 `next/dynamic` 统一懒加载（`prefers-reduced-motion` 阀门跳过装饰性动效 `CursorGlow`/`ClickEffect`；`ScrollProgress` 保留指示条但 spring 平滑入阀；`ParticleField` 内部自检画静态帧），避免被打进首屏 chunk
 - **reduced-motion 检测统一走共享 hook**：`src/components/UI/usePrefersReducedMotion.ts` 封装 `matchMedia('(prefers-reduced-motion: reduce)')` + `useSyncExternalStore`（客户端实时快照 / SSR 固定 false），`AmbientEffects` 与 `ScrollProgress` 共用，**不要手抄 matchMedia 订阅**（改 query/监听/SSR 快照只改一处）。`usePrefersReducedMotion` 替代 framer-motion 的 `useReducedMotion`——后者在设备开启 reduced-motion 且 dev 模式时会打 `warnOnce` 噪音（"reduced-motion-disabled"）
-- **framer 自动降级关闭**：`Providers.tsx` 包 `<MotionConfig reducedMotion="never">`——项目动效已自管 reduced-motion（CSS 0.01ms 压制 + AmbientEffects 阀门 + 共享 hook），不依赖 framer 的自动检测降级；关闭它同时静默 dev 下 VisualElement 挂载的 warnOnce
+- **framer 自动降级关闭**：framer-motion 不参与 reduced-motion 自动降级——其 MotionConfigContext 默认 reducedMotion 即 `"never"`（曾用 `Providers.tsx` 的 `<MotionConfig reducedMotion="never">` 显式声明，后随 Providers 移除 framer 依赖而删除，行为等价）。项目动效自管 reduced-motion（CSS 0.01ms 压制 + AmbientEffects 阀门 + 共享 hook），不依赖 framer 自动检测降级
 - **Turbopack + Tailwind v4.3 不兼容**：Next 16 默认 Turbopack 无法解析 Tailwind v4.3 生成的 `@layer properties` 选择器（`Invalid dangling combinator in selector`），dev/build 脚本已显式加 `--webpack`，不要移除
 - **sharp 依赖**：`package.json` 的 `overrides` 锁定 `sharp: "^0.35.3"` 与 `postcss: "^8.5.25"`，保证静态导出 + `images.unoptimized: true` 场景下依赖树稳定
 - **`out/` 是构建产物**：`out/` 在 `.gitignore` 中、未被 git 跟踪，是 `npm run build` 的静态导出产物。`out/en/` 等陈旧子树可能是早期英文版 / `[locale]` i18n 路由的构建残留，**源码里已无对应路由**。排查路由时以 `src/app/` 为准，不要把 `out/` 的旧产物当成当前结构，也不要手动清理 `out/`——下次 `build` 会整体覆盖
@@ -446,7 +450,11 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
   - **Framer Motion 驱动的动画绕开了这条降级**：Framer 用 JS rAF + inline style 驱动位移（如 PostCard 标题 `whileHover`、ArrowLink 箭头位移），inline style 的 `transform` 不受 `transition-duration` 影响。这是「功能性可见动画」的有意例外——但 hover 变色仍走纯 CSS，不交给 Framer。
   - **新增动画前 checklist**：① 优先纯 CSS（`transition` + `transform`/`opacity`/`width` 等合成层属性），自动被 0.01ms 降级覆盖；② 避免 `transition: all`（会动画非合成属性，触发 layout/paint）；③ 若用 Framer Motion 驱动可见位移，确认该动画在 reduced-motion 下是否应降级——若应降级，改用纯 CSS 或在 `usePrefersReducedMotion()` 守卫下跳过；④ hover 变色不交给 Framer。
 - **版权年份**：`©` 年份用 `siteConfig.copyrightYear` 常量（`src/lib/site.ts`，每年元旦手动更新）。不要在客户端组件里 `new Date().getFullYear()`——静态导出时 SSR 用构建时年份、hydration 用访问时年份，跨年/跨时区会 mismatch（Footer 与 Navbar 抽屉的版权行都走这个常量）
-- **公共 hook 收口别手抄**：滚动锁 `useScrollLock`、焦点陷阱 `useFocusTrap`、返回顶部 `BackToTop`、主题色同步 `ThemeColorSync`、日期格式化 `formatDate` 都是全站唯一实现（AGENTS.md #40）。此前 Navbar/SearchModal 各写一份 body 滚动锁，同开时还原互相覆盖——新增弹层/模态直接复用
+- **公共 hook 收口别手抄**：滚动锁 `useScrollLock`、判锁基元 `useIsBodyScrollLocked`、焦点陷阱 `useFocusTrap`、返回顶部 `BackToTop`、主题色同步 `ThemeColorSync`、日期格式化 `formatDate` 都是全站唯一实现（AGENTS.md #40/#50）。此前 Navbar/SearchModal 各写一份 body 滚动锁，同开时还原互相覆盖——新增弹层/模态直接复用
+- **进度组件判锁基元（弹层开关不清进度）**：iOS 上 `useScrollLock` 的 fixed 锁会把 `window.scrollY` 重置为 0，若进度组件按 scrollY 重算，打开/关闭弹窗、抽屉时顶部进度条与阅读进度环会瞬间清空再恢复（视觉像页面滑动了）。判锁统一走 `UI/useIsBodyScrollLocked`（`useScrollLock` 锁定时必置 `body.style.overflow='hidden'`，MutationObserver 订阅开合），锁定期**冻结上次值**；顶部进度条同时在弹层打开时淡出（`opacity 0`，等效压到弹层之下——层级上无法低于抽屉 z-40，header 的 `.nav-dotted` 底色不透明会盖住）。新增读取滚动进度的组件必须复用该基元，别手抄判锁
+- **文章页回顶并入阅读进度环**：`Post/ReadingProgress` 是「环形进度 + 回顶」合并控件——accent 渐变弧线显示阅读进度、圆心「↑ 百分比」常显、整圆点击平滑回顶（滚动 > 400px 出现，`z-30` 低于抽屉/搜索弹窗）。文章页不再单独渲染 `BackToTop`（Footer 顶部那枚保留）
+- **字体 preload 由构建脚本注入**：Next 16.3.4 静态导出下 `next-font-manifest.json` 的 app 映射为空（框架 bug，vercel/next.js#57008）→ 全站不输出 `<link rel="preload" as="font">`，首屏文字 FOUT。`scripts/post-build-font-preload.js` 构建后从产物 CSS 的 `@font-face` 提取 `*.p.woff2`（next/font loader 的预取标记文件）注入 preload 到全部页面（幂等、跨构建哈希自动跟随、双端通用）；改字体/新增字体无需改脚本
+- **行尾统一 LF**：`.prettierrc` 的 `endOfLine: "lf"` + 仓库根 `.gitattributes`（`* text=auto eol=lf`）——Windows 上 prettier 写 LF、git 按 LF 归一，避免 CRLF/LF 幻影 diff 与「LF will be replaced by CRLF」警告；新增文件保持 LF
 - **Focus trap 补充（移动端 TOC）**：移动端 TOC 抽屉打开时通过 `useFocusTrap` 将 Tab 焦点限制在抽屉内，关闭后还原焦点，补上键盘用户的 a11y 缺口
 - **Error Boundary 全站兜底**：`src/components/ErrorBoundary.tsx` 包裹 Providers 顶层，任何 client 组件抛异常时显示错误 UI + 重试按钮，避免整页白屏。`getDerivedStateFromError` / `componentDidCatch` 需加 `override` 关键字（tsconfig `noImplicitOverride`）
 - **CardSpotlight 延迟挂载**：PostCard 的 spotlight + 3D tilt 效果收口在 `src/components/Post/CardSpotlight.tsx`，仅在非骨架模式下挂载；effect cleanup 调 `onRefs(null)` 使 StrictMode 双执行幂等、MotionValue 实例可被 GC

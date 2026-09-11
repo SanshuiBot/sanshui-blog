@@ -276,16 +276,17 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
 
 ## 40. 公共实现收口别手抄
 
-六处收口（出现第二份复制时就收口，别等第三份）：
+七处收口（出现第二份复制时就收口，别等第三份）：
 
-| 收口       | 文件                    | 背景                                                                                           |
-| ---------- | ----------------------- | ---------------------------------------------------------------------------------------------- |
-| 日期格式化 | `lib/formatDate.ts`     | zh-CN 长格式 + 模块级 Map 缓存；此前 SearchModal（有缓存）/PostCard/PostMeta（无缓存）三份实现 |
-| 滚动锁     | `UI/useScrollLock.ts`   | body overflow 保存/还原；Navbar 抽屉与 SearchModal 曾各写一份，**同开时还原互相覆盖**          |
-| 焦点陷阱   | `UI/useFocusTrap.ts`    | Tab 循环 + 关闭焦点还原；搜索模态 + 移动抽屉共用                                               |
-| 返回顶部   | `UI/BackToTop.tsx`      | scrollY 阈值 + Tooltip 圆钮 + 平滑回顶；Footer/PostMeta 两份复制收敛                           |
-| 主题色同步 | `UI/ThemeColorSync.tsx` | meta theme-color 动态跟随主题（须在 ThemeProvider 内读 resolvedTheme）                         |
-| 搜索匹配   | `lib/search.ts`         | tokenize/searchPosts/splitByTerms 纯函数，组件只渲染                                           |
+| 收口       | 文件                          | 背景                                                                                            |
+| ---------- | ----------------------------- | ----------------------------------------------------------------------------------------------- |
+| 日期格式化 | `lib/formatDate.ts`           | zh-CN 长格式 + 模块级 Map 缓存；此前 SearchModal（有缓存）/PostCard/PostMeta（无缓存）三份实现  |
+| 滚动锁     | `UI/useScrollLock.ts`         | body overflow 保存/还原；Navbar 抽屉与 SearchModal 曾各写一份，**同开时还原互相覆盖**           |
+| 判锁基元   | `UI/useIsBodyScrollLocked.ts` | 「body 滚动是否被锁」唯一判据（overflow=hidden + MutationObserver）；进度组件锁定期冻结，别手抄 |
+| 焦点陷阱   | `UI/useFocusTrap.ts`          | Tab 循环 + 关闭焦点还原；搜索模态 + 移动抽屉共用                                                |
+| 返回顶部   | `UI/BackToTop.tsx`            | scrollY 阈值 + Tooltip 圆钮 + 平滑回顶；现仅 Footer 顶部一处（文章页已并入 ReadingProgress 环） |
+| 主题色同步 | `UI/ThemeColorSync.tsx`       | meta theme-color 动态跟随主题（须在 ThemeProvider 内读 resolvedTheme）                          |
+| 搜索匹配   | `lib/search.ts`               | tokenize/searchPosts/splitByTerms 纯函数，组件只渲染                                            |
 
 ## 41. sitemap 别设 `revalidate = 0`
 
@@ -312,13 +313,14 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
 
 ## 44. 生成脚本收口（都复用 `parse-post.mjs`）
 
-| 脚本                         | 产物                                                 | 触发              |
-| ---------------------------- | ---------------------------------------------------- | ----------------- |
-| `gen-posts-index.js`         | public/posts-index.json（⌘K 搜索索引）               | predev / prebuild |
-| `gen-feed.js`                | public/feed.xml（RSS 2.0 + 全文 CDATA + 标签）       | predev / prebuild |
-| `gen-og-image.js`            | public/og.png（1200×630 社交卡片，sharp SVG 光栅化） | prebuild          |
-| `gen-dotted-tag-payloads.js` | out/ 内点号标签 payload 副本（#28）                  | build 后          |
-| `post-build-cleanup.js`      | out/ 内未被引用的冗余 chunk/字体删除（带引用校验）   | build 后          |
+| 脚本                         | 产物                                                  | 触发              |
+| ---------------------------- | ----------------------------------------------------- | ----------------- |
+| `gen-posts-index.js`         | public/posts-index.json（⌘K 搜索索引）                | predev / prebuild |
+| `gen-feed.js`                | public/feed.xml（RSS 2.0 + 全文 CDATA + 标签）        | predev / prebuild |
+| `gen-og-image.js`            | public/og.png（1200×630 社交卡片，sharp SVG 光栅化）  | prebuild          |
+| `gen-dotted-tag-payloads.js` | out/ 内点号标签 payload 副本（#28）                   | build 后          |
+| `post-build-cleanup.js`      | out/ 内未被引用的冗余 chunk/字体删除（带引用校验）    | build 后          |
+| `post-build-font-preload.js` | out/ 全部页面注入字体 preload（#57008 框架 bug 修复） | build 后          |
 
 - 前三者复用 `src/lib/parse-post.mjs` 解析契约（CJS 脚本 `await import` ESM）。
 - 站点常量唯一数据源 `src/lib/site-config.mjs`（纯 ESM 常量，client-safe）——`site.ts` 与 `gen-feed.js`/`gen-og-image.js` 经 import/`await import` 共用同一份，改站点信息（name/title/description/url/email）只改它。
@@ -390,3 +392,23 @@ html.dark .btn-retry {
 - **已做的优化**：SearchModal 手动懒加载（13KB chunk 首开才拉）、AmbientEffects 4 动效 `dynamic(ssr:false)`、可变字体、giscus preconnect。
 
 防退化红线：别自定义 `splitChunks`（约定 #11）；别把 SearchModal/AmbientEffects 改回静态导入；别删 `noModule` polyfills；新增客户端依赖前先确认会不会进首载包。
+
+## 50. 字体 preload 由构建脚本注入（对齐 AGENTS #49）
+
+Next 16.3.4 静态导出下 `next-font-manifest` 的 app 映射为空（框架 bug，vercel/next.js#57008）→ app-render 的 `getPreloadableFonts()` 返回 null → 全站不输出 `<link rel="preload" as="font">`，首屏文字要等 CSS 解析后才下载（`font-display:swap` → FOUT）。
+
+`scripts/post-build-font-preload.js`（挂 `npm run build` 链末尾）构建后扫 `out/**/*.html`：从页面引用的 CSS `@font-face` 提取 `*.p.woff2`（next/font loader 对预取文件的 `preloadFontFile` 标记），在样式表 `<link>` 后注入 preload（`as="font"` 必须带 `crossorigin="anonymous"`，否则浏览器按 CORS 模式不匹配而忽略）。幂等（已注入跳过）、URL 取产物真实文件名（跨构建哈希自动跟随）、双端（GH 带前缀 / CF 无前缀）通用。新增/更换字体无需改脚本。
+
+## 51. 判锁基元与进度冻结（对齐 AGENTS #50）
+
+`useScrollLock` 锁定时必置 `body.style.overflow='hidden'`（全站唯一锁实现）——`UI/useIsBodyScrollLocked` 据此判锁（`isBodyScrollLocked()` 纯检查 + MutationObserver 订阅开合，不依赖 scroll 事件：Android 纯 overflow 锁不触发 scrollY 变化）。
+
+**为什么进度要冻结**：iOS fixed 锁把 `scrollY` 重置为 0；若进度组件（`ScrollProgress`/`ReadingProgress`）在锁定期按 scrollY 重算，打开/关闭弹窗、抽屉时进度瞬间清空再恢复（视觉像页面滑动了，用户反馈 bug）。锁定期返回上次值、解锁后随真实 scrollY 恢复。SSR 注意：`isBodyScrollLocked` 必须 `typeof document` 守卫——客户端组件会被服务端预渲染，`useState` 惰性初始化在 SSR 执行，无守卫即 `ReferenceError: document is not defined`（构建期已踩坑，`tests/use-is-body-scroll-locked.test.ts` 有回归用例）。
+
+## 52. 文章页回顶并入阅读进度环（对齐 AGENTS #51）
+
+`Post/ReadingProgress` 是「环形进度 + 回顶」合并控件：accent 三色渐变弧线（SVG stroke-dashoffset，12 点方向顺时针）= 阅读进度；圆心「↑ 箭头 + 百分比」常显；整圆点击平滑回顶（滚动 > 400px 出现，`.backtotop-fade-in` 入场，`z-30` 低于抽屉 z-40 / 搜索弹窗 z-[80]，弹层打开时被遮罩盖住）。文章页不再单独渲染 `BackToTop`（`UI/BackToTop` 现仅 Footer 顶部居中一处）。
+
+## 53. 行尾统一 LF（对齐 AGENTS #52）
+
+`.prettierrc` `endOfLine: "lf"` + 仓库根 `.gitattributes`（`* text=auto eol=lf`）。此前仓库 blob 为 CRLF（Windows 提交），prettier 写 LF 后 git status 出现纯行尾幻影 diff（`git diff --ignore-space-at-eol` 可证零内容差异）与「LF will be replaced by CRLF」警告。新增文件保持 LF；存量 blob 用 `git add --renormalize .` 一次性归一。

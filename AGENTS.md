@@ -1,19 +1,19 @@
 # AGENTS.md — sanshui-blog
 
-三水个人博客：Next.js 16.3（App Router 静态导出）+ React 19 + TS 5 strict + Tailwind v4 + Framer Motion 12。GitHub Pages（basePath `/sanshui-blog`），默认亮色、暗色可选，「Aurora 玻璃态」设计系统。
+三水个人博客：Next.js 16.3（App Router 静态导出）+ React 19 + TS 5 strict + Tailwind v4 + Framer Motion 12。GitHub Pages（basePath `/sanshui-blog`）/ Cloudflare Pages（根路径，`SITE_BASE_PATH` 双态，见 #1 扩展注释），默认亮色、暗色可选，「Aurora 玻璃态」设计系统。
 
 ## 命令
 
-| 用途 | 命令                              | 备注                                                                                  |
-| ---- | --------------------------------- | ------------------------------------------------------------------------------------- |
-| 开发 | `npm run dev`                     | predev 建索引/feed；不设 `NEXT_BUILD`；`--webpack`（#31）                             |
-| 构建 | `npm run build`                   | 索引/feed/og → `NEXT_BUILD=1 next build --webpack` 导出 → dotted-tag（#28）→ 产物清理 |
-| Lint | `npm run lint` / `lint:fix`       | 构建不跑 lint，须单独跑（#8）                                                         |
-| 格式 | `npm run format` / `format:check` | Prettier                                                                              |
-| 类型 | `npm run typecheck`               | `tsc --noEmit`（strict）                                                              |
-| 测试 | `npm run test`                    | Vitest：lib 纯函数/契约 + jsdom 组件测试（RTL）                                       |
-| 预览 | `npx serve out`                   | 构建产物                                                                              |
-| 提交 | `git commit`                      | Husky：prettier(暂存) → typecheck → test                                              |
+| 用途 | 命令                              | 备注                                                                                                        |
+| ---- | --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 开发 | `npm run dev`                     | predev 建索引/feed；不设 `NEXT_BUILD`；`--webpack`（#31）                                                   |
+| 构建 | `npm run build`                   | 索引/feed/og → `NEXT_BUILD=1 next build --webpack` 导出 → dotted-tag（#28）→ 产物清理 → 字体 preload（#49） |
+| Lint | `npm run lint` / `lint:fix`       | 构建不跑 lint，须单独跑（#8）                                                                               |
+| 格式 | `npm run format` / `format:check` | Prettier                                                                                                    |
+| 类型 | `npm run typecheck`               | `tsc --noEmit`（strict）                                                                                    |
+| 测试 | `npm run test`                    | Vitest：lib 纯函数/契约 + jsdom 组件测试（RTL）                                                             |
+| 预览 | `npx serve out`                   | 构建产物                                                                                                    |
+| 提交 | `git commit`                      | Husky：prettier(暂存) → typecheck → test                                                                    |
 
 > 别用 `npm start`（纯静态导出）。
 
@@ -23,11 +23,11 @@
 content/   posts/*.md(x)（文件名即 slug）+ resume.md
 src/app/   App Router 页面；src/components/ 组件；src/styles/ CSS（集中 #35）
 src/lib/   纯函数/读取层（formatDate/search/post-index 为客户端安全模块），职责看文件头
-scripts/   predev.js gen-posts-index.js gen-feed.js gen-og-image.js gen-dotted-tag-payloads.js post-build-cleanup.js
+scripts/   predev.js gen-posts-index.js gen-feed.js gen-og-image.js gen-dotted-tag-payloads.js post-build-cleanup.js post-build-font-preload.js
 tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产物（posts-index.json feed.xml og.png）
 ```
 
-## 红线（48 条；详版见 docs/conventions.md §N）
+## 红线（52 条；详版见 docs/conventions.md §N）
 
 1. `NEXT_BUILD` 双态（dev 不设/build 必设），别手动设 `output:'export'`。basePath：`<Link>`/router 自动注入别套 withBase；`<Image>`/原生 `<a>`/`<img>`/`<link>`/`fetch()` 必须套；metadata 图走 metadataBase 裸路径。`<Link>` 只用于真实路由（静态文件用原生 `<a>`+withBase）。
 2. `params` 是 Promise，必须 `await`。
@@ -68,7 +68,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 37. Giscus 收口 `Post/PostComments.tsx`：属性 kebab-case；`og:title`+`strict='1'`（CJK 搜索不可靠）；主题 `light`/`dark`（transparent_light 上游 404）；Edge 懒加载警告来自 widget 内部，不可修。
 38. 项目页 `ProjectsContent`：数据只改 `lib/projects.ts`；样式收口 `styles/projects.css`；竖线色按 URL 哈希取（纯函数，别 `Math.random()`）；hover 光晕用 `--mx/--my`；语言色文字亮色下 `color-mix` 混黑加深。
 39. 版权年份用 `siteConfig.copyrightYear` 常量，别 `new Date().getFullYear()`（hydration mismatch）。
-40. 公共实现收口别手抄：`lib/formatDate`、`UI/useScrollLock`、`UI/useFocusTrap`、`UI/BackToTop`、`UI/ThemeColorSync`、`lib/search`（空格分词 AND + 高亮片段）。
+40. 公共实现收口别手抄：`lib/formatDate`、`UI/useScrollLock`、`UI/useIsBodyScrollLocked`、`UI/useFocusTrap`、`UI/BackToTop`、`UI/ThemeColorSync`、`lib/search`（空格分词 AND + 高亮片段）。
 41. sitemap 别设 `revalidate = 0`：会覆盖 `force-static`（历史 bug）。
 42. 与 framer inline transform 叠加的缩放/位移用 CSS 独立 `scale`/`translate`，别用 `transform`（会被内联覆盖）。
 43. reduced-motion 区分功能性/装饰性：滚动淡出（hero 标题/提示）必须保留，只跳视差/入场/循环。
@@ -77,6 +77,10 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 46. 组件测试（jsdom）手动 `afterEach(cleanup)`：vitest 未开 globals，RTL 不自动清 DOM。
 47. Hover 变色走纯 CSS：基规则写亮色默认值，暗色用 `html.dark` 前缀覆盖（见 conventions §26）。已无「utility 亮色覆盖」反压问题（反色块已删、亮色为基）。accent 联动 hover 用自定义 CSS 类。
 48. 全站 Error Boundary 收口 `src/components/ErrorBoundary.tsx`，包裹 Providers 顶层——client 组件抛异常显示通用错误 UI + 重试按钮。class 方法加 `override`（noImplicitOverride）。
+49. 字体 preload 由 `scripts/post-build-font-preload.js` 构建后注入（Next 16 静态导出下 next-font-manifest 为空，框架 bug vercel/next.js#57008）：从产物 CSS 的 @font-face 提取 `*.p.woff2`（next/font loader 的预取标记）注入 `<link rel="preload" as="font">`；幂等、跨构建哈希自动跟随，别手写死文件名。
+50. 判锁基元 `UI/useIsBodyScrollLocked`：`useScrollLock` 锁定时必置 `body.style.overflow='hidden'`，据此判锁（MutationObserver 订阅开合）；iOS fixed 锁会把 scrollY 重置为 0，进度组件（ScrollProgress/ReadingProgress）锁定期**冻结**上次值，别手抄判锁。
+51. 文章页回顶并入 `Post/ReadingProgress` 环形按钮（accent 弧线进度 + 圆心「↑ 百分比」+ 点击回顶，滚动 >400px 出现，z-30 低于弹层）；`UI/BackToTop` 仅 Footer 用。
+52. 行尾统一 LF：`.prettierrc` `endOfLine:"lf"` + 仓库根 `.gitattributes`（`* text=auto eol=lf`），新增文件保持 LF，避免 CRLF/LF 幻影 diff。
 
 ## 内容编辑
 

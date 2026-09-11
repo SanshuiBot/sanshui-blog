@@ -1,6 +1,6 @@
 # sanshui-blog
 
-三水个人博客：Next.js 16 纯静态导出（App Router + `output:'export'`），GitHub Pages basePath `/sanshui-blog`，「Aurora 玻璃态」，亮色为主、暗色可选。本文件是术语表——只收本项目独有术语，说明「它是什么」（不是它做什么），并标 _避免_ 同义词。约定见 `AGENTS.md`，架构决策见 `docs/adr/`。
+三水个人博客：Next.js 16 纯静态导出（App Router + `output:'export'`），GitHub Pages basePath `/sanshui-blog` + Cloudflare Pages 根路径（`SITE_BASE_PATH` 双态），「Aurora 玻璃态」，亮色为主、暗色可选。本文件是术语表——只收本项目独有术语，说明「它是什么」（不是它做什么），并标 _避免_ 同义词。约定见 `AGENTS.md`，架构决策见 `docs/adr/`。
 
 ## 主题与动效
 
@@ -10,7 +10,7 @@
 
 **reduced-motion 共享 hook**: `UI/usePrefersReducedMotion`——封装 matchMedia + `useSyncExternalStore`（客户端实时 / SSR 固定 false），AmbientEffects / ScrollProgress / Footer / HeroParallax 共用；替代 framer `useReducedMotion`（dev 下打 warnOnce 噪音）。 _Avoid_: reduced-motion 检测、matchMedia 订阅
 
-**framer 自动降级关闭**: `Providers.tsx` 的 `<MotionConfig reducedMotion="never">`——动效自管 reduced-motion（CSS 0.01ms + AmbientEffects 阀门 + 共享 hook），不依赖 framer 自动检测降级，顺带静默 VisualElement warnOnce。 _Avoid_: MotionConfig 配置
+**framer 自动降级关闭**: framer-motion 不参与 reduced-motion 自动降级——其 MotionConfigContext 默认 reducedMotion 即 `"never"`（曾用 `Providers.tsx` 的 `<MotionConfig reducedMotion="never">` 显式声明，随 Providers 移除 framer 依赖而删除，行为等价）。动效自管 reduced-motion（CSS 0.01ms + AmbientEffects 阀门 + 共享 hook），不依赖 framer 自动检测降级。 _Avoid_: MotionConfig 配置
 
 **功能性 vs 装饰性动画**: reduced-motion 政策核心二分。功能性（滚动淡出 scrollY→opacity）必须保留——reduced 用户也要「滚动后首屏隐藏」；装饰性（视差/入场/循环）才跳过。Hero 曾全关导致首屏永不消失（bug 根因）。 _Avoid_: 全部跳过
 
@@ -38,13 +38,15 @@
 
 **卸载后 setState**: 组件卸载后定时器回调 setState 的 bug 类。由 `useSafeTimeout`（ADR-0003）hook 层统一管 timer + cleanup，调用方不手写「ref + cleanup」仪式。 _Avoid_: timer 泄漏
 
-**滚动锁收口**: `useScrollLock(active)`——模态/抽屉锁 body 滚动唯一实现。Navbar 与 SearchModal 曾各写一份，同开时还原互相覆盖；收口后各自记 prev、幂等。 _Avoid_: body overflow 锁
+**滚动锁收口**: `useScrollLock(active)`——模态/抽屉锁 body 滚动唯一实现。Navbar 与 SearchModal 曾各写一份，同开时还原互相覆盖；收口后各自记 prev、幂等。iOS 解锁恢复滚动时临时把根元素 `scroll-behavior` 覆盖为 `auto`（绕过全站 smooth，否则 WebKit 把还原动画化——关弹层页面自行滑动的历史 bug）。判锁走 `useIsBodyScrollLocked`。 _Avoid_: body overflow 锁
+
+**判锁基元**: `UI/useIsBodyScrollLocked`——「body 滚动是否被锁」的唯一判据（`useScrollLock` 锁定时必置 `body.style.overflow='hidden'`，MutationObserver 订阅开合，不依赖 scroll 事件）。iOS fixed 锁会把 `scrollY` 重置为 0，进度组件（ScrollProgress/ReadingProgress）锁定期必须**冻结上次值**而非重算，否则弹层开关时进度瞬间清空（用户反馈 bug 根因）。 _Avoid_: 手抄判锁、监听 scrollY 判锁
 
 **焦点陷阱**: `useFocusTrap(ref, active)`——模态内 Tab 循环 + 关闭还原焦点；搜索模态与移动端抽屉共用。 _Avoid_: focus trap、焦点圈住
 
 **Error Boundary**: `src/components/ErrorBoundary.tsx`——包裹 Providers 顶层，任何 client 组件抛异常显示通用错误 UI + 重试按钮。class 方法加 `override`（noImplicitOverride）。 _Avoid_: 全局错误兜底
 
-**返回顶部收口**: `BackToTop`——scrollY 阈值 + 圆钮 + Tooltip + 平滑回顶的单一实现，`className` 决定挂载位置（Footer 顶部 / 文章页左下）。 _Avoid_: 回到顶部按钮
+**返回顶部收口**: `BackToTop`——scrollY 阈值 + 圆钮 + Tooltip + 平滑回顶的单一实现，`className` 决定挂载位置（现仅 Footer 顶部居中一处；文章页回顶已并入 `ReadingProgress` 环形按钮——阅读进度弧线 + 圆心「↑ 百分比」+ 点击回顶，右下角固定）。 _Avoid_: 回到顶部按钮
 
 **描边双背景**: `.hero-cta` 渐变描边——`background: linear-gradient(玻璃) padding-box, linear-gradient(渐变) border-box` 双层背景，替代 `::before` + mask-composite；流动动画靠 border-box 层 `background-position` keyframes。 _Avoid_: mask 描边、渐变边框
 
@@ -70,9 +72,11 @@
 
 **og 分享图**: `scripts/gen-og-image.js` 生成 `public/og.png`——1200×630 sharp SVG 光栅化（支持中文），Aurora 渐变 + 56px 网格 + 中心辉光 + 「三水」标题 + URL 胶囊。CI Linux runner 自带 Noto CJK，中文渲染可靠；SVG 签名存根 `.og-image-signature` 未变则跳过渲染。 _Avoid_: 社交卡片图
 
+**字体 preload 注入**: `scripts/post-build-font-preload.js`——Next 16 静态导出下 `next-font-manifest` 的 app 映射为空（框架 bug，vercel/next.js#57008）导致全站不输出字体 preload，首屏文字 FOUT；脚本构建后从产物 CSS 的 @font-face 提取 `*.p.woff2`（next/font loader 的预取标记文件）注入 `<link rel="preload" as="font">` 到全部页面，幂等且跨构建哈希自动跟随、双端通用。 _Avoid_: 手写死字体文件名
+
 ## 测试
 
-**jsdom 组件测试**: `tests/search-modal.test.tsx`——`// @vitest-environment jsdom` 跑 RTL。vitest 未开 globals 时 RTL **不自动 cleanup**，必须 `afterEach(cleanup)`；jsdom 无 matchMedia 需垫片；mock `next/link`、`next/navigation`。 _Avoid_: 组件测试、RTL 测试（泛称）
+**jsdom 组件测试**: `tests/*.test.tsx`——`// @vitest-environment jsdom` 跑 RTL（SearchModal / 滚动锁 / 判锁基元 / TOC / Tooltip 等）。vitest 未开 globals 时 RTL **不自动 cleanup**，必须 `afterEach(cleanup)`；jsdom 无 matchMedia 需垫片；hook 测试用 `renderHook`（如 `useIsBodyScrollLocked` 以 MutationObserver + `act` 驱动断言锁状态流转）；mock `next/link`、`next/navigation`。 _Avoid_: 组件测试、RTL 测试（泛称）
 
 ## Decisions
 
