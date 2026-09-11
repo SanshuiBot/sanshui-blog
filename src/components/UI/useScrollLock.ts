@@ -59,8 +59,22 @@ export function useScrollLock(active: boolean): void {
         document.body.style.position = prevPosition;
         document.body.style.top = prevTop;
         document.body.style.width = prevWidth;
-        // 还原滚动位置（fixed 定位期间 scrollY 被重置为 0）
-        window.scrollTo(0, savedY);
+        // 还原滚动位置（fixed 定位期间 scrollY 被重置为 0）。
+        // 必须绕过 html 的 scroll-behavior: smooth：否则 WebKit（iOS Safari）会把
+        // 这次程序化滚动动画化——关闭弹窗/抽屉时页面自行滑动一段再停回原位（历史 bug）。
+        // 临时把根元素 scroll-behavior 覆盖为 auto（inline 优先于 stylesheet），
+        // scrollTo 后还原；比 behavior:'instant' 兼容更广（旧 Safari 不识 instant 会回落 CSS smooth）。
+        const root = document.documentElement;
+        const prevBehavior = root.style.scrollBehavior;
+        root.style.scrollBehavior = 'auto';
+        try {
+          void root.offsetHeight; // 强制样式重算，确保 scrollTo 按 auto 解析
+          window.scrollTo(0, savedY);
+        } finally {
+          // 无论 scrollTo 是否异常都必须还原内联覆盖——否则 <html> 永久残留
+          // scroll-behavior: auto，全站平滑滚动被静默禁用直到刷新
+          root.style.scrollBehavior = prevBehavior;
+        }
       };
     }
 
