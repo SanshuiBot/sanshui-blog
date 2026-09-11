@@ -106,6 +106,11 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
       setActiveIdx(-1);
     } else {
       setLoadError(false);
+      // 重开时恢复选中态：关闭会把 activeIdx 置 -1，而重开时 q/posts 未变、
+      // 下方 prevQuery 重置分支不会触发——若最近文章列表已就绪则预选首项
+      // （与首次打开行为一致），否则保持 -1（列表尚未就绪，加载完成后由
+      // prevQuery 分支置 0）
+      setActiveIdx((posts ?? []).length > 0 ? 0 : -1);
     }
   }
 
@@ -162,17 +167,22 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
     return first.filter((p) => rest.every((list) => list.some((r) => r.slug === p.slug)));
   }, [fuse, q]);
 
-  // query/posts 变化时重置选中到第一项（有结果时），保持键盘流连续
+  const hasQuery = q.trim().length > 0;
+  // 当前展示且可键盘导航的列表：有查询词 → 搜索结果；空查询 → 「最近文章」前 5 篇。
+  // 之前键盘上下/Enter 只看 results，空查询时 results 恒为 []，最近文章列表
+  // 无法用键盘选择——这里把「渲染什么」与「键盘作用于什么」统一到同一份数据。
+  const listItems = hasQuery ? results : (posts ?? []).slice(0, 5);
+
+  // query/posts 变化时重置选中到第一项（列表非空时），保持键盘流连续
   const [prevQuery, setPrevQuery] = useState<readonly [string, PostIndexEntry[] | null]>([
     q,
     posts,
   ]);
   if (prevQuery[0] !== q || prevQuery[1] !== posts) {
     setPrevQuery([q, posts]);
-    setActiveIdx(results.length > 0 ? 0 : -1);
+    setActiveIdx(listItems.length > 0 ? 0 : -1);
   }
 
-  const hasQuery = q.trim().length > 0;
   const noResults = posts !== null && hasQuery && results.length === 0;
   // 索引面板状态判别：扁平化渲染分支（error > loading > ready），避免三层嵌套三元
   const indexState: 'error' | 'loading' | 'ready' = loadError
@@ -224,16 +234,20 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                 onKeyDown={(e) => {
                   if (e.key === 'ArrowDown') {
                     e.preventDefault();
-                    if (results.length > 0) {
-                      setActiveIdx((i) => (i + 1) % results.length);
+                    if (listItems.length > 0) {
+                      setActiveIdx((i) => (i + 1) % listItems.length);
                     }
                   } else if (e.key === 'ArrowUp') {
                     e.preventDefault();
-                    if (results.length > 0) {
-                      setActiveIdx((i) => (i - 1 + results.length) % results.length);
+                    if (listItems.length > 0) {
+                      // 无选中态（-1）与首项（0）都回绕到最后一项；
+                      // (i-1+len)%len 在 i=-1 时会算出 len-2（倒数第二项）——空查询
+                      // 下关闭再重开（activeIdx 被重置为 -1 且 prevQuery 不变、不触发
+                      // 下方重置分支）时该状态可达，属于键盘扩展引入的回归
+                      setActiveIdx((i) => (i <= 0 ? listItems.length - 1 : i - 1));
                     }
                   } else if (e.key === 'Enter') {
-                    const post = results[activeIdx];
+                    const post = listItems[activeIdx];
                     if (!post) return;
                     e.preventDefault();
                     onClose();
@@ -376,7 +390,7 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                     </div>
                   ) : (
                     <div role="listbox" aria-label="最近文章">
-                      {posts.slice(0, 5).map((p, i) => (
+                      {listItems.map((p, i) => (
                         <Link
                           key={p.slug}
                           href={postUrl(p.slug)}

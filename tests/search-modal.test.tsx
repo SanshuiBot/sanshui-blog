@@ -112,6 +112,53 @@ describe('SearchModal', () => {
     expect(push).toHaveBeenCalledWith('/posts/redis-分布式锁实战/');
   });
 
+  it('空查询：最近文章列表支持 ArrowDown/ArrowUp 选择 + Enter 跳转', async () => {
+    render(<SearchModal open onClose={() => {}} />);
+    const input = await screen.findByPlaceholderText(PLACEHOLDER);
+
+    // 索引加载完成 → 最近文章列表渲染（空查询时组件显示 posts 前 5 篇）
+    const options = await screen.findAllByRole('option');
+    expect(options.length).toBe(2);
+
+    // 首项预选中（与搜索路径一致：列表非空时 activeIdx=0）
+    expect(options[0]?.getAttribute('aria-selected')).toBe('true');
+
+    // ArrowDown 下移 → 第二项选中，Enter 打开对应文章
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+    expect(options[1]?.getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(push).toHaveBeenCalledWith('/posts/redis-分布式锁实战/');
+
+    // ArrowUp 回绕到上一项（i - 1 + len 取模），Enter 打开首篇
+    fireEvent.keyDown(input, { key: 'ArrowUp' });
+    expect(options[0]?.getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(push).toHaveBeenCalledWith('/posts/react-server-components-实战与踩坑/');
+  });
+
+  it('空查询下关闭再重开：预选首项，ArrowUp 回绕到最后一项', async () => {
+    const { rerender } = render(<SearchModal open onClose={() => {}} />);
+    await screen.findByPlaceholderText(PLACEHOLDER);
+    await screen.findAllByRole('option'); // 索引就绪，最近文章列表渲染
+
+    // 关闭（prevOpen 转变 → activeIdx 置 -1），等退出动画把面板移出 DOM
+    rerender(<SearchModal open={false} onClose={() => {}} />);
+    await waitFor(() => expect(screen.queryByRole('option')).toBeNull());
+
+    // 重开：q/posts 未变不触发 prevQuery 重置，选中态由 open 分支恢复（预选首项）
+    rerender(<SearchModal open onClose={() => {}} />);
+    const input2 = await screen.findByPlaceholderText(PLACEHOLDER);
+    const options = await screen.findAllByRole('option');
+    expect(options.length).toBe(2);
+    expect(options[0]?.getAttribute('aria-selected')).toBe('true');
+
+    // ArrowUp 从首项回绕到最后一项，Enter 打开
+    fireEvent.keyDown(input2, { key: 'ArrowUp' });
+    expect(options[1]?.getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(input2, { key: 'Enter' });
+    expect(push).toHaveBeenCalledWith('/posts/redis-分布式锁实战/');
+  });
+
   it('无匹配时显示无结果态（含查询词回显）', async () => {
     render(<SearchModal open onClose={() => {}} />);
     const input = await screen.findByPlaceholderText(PLACEHOLDER);
