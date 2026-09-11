@@ -44,7 +44,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: post.excerpt,
     keywords: post.tags,
     alternates: { canonical: `${siteConfig.url}/posts/${encodeURIComponent(post.slug)}/` },
-    openGraph: { title: post.title, description: post.excerpt, type: 'article', tags: post.tags },
+    // 页面级 openGraph 会整体覆盖根布局的同名字段，必须在此显式补 images，
+    // 否则文章页分享卡片无图（审计发现：产物 HTML 缺 og:image）。
+    // 裸路径走 metadataBase 解析（含 basePath，与 layout.tsx 同一模式，勿套 withBase）。
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: 'article',
+      tags: post.tags,
+      images: [{ url: '/og.png', width: 1200, height: 630, alt: `${siteConfig.blogName} 封面` }],
+    },
   };
 }
 

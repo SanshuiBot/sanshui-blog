@@ -1,7 +1,6 @@
 ﻿import { Clock, Tag, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import BackButton from '@/components/UI/BackButton';
-import BackToTop from '@/components/UI/BackToTop';
 import CodeCopyInjector from './CodeCopyInjector';
 import { formatDate } from '@/lib/formatDate';
 import type { PostIndexEntry } from '@/lib/post-index';
@@ -49,9 +48,8 @@ export default function PostMeta({ post, readingMinutes }: Props) {
           </span>
         </div>
       </header>
-
-      {/* 回到顶部：滚动超过 400px 出现（定位/显隐统一收口在 BackToTop） */}
-      <BackToTop threshold={400} className="fixed bottom-6 left-6 z-40" />
+      {/* 文章页回顶已并入 ReadingProgress 环形按钮（posts/[slug]/page.tsx 挂载），
+          此处不再单独渲染 BackToTop（Footer 顶部那枚保留，见 Footer.tsx） */}
     </>
   );
 }

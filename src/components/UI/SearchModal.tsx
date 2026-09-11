@@ -190,8 +190,9 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             // 触屏设备：去面板 backdrop-filter（0.85+ 不透明度视觉无差）、入场动画
-            // 退化为纯 opacity——这两处是弹窗出现慢半拍的主因；蒙层保留小半径
-            // backdrop-blur（8px，光栅化开销远小于 32px 面板 blur）+ 75/85 不透明度：
+            // 退化为 opacity + 轻量 y 位移（见面板 initial/animate）——避免
+            // scale+全屏 blur 的光栅化成本（历史「弹窗慢半拍」根因）；蒙层保留
+            // 小半径 backdrop-blur（8px，开销远小于 32px 面板 blur）+ 75/85 不透明度：
             // 既要压暗也要糊掉背景文字，否则手机上仍能辨认后面的字
             className={
               touchDevice
@@ -201,9 +202,11 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
           />
           <motion.div
             ref={panelRef}
-            initial={touchDevice ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: -20 }}
-            animate={touchDevice ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
-            exit={touchDevice ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: -20 }}
+            // 触屏入场：opacity + 12px y 位移（面板 --lite 无 backdrop-filter，
+            // translate 走合成器线程，低端机无碍；勿加回 scale——历史病根）
+            initial={touchDevice ? { opacity: 0, y: -12 } : { opacity: 0, scale: 0.95, y: -20 }}
+            animate={touchDevice ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={touchDevice ? { opacity: 0, y: -12 } : { opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className={`relative w-full max-w-xl glass-heavy shadow-emboss-hover rounded-2xl overflow-hidden border border-black/[0.1] search-modal-panel${
               touchDevice ? ' search-modal-panel--lite' : ''

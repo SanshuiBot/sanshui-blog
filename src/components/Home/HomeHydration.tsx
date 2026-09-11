@@ -15,7 +15,8 @@ import { useReloadScrollRestore } from './useReloadScrollRestore';
  * 这个 client wrapper 里，再由 server component 引用本文件。
  *
  * 收益：
- * - framer-motion 整包移出首屏 chunk（约 332KB 未压缩 → 砍约 107KB gzip）
+ * - framer-motion 整包移出首屏入口 chunk（实测仅存在于懒加载 chunk：SearchModal /
+ *   Hero / Posts 的 dynamic import 共享同一份 framer chunk，首屏 HTML 不引用）
  * - HeroParallax / PostsList 的 RSC payload 不再被序列化进首页 HTML
  * - Hero 区不再阻塞首屏：先显示 Navbar，动效 chunk
  *   加载完后再飞入，体感「页面秒开，Hero 延迟飞入」而非「白屏等待」

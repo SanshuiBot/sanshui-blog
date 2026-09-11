@@ -251,7 +251,7 @@ export default function Navbar() {
       <div
         aria-hidden={!mobileOpen}
         onClick={() => setMobileOpen(false)}
-        className={`fixed inset-0 z-40 md:hidden bg-stone-900/50 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 md:hidden bg-stone-900/50 backdrop-blur-sm transition-opacity duration-200 ${
           mobileOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       />
@@ -259,7 +259,7 @@ export default function Navbar() {
         ref={mobileMenuRef}
         inert={!mobileOpen}
         aria-hidden={!mobileOpen}
-        className={`fixed inset-y-0 right-0 z-40 md:hidden w-[min(20rem,85vw)] glass-heavy border-l border-black/[0.1] flex flex-col px-8 pt-20 pb-8 overflow-y-auto transition-transform duration-300 ease-out dark:border-white/10 ${
+        className={`fixed inset-y-0 right-0 z-40 md:hidden w-[min(20rem,85vw)] glass-heavy border-l border-black/[0.1] flex flex-col px-8 pt-20 pb-8 overflow-y-auto transition-transform duration-200 ease-out dark:border-white/10 ${
           mobileOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -274,10 +274,10 @@ export default function Navbar() {
             return (
               <div
                 key={l.href}
-                className={`transition-all duration-300 ease-out ${
-                  mobileOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-6'
+                className={`transition-all duration-200 ease-out ${
+                  mobileOpen ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'
                 }`}
-                style={{ transitionDelay: mobileOpen ? `${0.08 + i * 0.05}s` : '0s' }}
+                style={{ transitionDelay: mobileOpen ? `${0.04 + i * 0.04}s` : '0s' }}
               >
                 <Link
                   href={l.href}

@@ -6,7 +6,7 @@ import Tooltip from '@/components/UI/Tooltip';
 interface Props {
   /** 滚动超过该阈值（px）才显示按钮 */
   threshold?: number;
-  /** 定位类名：调用方决定挂载位置（Footer 顶部居中 / 文章页左下固定） */
+  /** 定位类名：调用方决定挂载位置（现仅 Footer 顶部居中一处；文章页回顶已并入 ReadingProgress 环形按钮，见 AGENTS.md #51） */
   className?: string;
 }
 

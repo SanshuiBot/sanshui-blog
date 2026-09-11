@@ -6,7 +6,7 @@
     "predev": "node scripts/predev.js && node scripts/gen-all.js --index --feed",
     "dev": "next dev --webpack",
     "prebuild": "node scripts/gen-all.js --index --feed --og",
-    "build": "cross-env NEXT_BUILD=1 next build --webpack && node scripts/gen-dotted-tag-payloads.js && node scripts/post-build-cleanup.js",
+    "build": "cross-env NEXT_BUILD=1 next build --webpack && node scripts/gen-dotted-tag-payloads.js && node scripts/post-build-cleanup.js && node scripts/post-build-font-preload.js",
     "lint": "eslint --cache",
     "lint:fix": "eslint --cache --fix",
     "test": "vitest run",
