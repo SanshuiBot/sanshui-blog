@@ -1,0 +1,5 @@
+# 行尾统一为 LF：与 .prettierrc 的 endOfLine: "lf" 对齐
+# 此前仓库 blob 为 CRLF（Windows 提交），prettier 写 LF 后 git status 出现
+# 纯行尾幻影差异（git diff 无内容差异）。text=auto 自动识别二进制（og.png 等）；
+# eol=lf 让检出/比较均按 LF 归一，配合 core.autocrlf 消除噪音与警告。
+* text=auto eol=lf
