@@ -1,4 +1,4 @@
-﻿@import 'tailwindcss';
+@import 'tailwindcss';
 @custom-variant dark (&:where(.dark,.dark *));
 
 @theme {
@@ -528,7 +528,10 @@ html.dark {
   .post-card-readmore-arrow {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .post-card-link:hover .post-card-readmore-arrow {
+  /* 与上方 readmore 作用域对齐：卡片已改为元素级 hover（title/tag/readmore 各自 :hover），
+     箭头跟随 readmore 而非整卡 link，避免父元素只在自己 hover 时位移、箭头却在整卡
+     hover 时位移的耦合不一致 */
+  .post-card-readmore:hover .post-card-readmore-arrow {
     transform: translate(2px, -2px);
   }
   /* TagList hover（纯 CSS 替代 Framer whileHover，约定 #25/#32） */

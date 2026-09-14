@@ -39,27 +39,27 @@
 
 **Aurora 玻璃态设计系统** — 默认亮色、暗色可选，极光渐变与物理动效深度融合。
 
-|                          |                                                                                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| ♿ **减少动效适配**      | 系统开启「减少动态效果」时跳过装饰性动效（鼠标光晕/点击特效/视差/spring）；**功能性滚动淡出（首屏隐藏）保留**——无障碍设计，非功能缺失 |
-| 🎨 **玻璃态卡片**        | `backdrop-filter: blur(20px)` 半透明卡片，微光边框（亮/暗双主题）                                                                     |
-| 🌈 **极光渐变文字**      | 多色渐变 + `background-clip: text` 动画                                                                                               |
-| 🖱️ **自定义鼠标光晕**    | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点                                                                                         |
-| 📐 **渐隐网格背景**      | `radial-gradient` mask 从中心向四周淡出                                                                                               |
-| 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                                                                                                            |
-| 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                                                                            |
-| 🗂️ **项目卡片墙**        | `/projects/` 统一尺寸 Bento 卡片：左侧竖线 URL 哈希取色混主题色 + hover 语言色光晕跟随鼠标                                            |
-| 🔍 **⌘K 全局搜索**       | 空格分词**多关键词 AND** 匹配 + 命中 `<mark>` 高亮 + 键盘流（↑↓/Enter/Esc）+ 无结果态，索引 `posts-index.json`（~10KB）               |
-| 📜 **阅读进度**          | 顶部渐变进度条 + 文章页**环形进度回顶按钮**（弧线进度 + 圆心「↑ 百分比」+ 点击回顶，右下角固定）                                      |
-| 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条                                                    |
-| 💬 **Giscus 评论**       | GitHub Discussions 驱动，零后端；og:title 映射 + strict 摘要查找；亮暗主题联动                                                        |
-| 🎯 **三水 favicon**      | 三片紫蓝渐变椭圆花瓣 + 中心圆点，配米白背景，呼应「三水」之名                                                                         |
-| 📜 **流式打印简历**      | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配                                                                                   |
-| 🎨 **Accent 主题强调色** | 5 个预设调色板 + 6 通道自定义色板，运行时换色全站联动                                                                                 |
-| 🌊 **视差拼贴首屏**      | 3 深度层（流光网格 / 文章缩略图墙 / 标题 CTA）滚动视差，缩略图墙运行时 fetch 最新 6 篇                                                |
-| 📡 **RSS 订阅**          | 构建期自动生成 `feed.xml`（RSS 2.0 + 全文 CDATA + 标签分类），Footer 图标即订阅链接                                                   |
-| 🖼️ **社交分享卡片**      | sharp SVG 光栅化生成 1200×630 `og.png`（Aurora 渐变 + 中文「三水」标题 + URL 胶囊），接入 OpenGraph / Twitter Card                    |
-| ♿ **键盘无障碍**        | 搜索模态/移动抽屉焦点陷阱（Tab 循环 + 关闭还原焦点）、`aria-live` 结果计数、CTA 自定义 focus-visible 焦点环                           |
+|                          |                                                                                                                                                                                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ♿ **减少动效适配**      | 系统开启「减少动态效果」时跳过装饰性动效（鼠标光晕/点击特效/视差/spring）；**首屏滚出视口由物理滚动保证（reduced 也生效），EXIT_FADE 淡出润色是装饰性（reduced 跳过）**——无障碍设计，非功能缺失                                                                                                                    |
+| 🎨 **玻璃态卡片**        | `backdrop-filter: blur(20px)` 半透明卡片，微光边框（亮/暗双主题）                                                                                                                                                                                                                                                  |
+| 🌈 **极光渐变文字**      | 多色渐变 + `background-clip: text` 动画                                                                                                                                                                                                                                                                            |
+| 🖱️ **自定义鼠标光晕**    | CSS `radial-gradient` 延迟跟随的光晕 + 小圆点                                                                                                                                                                                                                                                                      |
+| 📐 **渐隐网格背景**      | `radial-gradient` mask 从中心向四周淡出                                                                                                                                                                                                                                                                            |
+| 💫 **中心极光光晕**      | 三层极光色径向渐变叠加动画                                                                                                                                                                                                                                                                                         |
+| 🃏 **3D 倾斜卡片**       | `useMotionValue` + spring 物理模拟鼠标视差                                                                                                                                                                                                                                                                         |
+| 🗂️ **项目卡片墙**        | `/projects/` 统一尺寸 Bento 卡片：左侧竖线 URL 哈希取色混主题色 + hover 语言色光晕跟随鼠标                                                                                                                                                                                                                         |
+| 🔍 **⌘K 全局搜索**       | 空格分词**多关键词 AND** 匹配 + 命中 `<mark>` 高亮 + 键盘流（↑↓/Enter/Esc）+ 无结果态，索引 `posts-index.json`（~10KB）。**空查询展示「最近文章」前 5 篇并支持键盘选择**：首项预选（与有查询词一致 `activeIdx=0`）、`ArrowUp` 回绕到末项、重开时若最近列表已就绪自动预选首项（`tests/search-modal.test.tsx` 锁定） |
+| 📜 **阅读进度**          | 顶部渐变进度条 + 文章页**环形进度回顶按钮**（弧线进度 + 圆心「↑ 百分比」+ 点击回顶，右下角固定）                                                                                                                                                                                                                   |
+| 🧭 **自动目录**          | 文章 h2/h3 自动提取 + 滚动高亮锚点 + 桌面右栏 sticky + 移动端抽屉 + 淡入淡出滚动条                                                                                                                                                                                                                                 |
+| 💬 **Giscus 评论**       | GitHub Discussions 驱动，零后端；og:title 映射 + strict 摘要查找；亮暗主题联动                                                                                                                                                                                                                                     |
+| 🎯 **三水 favicon**      | 三片紫蓝渐变椭圆花瓣 + 中心圆点，配米白背景，呼应「三水」之名                                                                                                                                                                                                                                                      |
+| 📜 **流式打印简历**      | 终端式逐行打印 `content/resume.md`，暗/亮双主题适配                                                                                                                                                                                                                                                                |
+| 🎨 **Accent 主题强调色** | 5 个预设调色板 + 6 通道自定义色板，运行时换色全站联动                                                                                                                                                                                                                                                              |
+| 🌊 **视差拼贴首屏**      | 背景层（fixed：流光网格 + 极光光晕 + 缩略图墙）全程驻留视差，前景层（文档流内：标题 / CTA）随滚动物理顶出；缩略图墙运行时 fetch 最新 6 篇                                                                                                                                                                          |
+| 📡 **RSS 订阅**          | 构建期自动生成 `feed.xml`（RSS 2.0 + 全文 CDATA + 标签分类），Footer 图标即订阅链接                                                                                                                                                                                                                                |
+| 🖼️ **社交分享卡片**      | sharp SVG 光栅化生成 1200×630 `og.png`（Aurora 渐变 + 中文「三水」标题 + URL 胶囊），接入 OpenGraph / Twitter Card                                                                                                                                                                                                 |
+| ♿ **键盘无障碍**        | 搜索模态/移动抽屉焦点陷阱（Tab 循环 + 关闭还原焦点）、`aria-live` 结果计数、CTA 自定义 focus-visible 焦点环                                                                                                                                                                                                        |
 
 ---
 
@@ -94,7 +94,7 @@ sanshui-blog/
 │   └── resume.md               # 个人简历源文件（流式打印模块读取）
 ├── src/
 │   ├── app/                    # Next.js App Router 页面
-│   │   ├── page.tsx            # 首页 (Hero + Stats + Featured + PostList)
+│   │   ├── page.tsx            # 首页 (Hero + 最新文章列表；HomeHydration 懒加载 HeroParallax/PostsList)
 │   │   ├── layout.tsx          # 根布局 (Providers/AmbientEffects/AppShell + favicon metadata + 防 FOUC accent 脚本)
 │   │   ├── fonts.ts            # Inter + JetBrains Mono 字体配置
 │   │   ├── not-found.tsx       # 404 页面 (粒子动画)
@@ -188,7 +188,7 @@ npx serve out
 | `npm run format`       | 用 Prettier 原地格式化全项目文件                                                                                                          |
 | `npm run format:check` | 用 Prettier 只检查不修改（CI 中常用）                                                                                                     |
 | `npm run typecheck`    | `tsc --noEmit` 类型检查（Next 16 构建不跑 lint，CI/本地须单独跑 lint + typecheck）                                                        |
-| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 179 个）                                                                        |
+| `npm run test`         | Vitest：lib 层纯函数/契约单测 + jsdom 组件测试（RTL，当前 188 个）                                                                        |
 | `npx serve out`        | 本地起 HTTP 服务器预览 `out/` 静态产物                                                                                                    |
 
 > 🔒 **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`。
@@ -369,7 +369,7 @@ src/app/about/page.tsx ──(注入 markdown prop)──►  AboutContent
 ```mermaid
 graph LR
   A["git push main"] --> B["GitHub Actions"]
-  B --> C["Node 24 + npm ci"]
+  B --> C["Node 22 + npm ci"]
   C --> C0["安装 Noto CJK 字体（og 图中文渲染）"]
   C0 --> C1["质量门禁 typecheck / lint / test"]
   C1 --> D["prebuild: 生成索引 / RSS / og 图"]
@@ -379,7 +379,7 @@ graph LR
   H --> I["Deploy to GitHub Pages"]
 ```
 
-CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` 严格安装，并先装 Noto CJK 字体（og 图中文渲染依赖）；构建前先跑 **typecheck / lint / test 质量门禁**——lint/test 加 `if: always()`（前一步失败也全跑，一次 CI 暴露全部失败），Build 用默认 `success()` 条件，任一门禁失败即跳过部署；通过后 `npm run build` 静态导出、`actions/upload-pages-artifact@v5` 上传 `./out`、`actions/deploy-pages@v5` 部署。`concurrency.group: "pages"` + `cancel-in-progress: false` 保证部署串行不中断。
+CI 配置见 `.github/workflows/deploy.yml`：Node 22 + npm 缓存、`npm ci` 严格安装，并先装 Noto CJK 字体（og 图中文渲染依赖）；构建前先跑 **typecheck / lint / test 质量门禁**——lint/test 加 `if: always()`（前一步失败也全跑，一次 CI 暴露全部失败），Build 用默认 `success()` 条件，任一门禁失败即跳过部署；通过后 `npm run build` 静态导出、`actions/upload-pages-artifact@v5` 上传 `./out`、`actions/deploy-pages@v5` 部署。`concurrency.group: "pages"` + `cancel-in-progress: false` 保证部署串行不中断。
 
 **部署特征：**
 
@@ -405,7 +405,8 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
 - **basePath 双边一致**：`process.env.NEXT_BUILD` 没有 `NEXT_PUBLIC_` 前缀，Next.js 不会把它 inline 到客户端 bundle。`next.config.ts` 通过 `env: { NEXT_PUBLIC_BASE_PATH: BASE_PATH }` 把 basePath 注入 `NEXT_PUBLIC_BASE_PATH`，Next.js 会 inline 到 SSR + 客户端 bundle 两边，`src/lib/basePath.ts` 读取此变量。新增需要 basePath 的客户端代码时，**必须**走 `withBase()`，不要自己拼 `process.env.NEXT_BUILD`
 - **RSC payload 优化**：`getAllPosts()` 已从 `layout.tsx` 移除，文章数据通过 `public/posts-index.json`（~10KB）在 SearchModal 运行时 fetch，避免全量文章数据被序列化进根 layout 的 RSC payload
 - **Giscus 评论**：配置集中在 `src/components/Post/PostComments.tsx` 的 `GISCUS_ATTRS`（属性名必须 kebab-case；`mapping='og:title'` + `strict='1'`，讨论按文章标题关联，**改文章标题会使历史评论失联**）；主题用官方 `light`/`dark`；Edge 的「Images loaded lazily」干预警告来自 widget 内部懒加载头像，属 giscus 自身行为、宿主页无法消除
-- **重组件懒加载**：`CursorGlow`、`ScrollProgress`、`ClickEffect`、`ParticleField` 等非首屏必需的 client 组件由 `AmbientEffects.tsx` 通过 `next/dynamic` 统一懒加载（`prefers-reduced-motion` 阀门跳过装饰性动效 `CursorGlow`/`ClickEffect`；`ScrollProgress` 保留指示条但 spring 平滑入阀；`ParticleField` 内部自检画静态帧），避免被打进首屏 chunk
+- **重组件懒加载**：`CursorGlow`、`ScrollProgress`、`ClickEffect`、`ParticleField` 等非首屏必需的 client 组件由 `AmbientEffects.tsx` 通过 `next/dynamic` 统一懒加载（`prefers-reduced-motion` 阀门跳过装饰性动效 `CursorGlow`/`ClickEffect`；`ScrollProgress` 保留指示条但 spring 平滑入阀；`ParticleField` 内部自检画静态帧），避免被打进首屏 chunk。**首屏 Hero/PostsList 同理**：`HomeHydration.tsx` 用 `dynamic(ssr:false)` 懒加载 `HeroParallax`/`PostsList`，framer-motion 整包只在懒加载 chunk，**不进入首页首载 `<script>`**；`--sansui-hero-vh` CSS 变量由 HomeHydration（SSR 安全的 `useEffect`，非 `useLayoutEffect`）与 HeroParallax 各自的水合后监听写入，首帧前由 `100dvh` 占位
+- **首页标题/「查看全部」错峰出场**：`PostsList.tsx` 里「最新文章」标题与「查看全部」ArrowLink 各是一个 `motion.div`，标题先落位（`duration 0.5` 无 delay），「查看全部」`delay: 0.18s` 随后跟进——两者不捆绑，避免「整块同帧闪现」的生硬感。同一 `titleInView` 布尔值驱动，滚动到首屏即播放
 - **reduced-motion 检测统一走共享 hook**：`src/components/UI/usePrefersReducedMotion.ts` 封装 `matchMedia('(prefers-reduced-motion: reduce)')` + `useSyncExternalStore`（客户端实时快照 / SSR 固定 false），`AmbientEffects` 与 `ScrollProgress` 共用，**不要手抄 matchMedia 订阅**（改 query/监听/SSR 快照只改一处）。`usePrefersReducedMotion` 替代 framer-motion 的 `useReducedMotion`——后者在设备开启 reduced-motion 且 dev 模式时会打 `warnOnce` 噪音（"reduced-motion-disabled"）
 - **framer 自动降级关闭**：framer-motion 不参与 reduced-motion 自动降级——其 MotionConfigContext 默认 reducedMotion 即 `"never"`（曾用 `Providers.tsx` 的 `<MotionConfig reducedMotion="never">` 显式声明，后随 Providers 移除 framer 依赖而删除，行为等价）。项目动效自管 reduced-motion（CSS 0.01ms 压制 + AmbientEffects 阀门 + 共享 hook），不依赖 framer 自动检测降级
 - **Turbopack + Tailwind v4.3 不兼容**：Next 16 默认 Turbopack 无法解析 Tailwind v4.3 生成的 `@layer properties` 选择器（`Invalid dangling combinator in selector`），dev/build 脚本已显式加 `--webpack`，不要移除
@@ -428,7 +429,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
   - excerpt 兜底：未写 `excerpt` 时取正文前 160 字并 `replace(/[#*`\[\]]/g,'')`去掉 markdown 符号，注意这个正则会**误删反引号围栏代码块的内容**，含代码开头的文章建议显式写`excerpt`
 - **提交门禁**：Husky pre-commit 自动跑 `lint-staged`（Prettier 格式化暂存文件）→ `npm run typecheck` → `npm run test`；`public/posts-index.json` 是构建产物，已在 `.prettierignore` 忽略，不要手动格式化它
 - **弹层关闭统一走 `useDismiss`**：外点（mousedown + 延迟绑定避开「触发弹层的同一次点击」）/ Esc 关闭收口在 `src/components/UI/useDismiss.ts`；ref 须包裹「开关按钮 + 浮层」，Navbar 移动菜单用 `{ outside: false }` 只启用 Esc（开关按钮在浮层外）
-- **hover 变色不要走 Framer Motion**：`whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}` 会把动画后的 `color` 写成 **inline style**，CSS 变量在 inline style 中被解析成具体值（如 `rgb(168 85 247)`）后就**不再响应** `--accent-*-rgb` 的变化——切 Accent 主题色、切亮/暗模式时，标题会卡在动画那一刻的颜色上，看起来像「变白/变黑不响应主题」。**正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统；位移动画也一并迁到 CSS `transform`。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore` + `.post-card-link:hover`）就是这么改的
+- **hover 变色不要走 Framer Motion**：`whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}` 会把动画后的 `color` 写成 **inline style**，CSS 变量在 inline style 中被解析成具体值（如 `rgb(168 85 247)`）后就**不再响应** `--accent-*-rgb` 的变化——切 Accent 主题色、切亮/暗模式时，标题会卡在动画那一刻的颜色上，看起来像「变白/变黑不响应主题」。**正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统；位移动画也一并迁到 CSS `transform`。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore:hover`）就是这么改的
 - **Tailwind v4 utility 的 layer 优先级坑**：Tailwind v4 把 utility 类（`text-gray-500`、`group-hover/link:text-accent-violet` 等）注入到 `@layer utilities` 里。全站已有的「utility 亮色覆盖」反压问题（裸 CSS 压制 utility hover）已在亮色为基重构时清理，**当前约定**：需要响应 Accent 主题色联动的 hover 变色，**不要用 Tailwind utility**，改用自定义 CSS 类，`html.dark` 前缀提升特异性，稳压裸覆盖规则
 - **动画时长限制 0.01ms（`prefers-reduced-motion` 降级值）**：做任何动画之前，先确认它会被 `src/styles/globals.css` 的 `@media (prefers-reduced-motion: reduce)` 块正确降级。该块把 `animation-duration` / `transition-duration` 强制压到 **0.01ms**（实质禁用动画），服务于无障碍：
   ```css
@@ -462,7 +463,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 24 + npm 缓存、`npm ci` �
 - **搜索匹配逻辑收口 `lib/search.ts`**：⌘K 的匹配（空格分词多关键词 AND、`splitByTerms` 高亮片段）是纯函数，组件只渲染；契约测试在 `tests/search.test.ts`。改匹配规则改 lib，不要动组件
 - **CSS 独立 `scale`/`translate` 属性**：要与 Framer Motion 的 inline `transform`（如 Hero CTA 的跟手 `x/y`）叠加的缩放/位移，用 `scale:` / `translate:` 独立属性——`transform` 会被内联样式覆盖失效。支持 Chrome 104+ / FF 72+ / Safari 14.1+（2026 年无兼容顾虑）
 - **sitemap 静态导出**：`sitemap.ts` 必须 `export const dynamic = 'force-static'`，**不要**再写 `revalidate = 0`（会强制动态渲染、覆盖 force-static，sitemap.xml 不被导出到 `out/`）；中文 slug 记得 `encodeURIComponent`
-- **reduced-motion 区分功能性/装饰性**：滚动淡出（Hero 标题 / 向下滚动提示的 scrollY→opacity）是功能性——reduced 用户也必须「滚动后首屏隐藏」；只有视差/入场/循环这类装饰动画才跳过（AGENTS.md #43；Hero 曾整体关闭导致首屏永不消失的 bug）
+- **reduced-motion 区分功能性/装饰性**：首屏「滚出视口隐藏」由前景层在文档流内的**物理滚动**保证（结构性，reduced 也生效，无需 JS 兜底）；`EXIT_FADE` 短促淡出/收缩是**装饰性润色**（reduced 时跳过，AGENTS.md #43 / conventions §43）。旧 EXIT_STAGGER 逐组 scrollY→opacity 映射已移除（慢滚鬼影 + 与滚动手势脱钩）
 - **组件测试（jsdom）**：`tests/search-modal.test.tsx` 用 `// @vitest-environment jsdom` 跑 RTL；vitest 未开 `globals` 时 RTL **不会自动 cleanup**，必须 `afterEach(cleanup)`（否则多 render 的 DOM 累积报 multiple elements）；jsdom 无 `matchMedia` 需垫片；mock `next/link` / `next/navigation`
 
 ---

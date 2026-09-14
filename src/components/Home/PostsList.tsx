@@ -8,7 +8,7 @@
  *  - 本组件用 dynamic(ssr:false) 在 HomeHydration 里懒加载
  *  - 挂载后立即 fetch posts-index.json（~8KB，缓存友好），再渲染卡片
  *  - 卡片入场用 whileInView 滚动触发动画，用户滚到那里才看到
- *  - 整个 section 随滚动淡入（opacity/y），与 Hero 淡出 overlap，避免空白期
+ *  - 整个 section 随滚动淡入（opacity/y），与 Hero 前景物理滚出衔接，避免空白期
  *
  * 流式渐进渲染：
  *  - 数据未到：显示 `total` 张骨架占位

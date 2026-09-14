@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { useLayoutEffect } from 'react';
+import { useEffect } from 'react';
 import type { HeroStats } from './HeroParallax';
 import { useReloadScrollRestore } from './useReloadScrollRestore';
 
@@ -50,12 +50,15 @@ export default function HomeHydration({ total, stats }: { total: number; stats: 
   // 刷新滚动还原：内容全部异步渲染，原生滚动恢复会被 clamp 到顶部（见 hook 文件头）
   useReloadScrollRestore();
 
-  // 在首帧绘制前同步写入 --sansui-hero-vh 快照，消除 SSR/水合期间 loading 占位
-  // 回退到活值 100dvh 的窗口（iOS Safari 地址栏显隐导致 100dvh 动态变化，正是
-  // 该变量要规避的语义）。useLayoutEffect 保证占位 div 在首次绘制前已拿到快照值；
-  // 此后 resize 监听接管后续更新（不 setState，仅写 CSS 变量，无重渲染）。
+  // 水合后写入 --sansui-hero-vh 快照（loading 占位与前景 min-h 共享该变量），
+  // 把活值 100dvh 固定为 JS 快照——规避 iOS Safari 地址栏显隐导致 100dvh 动态
+  // 变化、占位与前景高度脱钩。用 useEffect（非 useLayoutEffect）：本组件被服务端
+  // 组件直接 import 会经历 SSR，useLayoutEffect 在 server 端会报
+  // "does nothing on the server" 警告；首帧前 100dvh fallback 的窗口极短
+  // （同一次 hydrate 批处理内 effect 即触发写入），可接受。
+  // resize 监听只写 CSS 变量（不 setState），无重渲染。
   // HeroParallax 挂载后由它自带的监听覆盖（同一内联值写入，不冲突）。
-  useLayoutEffect(() => {
+  useEffect(() => {
     const syncVar = () => {
       document.documentElement.style.setProperty('--sansui-hero-vh', `${window.innerHeight}px`);
     };

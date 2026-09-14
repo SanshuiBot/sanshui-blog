@@ -75,7 +75,7 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 ## 11. 客户端动效组件懒加载
 
-`AmbientEffects.tsx` 用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect` / `ParticleField`，避免打进首屏 chunk；并对 `prefers-reduced-motion` 用户跳过装饰性动效（`CursorGlow`、`ClickEffect` 均受门控；`ScrollProgress` 功能性指示条保留但 spring 平滑入阀；`ParticleField` 内部自检画静态帧）。新增仅客户端、非首屏必需的动效组件，在 `AmbientEffects` 加一行 `dynamic` 注册即可。`experimental.optimizePackageImports: ['framer-motion','lucide-react']` 让大库按需引入——**不要再自定义 `splitChunks`**，会与内置 chunk 策略冲突。
+`AmbientEffects.tsx` 用 `dynamic(() => import(...), { ssr: false })` 懒加载 `CursorGlow` / `ScrollProgress` / `ClickEffect` / `ParticleField`，避免打进首屏 chunk；并对 `prefers-reduced-motion` 用户跳过装饰性动效（`CursorGlow`、`ClickEffect` 均受门控；`ScrollProgress` 功能性指示条保留但 spring 平滑入阀；`ParticleField` 内部自检画静态帧）。新增仅客户端、非首屏必需的动效组件，在 `AmbientEffects` 加一行 `dynamic` 注册即可。**首页首屏组件同样走 `dynamic(ssr:false)`**：`HomeHydration.tsx` 懒加载 `HeroParallax` / `PostsList`，framer-motion 整包只出现在懒加载 chunk，**不进入首页首载 HTML 的 `<script>` 列表**（实测 `out/index.html` 不引用 framer chunk，运行时经 `Promise.all([n.e(99),...])` 拉取）。`experimental.optimizePackageImports: ['framer-motion','lucide-react']` 让大库按需引入——**不要再自定义 `splitChunks`**，会与内置 chunk 策略冲突。
 
 **装饰性 JS 动效实例化开销**：`PostCard` 的 spotlight + 3D tilt 效果收口在 `src/components/Post/CardSpotlight.tsx`——作为无渲染辅助组件，仅在卡片非骨架时挂载（`!skeleton`），骨架槽位不创建 MotionValue/Spring 实例。挂载后通过 `onRefs` 回调向父组件暴露 MotionValue，父组件用 state 存储并在渲染期读取（绕开 ref 在渲染期的访问警告）。**约定 #21**：effect cleanup 必须调用 `onRefs(null)`，使 StrictMode 双执行下第二次 mount 可安全覆盖首次创建的实例，且 MotionValue 可被 GC。
 
@@ -93,7 +93,7 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 **只有跳转到文章详情页（`/posts/...`）的 `<Link>` 才调用 `startNavigation`**：
 
-- 入口（4 处）：`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link、`SearchModal` 的搜索结果 Link、`FeaturedPost` 的标题/阅读全文 Link——新增时记得补 `onClick={startNavigation}`，漏加的跳转会看不到加载覆盖层，体感「卡住」。
+- 入口（4 处）：`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link、`SearchModal` 的搜索结果/最近文章 Link、`ArrowLink`（如「查看全部」等文章详情跳转，`onClick` 透传 `startNavigation`）——新增时记得补 `onClick={startNavigation}`，漏加的跳转会看不到加载覆盖层，体感「卡住」。
 - 出口：`src/app/posts/[slug]/page.tsx` 挂载时调用 `done()` 隐藏覆盖层——新增详情页路由时勿漏，否则 loading 会卡住不消失。
 
 **导航、标签、归档、友链等其他入口一律不加**——非文章详情跳转出现 loading 覆盖层会严重影响体验。
@@ -101,7 +101,7 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 ## 14. 全局搜索（⌘K）
 
 - 入口：`Navbar` 右上角 Search 按钮 + 全局 `⌘K` / `Ctrl+K` 快捷键。**快捷键监听在 `Navbar` 常驻注册**；Esc / 外点关闭在 `SearchModal` 内由 `useDismiss` 处理（约定 #29）。
-- 数据：`SearchModal` 首次打开时 `fetch(withBase('/posts-index.json'))`，拉取轻量索引（~10KB，只含 slug/title/date/excerpt/tags，剔除正文）。**这是刻意设计**：避免全量文章数据被序列化进根 layout 的 RSC payload。
+- 数据：`SearchModal` / `PostsList` / `HeroParallax`（首屏缩略图墙）经 `src/lib/posts-index-cache.ts` 的 `getPostsIndex()` 共享拉取 `posts-index.json`（~10KB，只含 slug/title/date/excerpt/tags，剔除正文；模块级 Promise 缓存，三处共用同一份 fetch，不重复请求）。**这是刻意设计**：避免全量文章数据被序列化进根 layout 的 RSC payload。
 - 索引生成：`scripts/gen-posts-index.js` 在 `predev` / `prebuild` 时跑。
 
 ## 15. 文章卡片网格「跟手」流式渲染
@@ -185,7 +185,7 @@ TOC 组件（`src/components/Post/TableOfContents.tsx`）的实现约定：
 
 Framer Motion 的 `whileHover={{ color: 'rgb(var(--accent-violet-rgb))' }}` 会把动画后的 `color` 写成 **inline style**。CSS 变量在 inline style 中被解析成具体值（如 `rgb(168 85 247)`）后就**不再响应** `--accent-*-rgb` 的变化——切 Accent 主题色、切亮/暗模式时，标题会卡在动画那一刻的颜色上，看起来像「变白/变黑不响应主题」。
 
-**正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore` + `.post-card-link:hover`）就是这么改的。位移动画也一并迁到 CSS `transform`。
+**正确做法**：hover 变色用纯 CSS（自定义类 + `:hover`），颜色完全交给 CSS 变量系统。PostCard 标题（`.post-card-title`）、「阅读」箭头（`.post-card-readmore:hover`）就是这么改的。位移动画也一并迁到 CSS `transform`。
 
 ## 26. Accent 联动 hover 用自定义 CSS 类，不用 Tailwind utility
 
@@ -306,10 +306,10 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
 
 `usePrefersReducedMotion()` 为 true 时：
 
-- **功能性（必须保留）**：滚动淡出（Hero 标题/提示的 scrollY→opacity）——reduced 用户也要「滚动后首屏隐藏」；ScrollProgress 进度条（spring 平滑入阀）。
-- **装饰性（跳过）**：视差位移（titleY/midY/farY）、入场动画（initial→animate）、无限循环（Footer 走马灯/箭头/呼吸点）、鼠标跟手（CTA 按钮 x/y）。
+- **结构性 / 功能性（保留，reduced 也生效）**：首屏「滚出视口隐藏」由前景层在文档流内的**物理滚动**天然保证（reduced 无需任何特判，AGENTS #43）；ScrollProgress 进度条（spring 平滑入阀）。
+- **装饰性（跳过）**：背景层视差位移（midY/farY/midRotate）、`EXIT_FADE` 短促淡出/收缩（exitOpacity/exitScale，`HeroParallax.tsx` 中 `reduced ? undefined` 跳过）、入场动画（initial→animate）、无限循环（Footer 走马灯/箭头/呼吸点）、鼠标跟手（CTA 按钮 x/y）。
 
-**历史 bug**：HeroParallax 的 reduced 分支曾把整个 `style` 置 `undefined`，标题层 opacity 永不淡出 → 首屏文字滚动后一直显示。判断标准：动画承载信息（隐藏/进度）还是纯氛围？信息→保留，装饰→跳过。
+**历史 bug**：HeroParallax 的 reduced 分支曾把整个 `style` 置 `undefined`，导致旧 scrollY→opacity 逐组淡出失效 → 首屏文字滚动后一直显示（旧 EXIT_STAGGER 时代）。**重构后**首屏隐藏改由物理滚出保证，reduced 无需特判；判断标准更新为：动画承载「滚动后首屏消失」的是**结构性布局**（文档流 + 物理滚出），`EXIT_FADE` 淡出/收缩仅是装饰性润色，reduced 跳过。
 
 ## 44. 生成脚本收口（都复用 `parse-post.mjs`）
 

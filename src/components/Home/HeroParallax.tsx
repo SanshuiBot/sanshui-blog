@@ -272,6 +272,8 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
           scale 走 CSS 独立 scale 属性（motion.div 的 style.scale 映射到该属性），
           与 framer inline transform 不冲突（AGENTS.md #42）。
           高度用 --sansui-hero-vh 快照（非 100dvh），规避移动端地址栏显隐抖动。
+          opacity/scale 以 MotionValue 传入 style，framer 渲染进 transform 矩阵，
+          不产生独立 CSS scale 属性；与内部元素的 inline transform 无冲突。
           前景不加 will-change：opacity 仅在 EXIT_FADE 窗口内短时动画，常驻合成层
           不划算（低端设备掉帧）；窗口内短暂参与合成可接受。 */}
       <motion.section

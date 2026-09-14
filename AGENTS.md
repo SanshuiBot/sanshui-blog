@@ -71,7 +71,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 40. 公共实现收口别手抄：`lib/formatDate`、`UI/useScrollLock`、`UI/useIsBodyScrollLocked`、`UI/useFocusTrap`、`UI/BackToTop`、`UI/ThemeColorSync`、`lib/search`（空格分词 AND + 高亮片段）。
 41. sitemap 别设 `revalidate = 0`：会覆盖 `force-static`（历史 bug）。
 42. 与 framer inline transform 叠加的缩放/位移用 CSS 独立 `scale`/`translate`，别用 `transform`（会被内联覆盖）。
-43. reduced-motion 区分功能性/装饰性：滚动淡出（hero 标题/提示）必须保留，只跳视差/入场/循环。
+43. reduced-motion 区分功能性/装饰性：物理滚动「滚出视口」是结构性行为（reduced 也生效），退场无需 JS 兜底；EXIT_FADE 短促淡出/收缩是装饰性润色（reduced 时跳过，AGENTS.md #32）；视差/入场/循环动效均为装饰性，reduced 时跳过。
 44. 生成脚本收口：`gen-posts-index.js`/`gen-feed.js`/`gen-og-image.js` 都复用 `parse-post.mjs`；站点常量唯一源 `lib/site-config.mjs`（site.ts 与脚本共用）。
 45. CI 门禁：typecheck/lint/test 在 build 前跑；lint/test 加 `if: always()`（前一步失败也全跑）。
 46. 组件测试（jsdom）手动 `afterEach(cleanup)`：vitest 未开 globals，RTL 不自动清 DOM。
