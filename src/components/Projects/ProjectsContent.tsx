@@ -87,7 +87,7 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
                   dark:border-white/[0.12] dark:bg-white/[0.03] dark:hover:border-white/[0.22]
                   border-black/[0.06] bg-white/70 hover:border-black/[0.14]
                   backdrop-blur-sm dark:backdrop-blur-md
-                  hover:scale-[1.015]"
+                  hover:scale-[1.015] h-full"
     >
       {/* hover 光晕：背景光晕 + 边框发光（--project-accent 装饰色，纯 CSS 淡入，红线 #25/#32） */}
       <div className="project-card-glow" aria-hidden="true" />
@@ -96,9 +96,9 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
       {/* 顶部渐变条：accent 循环色 → 透明，hover 时提亮 */}
       <div className="project-card-bar" aria-hidden="true" />
 
-      <div className="relative p-5 pl-6">
-        {/* 文字信息区 */}
-        <div className="min-w-0">
+      <div className="relative p-5 pl-6 h-full">
+        {/* 文字信息区：纵向 flex，描述固定 3 行高度，技术/标签块始终落在同一垂直位置 */}
+        <div className="min-w-0 flex flex-col h-full">
           {/* 头部：名称 + 外链图标 */}
           <div className="flex items-start justify-between gap-2 mb-2">
             <h3 className="project-card-title font-semibold leading-snug text-base">
@@ -113,57 +113,66 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
             />
           </div>
 
-          {/* 描述 */}
-          <p className="text-sm text-gray-500 dark:text-gray-300 leading-relaxed mb-4 line-clamp-2">
+          {/* 描述：固定 3 行高度（min-height 锁定 3×行高），超 3 行截断，短描述下方留白；
+              同卡技术/标签块因此始终落在同一垂直位置，同行各卡字段对齐；
+              title 属性在描述被 line-clamp 截断时 hover 显示完整文案 */}
+          <p
+            title={project.desc}
+            className="min-h-[3.65625rem] text-xs text-gray-500 dark:text-gray-300 leading-relaxed mb-3 line-clamp-3"
+          >
             {project.desc}
           </p>
 
-          {/* 元信息行：语言圆点（唯一语言色元素）+ 灰阶语言名/star */}
-          {(project.lang || (project.stars !== undefined && project.stars > 0)) && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-gray-500 dark:text-gray-300">
-              {project.lang && (
-                <span className="flex items-center gap-1.5">
-                  <span
-                    className="inline-block w-2 h-2 rounded-full ring-1 ring-black/10 dark:ring-white/15"
-                    style={{
-                      background: accent!,
-                      boxShadow: `0 0 6px ${accent!.replace('))', ') / 0.3)')}`,
-                    }}
-                    aria-hidden="true"
-                  />
-                  {project.lang}
-                </span>
-              )}
-              {project.stars !== undefined && project.stars > 0 && (
-                <span className="flex items-center gap-1">
-                  <Star size={12} className="text-amber-500 dark:text-yellow-400/70" />
-                  {project.stars}
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* 标签行 */}
-          {project.tags && project.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {project.tags.map((tag) => {
-                const tagIdx = tagAccentHash(tag);
-                return (
-                  <span
-                    key={tag}
-                    data-accent-idx={tagIdx}
-                    className="tag-accent px-2 py-0.5 rounded-full text-[0.6875rem] font-mono
-                               transition-all duration-300
-                               dark:border-white/[0.2] dark:bg-white/10 dark:text-fg
-                               border-black/[0.08] bg-black/[0.04] text-stone-500
-                               group-hover:border-transparent"
-                  >
-                    {tag}
+          {/* 语言行 + 标签行：mt-auto 贴底，同行各卡字段垂直位置一致 */}
+          <div className="mt-auto">
+            {(project.lang && project.lang.length > 0) ||
+            (project.stars !== undefined && project.stars > 0) ? (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-gray-500 dark:text-gray-300">
+                {project.lang &&
+                  project.lang.map((language) => (
+                    <span key={language} className="flex items-center gap-1.5">
+                      <span
+                        className="inline-block w-2 h-2 rounded-full ring-1 ring-black/10 dark:ring-white/15"
+                        style={{
+                          background: accent!,
+                          boxShadow: `0 0 6px ${accent!.replace('))', ') / 0.3)')}`,
+                        }}
+                        aria-hidden="true"
+                      />
+                      {language}
+                    </span>
+                  ))}
+                {project.stars !== undefined && project.stars > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Star size={12} className="text-amber-500 dark:text-yellow-400/70" />
+                    {project.stars}
                   </span>
-                );
-              })}
-            </div>
-          )}
+                )}
+              </div>
+            ) : null}
+
+            {/* 标签行 */}
+            {project.tags && project.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {project.tags.map((tag) => {
+                  const tagIdx = tagAccentHash(tag);
+                  return (
+                    <span
+                      key={tag}
+                      data-accent-idx={tagIdx}
+                      className="tag-accent px-2 py-0.5 rounded-full text-[0.6875rem] font-mono
+                                 transition-all duration-300
+                                 dark:border-white/[0.2] dark:bg-white/10 dark:text-fg
+                                 border-black/[0.08] bg-black/[0.04] text-stone-500
+                                 group-hover:border-transparent"
+                    >
+                      {tag}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </motion.a>
