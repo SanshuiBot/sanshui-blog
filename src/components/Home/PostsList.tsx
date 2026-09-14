@@ -105,7 +105,8 @@ export default function PostsList({ total }: Props) {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={titleInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          // 错峰：标题先落位，「查看全部」随后跟进，两者不捆绑出场
+          transition={{ duration: 0.5, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
         >
           <ArrowLink href="/archive/" dir="more" className="link-more text-sm font-medium">
             查看全部
