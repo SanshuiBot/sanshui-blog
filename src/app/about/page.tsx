@@ -37,7 +37,7 @@ const AboutContent = dynamic(() => import('@/components/About/AboutContent'), {
 
 export const metadata: Metadata = {
   title: '关于',
-  description: `关于${siteConfig.name}个人博客`,
+  description: `三水的公开工程笔记：只写亲手做过、踩过、验证过的。更新不勤，每篇都算数。`,
   alternates: { canonical: `${siteConfig.url}/about/` },
 };
 
