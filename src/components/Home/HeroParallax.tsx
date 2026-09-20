@@ -290,7 +290,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
           >
             <span className="hero-badge-dot" aria-hidden />
             <span className="text-xs font-medium text-stone-700 tracking-wide dark:text-gray-300">
-              Creative Developer · 技术博客
+              Engineer &amp; Writer · 实战与踩坑
             </span>
           </motion.div>
 
@@ -302,7 +302,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               transition={{ duration: 0.9, delay: 0.05, ease: lineEase }}
               className="block text-stone-900 dark:text-fg"
             >
-              你好，我是
+              工程师 · 写作者
             </motion.span>
             <motion.span
               initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
@@ -321,7 +321,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="text-lg sm:text-xl text-stone-600 max-w-2xl mx-auto mb-8 leading-relaxed dark:text-gray-400"
           >
-            用文字沉淀知识，用代码改变世界。
+            构建有细节的界面，写下有温度的记录。
           </motion.p>
 
           {/* Stats — 极简 inline 行：数字（单色 accent）· 标签，点分隔 */}
