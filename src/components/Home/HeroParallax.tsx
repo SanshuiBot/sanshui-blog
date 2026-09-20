@@ -388,7 +388,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
                 target={href.startsWith('http') ? '_blank' : undefined}
                 rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                 aria-label={label}
-                className="block p-3 rounded-full glass hero-social text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-fg"
+                className="block p-3 rounded-full glass hero-social text-stone-600 dark:text-gray-400"
                 initial={reduced ? false : { opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}

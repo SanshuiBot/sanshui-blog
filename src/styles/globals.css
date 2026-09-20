@@ -919,13 +919,26 @@ html.dark {
 
   /* hero-cta 亮暗双态已并入基规则 + html.dark 覆盖（见上），此处无主题前缀规则 */
 
-  /* 社交图标托盘：统一玻璃 + emboss 质感 */
+  /* 社交图标托盘：统一玻璃 + emboss 质感。
+     hover 动效：上浮 + accent 描边光晕 + 图标点亮 accent。上浮用独立 translate
+     属性（按钮入场是 Framer scale spring，内联占 transform，约定 #42）；
+     图标变色收口 CSS（纯 accent 变量过渡，hover 变色不走 utility，约定 #25/#47）。 */
   .hero-social {
     box-shadow: var(--shadow-emboss);
-    transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+      box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      translate 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+      color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .hero-social:hover {
-    box-shadow: var(--shadow-emboss-hover);
+    translate: 0 -3px;
+    border-color: rgb(var(--accent-violet-rgb) / 0.45);
+    box-shadow:
+      var(--shadow-emboss-hover),
+      0 8px 24px rgb(var(--accent-violet-rgb) / 0.15);
+    /* 文字色走文字专用 token（亮色 color-mix 加深，见文件头约定；描边/阴影才用 rgb 通道） */
+    color: var(--color-accent-violet);
   }
   html.dark .hero-social {
     background: rgba(255, 255, 255, 0.06);
