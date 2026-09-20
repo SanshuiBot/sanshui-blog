@@ -25,7 +25,10 @@
      实际加载的 woff2 由它管理；此处声明仅作为 Tailwind utility（font-sans/font-mono）
      的令牌回退，勿在此改字体——改字体改 src/app/fonts.ts。 */
   --font-sans: 'Inter', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+  /* serif 标题字体：真值由 next/font 注入的 --font-serif-next（fonts.ts，寒蝉圆黑体子集）；
+     另声明同名 --font-serif 覆盖 Tailwind v4 内置默认令牌，防 ui-serif 抢占（同 sans/mono 模式） */
+  --font-serif: var(--font-serif-next, 'Yuanti SC', 'YouYuan', 'PingFang SC', sans-serif);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-in-out-circ: cubic-bezier(0.85, 0, 0.15, 1);

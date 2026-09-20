@@ -295,7 +295,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
           </motion.div>
 
           {/* Title */}
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[1.05] mb-6">
+          <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[1.05] mb-6">
             <motion.span
               initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}

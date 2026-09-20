@@ -12,7 +12,7 @@
  */
 import type { Metadata, Viewport } from 'next';
 import '@/styles/globals.css';
-import { sans, mono } from './fonts';
+import { sans, mono, serifSC } from './fonts';
 import Providers from '@/components/Providers';
 import AmbientEffects from '@/components/AmbientEffects';
 import AppShell from '@/components/AppShell';
@@ -71,7 +71,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning className={`${sans.variable} ${mono.variable}`}>
+    <html
+      lang="zh-CN"
+      suppressHydrationWarning
+      className={`${sans.variable} ${mono.variable} ${serifSC.variable}`}
+    >
       <head>
         {/* 防 FOUC + 首点（单个阻塞脚本，内联四个 IIFE）：
             1) accent —— 首屏前同步应用上次的强调色；由 accents.ts 生成，与 resolveAccentColors 共享数据源。
