@@ -140,8 +140,8 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
     const el = btnRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
-    btnX.set(((e.clientX - (r.left + r.width / 2)) / (r.width / 2)) * 10);
-    btnY.set(((e.clientY - (r.top + r.height / 2)) / (r.height / 2)) * 10);
+    btnX.set(((e.clientX - (r.left + r.width / 2)) / (r.width / 2)) * 4);
+    btnY.set(((e.clientY - (r.top + r.height / 2)) / (r.height / 2)) * 4);
   };
 
   const statItems = stats
@@ -379,7 +379,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
             >
               <span className="hero-cta-glow" />
               <span className="hero-cta-text relative z-10 font-semibold text-sm">浏览文章</span>
-              <ArrowDown size={15} className="relative z-10 hero-cta-arrow" />
+              <ArrowDown size={15} className="relative z-10" />
             </motion.a>
             {social.map(({ icon: Icon, href, label }, idx) => (
               <motion.a

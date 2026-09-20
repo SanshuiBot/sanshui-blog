@@ -900,12 +900,6 @@ html.dark {
   html.dark .hero-cta:focus-visible {
     outline-color: rgb(var(--accent-violet-rgb) / 0.6);
   }
-  .hero-cta-arrow {
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .hero-cta:hover .hero-cta-arrow {
-    transform: translateY(2px);
-  }
   /* 文字光晕：hover 时 accent 辉光 */
   .hero-cta-text {
     transition: text-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -932,7 +926,7 @@ html.dark {
       color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .hero-social:hover {
-    translate: 0 -3px;
+    translate: 0 -2px;
     border-color: rgb(var(--accent-violet-rgb) / 0.45);
     box-shadow:
       var(--shadow-emboss-hover),
