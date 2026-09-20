@@ -36,14 +36,14 @@ export default function NotFoundContent() {
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl btn-solid text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl btn-solid text-sm font-medium btn-hover-scale"
           >
             <Home size={16} />
             返回首页
           </Link>
           <Link
             href="/archive/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black/[0.03] text-stone-700 text-sm font-medium border border-black/[0.1] hover:scale-105 active:scale-95 transition-transform dark:bg-white/5 dark:text-gray-300 dark:border-white/10 hover:border-accent-violet/40"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black/[0.03] text-stone-700 text-sm font-medium border border-black/[0.1] dark:bg-white/5 dark:text-gray-300 dark:border-white/10 btn-hover-border btn-hover-scale"
           >
             <ArrowLeft size={16} />
             浏览归档

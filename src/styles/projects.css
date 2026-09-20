@@ -187,9 +187,20 @@ html.dark .projects-content .group:hover {
 }
 
 /* ── 底部 CTA 幽灵按钮：微填充 + hover 上浮 ───────────────────────────────── */
+/* 结构：外层 <a class="cta-ghost-btn"> 只做布局和命中区（静止、不 transform），
+   视觉全部在内层 .cta-ghost-inner（含 hover 上浮位移）。若位移直接作用在命中区上，
+   鼠标停在按钮底边时会 上浮→出界→回落→入界 反复震荡导致闪烁，故内外分层。 */
 
 .cta-ghost-btn {
+  display: inline-block;
+}
+
+.cta-ghost-inner {
   /* 亮色基值：极淡背景 + 细边框 + 灰色文字，不抢卡片风头（暗色由下方 html.dark 覆盖加浓） */
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
   background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 6%, white);
   color: rgb(107 114 128);
   border: 1px solid rgb(var(--accent-violet-rgb) / 0.2);
@@ -201,22 +212,25 @@ html.dark .projects-content .group:hover {
     box-shadow 0.3s ease,
     transform 0.3s ease;
 }
-html.dark .cta-ghost-btn {
+html.dark .cta-ghost-inner {
   background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 10%, rgb(15 15 20 / 0.4));
   color: rgb(156 163 175);
   border-color: rgb(var(--accent-violet-rgb) / 0.22);
 }
 
-/* hover：背景加深 + accent 文字 + 轻微投影 */
-.cta-ghost-btn:hover {
+/* hover：背景加深 + accent 文字 + 轻微投影 + 上浮（只动内层视觉壳） */
+.cta-ghost-btn:hover .cta-ghost-inner {
   background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 14%, transparent);
   color: rgb(var(--accent-violet-rgb));
   border-color: rgb(var(--accent-violet-rgb) / 0.4);
   box-shadow: 0 4px 12px rgb(var(--accent-violet-rgb) / 0.12);
+  transform: translateY(-2px);
 }
-html.dark .cta-ghost-btn:hover {
+html.dark .cta-ghost-btn:hover .cta-ghost-inner {
   background: color-mix(in srgb, rgb(var(--accent-violet-rgb)) 18%, rgb(15 15 20 / 0.6));
+  color: rgb(var(--accent-violet-rgb));
   border-color: rgb(var(--accent-violet-rgb) / 0.45);
+  box-shadow: 0 4px 12px rgb(var(--accent-violet-rgb) / 0.2);
 }
 
 /* 鼠标跟随光晕：与卡片同源 */

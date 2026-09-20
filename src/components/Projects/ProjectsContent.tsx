@@ -256,31 +256,33 @@ export default function ProjectsContent() {
             e.currentTarget.style.setProperty('--mx', '0px');
             e.currentTarget.style.setProperty('--my', '-40px');
           }}
-          className="cta-ghost-btn relative overflow-hidden rounded-lg
-                     transition-all duration-300 ease-out
-                     hover:-translate-y-0.5"
-          style={{ '--mx': '0px', '--my': '-40px' } as CSSProperties}
+          className="cta-ghost-btn"
         >
-          {/* 鼠标跟随光晕 */}
-          <span className="cta-ghost-glow" aria-hidden="true" />
-          {/* 内容：图标 + 文字 + 箭头 */}
-          <span className="relative flex items-center gap-1.5 px-4 py-2 font-mono text-sm">
-            <GithubIcon size={13} className="shrink-0" />
-            <span>查看全部项目</span>
-            <svg
-              className="cta-ghost-arrow shrink-0 transition-all duration-300"
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 9L9 4" />
-              <path d="M4 4h5v5" />
-            </svg>
+          {/* 内层视觉壳：背景/边框/光晕/内容都在这层，hover 上浮只动它。
+              外层 <a> 不做任何 transform，命中区静止——否则鼠标停在底边时
+              上浮→出界→回落→入界反复震荡，按钮疯狂闪烁 */}
+          <span className="cta-ghost-inner">
+            {/* 鼠标跟随光晕 */}
+            <span className="cta-ghost-glow" aria-hidden="true" />
+            {/* 内容：图标 + 文字 + 箭头 */}
+            <span className="relative flex items-center gap-1.5 px-4 py-2 font-mono text-sm">
+              <GithubIcon size={13} className="shrink-0" />
+              <span>查看全部项目</span>
+              <svg
+                className="cta-ghost-arrow shrink-0 transition-all duration-300"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4 9L9 4" />
+                <path d="M4 4h5v5" />
+              </svg>
+            </span>
           </span>
         </a>
       </motion.div>

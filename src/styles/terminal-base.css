@@ -63,16 +63,8 @@
   color: rgb(0 0 0 / 0.25);
 }
 
-/* ── 按钮 hover 缩放（纯 CSS 替代 Framer whileHover/whileTap，约定 #25/#32） ── */
-.btn-hover-scale {
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.btn-hover-scale:hover {
-  transform: scale(1.03);
-}
-.btn-hover-scale:active {
-  transform: scale(0.97);
-}
+/* ── 按钮 hover 缩放（.btn-hover-scale）收口在 globals.css（含 ::after 命中区扩大），
+   NotFound 页等非 terminal 页也能用，避免双份维护 ── */
 /* ── 关于页技术栈卡片 hover（纯 CSS 替代 Framer whileHover） ── */
 .about-stack-card {
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);

@@ -541,6 +541,29 @@ html.dark {
   .tag-item:hover {
     transform: scale(1.08) translateY(-3px);
   }
+  /* ── 按钮 hover 缩放（纯 CSS 替代 Framer whileHover/whileTap，约定 #25/#32） ──
+     唯一定义在此（原 terminal-base.css 副本已删除），全站含 NotFound 页均可直接用。
+     ::after 扩大命中区，防止鼠标停在按钮边缘时缩放导致 hover 反复进出闪烁。 */
+  .btn-hover-scale {
+    position: relative;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .btn-hover-scale::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+  }
+  .btn-hover-scale:hover {
+    transform: scale(1.03);
+  }
+  .btn-hover-scale:active {
+    transform: scale(0.97);
+  }
+  /* 伴随 .btn-hover-scale 的 accent 边框 hover：与 ::after 命中区共享同一 hover 触发，
+     不用 Tailwind hover: utility（触发区只到按钮边界，边缘 6px 缓冲带内不同步，约定 #47） */
+  .btn-hover-border:hover {
+    border-color: rgb(var(--accent-violet-rgb) / 0.4);
+  }
   /* Footer 顶部渐变线动画（纯 CSS 替代 Framer Motion，约定 #32） */
   .footer-gradient-line {
     background: linear-gradient(
