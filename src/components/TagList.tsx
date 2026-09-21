@@ -66,7 +66,7 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
           href={`/tags/${encodeURIComponent(name)}/`}
           onMouseMove={onMove}
           onMouseLeave={onLeave}
-          className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass glass-flat border border-black/[0.06] overflow-hidden dark:border-white/10"
+          className="tag-pill group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass glass-flat border border-black/[0.06] overflow-hidden dark:border-white/10"
           style={{ transformStyle: 'preserve-3d' }}
         >
           {/* Spotlight */}

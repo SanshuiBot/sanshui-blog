@@ -24,6 +24,13 @@
   --rt-done-text: #57534e;
   --rt-done-icon: rgb(var(--accent-teal-rgb));
   --rt-hr: rgba(0, 0, 0, 0.12);
+  /* 回放/跳过按钮 */
+  --rt-btn-border: rgba(0, 0, 0, 0.12);
+  --rt-btn-text: #57534e;
+  --rt-btn-bg: rgba(0, 0, 0, 0.03);
+  --rt-btn-hover-border: rgb(var(--accent-violet-rgb) / 0.45);
+  --rt-btn-hover-text: rgb(var(--accent-violet-rgb));
+  --rt-btn-hover-bg: rgb(var(--accent-violet-rgb) / 0.06);
 }
 
 .resume-terminal .resume-body {
@@ -70,6 +77,20 @@
 .resume-terminal .resume-hr {
   border-color: var(--rt-hr);
 }
+.resume-terminal .resume-replay-btn {
+  color: var(--rt-btn-text);
+  border-color: var(--rt-btn-border);
+  background: var(--rt-btn-bg);
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+.resume-terminal .resume-replay-btn:hover {
+  color: var(--rt-btn-hover-text);
+  border-color: var(--rt-btn-hover-border);
+  background: var(--rt-btn-hover-bg);
+}
 
 /* ── 暗色主题覆盖：html.dark ── */
 html.dark .resume-terminal {
@@ -90,4 +111,10 @@ html.dark .resume-terminal {
   --rt-done-text: #8b8b9e;
   --rt-done-icon: rgb(var(--accent-teal-rgb));
   --rt-hr: rgba(255, 255, 255, 0.1);
+  --rt-btn-border: rgba(255, 255, 255, 0.12);
+  --rt-btn-text: #8b8b9e;
+  --rt-btn-bg: rgba(255, 255, 255, 0.04);
+  --rt-btn-hover-border: rgb(var(--accent-violet-rgb) / 0.5);
+  --rt-btn-hover-text: rgb(var(--accent-violet-rgb));
+  --rt-btn-hover-bg: rgb(var(--accent-violet-rgb) / 0.1);
 }

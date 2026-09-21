@@ -63,14 +63,17 @@
   color: rgb(0 0 0 / 0.25);
 }
 
-/* ── 按钮 hover 缩放（.btn-hover-scale）收口在 globals.css（含 ::after 命中区扩大），
+/* ── 按钮 hover 缩放（.btn-hover-scale）收口在 globals.css，
    NotFound 页等非 terminal 页也能用，避免双份维护 ── */
-/* ── 关于页技术栈卡片 hover（纯 CSS 替代 Framer whileHover） ── */
-.about-stack-card {
+/* ── 关于页技术栈卡片 hover（纯 CSS 替代 Framer whileHover） ──
+   命中区/视觉分层（同 globals.css 的 .hero-cta）：外层 .about-stack-card /
+   .about-stack-item 静止只做命中区，translateY 位移全在内层视觉壳——位移若
+   直接作用在命中区上，鼠标停在底边会 出界→回落→入界 反复震荡闪烁。 */
+.about-stack-card-inner {
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.about-stack-card:hover {
-  transform: translateY(-4px);
+.about-stack-card:hover .about-stack-card-inner {
+  transform: translateY(-2px);
 }
 .about-stack-card .about-accent-line {
   transform: scaleX(0);
@@ -84,11 +87,11 @@
   transform: scaleX(1);
   opacity: 1;
 }
-.about-stack-item {
+.about-stack-item-inner {
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.about-stack-item:hover {
-  transform: translateY(-2px) scale(1.04);
+.about-stack-item:hover .about-stack-item-inner {
+  transform: translateY(-1px) scale(1.02);
 }
 
 /* ── 终端命令式 CTA 面板（友链交换块 / 关于联系卡共用，亮基） ── */

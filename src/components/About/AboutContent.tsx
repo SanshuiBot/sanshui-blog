@@ -187,57 +187,58 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {stack.map((s) => (
-            <div
-              key={s.title}
-              className="about-stack-card relative flex flex-col p-5 rounded-2xl glass border border-black/[0.06] hover:border-black/20 overflow-hidden group dark:border-white/10 dark:hover:border-white/25"
-            >
-              <div
-                className={`about-accent-line absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${s.color}`}
-              />
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <s.icon size={15} className="text-stone-500 dark:text-gray-500" />
-                  <h3 className="text-sm font-semibold text-stone-900 uppercase tracking-widest dark:text-fg">
-                    {s.title}
-                  </h3>
+            <div key={s.title} className="about-stack-card relative group">
+              {/* 内层视觉壳：玻璃底/边框/内边距全在这层，hover 上浮也作用在这层——
+                  外层静止做命中区，否则底边鼠标会因命中区随位移变化反复进出闪烁 */}
+              <div className="about-stack-card-inner relative flex flex-col p-5 h-full rounded-2xl glass border border-black/[0.06] overflow-hidden group-hover:border-black/20 dark:border-white/10 dark:group-hover:border-white/25">
+                <div
+                  className={`about-accent-line absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r ${s.color}`}
+                />
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <s.icon size={15} className="text-stone-500 dark:text-gray-500" />
+                    <h3 className="text-sm font-semibold text-stone-900 uppercase tracking-widest dark:text-fg">
+                      {s.title}
+                    </h3>
+                  </div>
+                  <span className="text-[11px] font-medium text-stone-400 bg-black/[0.03] px-2 py-0.5 rounded-full dark:bg-white/5 dark:text-gray-600">
+                    {s.items.length} 项
+                  </span>
                 </div>
-                <span className="text-[11px] font-medium text-stone-400 bg-black/[0.03] px-2 py-0.5 rounded-full dark:bg-white/5 dark:text-gray-600">
-                  {s.items.length} 项
-                </span>
-              </div>
-              <div className="flex flex-1 flex-wrap content-start gap-3">
-                {s.items.map((item) => {
-                  const icon = stackIcons[item.name] ?? fallbackStackIcon;
-                  return (
-                    <div key={item.name} className="about-stack-item relative w-full">
-                      <div className="relative px-3 py-2 rounded-lg border border-black/10 bg-black/[0.03] hover:bg-black/[0.06] dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.07] transition-colors cursor-default">
-                        <div className="flex items-center gap-2 pl-2">
-                          <span
-                            className="shrink-0 leading-none"
-                            style={icon.color ? { color: icon.color } : undefined}
-                          >
-                            <icon.Icon size={12} />
-                          </span>
-                          <span className="text-sm text-gray-800 dark:text-gray-300">
-                            {item.name}
-                          </span>
-                          <div className="ml-auto flex items-center gap-1">
-                            {Array.from({ length: 5 }, (_, di) => (
-                              <span
-                                key={di}
-                                className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                  di < item.level
-                                    ? 'bg-gray-700 dark:bg-white/70'
-                                    : 'bg-gray-300 dark:bg-white/15'
-                                }`}
-                              />
-                            ))}
+                <div className="flex flex-1 flex-wrap content-start gap-3">
+                  {s.items.map((item) => {
+                    const icon = stackIcons[item.name] ?? fallbackStackIcon;
+                    return (
+                      <div key={item.name} className="about-stack-item relative w-full">
+                        <div className="about-stack-item-inner relative px-3 py-2 rounded-lg border border-black/10 bg-black/[0.03] transition-colors cursor-default dark:border-white/10 dark:bg-white/[0.03] hover:bg-black/[0.06] dark:hover:bg-white/[0.07]">
+                          <div className="flex items-center gap-2 pl-2">
+                            <span
+                              className="shrink-0 leading-none"
+                              style={icon.color ? { color: icon.color } : undefined}
+                            >
+                              <icon.Icon size={12} />
+                            </span>
+                            <span className="text-sm text-gray-800 dark:text-gray-300">
+                              {item.name}
+                            </span>
+                            <div className="ml-auto flex items-center gap-1">
+                              {Array.from({ length: 5 }, (_, di) => (
+                                <span
+                                  key={di}
+                                  className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                                    di < item.level
+                                      ? 'bg-gray-700 dark:bg-white/70'
+                                      : 'bg-gray-300 dark:bg-white/15'
+                                  }`}
+                                />
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ))}

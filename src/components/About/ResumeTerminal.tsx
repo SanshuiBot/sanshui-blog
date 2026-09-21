@@ -1,17 +1,18 @@
 'use client';
 
 import '@/styles/resume-terminal.css';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { splitResumeLines } from '@/lib/resumeLines';
 import { useSafeTimeout } from '@/components/UI/useSafeTimeout';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import TerminalShell from '@/components/UI/TerminalShell';
 
 interface ResumeTerminalProps {
-  /** 完整简历文本（markdown，按行流式输出） */
+  /** 完整简历文本（markdown，逐字符打字输出） */
   source: string;
-  /** 单行打印间隔（毫秒），默认 60ms */
-  lineDelay?: number;
+  /** 单字符打印间隔（毫秒），默认 14ms */
+  charDelay?: number;
   /** 是否在进入视口时才开始打印，默认 true */
   triggerOnView?: boolean;
 }
@@ -19,61 +20,87 @@ interface ResumeTerminalProps {
 /**
  * 终端式"流式打印"简历模块。
  *
- * - 进入视口后逐行"打印"简历，最后一行打印完毕时显示完成提示
+ * - 进入视口后逐字符打字输出（光标跟字移动，模拟真实终端）
+ * - 保留行级节奏：标题行前停顿稍长、空行间隔稍短
  * - 支持 markdown 行内高亮：`## 标题` 渲染为紫色高亮，`- 列表项` 渲染为带点列表
- * - 打印过程中底部出现闪烁光标，结束后光标消失、显示完成提示
+ * - 打印中可「跳过」，完成后可「重新播放」（终端命令风格按钮）
+ * - reduced-motion：打字动画是装饰性的（AGENTS #32/#43），直接整篇显示
  * - 亮/暗双主题：CSS 变量默认亮值，暗色走 resume-terminal.css 的 html.dark 覆盖
  */
 export default function ResumeTerminal({
   source,
-  lineDelay = 60,
+  charDelay = 14,
   triggerOnView = true,
 }: ResumeTerminalProps) {
   const lines = useMemo(() => splitResumeLines(source), [source]);
+  const reduced = usePrefersReducedMotion();
 
-  const [printedLines, setPrintedLines] = useState<number>(0);
-  const [done, setDone] = useState<boolean>(false);
+  // 打字进度：已完整打完的行数 + 当前行已打出的字符数。
+  const [doneLines, setDoneLines] = useState(0);
+  const [curChars, setCurChars] = useState(0);
+  // 跳过态（state 而非 ref：渲染期可读，skip 按钮显隐/观察器短路都用它）
+  const [skipped, setSkipped] = useState(false);
+  // 实际显示的行数：reduced-motion / 用户点跳过 → 整篇直接显示（派生值，不走 effect setState）
+  const visibleLines = reduced || skipped ? lines.length : doneLines;
+  const done = visibleLines >= lines.length;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const startedRef = useRef<boolean>(false);
   const scrollBodyRef = useRef<HTMLDivElement | null>(null);
+  // 是否已启动过打印（ref 守卫：只在 effect / 定时器回调里读写，不进渲染期）
+  const startedRef = useRef<boolean>(false);
+  // 打字链终止标记：skip / reduced-motion 时置位，tick 顶部检查后不再重排定时器
+  const stoppedRef = useRef<boolean>(false);
   // 打印链定时器：useSafeTimeout 自动 cleanup（卸载后 setState bug 类，见 ADR-0003）。
   // tick 链用 useSafeTimeout 重排自身——cancel 由 hook 内部管，effect 重挂时不丢。
   const setTickTimer = useSafeTimeout();
 
-  // 进入视口后启动打印（startPrinting 声明提前：函数声明虽提升，但 react-hooks 规则
-  // 要求先声明后使用）
+  // 打字链：每 tick 打出一个字符。行与行之间按行类型插入停顿，保留原有节奏感。
+  // 首字符经 setTickTimer(tick, 0) 异步派发，避免在 effect 内同步 setState。
   const startPrinting = useCallback(() => {
-    let idx = 0;
+    setDoneLines(0);
+    setCurChars(0);
+    setSkipped(false);
+    startedRef.current = true;
+    stoppedRef.current = false;
+    let li = 0;
+    let ci = 0;
     const tick = () => {
-      idx += 1;
-      setPrintedLines(idx);
-      if (idx >= lines.length) {
-        setDone(true);
+      // skip / reduced-motion 已终止打字链：不再重排定时器
+      if (stoppedRef.current) return;
+      if (li >= lines.length) {
+        setDoneLines(lines.length);
+        setCurChars(0);
         return;
       }
-      // 空行稍快、标题行稍慢，营造节奏感
-      const current = lines[idx - 1] ?? '';
-      const isHeading = current.trimStart().startsWith('#');
-      const isEmpty = current.trim() === '';
-      const next = isEmpty ? lineDelay * 0.4 : isHeading ? lineDelay * 2.4 : lineDelay;
-      setTickTimer(tick, next);
+      const line = lines[li] ?? '';
+      ci += 1;
+      setDoneLines(li);
+      setCurChars(ci);
+      if (ci >= line.length) {
+        // 当前行打完：行尾停顿（标题行稍慢、空行稍快），再进下一行
+        li += 1;
+        ci = 0;
+        if (li >= lines.length) {
+          setDoneLines(lines.length);
+          return;
+        }
+        const trimmed = line.trimStart();
+        const pause = trimmed === '' ? 40 : trimmed.startsWith('#') ? 180 : 30;
+        setTickTimer(tick, pause);
+        return;
+      }
+      setTickTimer(tick, charDelay);
     };
-    tick();
-  }, [lines, lineDelay, setTickTimer]);
+    setTickTimer(tick, 0);
+  }, [lines, charDelay, setTickTimer]);
 
-  // 每打印一行 / 打印完成（含完成提示渲染）后滚动到底，模拟终端追加。
-  // 注意不能在 tick 里同步设 scrollTop：那时 React 还没提交新行，
-  // scrollHeight 是旧值，最终会差一行/把完成提示留在可视区外。
+  // 进入视口后启动打印（reduced-motion 不启动：显示量已按 reduced 派生为整篇）
   useEffect(() => {
-    const body = scrollBodyRef.current;
-    if (body) body.scrollTop = body.scrollHeight;
-  }, [printedLines, done]);
-
-  useEffect(() => {
+    if (reduced || startedRef.current) return;
     if (!triggerOnView) {
-      startPrinting();
-      return;
+      // 异步派发：startPrinting 内有 setState，避免在 effect 体内同步调用（级联渲染告警）
+      const id = window.setTimeout(startPrinting, 0);
+      return () => window.clearTimeout(id);
     }
     const node = containerRef.current;
     if (!node) return;
@@ -82,7 +109,6 @@ export default function ResumeTerminal({
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting && !startedRef.current) {
-            startedRef.current = true;
             startPrinting();
             observer.disconnect();
           }
@@ -95,7 +121,15 @@ export default function ResumeTerminal({
       observer.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [triggerOnView]);
+  }, [triggerOnView, reduced]);
+
+  // 每次打字进度变化 / 打印完成后滚动到底，模拟终端追加。
+  // 注意不能在 tick 里同步设 scrollTop：那时 React 还没提交新字符，
+  // scrollHeight 是旧值，最终会差一行/把完成提示留在可视区外。
+  useEffect(() => {
+    const body = scrollBodyRef.current;
+    if (body) body.scrollTop = body.scrollHeight;
+  }, [visibleLines, curChars, done]);
 
   return (
     <motion.div
@@ -114,9 +148,13 @@ export default function ResumeTerminal({
         >
           <div className="resume-prompt mb-2">$ cat resume.md</div>
           <div className="space-y-0.5">
-            {lines.slice(0, printedLines).map((line, i) => (
+            {lines.slice(0, doneLines).map((line, i) => (
               <ResumeLine key={i} line={line} />
             ))}
+            {/* 当前行：打字中逐字符追加；行间空档（curChars=0 且未完成）只渲染光标行 */}
+            {!done && lines[doneLines] !== undefined && curChars > 0 && (
+              <ResumeLine line={(lines[doneLines] ?? '').slice(0, curChars)} />
+            )}
           </div>
 
           {/* 闪烁光标：打印中显示，完成后消失（不再残留静态竖线） */}
@@ -125,8 +163,38 @@ export default function ResumeTerminal({
           )}
 
           {done && (
-            <div className="resume-done mt-4 pt-3 border-t">
-              <span className="resume-done-icon">✓</span> 简历打印完成 · 共 {lines.length} 行
+            <div className="resume-done mt-4 pt-3 border-t flex items-center justify-between gap-3">
+              <span>
+                <span className="resume-done-icon">✓</span> 简历打印完成 · 共 {lines.length} 行
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  startPrinting();
+                }}
+                className="resume-replay-btn shrink-0 font-mono text-xs px-3 py-1 rounded-md border cursor-pointer"
+                aria-label="重新播放简历打字动画"
+              >
+                ↻ replay resume.md
+              </button>
+            </div>
+          )}
+
+          {/* skip 按钮：打字进行中显示（未启动时 doneLines=0 且 curChars=0 自然隐藏） */}
+          {!done && !reduced && (doneLines > 0 || curChars > 0) && (
+            <div className="mt-4 pt-3 border-t">
+              <button
+                type="button"
+                onClick={() => {
+                  stoppedRef.current = true;
+                  setSkipped(true);
+                  setCurChars(0);
+                }}
+                className="resume-replay-btn font-mono text-xs px-3 py-1 rounded-md border cursor-pointer"
+                aria-label="跳过打字动画，直接显示完整简历"
+              >
+                » skip
+              </button>
             </div>
           )}
         </div>
@@ -136,14 +204,15 @@ export default function ResumeTerminal({
 }
 
 /**
- * 单行简历渲染：
+ * 单行简历渲染（memo：打字期父组件每字符 tick 重渲染一次，
+ * 已打完的行 props 不变，跳过重渲染与 markdown 重新解析）：
  * - `# / ## / ###` 标题行：放大、紫色
  * - `- xxx` 列表项：渲染为带圆点的项
  * - `> xxx` 引用：渲染为带左边框的引用
  * - `---` 分隔线：渲染为 hr
  * - 其余：普通文本，`**粗体**` 与 `` `代码` `` 做行内高亮
  */
-function ResumeLine({ line }: { line: string }) {
+const ResumeLine = memo(function ResumeLine({ line }: { line: string }) {
   const trimmed = line.trimStart();
 
   // 分隔线
@@ -206,7 +275,7 @@ function ResumeLine({ line }: { line: string }) {
       <InlineText text={line} />
     </div>
   );
-}
+});
 
 /**
  * 行内文本：解析 `**粗体**` 与 `` `代码` `` 两种标记。

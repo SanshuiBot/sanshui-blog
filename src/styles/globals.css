@@ -537,24 +537,26 @@ html.dark {
   .post-card-readmore:hover .post-card-readmore-arrow {
     transform: translate(2px, -2px);
   }
-  /* TagList hover（纯 CSS 替代 Framer whileHover，约定 #25/#32） */
+  /* TagList hover（纯 CSS 替代 Framer whileHover，约定 #25/#32）。
+     命中区/视觉分层（同 .hero-cta）：外层 .tag-item 静止只做命中区，
+     scale+translateY 位移全在内层 <Link>（.tag-pill）——位移若作用在命中区上，
+     鼠标停在底边会 出界→回落→入界 反复震荡导致疯狂闪烁。 */
   .tag-item {
+    display: inline-block;
+  }
+  .tag-pill {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .tag-item:hover {
+  .tag-item:hover .tag-pill {
     transform: scale(1.08) translateY(-3px);
   }
   /* ── 按钮 hover 缩放（纯 CSS 替代 Framer whileHover/whileTap，约定 #25/#32） ──
      唯一定义在此（原 terminal-base.css 副本已删除），全站含 NotFound 页均可直接用。
-     ::after 扩大命中区，防止鼠标停在按钮边缘时缩放导致 hover 反复进出闪烁。 */
+     仅 scale 放大（≥1）：命中区只增不减，边缘无震荡，无需额外命中区处理。
+     （命中区/视觉分层方案见 .hero-cta——带位移上浮/跟手的按钮不能用伪元素扩区） */
   .btn-hover-scale {
     position: relative;
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .btn-hover-scale::after {
-    content: '';
-    position: absolute;
-    inset: -6px;
   }
   .btn-hover-scale:hover {
     transform: scale(1.03);
@@ -562,8 +564,8 @@ html.dark {
   .btn-hover-scale:active {
     transform: scale(0.97);
   }
-  /* 伴随 .btn-hover-scale 的 accent 边框 hover：与 ::after 命中区共享同一 hover 触发，
-     不用 Tailwind hover: utility（触发区只到按钮边界，边缘 6px 缓冲带内不同步，约定 #47） */
+  /* 伴随 .btn-hover-scale 的 accent 边框 hover：与主按钮 hover 同步触发，
+     不用 Tailwind hover: utility（触发区不同步，约定 #47） */
   .btn-hover-border:hover {
     border-color: rgb(var(--accent-violet-rgb) / 0.4);
   }
