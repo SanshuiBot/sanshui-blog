@@ -8,7 +8,6 @@ interface TerminalShellProps {
   /** 右侧状态文字，如 `streaming…` */
   status?: string;
   children: React.ReactNode;
-  className?: string;
 }
 
 /**
@@ -17,9 +16,9 @@ interface TerminalShellProps {
  * 链接页与简历页共用，样式定义在 terminal-base.css。
  * 具体页面包裹自己的 body 层（.terminal-body / .resume-body）。
  */
-export default function TerminalShell({ title, status, children, className }: TerminalShellProps) {
+export default function TerminalShell({ title, status, children }: TerminalShellProps) {
   return (
-    <div className={`terminal-shell ${className ?? ''}`}>
+    <div className="terminal-shell">
       {(title || status) && (
         <div className="terminal-shell-titlebar">
           <span className="terminal-shell-dot terminal-shell-dot-red" />

@@ -37,6 +37,11 @@
   background: var(--rt-bg);
   color: var(--rt-text);
 }
+/* 底栏（完成提示 / 跳过按钮）：固定在滚动区下方、不随流式内容滚动 */
+.resume-terminal .resume-terminal-footer {
+  padding: 12px 20px;
+  background: var(--rt-bg);
+}
 .resume-terminal .resume-prompt {
   color: var(--rt-prompt);
 }

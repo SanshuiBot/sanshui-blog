@@ -10,10 +10,6 @@ import TerminalShell from '@/components/UI/TerminalShell';
 interface ResumeTerminalProps {
   /** 完整简历文本（markdown，逐字符打字输出） */
   source: string;
-  /** 单字符打印间隔（毫秒），默认 8ms */
-  charDelay?: number;
-  /** 是否在进入视口时才开始打印，默认 true */
-  triggerOnView?: boolean;
 }
 
 /**
@@ -26,11 +22,7 @@ interface ResumeTerminalProps {
  * - 打字动画本身即内容，始终播放，不随 reduced-motion 关闭
  * - 亮/暗双主题：CSS 变量默认亮值，暗色走 resume-terminal.css 的 html.dark 覆盖
  */
-export default function ResumeTerminal({
-  source,
-  charDelay = 8,
-  triggerOnView = true,
-}: ResumeTerminalProps) {
+export default function ResumeTerminal({ source }: ResumeTerminalProps) {
   const lines = useMemo(() => splitResumeLines(source), [source]);
 
   // 打字进度：已完整打完的行数 + 当前行已打出的字符数。
@@ -88,19 +80,14 @@ export default function ResumeTerminal({
         setTickTimer(tick, pause);
         return;
       }
-      setTickTimer(tick, charDelay);
+      setTickTimer(tick, 8);
     };
     setTickTimer(tick, 0);
-  }, [lines, charDelay, setTickTimer]);
+  }, [lines, setTickTimer]);
 
   // 进入视口后启动打印
   useEffect(() => {
     if (startedRef.current) return;
-    if (!triggerOnView) {
-      // 异步派发：startPrinting 内有 setState，避免在 effect 体内同步调用（级联渲染告警）
-      const id = window.setTimeout(startPrinting, 0);
-      return () => window.clearTimeout(id);
-    }
     const node = containerRef.current;
     if (!node) return;
 
@@ -120,7 +107,7 @@ export default function ResumeTerminal({
       observer.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [triggerOnView]);
+  }, []);
 
   // 每次打字进度变化 / 打印完成后滚动到底，模拟终端追加。
   // 注意不能在 tick 里同步设 scrollTop：那时 React 还没提交新字符，
@@ -156,28 +143,29 @@ export default function ResumeTerminal({
               <ResumeLine line={(lines[doneLines] ?? '').slice(0, curChars)} typing />
             )}
           </div>
+        </div>
 
-          {done && (
-            <div className="resume-done mt-4 pt-3 border-t flex items-center justify-between gap-3">
-              <span>
-                <span className="resume-done-icon">✓</span> 简历打印完成 · 共 {lines.length} 行
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  startPrinting();
-                }}
-                className="resume-replay-btn shrink-0 font-mono text-xs px-3 py-1 rounded-md border cursor-pointer"
-                aria-label="重新播放简历打字动画"
-              >
-                ↻ 重新播放
-              </button>
-            </div>
-          )}
-
-          {/* skip 按钮：打字进行中显示（未启动时 doneLines=0 且 curChars=0 自然隐藏） */}
-          {!done && (doneLines > 0 || curChars > 0) && (
-            <div className="mt-4 pt-3 border-t">
+        {/* 底栏（固定在滚动区下方，不随流式内容滚动——放滚动区内会被自动滚动带动而跳动） */}
+        {done ? (
+          <div className="resume-done resume-terminal-footer flex items-center justify-between gap-3 border-t">
+            <span>
+              <span className="resume-done-icon">✓</span> 简历打印完成 · 共 {lines.length} 行
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                startPrinting();
+              }}
+              className="resume-replay-btn shrink-0 font-mono text-xs px-3 py-1 rounded-md border cursor-pointer"
+              aria-label="重新播放简历打字动画"
+            >
+              ↻ 重新播放
+            </button>
+          </div>
+        ) : (
+          /* skip 按钮：打字进行中显示（未启动时 doneLines=0 且 curChars=0 自然隐藏） */
+          (doneLines > 0 || curChars > 0) && (
+            <div className="resume-terminal-footer border-t">
               <button
                 type="button"
                 onClick={() => {
@@ -192,8 +180,8 @@ export default function ResumeTerminal({
                 » 跳过动画
               </button>
             </div>
-          )}
-        </div>
+          )
+        )}
       </TerminalShell>
     </motion.div>
   );
