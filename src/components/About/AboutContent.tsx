@@ -141,7 +141,9 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
       </motion.div>
       <motion.div variants={item} className="prose-article mb-10">
         <p>我是{siteConfig.name}，工程师。好的软件和好的文章是同一件事——细节决定质感。</p>
-        <p>这里是公开工程笔记：只写亲手做过、踩过、验证过的。更新不勤，每篇都算数。</p>
+        <p>
+          这里是我的技术博客与工程笔记：分享 Web 开发实践——Next.js、前端工程化、性能与体验优化。
+        </p>
       </motion.div>
 
       {/* Skills */}
