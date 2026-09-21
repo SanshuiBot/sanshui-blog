@@ -77,6 +77,16 @@
 .resume-terminal .resume-hr {
   border-color: var(--rt-hr);
 }
+/* 打字进行中的分隔线（ResumeLine typing 分支的占位 div，光标内嵌其上）：
+   与完成态 <hr class="resume-hr"> 视觉一致，避免「打印时消失、完成后出现」的跳变 */
+.resume-terminal .resume-hr-line {
+  border-top: 1px solid var(--rt-hr);
+  height: 0;
+  overflow: visible;
+}
+.resume-terminal .resume-hr-line .resume-cursor {
+  margin-top: -8px;
+}
 .resume-terminal .resume-replay-btn {
   color: var(--rt-btn-text);
   border-color: var(--rt-btn-border);
