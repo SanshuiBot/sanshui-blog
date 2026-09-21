@@ -191,34 +191,32 @@ export default function AccentPicker() {
               {ACCENT_CHANNELS.map((ch) => {
                 const hex = customHex[ch] || '#a855f7';
                 return (
-                  <label
-                    key={ch}
-                    className="group relative flex flex-col items-center gap-1 cursor-pointer rounded-lg p-1.5 transition-all hover:bg-black/[0.03] focus-within:ring-2 focus-within:ring-accent-violet/50 dark:hover:bg-white/5"
-                    title={ACCENT_CHANNEL_LABELS[ch]}
-                  >
-                    {/* 精致色盘：外层微光晕 + 内层当前色圆点 */}
-                    <span
-                      className="relative w-8 h-8 rounded-full transition-transform group-hover:scale-110"
-                      style={{
-                        background: `radial-gradient(circle at 30% 30%, ${hex}, ${hex}cc 70%, ${hex}88)`,
-                        boxShadow: `0 0 0 1px rgba(255,255,255,0.15), 0 2px 8px ${hex}66, inset 0 1px 2px rgba(255,255,255,0.25)`,
-                      }}
-                    >
-                      {/* 中心高光，模拟玻璃球质感 */}
-                    </span>
-                    {/* 隐藏的原生 color input，仅作拾色器入口 */}
-                    <input
-                      type="color"
-                      name={`accent-${ch}`}
-                      value={hex}
-                      onChange={(e) => handleCustomChange(ch, e.target.value)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      aria-label={`${ACCENT_CHANNEL_LABELS[ch]}颜色`}
-                    />
-                    <span className="text-[10px] text-stone-500 group-hover:text-stone-700 transition-colors dark:text-gray-500 dark:group-hover:text-gray-300">
-                      {ACCENT_CHANNEL_LABELS[ch]}
-                    </span>
-                  </label>
+                  <Tooltip key={ch} label={ACCENT_CHANNEL_LABELS[ch]}>
+                    <label className="group relative flex flex-col items-center gap-1 cursor-pointer rounded-lg p-1.5 transition-all hover:bg-black/[0.03] focus-within:ring-2 focus-within:ring-accent-violet/50 dark:hover:bg-white/5">
+                      {/* 精致色盘：外层微光晕 + 内层当前色圆点 */}
+                      <span
+                        className="relative w-8 h-8 rounded-full transition-transform group-hover:scale-110"
+                        style={{
+                          background: `radial-gradient(circle at 30% 30%, ${hex}, ${hex}cc 70%, ${hex}88)`,
+                          boxShadow: `0 0 0 1px rgba(255,255,255,0.15), 0 2px 8px ${hex}66, inset 0 1px 2px rgba(255,255,255,0.25)`,
+                        }}
+                      >
+                        {/* 中心高光，模拟玻璃球质感 */}
+                      </span>
+                      {/* 隐藏的原生 color input，仅作拾色器入口 */}
+                      <input
+                        type="color"
+                        name={`accent-${ch}`}
+                        value={hex}
+                        onChange={(e) => handleCustomChange(ch, e.target.value)}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        aria-label={`${ACCENT_CHANNEL_LABELS[ch]}颜色`}
+                      />
+                      <span className="text-[10px] text-stone-500 group-hover:text-stone-700 transition-colors dark:text-gray-500 dark:group-hover:text-gray-300">
+                        {ACCENT_CHANNEL_LABELS[ch]}
+                      </span>
+                    </label>
+                  </Tooltip>
                 );
               })}
             </div>

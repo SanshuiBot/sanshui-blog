@@ -19,6 +19,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { Mail, ArrowDown } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
+import Tooltip from '@/components/UI/Tooltip';
 import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import { siteConfig } from '@/lib/site';
 import type { PostIndexEntry } from '@/lib/post-index';
@@ -391,21 +392,22 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               </motion.span>
             </motion.a>
             {social.map(({ icon: Icon, href, label }, idx) => (
-              <motion.a
-                key={label}
-                href={href}
-                target={href.startsWith('http') ? '_blank' : undefined}
-                rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                aria-label={label}
-                className="hero-social"
-                initial={reduced ? false : { opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}
-              >
-                <span className="hero-social-visual glass block p-3 rounded-full text-stone-600 dark:text-gray-400">
-                  <Icon size={18} />
-                </span>
-              </motion.a>
+              <Tooltip key={label} label={label}>
+                <motion.a
+                  href={href}
+                  target={href.startsWith('http') ? '_blank' : undefined}
+                  rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  aria-label={label}
+                  className="hero-social"
+                  initial={reduced ? false : { opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}
+                >
+                  <span className="hero-social-visual glass block p-3 rounded-full text-stone-600 dark:text-gray-400">
+                    <Icon size={18} />
+                  </span>
+                </motion.a>
+              </Tooltip>
             ))}
           </motion.div>
         </div>

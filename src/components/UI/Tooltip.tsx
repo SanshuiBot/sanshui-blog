@@ -23,6 +23,8 @@ const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffec
  * 特性：
  *  - 跟随鼠标：onMouseMove 实时更新气泡坐标
  *  - 显示在鼠标右下方（offsetX=14, offsetY=14），避开图标
+ *  - 超长文本：气泡宽度钳制在 24rem（且不超视口）内自动换行，长单词/URL
+ *    break-words 兜底，不会横向撑出屏幕
  *  - 屏幕右/下边缘自动反转方向，且定位始终钳制在视口内（8px 边距）：
  *    小屏/长文本（如「搜索 (Ctrl K)」）也不会溢出屏幕
  *  - 气泡 createPortal 挂到 document.body：fixed 定位不再受祖先
@@ -192,7 +194,10 @@ export default function Tooltip({
           <div
             ref={bubbleRef}
             role="tooltip"
-            className={`fixed z-[60] whitespace-nowrap rounded-lg px-2.5 py-1 text-xs font-medium text-stone-900 dark:text-fg glass-heavy border border-accent-violet/20 tooltip-fade ${className}`}
+            // 超长文本（如整段句子）兜底：宽度钳制在 24rem 且不超视口，自动换行 +
+            // break-words 防长单词/URL 撑破；短标签仍单行（max-width 只封顶不强制换行）。
+            // 定位钳制（下方 left/top 计算）按实测 bubbleSize 走，换行后高度修正自动跟随。
+            className={`fixed z-[60] max-w-[min(24rem,calc(100vw_-_1rem))] whitespace-normal break-words rounded-lg px-2.5 py-1 text-xs font-medium text-stone-900 dark:text-fg glass-heavy border border-accent-violet/20 tooltip-fade ${className}`}
             style={{ left, top, pointerEvents: 'none' }}
           >
             {label}

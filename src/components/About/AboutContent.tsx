@@ -21,6 +21,7 @@ import {
 import type { ComponentType } from 'react';
 import Github from '@/components/UI/GithubIcon';
 import ArrowLink from '@/components/UI/ArrowLink';
+import Tooltip from '@/components/UI/Tooltip';
 import { motion, type Variants } from 'framer-motion';
 import ResumeTerminal from './ResumeTerminal';
 import { siteConfig } from '@/lib/site';
@@ -283,14 +284,15 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
             <Mail size={14} />
             Email
           </a>
-          <span
-            aria-hidden="true"
-            title="KFC Crazy Thursday, V 50 —— 玩梗的：点个 Star 或写封邮件就好 ☕"
-            className="mt-2 inline-flex w-full select-none items-center gap-1.5 font-mono text-sm text-gray-600 dark:text-gray-300"
-          >
-            <span className="text-accent-violet">$</span>
-            <span>echo &quot;KFC Crazy Thursday, V 50&quot;</span>
-          </span>
+          <Tooltip label="KFC Crazy Thursday, V 50 —— 玩梗的：点个 Star 或写封邮件就好 ☕">
+            <span
+              aria-hidden="true"
+              className="mt-2 inline-flex w-full select-none items-center gap-1.5 font-mono text-sm text-gray-600 dark:text-gray-300"
+            >
+              <span className="text-accent-violet">$</span>
+              <span>echo &quot;KFC Crazy Thursday, V 50&quot;</span>
+            </span>
+          </Tooltip>
         </div>
         <p className="mt-4 font-mono text-xs text-stone-500 dark:text-gray-500">
           # 点个 Star 或写封邮件，就是最好的支持

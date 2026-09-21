@@ -21,6 +21,8 @@ import { Star, ExternalLink } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import ArrowLink from '@/components/UI/ArrowLink';
 import GithubIcon from '@/components/UI/GithubIcon';
+import Tooltip from '@/components/UI/Tooltip';
+import { useIsOverflow } from '@/components/UI/useIsOverflow';
 import { siteConfig } from '@/lib/site';
 import { projects } from '@/lib/projects';
 import type { Project } from '@/lib/projects';
@@ -54,6 +56,27 @@ const item: Variants = {
   hidden: { opacity: 0, y: 10 },
   show: { opacity: 1, y: 0, transition: { duration: 0.24, ease: [0.16, 1, 0.3, 1] } },
 };
+
+/**
+ * line-clamp 截断文本 + 截断感知的 hover 提示。
+ * 截断检测用 useIsOverflow（mount/resize 实测垂直溢出），hover 时 disabled
+ * 已就绪，第一次 hover 即弹气泡（不能放 onMouseEnter 里测：同批次 setState 未提交）。
+ * Tooltip 只包文本元素本身——hover 卡片其他区域不触发。
+ */
+function ClampedText({ text }: { text: string }) {
+  const { ref, overflow } = useIsOverflow<HTMLParagraphElement>('y');
+
+  return (
+    <Tooltip label={text} disabled={!overflow} offsetX={8} offsetY={10}>
+      <p
+        ref={ref}
+        className="min-h-[3.65625rem] text-xs text-gray-500 dark:text-gray-300 leading-relaxed mb-3 line-clamp-3"
+      >
+        {text}
+      </p>
+    </Tooltip>
+  );
+}
 
 // ── 仓库卡片 ──────────────────────────────────────────────────────────────────
 // 统一尺寸卡片：accent 循环光晕背景 + hover 纯 CSS 微展开。
@@ -115,13 +138,8 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
 
           {/* 描述：固定 3 行高度（min-height 锁定 3×行高），超 3 行截断，短描述下方留白；
               同卡技术/标签块因此始终落在同一垂直位置，同行各卡字段对齐；
-              title 属性在描述被 line-clamp 截断时 hover 显示完整文案 */}
-          <p
-            title={project.desc}
-            className="min-h-[3.65625rem] text-xs text-gray-500 dark:text-gray-300 leading-relaxed mb-3 line-clamp-3"
-          >
-            {project.desc}
-          </p>
+              Tooltip 只在描述被 line-clamp 截断时 hover 显示完整文案（ClampedText 实测溢出） */}
+          <ClampedText text={project.desc} />
 
           {/* 语言行 + 标签行：mt-auto 贴底，同行各卡字段垂直位置一致 */}
           <div className="mt-auto">
