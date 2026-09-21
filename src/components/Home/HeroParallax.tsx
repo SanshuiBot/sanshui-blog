@@ -369,17 +369,26 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
             <motion.a
               ref={btnRef}
               href="#posts"
+              className="hero-cta"
               onMouseMove={onBtnMove}
               onMouseLeave={() => {
                 btnX.set(0);
                 btnY.set(0);
               }}
-              style={reduced ? undefined : { x: sBtnX, y: sBtnY }}
-              className="relative inline-flex items-center gap-3 px-7 py-3 rounded-full hero-cta"
+              // 命中区/视觉分层：外层 <a> 静止只做命中区（ref+鼠标事件都绑这里，
+              // rect 不随位移变化，跟手计算无反馈回路，鼠标停边缘也不会冻结位移）；
+              // framer 跟手位移与 hover 缩放全在内层 .hero-cta-visual——否则鼠标停在
+              // 按钮最边缘时会因命中区随位移变化而反复进出 hover，一大一小闪烁
+              // （同 projects 页 cta-ghost-btn）
             >
-              <span className="hero-cta-glow" />
-              <span className="hero-cta-text relative z-10 font-semibold text-sm">浏览文章</span>
-              <ArrowDown size={15} className="relative z-10" />
+              <motion.span
+                style={reduced ? undefined : { x: sBtnX, y: sBtnY }}
+                className="hero-cta-visual relative inline-flex items-center gap-3 px-7 py-3 rounded-full"
+              >
+                <span className="hero-cta-glow" />
+                <span className="hero-cta-text relative z-10 font-semibold text-sm">浏览文章</span>
+                <ArrowDown size={15} className="relative z-10" />
+              </motion.span>
             </motion.a>
             {social.map(({ icon: Icon, href, label }, idx) => (
               <motion.a
@@ -388,12 +397,14 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
                 target={href.startsWith('http') ? '_blank' : undefined}
                 rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                 aria-label={label}
-                className="block p-3 rounded-full glass hero-social text-stone-600 dark:text-gray-400"
+                className="hero-social"
                 initial={reduced ? false : { opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}
               >
-                <Icon size={18} />
+                <span className="hero-social-visual glass block p-3 rounded-full text-stone-600 dark:text-gray-400">
+                  <Icon size={18} />
+                </span>
               </motion.a>
             ))}
           </motion.div>

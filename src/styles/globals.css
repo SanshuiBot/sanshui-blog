@@ -790,10 +790,14 @@ html.dark {
   }
 
   /* CTA：Aurora 渐变描边玻璃按钮，hover 流光带
-     P2-CTA 优化：双背景（padding-box/border-box）替代 ::before + mask-composite 描边，
-     少一层伪元素、兼容性更好；补 focus-visible 焦点环 / active 按压 / hover 放大上浮 /
-     文字光晕 / 常驻柔光晕。 */
+     命中区/视觉分层（同 projects 页 cta-ghost-btn 方案）：外层 <a class="hero-cta">
+     静止，只做布局与命中区；全部视觉 + 位移（hover scale/translate、framer 跟手 x/y）
+     在内层 .hero-cta-visual。位移若直接作用在命中区上，鼠标停在按钮最边缘时会
+     出界→回落→入界 反复震荡导致一大一小闪烁。 */
   .hero-cta {
+    display: inline-block;
+  }
+  .hero-cta-visual {
     color: #1c1917;
     border: 1px solid transparent;
     /* 玻璃底 padding-box + 渐变描边 border-box（双背景，替代 mask-composite 方案）；
@@ -821,7 +825,7 @@ html.dark {
       translate 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   /* 暗色主题：深玻璃 + 强内辉光 */
-  html.dark .hero-cta {
+  html.dark .hero-cta-visual {
     color: var(--color-fg);
     background:
       linear-gradient(var(--glass-bg), var(--glass-bg)) padding-box,
@@ -840,7 +844,7 @@ html.dark {
       0 8px 28px rgb(var(--accent-violet-rgb) / 0.08);
   }
   /* 常驻柔光晕：按钮背后扩散的 aurora 光晕（比 box-shadow 更柔，不与阴影过渡冲突） */
-  .hero-cta::after {
+  .hero-cta-visual::after {
     content: '';
     position: absolute;
     inset: -10px;
@@ -854,7 +858,7 @@ html.dark {
     z-index: -1;
     pointer-events: none;
   }
-  html.dark .hero-cta::after {
+  html.dark .hero-cta-visual::after {
     background: radial-gradient(
       70% 70% at 50% 50%,
       rgb(var(--accent-violet-rgb) / 0.16),
@@ -874,24 +878,28 @@ html.dark {
     transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
   }
-  .hero-cta:hover .hero-cta-glow {
+  .hero-cta:hover .hero-cta-visual .hero-cta-glow {
     opacity: 1;
   }
   /* hover：轻微放大上浮（独立 scale/translate 属性，与 framer inline transform 叠加） */
-  .hero-cta:hover {
+  .hero-cta-visual:hover,
+  .hero-cta:hover .hero-cta-visual {
     scale: 1.02;
     translate: 0 -2px;
     box-shadow:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.28),
       0 10px 36px rgb(var(--accent-violet-rgb) / 0.1);
   }
-  html.dark .hero-cta:hover {
+  html.dark .hero-cta-visual:hover,
+  html.dark .hero-cta:hover .hero-cta-visual {
     box-shadow:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.35),
       0 10px 36px rgb(var(--accent-violet-rgb) / 0.16);
   }
-  /* 按压反馈：与全站按钮一致；源序在 hover 之后，按下时取消上浮 */
-  .hero-cta:active {
+  /* 按压反馈：与全站按钮一致；源序在 hover 之后，特异性须不低于 hover 规则
+     （.hero-cta:hover .hero-cta-visual），按下时才能取消上浮 */
+  .hero-cta-visual:active,
+  .hero-cta:hover .hero-cta-visual:active {
     scale: 0.98;
     translate: 0 0;
   }
@@ -907,20 +915,24 @@ html.dark {
   .hero-cta-text {
     transition: text-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .hero-cta:hover .hero-cta-text {
+  .hero-cta:hover .hero-cta-visual .hero-cta-text {
     text-shadow: 0 0 10px rgb(var(--accent-violet-rgb) / 0.45);
   }
-  html.dark .hero-cta:hover .hero-cta-text {
+  html.dark .hero-cta:hover .hero-cta-visual .hero-cta-text {
     text-shadow: 0 0 12px rgb(var(--accent-violet-rgb) / 0.6);
   }
 
   /* hero-cta 亮暗双态已并入基规则 + html.dark 覆盖（见上），此处无主题前缀规则 */
 
   /* 社交图标托盘：统一玻璃 + emboss 质感。
-     hover 动效：上浮 + accent 描边光晕 + 图标点亮 accent。上浮用独立 translate
-     属性（按钮入场是 Framer scale spring，内联占 transform，约定 #42）；
+     命中区/视觉分层（同 .hero-cta）：外层 <a class="hero-social"> 静止只做命中区，
+     视觉 + hover 上浮在内层 .hero-social-visual——位移直接作用在命中区上时，
+     鼠标停在按钮底边会 出界→回落→入界 反复震荡闪烁。
      图标变色收口 CSS（纯 accent 变量过渡，hover 变色不走 utility，约定 #25/#47）。 */
   .hero-social {
+    display: block;
+  }
+  .hero-social-visual {
     box-shadow: var(--shadow-emboss);
     transition:
       box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
@@ -928,7 +940,7 @@ html.dark {
       border-color 0.35s cubic-bezier(0.16, 1, 0.3, 1),
       color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .hero-social:hover {
+  .hero-social:hover .hero-social-visual {
     translate: 0 -2px;
     border-color: rgb(var(--accent-violet-rgb) / 0.45);
     box-shadow:
@@ -937,13 +949,13 @@ html.dark {
     /* 文字色走文字专用 token（亮色 color-mix 加深，见文件头约定；描边/阴影才用 rgb 通道） */
     color: var(--color-accent-violet);
   }
-  html.dark .hero-social {
+  html.dark .hero-social-visual {
     background: rgba(255, 255, 255, 0.06);
     box-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.08),
       0 2px 8px rgba(0, 0, 0, 0.3);
   }
-  html.dark .hero-social:hover {
+  html.dark .hero-social:hover .hero-social-visual {
     background: rgba(255, 255, 255, 0.1);
     box-shadow:
       inset 0 0 0 1px rgb(var(--accent-violet-rgb) / 0.2),
