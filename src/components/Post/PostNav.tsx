@@ -21,11 +21,23 @@ function TruncatedTitle({ title }: { title: string }) {
 
   return (
     <Tooltip label={title} disabled={!overflow} offsetX={8} offsetY={10}>
-      <div ref={ref} className="text-sm font-medium text-neutral-400 post-nav-title truncate">
+      <div ref={ref} className="text-sm font-medium post-nav-title truncate">
         {title}
       </div>
     </Tooltip>
   );
+}
+
+/**
+ * 聚光跟随：把鼠标坐标（百分比）原地写入卡片元素的 --mx/--my CSS 变量，
+ * 纯 CSS 渲染 .post-nav-spotlight 的 radial-gradient——不进 React 状态，
+ * 高频 mousemove 零重渲染（同约定 #25/#47，走原生事件而非 React 合成事件亦无必要）。
+ */
+function handleSpotlightMove(e: React.MouseEvent<HTMLAnchorElement>) {
+  const el = e.currentTarget;
+  const r = el.getBoundingClientRect();
+  el.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
+  el.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
 }
 
 export default function PostNav({ prev, next }: Props) {
@@ -35,20 +47,20 @@ export default function PostNav({ prev, next }: Props) {
   return (
     <nav className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4" aria-label="上下篇导航">
       {prev ? (
-        <div className="post-nav-card">
+        <div className="post-nav-card group">
           <Link
             href={`/posts/${prev.slug}/`}
             prefetch={false}
             onClick={startNavigation}
-            className="group flex items-start gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 transition-all duration-300 group-hover:border-accent-violet/30 relative overflow-hidden"
+            onMouseMove={handleSpotlightMove}
+            className="post-nav-link relative flex h-full items-start gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden"
           >
-            <span className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl bg-accent-violet/0 group-hover:bg-accent-violet/60 transition-colors duration-300" />
-            <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-accent-violet/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="post-nav-spotlight" aria-hidden="true" />
             <span className="post-nav-chevron-prev">
               <ChevronLeft size={18} className="mt-0.5 post-nav-icon shrink-0" />
             </span>
             <div className="min-w-0">
-              <div className="text-xs text-neutral-500 mb-1 post-nav-label">上一篇</div>
+              <div className="text-xs mb-1 post-nav-label">上一篇</div>
               {/* key=slug：换文章时 props 变化但组件可能被复用，重挂载才能重测溢出 */}
               <TruncatedTitle key={prev.slug} title={prev.title} />
             </div>
@@ -58,17 +70,17 @@ export default function PostNav({ prev, next }: Props) {
         <div />
       )}
       {next ? (
-        <div className="post-nav-card sm:col-start-2">
+        <div className="post-nav-card group sm:col-start-2">
           <Link
             href={`/posts/${next.slug}/`}
             prefetch={false}
             onClick={startNavigation}
-            className="group flex items-start justify-end gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 transition-all duration-300 group-hover:border-accent-violet/30 relative overflow-hidden"
+            onMouseMove={handleSpotlightMove}
+            className="post-nav-link relative flex h-full items-start justify-end gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden"
           >
-            <span className="absolute right-0 top-0 bottom-0 w-[3px] rounded-r-xl bg-accent-violet/0 group-hover:bg-accent-violet/60 transition-colors duration-300" />
-            <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-accent-violet/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="post-nav-spotlight" aria-hidden="true" />
             <div className="min-w-0 text-right">
-              <div className="text-xs text-neutral-500 mb-1 post-nav-label">下一篇</div>
+              <div className="text-xs mb-1 post-nav-label">下一篇</div>
               <TruncatedTitle key={next.slug} title={next.title} />
             </div>
             <span className="post-nav-chevron-next">

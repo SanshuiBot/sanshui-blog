@@ -70,7 +70,7 @@ function ClampedText({ text }: { text: string }) {
     <Tooltip label={text} disabled={!overflow} offsetX={8} offsetY={10}>
       <p
         ref={ref}
-        className="min-h-[3.65625rem] text-xs text-gray-500 dark:text-gray-300 leading-relaxed mb-3 line-clamp-3"
+        className="project-card-desc min-h-[3.65625rem] text-xs text-gray-500 dark:text-gray-300 leading-relaxed mb-3 line-clamp-3"
       >
         {text}
       </p>

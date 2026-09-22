@@ -516,25 +516,29 @@ html.dark {
     transform: scaleX(1);
     opacity: 1;
   }
-  .post-card-title:hover {
-    transform: translateX(5px);
-  }
-  .post-card-tag {
+  /* 标题/标签/readmore hover 位移：不放自身（边缘 hover 会因命中区随位移变化
+     反复进出抖动，同 PostNav 教训），改由父级 group 驱动；transition 保留在此，
+     标签的 transitionDelay（错峰）仍生效 */
+  .post-card-title,
+  .post-card-tag,
+  .post-card-readmore {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .post-card-tag:hover {
+  .group:hover .post-card-title {
+    transform: translateX(5px);
+  }
+  .group:hover .post-card-tag {
     transform: translateY(-2px);
   }
-  .post-card-readmore:hover {
+  .group:hover .post-card-readmore {
     transform: translateX(3px);
   }
   .post-card-readmore-arrow {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  /* 与上方 readmore 作用域对齐：卡片已改为元素级 hover（title/tag/readmore 各自 :hover），
-     箭头跟随 readmore 而非整卡 link，避免父元素只在自己 hover 时位移、箭头却在整卡
-     hover 时位移的耦合不一致 */
-  .post-card-readmore:hover .post-card-readmore-arrow {
+  /* 箭头跟随整卡 group hover（与 readmore 位移同触发，避免「文字动了箭头不动」）：
+     卡片已改为元素级 hover 各自响应，箭头随 readmore 由 group 驱动 */
+  .group:hover .post-card-readmore-arrow {
     transform: translate(2px, -2px);
   }
   /* TagList hover（纯 CSS 替代 Framer whileHover，约定 #25/#32）。
@@ -1013,43 +1017,58 @@ html.dark {
   html.dark .footer-link:hover {
     color: rgb(var(--accent-violet-rgb));
   }
-  /* post-nav icon/label/title accent hover（约定 #47：不走 Tailwind utility） */
-  /* post-nav 卡片 hover（纯 CSS 替代 Framer whileHover，约定 #25/#32/#47） */
-  .post-nav-card {
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* post-nav 卡片 hover（纯 CSS 替代 Framer whileHover，约定 #25/#32/#47）
+     设计：聚光跟随鼠标（--mx/--my）+ accent 边框 + 玻璃增亮 + 柔和阴影，
+     元素做减法——无缩放/竖条/顶光线/文字变色，仅 chevron 位移指引方向。
+     transform 类动效放内层 Link（外层静止做命中区），且不用 translateY：
+     位移会让视觉框脱离静止命中区（底边悬空带，hover 态与光标位置割裂）。 */
+  .post-nav-link {
+    transition:
+      border-color 0.3s,
+      box-shadow 0.3s,
+      background-color 0.3s;
   }
-  .post-nav-card:hover {
-    transform: translateY(-3px) scale(1.01);
+  /* 聚光层：默认透明，hover 时显现；--mx/--my 由 PostNav onMouseMove 原地写入 */
+  .post-nav-spotlight {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      220px circle at var(--mx, 50%) var(--my, 50%),
+      rgb(var(--accent-violet-rgb) / 0.12),
+      transparent 65%
+    );
+    transition: opacity 0.4s;
+  }
+  .post-nav-card:hover .post-nav-spotlight {
+    opacity: 1;
+  }
+  .post-nav-card:hover .post-nav-link {
+    border-color: rgb(var(--accent-violet-rgb) / 0.35);
+    box-shadow: 0 8px 24px rgb(var(--accent-violet-rgb) / 0.1);
   }
   .post-nav-chevron-prev,
   .post-nav-chevron-next {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   .post-nav-card:hover .post-nav-chevron-prev {
-    transform: translateX(-2px);
+    transform: translateX(-3px);
   }
   .post-nav-card:hover .post-nav-chevron-next {
-    transform: translateX(2px);
+    transform: translateX(3px);
   }
   .post-nav-icon {
     color: rgb(115 115 115);
     transition: color 0.2s;
   }
-  html.dark .post-nav-icon {
-    color: rgb(163 163 163);
-  }
-  .group:hover .post-nav-icon {
-    color: rgb(var(--accent-violet-rgb));
-  }
+  /* 标题/label 基色（聚光兜底层与其对齐，见下方 @supports 块；约定 #47 自定义类不走 utility） */
   .post-nav-label {
     color: rgb(115 115 115);
     transition: color 0.2s;
   }
   html.dark .post-nav-label {
     color: rgb(163 163 163);
-  }
-  .group:hover .post-nav-label {
-    color: rgb(var(--accent-violet-rgb) / 0.7);
   }
   .post-nav-title {
     color: rgb(140 140 140);
@@ -1058,8 +1077,62 @@ html.dark {
   html.dark .post-nav-title {
     color: rgb(180 180 180);
   }
-  .group:hover .post-nav-title {
-    color: rgb(var(--accent-violet-rgb) / 0.8);
+  html.dark .post-nav-icon {
+    color: rgb(163 163 163);
+  }
+  .group:hover .post-nav-icon {
+    color: rgb(var(--accent-violet-rgb));
+  }
+  /* 聚光联动文字颜色：双层 background-clip:text——上层 accent 径向渐变以光标
+     为圆心（--mx/--my 继承自 Link，mousemove 已写入），下层灰色底兜底，
+     文字在光标附近染 accent、远处回落基色，强弱随距离连续变化，零额外 JS。
+     坐标按卡片盒解析、标题盒有偏移，渐变软边（120px）下偏差不可感。
+     @supports 守卫：不支持 background-clip:text 的浏览器保持纯色回落。 */
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    /* 标题与 label 聚光染色：兜底色各自对齐原基色（title 140/180、label 115/163），
+       光斑离开时无痕回落——不能共用一条，否则 label 兜底被 title 基色带偏 */
+    .post-nav-card:hover .post-nav-title {
+      background-image:
+        radial-gradient(
+          120px circle at var(--mx, 50%) var(--my, 50%),
+          rgb(var(--accent-violet-rgb) / 0.9),
+          rgb(var(--accent-violet-rgb) / 0) 100%
+        ),
+        linear-gradient(rgb(140 140 140), rgb(140 140 140));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .post-nav-card:hover .post-nav-label {
+      background-image:
+        radial-gradient(
+          120px circle at var(--mx, 50%) var(--my, 50%),
+          rgb(var(--accent-violet-rgb) / 0.9),
+          rgb(var(--accent-violet-rgb) / 0) 100%
+        ),
+        linear-gradient(rgb(115 115 115), rgb(115 115 115));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    html.dark .post-nav-card:hover .post-nav-title {
+      background-image:
+        radial-gradient(
+          120px circle at var(--mx, 50%) var(--my, 50%),
+          rgb(var(--accent-violet-rgb) / 0.9),
+          rgb(var(--accent-violet-rgb) / 0) 100%
+        ),
+        linear-gradient(rgb(180 180 180), rgb(180 180 180));
+    }
+    html.dark .post-nav-card:hover .post-nav-label {
+      background-image:
+        radial-gradient(
+          120px circle at var(--mx, 50%) var(--my, 50%),
+          rgb(var(--accent-violet-rgb) / 0.9),
+          rgb(var(--accent-violet-rgb) / 0) 100%
+        ),
+        linear-gradient(rgb(163 163 163), rgb(163 163 163));
+    }
   }
   .post-card-title {
     color: #1c1917;

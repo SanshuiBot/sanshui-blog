@@ -81,6 +81,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 50. 判锁基元 `UI/useIsBodyScrollLocked`：`useScrollLock` 锁定时必置 `body.style.overflow='hidden'`，据此判锁（MutationObserver 订阅开合）；iOS fixed 锁会把 scrollY 重置为 0，进度组件（ScrollProgress/ReadingProgress）锁定期**冻结**上次值，别手抄判锁。
 51. 文章页回顶并入 `Post/ReadingProgress` 环形按钮（accent 弧线进度 + 圆心「↑ 百分比」+ 点击回顶，滚动 >400px 出现，z-30 低于弹层）；`UI/BackToTop` 仅 Footer 用。
 52. 行尾统一 LF：`.prettierrc` `endOfLine:"lf"` + 仓库根 `.gitattributes`（`* text=auto eol=lf`），新增文件保持 LF，避免 CRLF/LF 幻影 diff。
+53. hover 动效命中区分层：位移/缩放等 transform **不能写在 hover 判定元素自身**（光标在边缘时命中区随位移变化 → 反复 enter/leave 疯狂跳动；translateY 还会留「悬空带」——光标在带内 hover 态亮着但卡片已浮走）。**外层元素静止只做命中区（hover 判定/`group`），transform 放内层**；纯 scale（外扩 ≤1px）可接受。纯色/边框变色可直接写自身 `:hover`。见 conventions §54。
 
 ## 内容编辑
 

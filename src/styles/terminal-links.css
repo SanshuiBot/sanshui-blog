@@ -160,6 +160,54 @@
 .terminal-link-card:hover .terminal-card-name-row {
   color: rgb(var(--accent-violet-rgb));
 }
+/* 聚光染色（同 PostNav/项目页）：双层 background-clip:text，上层以光标为圆心的
+   accent 径向渐变（--mx/--my px 值由 attachMagneticGlow 写入），下层基色兜底——
+   友链名随光标远近连续变色。 */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .terminal-link-card:hover .terminal-card-name-row {
+    background-image:
+      radial-gradient(
+        120px circle at var(--mx, 50%) var(--my, 50%),
+        rgb(var(--accent-violet-rgb)),
+        transparent 100%
+      ),
+      linear-gradient(rgb(28 25 23 / 0.85), rgb(28 25 23 / 0.85));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  html.dark .terminal-link-card:hover .terminal-card-name-row {
+    background-image:
+      radial-gradient(
+        120px circle at var(--mx, 50%) var(--my, 50%),
+        rgb(var(--accent-violet-rgb)),
+        transparent 100%
+      ),
+      linear-gradient(var(--color-fg), var(--color-fg));
+  }
+  /* 描述行同款聚光染色：下层兜底色 = hover 前基色（0.35/0.3），光斑离开无痕回落 */
+  .terminal-link-card:hover .terminal-card-desc {
+    background-image:
+      radial-gradient(
+        120px circle at var(--mx, 50%) var(--my, 50%),
+        rgb(var(--accent-violet-rgb) / 0.7),
+        transparent 100%
+      ),
+      linear-gradient(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.35));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  html.dark .terminal-link-card:hover .terminal-card-desc {
+    background-image:
+      radial-gradient(
+        120px circle at var(--mx, 50%) var(--my, 50%),
+        rgb(var(--accent-violet-rgb) / 0.7),
+        transparent 100%
+      ),
+      linear-gradient(rgb(255 255 255 / 0.3), rgb(255 255 255 / 0.3));
+  }
+}
 .terminal-card-arrow {
   color: rgb(0 0 0 / 0.2);
   flex-shrink: 0;
@@ -183,9 +231,8 @@
   margin-top: 0.125rem;
   transition: color 0.3s ease;
 }
-.terminal-link-card:hover .terminal-card-desc {
-  color: rgb(0 0 0 / 0.55);
-}
+/* hover 纯色加深规则已删：聚光染色（上方 @supports 块）接管 hover 态，
+   兜底由其下层 linear-gradient 提供——保留会在层叠中覆盖 color: transparent */
 
 /* ── 暗色主题覆盖：html.dark ── */
 html.dark .terminal-body {
@@ -215,9 +262,7 @@ html.dark .terminal-card-arrow {
 html.dark .terminal-card-desc {
   color: rgb(255 255 255 / 0.3);
 }
-html.dark .terminal-link-card:hover .terminal-card-desc {
-  color: rgb(255 255 255 / 0.5);
-}
+/* html.dark hover 纯色加深规则同上已删：聚光层接管（暗色兜底 0.3 已在渐变下层） */
 html.dark .terminal-card-glow {
   background: radial-gradient(
     320px circle at var(--mx, 50%) var(--my, 50%),
