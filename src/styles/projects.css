@@ -30,6 +30,12 @@ html.dark .project-card-title {
    径向渐变（--mx/--my px 值由 onMouseMove 写入），下层基色兜底——文字随光标
    远近连续变色。色源用每卡 --project-accent，与光晕/渐变条同源。 */
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  /* 修复闪白（同 PostNav）：杀掉染色元素的 color transition，渐变消失与
+     颜色回落同帧瞬切，避免「文字短暂透明露白」 */
+  .project-card-title,
+  .project-card-desc {
+    transition: none;
+  }
   .projects-content .group:hover .project-card-title {
     background-image:
       radial-gradient(

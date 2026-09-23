@@ -52,6 +52,10 @@ export default function CardSpotlight({ ref: outerRef, onRefs }: CardSpotlightPr
         const r = el.getBoundingClientRect();
         const px = (e.clientX - r.left) / r.width;
         const py = (e.clientY - r.top) / r.height;
+        // 文字聚光染色坐标（px，同友链页/PostNav 惯例）：复用本监听顺路写入，
+        // 零新增监听器/实例；后代文字元素经 CSS 变量继承消费（terminal-links.css 同款）
+        el.style.setProperty('--mx', `${e.clientX - r.left}px`);
+        el.style.setProperty('--my', `${e.clientY - r.top}px`);
         mx.set(px * 100);
         my.set(py * 100);
         ry.set((px - 0.5) * 5);
@@ -62,6 +66,9 @@ export default function CardSpotlight({ ref: outerRef, onRefs }: CardSpotlightPr
         my.set(50);
         rx.set(0);
         ry.set(0);
+        // 复位到中心（50% 而非 px：离开后元素坐标语义已无意义），避免残留边缘坐标
+        outerRef.current?.style.setProperty('--mx', '50%');
+        outerRef.current?.style.setProperty('--my', '50%');
       },
     });
     // 约定 #21：StrictMode 双执行下，cleanup 将引用置 null，

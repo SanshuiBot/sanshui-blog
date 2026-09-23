@@ -1104,6 +1104,14 @@ html.dark {
      坐标按卡片盒解析、标题盒有偏移，渐变软边（120px）下偏差不可感。
      @supports 守卫：不支持 background-clip:text 的浏览器保持纯色回落。 */
   @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    /* 修复闪白：hover 时 color 变 transparent，离开时 background-image（渐变层）
+       瞬时消失而 color 还在走 transition → 文字短暂透明露出白底。
+       兜底色与基色一致，杀掉 color transition 后渐变↔纯色同帧瞬切，无痕。
+       （transition:none 仅 @supports 内生效，不支持的浏览器保留原有变色过渡） */
+    .post-nav-title,
+    .post-nav-label {
+      transition: none;
+    }
     /* 标题与 label 聚光染色：兜底色各自对齐原基色（title 140/180、label 115/163），
        光斑离开时无痕回落——不能共用一条，否则 label 兜底被 title 基色带偏 */
     .post-nav-card:hover .post-nav-title {
@@ -1158,9 +1166,59 @@ html.dark {
   html.dark .post-card-title {
     color: var(--color-fg);
   }
-  .post-card-title:hover,
-  html.dark .post-card-title:hover {
-    color: rgb(var(--accent-violet-rgb));
+  /* PostCard 文字聚光染色（同 PostNav/项目页/友链页）：双层 background-clip:text，
+     上层 accent 径向渐变以光标为圆心（--mx/--my 由 CardSpotlight mousemove 顺路写入），
+     下层基色兜底——标题/阅读按钮随光标远近连续变色。收编原 .post-card-title:hover、
+     .post-card-readmore:hover 变色规则（聚光层接管，纯色规则保留会覆盖 color:transparent）。
+     @supports 守卫：不支持的浏览器保持纯色回落（原 hover 变色已删，回落为无变色）。 */
+  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+    /* 修复闪白（同 PostNav）：杀掉染色元素 color transition，渐变消失与颜色回落
+       同帧瞬切。transform 过渡单独保留在 hover 位移规则里（title-inner），不受影响 */
+    .post-card-title,
+    .post-card-readmore {
+      transition: none;
+    }
+    .group:hover .post-card-title,
+    .group:hover .post-card-readmore {
+      background-image:
+        radial-gradient(
+          140px circle at var(--mx, 50%) var(--my, 50%),
+          rgb(var(--accent-violet-rgb) / 0.9),
+          rgb(var(--accent-violet-rgb) / 0) 100%
+        ),
+        linear-gradient(#1c1917, #1c1917);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    html.dark .group:hover .post-card-title,
+    html.dark .group:hover .post-card-readmore {
+      background-image:
+        radial-gradient(
+          140px circle at var(--mx, 50%) var(--my, 50%),
+          rgb(var(--accent-violet-rgb) / 0.9),
+          rgb(var(--accent-violet-rgb) / 0) 100%
+        ),
+        linear-gradient(var(--color-fg), var(--color-fg));
+    }
+    /* readmore 兜底对齐自身基色（亮 120/113/108、暗 120/113/108 同值），不能用 title 兜底 */
+    .group:hover .post-card-readmore {
+      background-image:
+        radial-gradient(
+          140px circle at var(--mx, 50%) var(--my, 50%),
+          rgb(var(--accent-violet-rgb) / 0.9),
+          rgb(var(--accent-violet-rgb) / 0) 100%
+        ),
+        linear-gradient(rgb(120 113 108), rgb(120 113 108));
+    }
+    /* 箭头是 SVG（stroke=currentColor），color:transparent 会隐掉它——显式给色：
+       基态同 readmore 基色，hover 染 accent（收编原 readmore:hover 的图标变色） */
+    .post-card-readmore-arrow {
+      color: rgb(120 113 108);
+    }
+    .group:hover .post-card-readmore-arrow {
+      color: rgb(var(--accent-violet-rgb));
+    }
   }
   /* 搜索弹窗关闭按钮 —— accent 联动 hover 走纯 CSS（#26/#47），亮色基值、暗色 html.dark 覆盖 */
   .search-close-btn {
