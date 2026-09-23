@@ -412,3 +412,17 @@ Next 16.3.4 静态导出下 `next-font-manifest` 的 app 映射为空（框架 b
 ## 53. 行尾统一 LF（对齐 AGENTS #52）
 
 `.prettierrc` `endOfLine: "lf"` + 仓库根 `.gitattributes`（`* text=auto eol=lf`）。此前仓库 blob 为 CRLF（Windows 提交），prettier 写 LF 后 git status 出现纯行尾幻影 diff（`git diff --ignore-space-at-eol` 可证零内容差异）与「LF will be replaced by CRLF」警告。新增文件保持 LF；存量 blob 用 `git add --renormalize .` 一次性归一。
+
+## 54. hover 动效命中区分层（对齐 AGENTS #53）
+
+**问题**：位移/缩放类 transform 写在 hover 判定元素自身时，光标停在元素边缘 → 动效把视觉框移走 → 命中区随之变化 → 反复 `mouseenter`/`mouseleave` **疯狂跳动**。`translateY` 还有第二重割裂：命中区静止而视觉框上浮，底边留下「悬空带」——光标在带内时 hover 态（边框/聚光）亮着，卡片视觉上却已浮走（用户会截图吐槽「鼠标位置和 hover 效果割裂」）。
+
+**修法（命中区/视觉分层）**：外层元素**静止**、只做命中区（挂 `:hover` 判定或 `group`），transform 全部放内层。配套要点：
+
+- **只用 `scale` 不用 `translateY`**：缩放外扩 ≤1px 命中区仍全覆盖（无死区），位移必留悬空带。外层静止时内层位移不会再抖动，但视觉框仍会脱离命中区边缘——PostNav 最终方案去掉了 `translateY(-3px)` 只留 `scale(1.01)`。
+- **命中区与光标/链接区重合**：外层卡片（grid 默认 stretch）比内层 `<a>` 高时会出「死区」（放大但光标不变 pointer）——内层 Link 加 `h-full` 撑满。
+- **所有 hover 反馈共用同一命中区**：`group` 放外层，边框变色/chevron 位移/图标变色全部 `group-hover:`/`.group:hover` 驱动，避免「先浮起再变色」的多级触发脱节。
+- **纯色/边框变色可直接写自身 `:hover`**——变色不移动视觉框，无抖动风险。
+- **Border/玻璃底留在内层视觉壳**：若把 border 移到外层命中区元素再 scale，边框被拉伸变形、双层玻璃圆角错位（PostNav 已试过并回退）。
+
+**站内落地**：PostNav（`.post-nav-card` 静止命中区 + `.post-nav-link` 内层动效 + 聚光跟随 `--mx/--my`）、Hero CTA（`.hero-cta` 外层 `<a>` 静止 + `.hero-cta-visual` 内层，见 §42）、TagList（`.tag-item` → `.tag-pill`）、PostCard 标题/标签/阅读链接（`.group:hover` 驱动，原自身 `:hover` transform 已改）。新增 hover 位移/缩放动效时按此分层，别把 transform 挂在判定元素上。

@@ -248,7 +248,7 @@ export default function PostCard({
                         >
                           <Link
                             href={`/tags/${encodeURIComponent(t)}/`}
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap min-w-0 max-w-full overflow-hidden bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-stone-600 hover:text-stone-900 transition-colors dark:text-gray-400 dark:hover:text-fg`}
+                            className={`post-card-tag-pill flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap min-w-0 max-w-full overflow-hidden bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-fg`}
                           >
                             <Tag size={9} className="shrink-0" />
                             {/* 手机窄卡空间不足时标签文字省略（+N 胶囊仍在，不会误导标签总数）。
@@ -289,7 +289,8 @@ export default function PostCard({
                     >
                       {/* Title — 位移走纯 CSS（.post-card-title:hover），变色也走纯 CSS */}
                       <h2 className="post-card-title text-base sm:text-lg font-bold mb-2 line-clamp-2 overflow-hidden h-[2.75rem] sm:h-[3.094rem] tracking-tight leading-snug shrink-0">
-                        {post.title}
+                        {/* 命中区（h2）静止，位移在内层 span（红线 #53：transform 不写 hover 判定元素自身） */}
+                        <span className="post-card-title-inner block">{post.title}</span>
                       </h2>
 
                       {/* Excerpt — 固定行高保证 clamp 生效：flex 布局分配的高度会压过 -webkit-line-clamp
@@ -308,9 +309,12 @@ export default function PostCard({
                           {formatDate(post.date)}
                         </span>
                         <span className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium whitespace-nowrap transition-colors">
-                          阅读
-                          <span className="post-card-readmore-arrow">
-                            <ArrowUpRight size={12} />
+                          {/* 命中区（外层 span）静止，位移在内层 span（红线 #53） */}
+                          <span className="post-card-readmore-inner inline-flex items-center gap-1">
+                            阅读
+                            <span className="post-card-readmore-arrow">
+                              <ArrowUpRight size={12} />
+                            </span>
                           </span>
                         </span>
                       </div>

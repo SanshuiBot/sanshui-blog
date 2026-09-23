@@ -26,6 +26,62 @@ html.dark .project-card-title {
 .projects-content .group:hover .project-card-title {
   color: var(--project-accent, var(--color-accent-violet));
 }
+/* 聚光染色（同 PostNav）：双层 background-clip:text，上层以光标为圆心的 accent
+   径向渐变（--mx/--my px 值由 onMouseMove 写入），下层基色兜底——文字随光标
+   远近连续变色。色源用每卡 --project-accent，与光晕/渐变条同源。 */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  /* 修复闪白（同 PostNav）：杀掉染色元素的 color transition，渐变消失与
+     颜色回落同帧瞬切，避免「文字短暂透明露白」 */
+  .project-card-title,
+  .project-card-desc {
+    transition: none;
+  }
+  .projects-content .group:hover .project-card-title {
+    background-image:
+      radial-gradient(
+        120px circle at var(--mx, 50%) var(--my, 50%),
+        var(--project-accent, rgb(var(--accent-violet-rgb))),
+        transparent 100%
+      ),
+      linear-gradient(#1c1917, #1c1917);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  html.dark .projects-content .group:hover .project-card-title {
+    background-image:
+      radial-gradient(
+        120px circle at var(--mx, 50%) var(--my, 50%),
+        var(--project-accent, rgb(var(--accent-violet-rgb))),
+        transparent 100%
+      ),
+      linear-gradient(var(--color-fg), var(--color-fg));
+  }
+  /* 描述行同款聚光染色：色源用每卡 --project-accent（同光晕/渐变条），
+     与标题保持同一 accent 方向，避免在同一卡片上 title 跟卡 accent，
+     desc 跟 site violet 形成两色不协调。基色更淡（灰 500 系），峰值 α 压低避免盖过标题 */
+  .projects-content .group:hover .project-card-desc {
+    background-image:
+      radial-gradient(
+        120px circle at var(--mx, 50%) var(--my, 50%),
+        var(--project-accent, rgb(var(--accent-violet-rgb)) / 0.7),
+        transparent 100%
+      ),
+      linear-gradient(rgb(107 114 117), rgb(107 114 117));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  html.dark .projects-content .group:hover .project-card-desc {
+    background-image:
+      radial-gradient(
+        120px circle at var(--mx, 50%) var(--my, 50%),
+        var(--project-accent, rgb(var(--accent-violet-rgb)) / 0.7),
+        transparent 100%
+      ),
+      linear-gradient(var(--color-fg), var(--color-fg));
+  }
+}
 
 /* ── 顶部渐变条：accent 装饰色 → 透明（原语言色条过于抢眼，改为跟随站点强调色循环） ── */
 .project-card-bar {

@@ -52,6 +52,10 @@
 
 **独立 scale/translate**: CSS 独立属性——与 Framer inline `transform` 叠加生效，而 CSS `transform` 会被内联样式覆盖。CTA hover 放大/上浮、active 按压靠它。 _Avoid_: CSS transform 缩放
 
+**命中区分层**: hover 位移/缩放动效的结构约定——外层元素静止只做命中区（`:hover` 判定/`group`），transform 放内层；写在判定元素自身会让光标在边缘反复 enter/leave 疯狂跳动，`translateY` 还会留「悬空带」（hover 态亮着但卡片已浮走）。纯 scale（外扩 ≤1px）与纯色/边框变色可直接写自身。详见 conventions §54。 _Avoid_: hover 抖动修复（指现象不是约定）、外层 transform
+
+**聚光染色文字**: `background-clip: text` 双层背景——上层以光标为圆心的 accent 径向渐变（`--mx/--my` 驱动），下层 hover 前基色兜底（兜底色必须 = hover 前基色，否则光斑离开变色），文字随光标远近连续变色；`@supports` 守卫回落纯色。用于 PostNav 标题/label、项目卡标题/描述、友链名/描述。 _Avoid_: 文字聚光、渐变文字（指 text-aurora 装饰）
+
 ## 项目页
 
 **项目数据字典**: `lib/projects.ts` 的 `Project[]`——项目页唯一数据源，每条 `{ name, url, desc, lang, stars, tags }`；新增项目 = push 一条对象，不改组件。 _Avoid_: 项目列表、仓库数据
