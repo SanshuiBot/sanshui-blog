@@ -516,29 +516,44 @@ html.dark {
     transform: scaleX(1);
     opacity: 1;
   }
-  /* 标题/标签/readmore hover 位移：不放自身（边缘 hover 会因命中区随位移变化
-     反复进出抖动，同 PostNav 教训），改由父级 group 驱动；transition 保留在此，
-     标签的 transitionDelay（错峰）仍生效 */
-  .post-card-title,
-  .post-card-tag,
-  .post-card-readmore {
+  /* 标题/标签/readmore 逐元素 hover：各自 hover 各自动（不再由整卡 group 驱动）。
+     命中区/视觉分层（红线 #53）：外层元素静止只做命中区（hover 判定），transform 放内层，
+     避免位移写在命中元素自身导致边缘 hover 反复进出抖动。
+     标签错峰的 transitionDelay 写在外层 wrapper（内联 style），pill 用 transition-delay:inherit
+     取到——transition-delay 本身不继承，须显式 inherit（且须写在 transition 简写之后，简写会重置它） */
+  .post-card-title-inner,
+  .post-card-readmore-inner {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .group:hover .post-card-title {
+  /* pill 同元素还承担 hover 变色（原 Tailwind transition-colors 已移除避免两条 transition 互相覆盖），
+     transform + 颜色合并为一条声明；transition-delay:inherit 须在简写之后 */
+  .post-card-tag-pill {
+    transition:
+      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+      color 0.2s,
+      background-color 0.2s;
+    transition-delay: inherit;
+  }
+  /* 标题内层右留 5px：translateX(5px) 时 h2 的 overflow-hidden/line-clamp 裁剪框不动，
+     无 padding 会把行尾裁掉（review 发现） */
+  .post-card-title-inner {
+    padding-right: 5px;
+  }
+  .post-card-title:hover .post-card-title-inner {
     transform: translateX(5px);
   }
-  .group:hover .post-card-tag {
+  .post-card-tag:hover .post-card-tag-pill {
     transform: translateY(-2px);
   }
-  .group:hover .post-card-readmore {
+  .post-card-readmore:hover .post-card-readmore-inner {
     transform: translateX(3px);
   }
   .post-card-readmore-arrow {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  /* 箭头跟随整卡 group hover（与 readmore 位移同触发，避免「文字动了箭头不动」）：
-     卡片已改为元素级 hover 各自响应，箭头随 readmore 由 group 驱动 */
-  .group:hover .post-card-readmore-arrow {
+  /* 箭头只随 readmore hover（内层套内层，位移叠加：inner 3px + 箭头 2px,-2px），
+     避免文字动了箭头不动 */
+  .post-card-readmore:hover .post-card-readmore-arrow {
     transform: translate(2px, -2px);
   }
   /* TagList hover（纯 CSS 替代 Framer whileHover，约定 #25/#32）。
