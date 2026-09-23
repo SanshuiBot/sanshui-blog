@@ -1,11 +1,14 @@
 /**
  * 终端友链卡片样式
  * -----------------------------
- * 融合 Bento 网格 + 终端命令行美学 + 鼠标跟随磁吸光晕。
+ * 融合 Bento 网格 + 终端命令行美学 + 鼠标跟随聚光。
  * 外层窗口壳由 TerminalShell 组件（terminal-base.css）提供。
  * 主题架构：亮色为基准（下方主规则即亮值），暗色集中走文件尾部 html.dark 覆盖。
  *
- * 本文件职责：terminal-body / terminal-prompt / terminal-grid / 链接卡片
+ * 本文件职责：terminal-body / terminal-prompt / terminal-grid / 链接卡片。
+ * 聚光（光晕/边框发光/文字染色）本体已收口 styles/spotlight.css（红线 #40）：
+ * 本文件只声明染色兜底基色 --spotlight-dye-base（亮基规则 + html.dark 覆盖），
+ * 以及 @supports not 守卫的纯色 hover 回落（供不支持 background-clip:text 的老浏览器）。
  */
 
 /* ── 内容区（亮基） ── */
@@ -74,52 +77,12 @@
     background 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 磁吸光晕层（随鼠标位置移动，亮基浓度较暗色低） */
-.terminal-card-glow {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-  background: radial-gradient(
-    320px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(var(--accent-violet-rgb) / 0.08),
-    transparent 60%
-  );
-}
-
-/* 发光边框层（亮基浓度较暗色低） */
-.terminal-card-border-glow {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-  background: radial-gradient(
-    320px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(var(--accent-violet-rgb) / 0.15),
-    transparent 60%
-  );
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  padding: 1px;
-}
+/* 磁吸光晕/边框发光层已收口 styles/spotlight.css（.spotlight-glow/.spotlight-border-glow，
+   红线 #40）——色源走共享默认（violet 0.12 亮/0.16 暗、边框 0.15/0.25），本页无需覆写 */
 
 .terminal-link-card:hover {
   border-color: rgb(var(--accent-violet-rgb) / 0.35);
   background: rgb(var(--accent-violet-rgb) / 0.03);
-}
-.terminal-link-card:hover .terminal-card-glow,
-.terminal-link-card:hover .terminal-card-border-glow {
-  opacity: 1;
 }
 
 /* 左侧颜色圆点 */
@@ -143,7 +106,8 @@
   width: 0; /* 等同 Tailwind min-w-0，使 text-overflow: ellipsis 生效 */
 }
 
-/* 名称行（亮基：墨色文字） */
+/* 名称行（亮基：墨色文字）。
+   不声明 color 过渡：染色元素不得有 color transition（spotlight.css 不变量 3，防 unhover 闪白） */
 .terminal-card-name-row {
   display: flex;
   align-items: center;
@@ -152,68 +116,22 @@
   font-size: 0.8125rem;
   font-weight: 600;
   color: rgb(28 25 23 / 0.85);
+  /* 聚光染色兜底基色（spotlight.css .spotlight-dye 消费）：对齐自身基色，光斑离开无痕回落 */
+  --spotlight-dye-base: rgb(28 25 23 / 0.85);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.3s ease;
 }
-.terminal-link-card:hover .terminal-card-name-row {
-  color: rgb(var(--accent-violet-rgb));
-}
-/* 聚光染色（同 PostNav/项目页）：双层 background-clip:text，上层以光标为圆心的
-   accent 径向渐变（--mx/--my px 值由 attachMagneticGlow 写入），下层基色兜底——
-   友链名随光标远近连续变色。 */
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  /* 修复闪白（同 PostNav/项目页）：杀掉染色元素的 color transition，
-     渐变消失与颜色回落同帧瞬切，避免「文字短暂透明露白」 */
-  .terminal-card-name-row,
-  .terminal-card-desc {
-    transition: none;
-  }
+/* 纯色 hover 回落：仅供不支持 background-clip:text 的老浏览器（支持的浏览器里
+   该规则会在层叠中压过 .spotlight-dye 的 color:transparent，杀死聚光染色，故守卫） */
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
   .terminal-link-card:hover .terminal-card-name-row {
-    background-image:
-      radial-gradient(
-        120px circle at var(--mx, 50%) var(--my, 50%),
-        rgb(var(--accent-violet-rgb)),
-        transparent 100%
-      ),
-      linear-gradient(rgb(28 25 23 / 0.85), rgb(28 25 23 / 0.85));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  html.dark .terminal-link-card:hover .terminal-card-name-row {
-    background-image:
-      radial-gradient(
-        120px circle at var(--mx, 50%) var(--my, 50%),
-        rgb(var(--accent-violet-rgb)),
-        transparent 100%
-      ),
-      linear-gradient(var(--color-fg), var(--color-fg));
-  }
-  /* 描述行同款聚光染色：下层兜底色 = hover 前基色（0.35/0.3），光斑离开无痕回落 */
-  .terminal-link-card:hover .terminal-card-desc {
-    background-image:
-      radial-gradient(
-        120px circle at var(--mx, 50%) var(--my, 50%),
-        rgb(var(--accent-violet-rgb) / 0.7),
-        transparent 100%
-      ),
-      linear-gradient(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.35));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  html.dark .terminal-link-card:hover .terminal-card-desc {
-    background-image:
-      radial-gradient(
-        120px circle at var(--mx, 50%) var(--my, 50%),
-        rgb(var(--accent-violet-rgb) / 0.7),
-        transparent 100%
-      ),
-      linear-gradient(rgb(255 255 255 / 0.3), rgb(255 255 255 / 0.3));
+    color: rgb(var(--accent-violet-rgb));
   }
 }
+/* 聚光染色已收口 styles/spotlight.css（.spotlight-dye，红线 #40）：双层
+   background-clip:text——上层 accent 径向渐变以光标为圆心、下层基色兜底，
+   友链名随光标远近连续变色。 */
 .terminal-card-arrow {
   color: rgb(0 0 0 / 0.2);
   flex-shrink: 0;
@@ -231,14 +149,15 @@
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   color: rgb(0 0 0 / 0.35);
+  /* 聚光染色兜底基色：对齐自身基色，光斑离开无痕回落 */
+  --spotlight-dye-base: rgb(0 0 0 / 0.35);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin-top: 0.125rem;
-  transition: color 0.3s ease;
+  /* 不声明 color 过渡：染色元素不得有 color transition（spotlight.css 不变量 3，
+     防 unhover 闪白）。染色层接管 hover 变色，无需 color 过渡 */
 }
-/* hover 纯色加深规则已删：聚光染色（上方 @supports 块）接管 hover 态，
-   兜底由其下层 linear-gradient 提供——保留会在层叠中覆盖 color: transparent */
 
 /* ── 暗色主题覆盖：html.dark ── */
 html.dark .terminal-body {
@@ -261,25 +180,13 @@ html.dark .terminal-link-card:hover {
 }
 html.dark .terminal-card-name-row {
   color: var(--color-fg);
+  --spotlight-dye-base: var(--color-fg);
 }
 html.dark .terminal-card-arrow {
   color: rgb(255 255 255 / 0.2);
 }
 html.dark .terminal-card-desc {
   color: rgb(255 255 255 / 0.3);
+  --spotlight-dye-base: rgb(255 255 255 / 0.3);
 }
-/* html.dark hover 纯色加深规则同上已删：聚光层接管（暗色兜底 0.3 已在渐变下层） */
-html.dark .terminal-card-glow {
-  background: radial-gradient(
-    320px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(var(--accent-violet-rgb) / 0.14),
-    transparent 60%
-  );
-}
-html.dark .terminal-card-border-glow {
-  background: radial-gradient(
-    320px circle at var(--mx, 50%) var(--my, 50%),
-    rgb(var(--accent-violet-rgb) / 0.25),
-    transparent 60%
-  );
-}
+/* html.dark 纯色 hover 加深规则同上已删：聚光层接管（暗色兜底已在 --spotlight-dye-base） */

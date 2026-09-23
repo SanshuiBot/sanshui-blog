@@ -31,6 +31,8 @@
 .vscode/
 .agents/
 .claude/
+.claude-debug/
+.atomcode/
 
 # debug
 npm-debug.log*

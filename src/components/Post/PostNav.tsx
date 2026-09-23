@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import Tooltip from '@/components/UI/Tooltip';
 import { useIsOverflow } from '@/components/UI/useIsOverflow';
+import { spotlightMove } from '@/lib/spotlight';
+import '@/styles/spotlight.css';
 
 interface Props {
   prev: { slug: string; title: string } | null;
@@ -21,7 +23,7 @@ function TruncatedTitle({ title }: { title: string }) {
 
   return (
     <Tooltip label={title} disabled={!overflow} offsetX={8} offsetY={10}>
-      <div ref={ref} className="text-sm font-medium post-nav-title truncate">
+      <div ref={ref} className="text-sm font-medium post-nav-title truncate spotlight-dye">
         {title}
       </div>
     </Tooltip>
@@ -29,15 +31,12 @@ function TruncatedTitle({ title }: { title: string }) {
 }
 
 /**
- * 聚光跟随：把鼠标坐标（百分比）原地写入卡片元素的 --mx/--my CSS 变量，
- * 纯 CSS 渲染 .post-nav-spotlight 的 radial-gradient——不进 React 状态，
- * 高频 mousemove 零重渲染（同约定 #25/#47，走原生事件而非 React 合成事件亦无必要）。
+ * 聚光跟随：经 lib/spotlight.ts 写入坐标（卡片根供光晕层、染色元素按自身盒供染色层，
+ * 统一 px），纯 CSS 渲染 .spotlight-glow / .spotlight-dye——不进 React 状态，
+ * 高频 mousemove 零重渲染（约定 #25/#47）。
  */
 function handleSpotlightMove(e: React.MouseEvent<HTMLAnchorElement>) {
-  const el = e.currentTarget;
-  const r = el.getBoundingClientRect();
-  el.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
-  el.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
+  spotlightMove(e.currentTarget, e, '.post-nav-title, .post-nav-label');
 }
 
 export default function PostNav({ prev, next }: Props) {
@@ -53,14 +52,14 @@ export default function PostNav({ prev, next }: Props) {
             prefetch={false}
             onClick={startNavigation}
             onMouseMove={handleSpotlightMove}
-            className="post-nav-link relative flex h-full items-start gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden"
+            className="post-nav-link spotlight-card relative flex h-full items-start gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden"
           >
-            <span className="post-nav-spotlight" aria-hidden="true" />
+            <span className="spotlight-glow" aria-hidden="true" />
             <span className="post-nav-chevron-prev">
               <ChevronLeft size={18} className="mt-0.5 post-nav-icon shrink-0" />
             </span>
             <div className="min-w-0">
-              <div className="text-xs mb-1 post-nav-label">上一篇</div>
+              <div className="text-xs mb-1 post-nav-label spotlight-dye">上一篇</div>
               {/* key=slug：换文章时 props 变化但组件可能被复用，重挂载才能重测溢出 */}
               <TruncatedTitle key={prev.slug} title={prev.title} />
             </div>
@@ -76,11 +75,11 @@ export default function PostNav({ prev, next }: Props) {
             prefetch={false}
             onClick={startNavigation}
             onMouseMove={handleSpotlightMove}
-            className="post-nav-link relative flex h-full items-start justify-end gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden"
+            className="post-nav-link spotlight-card relative flex h-full items-start justify-end gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden"
           >
-            <span className="post-nav-spotlight" aria-hidden="true" />
+            <span className="spotlight-glow" aria-hidden="true" />
             <div className="min-w-0 text-right">
-              <div className="text-xs mb-1 post-nav-label">下一篇</div>
+              <div className="text-xs mb-1 post-nav-label spotlight-dye">下一篇</div>
               <TruncatedTitle key={next.slug} title={next.title} />
             </div>
             <span className="post-nav-chevron-next">

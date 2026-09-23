@@ -21,7 +21,8 @@ const eslintConfig = defineConfig([
       'react-hooks/refs': 'warn',
     },
   },
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts']),
+  // .claude-debug/：本地调试探针脚本（已 gitignore），CommonJS + 一次性代码不属于产品源码
+  globalIgnores(['.next/**', 'out/**', 'build/**', 'next-env.d.ts', '.claude-debug/**']),
 ]);
 
 export default eslintConfig;

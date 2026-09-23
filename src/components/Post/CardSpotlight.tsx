@@ -1,18 +1,20 @@
 'use client';
 import { useEffect } from 'react';
-import { useMotionValue, useMotionTemplate, useSpring } from 'framer-motion';
+import { useMotionValue, useSpring } from 'framer-motion';
 import type { MotionValue } from 'framer-motion';
+import { spotlightMove } from '@/lib/spotlight';
 
 /**
- * 鼠标跟随 spotlight + 3D tilt —— 仅在卡片可见时挂载。
+ * 3D tilt + 聚光坐标写入 —— 仅在卡片可见时挂载。
  * -----------------------------
- * 作为无渲染辅助组件：挂载后通过 onRefs 回调向父组件暴露 MotionValue 引用，
- * 避免骨架槽位（skeleton=true）也创建 MotionValue/Spring 实例。
- * 约定 #32：此效果为装饰性 JS 动画，受 AmbientEffects reduced-motion 阀门全局控制。
- * 约定 #21：cleanup 调用 onRefs(null) 使 StrictMode 双执行下幂等，MotionValue 实例可被 GC。
+ * 光晕/文字染色本体已收口为纯 CSS（styles/spotlight.css，约定 #32/#40）：
+ * 本组件只剩装饰性 JS 部分——3D tilt 弹簧（framer）+ mousemove 坐标分发
+ * （lib/spotlight.ts：卡片根供光晕层、染色元素各自盒供染色层）。
+ * 作为无渲染辅助组件：挂载后通过 onRefs 回调向父组件暴露引用，
+ * 避免骨架槽位（skeleton=true）也创建 Spring 实例。
+ * 约定 #21：cleanup 调 onRefs(null) 使 StrictMode 双执行下幂等，Spring 实例可被 GC。
  */
 export interface SpotlightRefs {
-  spotlight: MotionValue<string>;
   rotateX: MotionValue<number>;
   rotateY: MotionValue<number>;
   onMove: (e: React.MouseEvent) => void;
@@ -30,12 +32,6 @@ interface CardSpotlightProps {
 }
 
 export default function CardSpotlight({ ref: outerRef, onRefs }: CardSpotlightProps) {
-  const mx = useMotionValue(50);
-  const my = useMotionValue(50);
-  const sx = useSpring(mx, { stiffness: 100, damping: 20 });
-  const sy = useSpring(my, { stiffness: 100, damping: 20 });
-  const spotlight = useMotionTemplate`radial-gradient(280px circle at ${sx}% ${sy}%, rgb(var(--accent-violet-rgb) / 0.22), rgb(var(--accent-pink-rgb) / 0.12) 30%, transparent 60%)`;
-
   const rx = useMotionValue(0);
   const ry = useMotionValue(0);
   const srx = useSpring(rx, { stiffness: 120, damping: 15 });
@@ -43,36 +39,26 @@ export default function CardSpotlight({ ref: outerRef, onRefs }: CardSpotlightPr
 
   useEffect(() => {
     onRefs({
-      spotlight,
       rotateX: srx,
       rotateY: sry,
       onMove: (e: React.MouseEvent) => {
         const el = outerRef.current;
         if (!el) return;
-        const r = el.getBoundingClientRect();
+        // 共享坐标写入（卡片根 + 染色元素各自盒）；返回的 rect 复用来算 tilt，少读一次布局
+        const r = spotlightMove(el, e, '.post-card-title-inner, .post-card-readmore-inner');
         const px = (e.clientX - r.left) / r.width;
         const py = (e.clientY - r.top) / r.height;
-        // 文字聚光染色坐标（px，同友链页/PostNav 惯例）：复用本监听顺路写入，
-        // 零新增监听器/实例；后代文字元素经 CSS 变量继承消费（terminal-links.css 同款）
-        el.style.setProperty('--mx', `${e.clientX - r.left}px`);
-        el.style.setProperty('--my', `${e.clientY - r.top}px`);
-        mx.set(px * 100);
-        my.set(py * 100);
         ry.set((px - 0.5) * 5);
         rx.set(-(py - 0.5) * 5);
       },
       onLeave: () => {
-        mx.set(50);
-        my.set(50);
+        // 只回正 tilt；--mx/--my 不复位（渐变仅在 hover 时可见，原地淡出防「闪一次」）
         rx.set(0);
         ry.set(0);
-        // 复位到中心（50% 而非 px：离开后元素坐标语义已无意义），避免残留边缘坐标
-        outerRef.current?.style.setProperty('--mx', '50%');
-        outerRef.current?.style.setProperty('--my', '50%');
       },
     });
     // 约定 #21：StrictMode 双执行下，cleanup 将引用置 null，
-    // 使第二次 mount 可安全覆盖，且首次 mount 的 MotionValue 实例可被 GC。
+    // 使第二次 mount 可安全覆盖，且首次 mount 的实例可被 GC。
     return () => onRefs(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // onRefs is stable (function ref), dependencies intentionally empty

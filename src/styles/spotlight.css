@@ -1,0 +1,100 @@
+/**
+ * 聚光（Spotlight）公共样式 —— 全站唯一的鼠标跟随聚光实现（约定 #40 收口）
+ * -----------------------------
+ * 四个卡片消费：文章卡 PostCard、上下篇 PostNav、项目卡 ProjectsContent、友链卡 LinksContent。
+ *
+ * 消费方式：
+ *   1. 卡片根加 .spotlight-card（hover 触发作用域）；
+ *   2. 光晕层 <div class="spotlight-glow" aria-hidden>、边框发光层 <div class="spotlight-border-glow" aria-hidden>
+ *      （absolute 铺满卡片、border-radius 从卡片继承）；
+ *   3. 染色文字元素加 .spotlight-dye，并在其 CSS 里声明 --spotlight-dye-base（亮值写基规则、暗值写 html.dark，
+ *      必须对齐该元素自身基色，光斑离开时无痕回落）；
+ *   4. 坐标由 lib/spotlight.ts 的 spotlightMove() 写入：卡片根一份 px（光晕/边框层消费）+
+ *      每个染色元素按自身盒一份 px（光标处才看得到染色）。
+ * 可覆盖变量（写在卡片根或任意祖先）：
+ *   --spotlight-glow-radius（默认 320px）   --spotlight-glow-color（默认 violet 0.12/暗 0.16）
+ *   --spotlight-border-color（默认 violet 0.15/暗 0.25）
+ *   --spotlight-dye-radius（默认 120px）    --spotlight-dye-color（默认 violet 0.9）
+ *   --spotlight-dye-base（染色兜底基色，无默认保证——必须各元素显式声明）
+ *
+ * 不变量（回归红线，改动前先读）：
+ *   1. .spotlight-dye 只能挂在「自身不被 transform、或 transform 与染色同元素」的文字元素上——
+ *      Chromium 的 background-clip:text 不沿被 transform 的「后代」绘制（文字会整体透明消失）；
+ *   2. mouseleave 不复位 --mx/--my：光晕靠 opacity 渐隐原地淡出，复位到中心会「闪一次」；
+ *   3. 染色元素不得声明 color 过渡：unhover 时渐变同帧消失而 color 还在过渡半途，文字短暂透明露白。
+ *   4. .spotlight-glow 必须排在「不透明卡面」之后（DOM 顺序在内容壳之后）：卡面是不透明底色时
+ *      （PostCard 的 bg-white/dark:bg-surface），光晕排在内容之前的兄弟位会被整块盖住，一像素不透
+ *      （实测把光晕色强制成纯红、卡内空白像素不变）。半透明卡面（项目卡/友链卡/PostNav 玻璃底）
+ *      排在内容之前即可透出——换卡片实现时确认自己属于哪一种。
+ */
+
+/* ── 鼠标跟随光晕层（径向渐变，随 --mx/--my 移动） ── */
+.spotlight-glow {
+  --_glow-color: var(--spotlight-glow-color, rgb(var(--accent-violet-rgb) / 0.12));
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  background: radial-gradient(
+    var(--spotlight-glow-radius, 320px) circle at var(--mx, 50%) var(--my, 50%),
+    var(--_glow-color),
+    transparent 65%
+  );
+}
+html.dark .spotlight-glow {
+  --_glow-color: var(--spotlight-glow-color, rgb(var(--accent-violet-rgb) / 0.16));
+}
+.spotlight-card:hover .spotlight-glow {
+  opacity: 1;
+}
+
+/* ── 边框发光层（同款径向渐变，mask 只留 1px 边框带） ── */
+.spotlight-border-glow {
+  --_border-color: var(--spotlight-border-color, rgb(var(--accent-violet-rgb) / 0.15));
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  padding: 1px;
+  background: radial-gradient(
+    var(--spotlight-glow-radius, 320px) circle at var(--mx, 50%) var(--my, 50%),
+    var(--_border-color),
+    transparent 65%
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+}
+html.dark .spotlight-border-glow {
+  --_border-color: var(--spotlight-border-color, rgb(var(--accent-violet-rgb) / 0.25));
+}
+.spotlight-card:hover .spotlight-border-glow {
+  opacity: 1;
+}
+
+/* ── 文字聚光染色（双层 background-clip:text：上层 accent 径向渐变 + 下层基色兜底） ──
+   @supports 守卫：不支持的浏览器保持纯色回落（兜底层根本不声明）。
+   暗色无需副本：兜底基色经 --spotlight-dye-base 变量在各元素处声明。 */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .spotlight-card:hover .spotlight-dye {
+    background-image:
+      radial-gradient(
+        var(--spotlight-dye-radius, 120px) circle at var(--mx, 50%) var(--my, 50%),
+        var(--spotlight-dye-color, rgb(var(--accent-violet-rgb) / 0.9)),
+        transparent 100%
+      ),
+      linear-gradient(var(--spotlight-dye-base, #1c1917), var(--spotlight-dye-base, #1c1917));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}

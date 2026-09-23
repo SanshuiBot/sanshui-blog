@@ -15,16 +15,17 @@
  *  3. 骨架模式下卡片内容层 opacity:0（仍挂载但不可见，省去切换时重挂的开销）；
  *     切到非骨架模式时，骨架层 opacity:1→0 渐隐、卡片层 opacity:0→1 渐显，同步过渡。
  *
- *  4. hover 变色仍走纯 CSS（`.post-card-title` / `.post-card-readmore`），
- *     位移动画走 Framer Motion（AGENTS.md #24）。
+ *  4. hover 变色走纯 CSS：文字聚光染色用公共 .spotlight-dye（styles/spotlight.css），
+ *     位移动画走纯 CSS（AGENTS.md #24/#32）。
  *
  *  5. 容器固定高度（移动端 h-56 / 224px、≥sm h-60 / 240px）——所有卡片（含骨架）共享同一高度，
  *     不因标题/摘要行数不同而参差不齐，也不会裁切「时间/阅读」行。
  *     骨架层与卡片层均 absolute 铺满固定容器，通过 opacity 交叉淡入淡出。
  *     骨架模式下卡片层不挂载（避免空 post 撑高度）。
  *
- *  6. Spotlight + 3D tilt 由 CardSpotlight 子组件懒初始化：
- *     skeleton=true 时不挂载 → 不创建 MotionValue/Spring 实例，
+ *  6. 3D tilt + 坐标写入由 CardSpotlight 子组件懒初始化（framer 弹簧只剩 tilt）；
+ *     光晕/边框/染色层为纯 CSS（.spotlight-glow/.spotlight-dye，公共收口见 spotlight.css）。
+ *     skeleton=true 时不挂载 → 不创建 Spring 实例，
  *     节省同屏多张骨架卡的内存和 rAF 开销。
  */
 import { AnimatePresence, motion } from 'framer-motion';
@@ -37,6 +38,7 @@ import { formatDate } from '@/lib/formatDate';
 import { postUrl, type PostIndexEntry } from '@/lib/post-index';
 import CardSpotlight from './CardSpotlight';
 import type { SpotlightRefs } from './CardSpotlight';
+import '@/styles/spotlight.css';
 
 const tagGradients = [
   'from-accent-pink/20 to-accent-rose/20',
@@ -193,23 +195,11 @@ export default function PostCard({
               ref={ref}
               onMouseMove={(e) => spotlight?.onMove(e)}
               onMouseLeave={() => spotlight?.onLeave()}
-              className="group relative h-full"
+              className="group spotlight-card relative h-full rounded-2xl"
               style={{ perspective: '800px' }}
             >
-              {/* Spotlight — 仅在非骨架模式下挂载，节省 MotionValue 实例 */}
+              {/* Spotlight — 仅在非骨架模式下挂载，节省 Spring 实例 */}
               {!skeleton && <CardSpotlight ref={ref} onRefs={setSpotlight} />}
-
-              {/* Spotlight glow layer */}
-              <motion.div
-                aria-hidden
-                className="absolute -inset-px rounded-2xl pointer-events-none"
-                style={{
-                  background: spotlight?.spotlight ?? '',
-                  opacity: 0,
-                }}
-                animate={{ opacity: spotlight ? 1 : 0 }}
-                initial={{ opacity: 0 }}
-              />
 
               {/* Card wrapper with CSS hover（纯 CSS 替代 Framer whileHover，约定 #25/#32/#42）
                   用独立 scale/translate 属性（非 transform），与 framer 的 rotateX/Y 内联 transform 叠加 */}
@@ -289,8 +279,12 @@ export default function PostCard({
                     >
                       {/* Title — 位移走纯 CSS（.post-card-title:hover），变色也走纯 CSS */}
                       <h2 className="post-card-title text-base sm:text-lg font-bold mb-2 line-clamp-2 overflow-hidden h-[2.75rem] sm:h-[3.094rem] tracking-tight leading-snug shrink-0">
-                        {/* 命中区（h2）静止，位移在内层 span（红线 #53：transform 不写 hover 判定元素自身） */}
-                        <span className="post-card-title-inner block">{post.title}</span>
+                        {/* 命中区（h2）静止，位移在内层 span（红线 #53：transform 不写 hover 判定元素自身）。
+                            染色挂内层 span（spotlight-dye）：Chromium background-clip:text 不沿被
+                            transform 的后代绘制，位移与染色必须同元素 */}
+                        <span className="post-card-title-inner spotlight-dye block">
+                          {post.title}
+                        </span>
                       </h2>
 
                       {/* Excerpt — 固定行高保证 clamp 生效：flex 布局分配的高度会压过 -webkit-line-clamp
@@ -308,9 +302,10 @@ export default function PostCard({
                           <Clock size={11} />
                           {formatDate(post.date)}
                         </span>
-                        <span className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium whitespace-nowrap transition-colors">
-                          {/* 命中区（外层 span）静止，位移在内层 span（红线 #53） */}
-                          <span className="post-card-readmore-inner inline-flex items-center gap-1">
+                        <span className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium whitespace-nowrap">
+                          {/* 命中区（外层 span）静止，位移在内层 span（红线 #53）；
+                              染色挂内层（同标题：transform 与 clip 同元素） */}
+                          <span className="post-card-readmore-inner spotlight-dye inline-flex items-center gap-1">
                             阅读
                             <span className="post-card-readmore-arrow">
                               <ArrowUpRight size={12} />
@@ -322,6 +317,13 @@ export default function PostCard({
                   </div>
                 </article>
               </div>
+
+              {/* Spotlight glow layer（纯 CSS 公共光晕，随 --mx/--my 移动）
+                  必须排在卡片壳之后（根节点最后一个子元素）：卡片内层 article 是不透明底
+                  （bg-white / dark:bg-surface），光晕若排在它前面会被整块盖住——实测把光晕
+                  色强制成纯红、卡内空白像素仍一像素不变（完全遮蔽）。项目页/友链页的卡面底色
+                  是半透明的，光晕排在前面的兄弟位置即可透出，此处不能照抄那个顺序。 */}
+              <div className="spotlight-glow" aria-hidden="true" />
             </div>
           </motion.div>
         )}

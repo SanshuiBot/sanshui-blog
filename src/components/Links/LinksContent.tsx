@@ -8,7 +8,9 @@ import TerminalShell from '@/components/UI/TerminalShell';
 import { siteConfig } from '@/lib/site';
 import { friendLinks } from '@/lib/links';
 import type { FriendLink } from '@/lib/links';
+import { spotlightMove } from '@/lib/spotlight';
 import '@/styles/terminal-links.css';
+import '@/styles/spotlight.css';
 
 // ── 变体 ─────────────────────────────────────────────────────────────────────
 const container: Variants = {
@@ -30,24 +32,19 @@ interface MagneticElement extends HTMLElement {
   __unmount?: () => void;
 }
 
-// ── 磁吸光晕：读取 CSS 变量 --mx / --my 并随鼠标更新 ───────────────────────
+// ── 磁吸光晕：坐标写入收口 lib/spotlight.ts（卡片根供光晕层、染色元素按自身盒供染色层） ──
 function attachMagneticGlow(el: HTMLElement | null) {
   if (!el) return;
   const handler = (e: MouseEvent) => {
-    const r = el.getBoundingClientRect();
-    el.style.setProperty('--mx', `${e.clientX - r.left}px`);
-    el.style.setProperty('--my', `${e.clientY - r.top}px`);
+    spotlightMove(el, e, '.terminal-card-name-row, .terminal-card-desc');
   };
   el.addEventListener('mousemove', handler);
-  // 鼠标离开时复位，让渐变消失
-  el.addEventListener('mouseleave', () => {
-    el.style.setProperty('--mx', '50%');
-    el.style.setProperty('--my', '50%');
-  });
-  // 记录 cleanup（供 React 卸载时调用，避免泄漏）
+  // 不在 mouseleave 时复位 --mx/--my：光晕层靠 opacity 过渡淡出，若此刻把坐标跳到
+  // 50%/50%（卡片正中），淡出中的光晕会先跳到中心再熄灭，视觉上「闪一次」。
+  // 渐变只在 :hover 时可见（非 hover 时 opacity:0），残留坐标无副作用，原地淡出即可。
+  // 记录 cleanup（供 React 卸载时调用，避免泄漏；约定 #21）
   (el as MagneticElement).__unmount = () => {
     el.removeEventListener('mousemove', handler);
-    el.removeEventListener('mouseleave', handler);
   };
 }
 
@@ -63,12 +60,11 @@ function LinkCard({ link, ref }: { link: FriendLink; ref?: (el: HTMLElement | nu
       target="_blank"
       rel="noopener noreferrer"
       variants={item}
-      className="terminal-link-card"
+      className="terminal-link-card spotlight-card"
     >
-      {/* 磁吸光晕层 */}
-      <div className="terminal-card-glow" />
-      {/* 边框发光层 */}
-      <div className="terminal-card-border-glow" />
+      {/* 磁吸光晕层 + 边框发光层（公共收口 styles/spotlight.css，色源走共享默认 violet） */}
+      <div className="spotlight-glow" aria-hidden="true" />
+      <div className="spotlight-border-glow" aria-hidden="true" />
 
       {/* 彩色圆点 */}
       <span className="terminal-card-dot" style={{ background: dotColor, color: dotColor }} />
@@ -102,7 +98,7 @@ function LinkCard({ link, ref }: { link: FriendLink; ref?: (el: HTMLElement | nu
 
       {/* 文字信息 */}
       <div className="terminal-card-info">
-        <span className="terminal-card-name-row">
+        <span className="terminal-card-name-row spotlight-dye">
           {link.name}
           <svg
             className="terminal-card-arrow"
@@ -119,7 +115,7 @@ function LinkCard({ link, ref }: { link: FriendLink; ref?: (el: HTMLElement | nu
             <path d="M7 7h10v10" />
           </svg>
         </span>
-        <p className="terminal-card-desc">{link.desc}</p>
+        <p className="terminal-card-desc spotlight-dye">{link.desc}</p>
       </div>
     </motion.a>
   );

@@ -23,10 +23,12 @@ import ArrowLink from '@/components/UI/ArrowLink';
 import GithubIcon from '@/components/UI/GithubIcon';
 import Tooltip from '@/components/UI/Tooltip';
 import { useIsOverflow } from '@/components/UI/useIsOverflow';
+import { spotlightMove } from '@/lib/spotlight';
 import { siteConfig } from '@/lib/site';
 import { projects } from '@/lib/projects';
 import type { Project } from '@/lib/projects';
 import '@/styles/projects.css';
+import '@/styles/spotlight.css';
 
 // ── 卡片装饰色循环：顶部渐变条 + hover 光晕共用（与 PostCard 标签渐变同语义，index % 5） ──
 // 存 rgb(var(--accent-xxx-rgb)) 字符串 → 跟随 AccentPicker 主题联动，不写固定 hex。
@@ -70,7 +72,7 @@ function ClampedText({ text }: { text: string }) {
     <Tooltip label={text} disabled={!overflow} offsetX={8} offsetY={10}>
       <p
         ref={ref}
-        className="project-card-desc min-h-[3.65625rem] text-xs text-gray-500 dark:text-gray-300 leading-relaxed mb-3 line-clamp-3"
+        className="project-card-desc spotlight-dye min-h-[3.65625rem] text-xs text-gray-500 dark:text-gray-300 leading-relaxed mb-3 line-clamp-3"
       >
         {text}
       </p>
@@ -84,16 +86,12 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
   // 语言圆点 + 顶部渐变条 + hover 光晕共用同一套 accent（按卡片索引循环）
   const accent = BAR_ACCENTS[index % BAR_ACCENTS.length];
 
-  // 鼠标跟随光晕：把光标相对卡片的坐标写入 --mx/--my，光晕层随鼠标移动（纯 CSS 动画）
+  // 鼠标跟随聚光：坐标写入收口 lib/spotlight.ts（卡片根供光晕层、染色元素按自身盒供染色层）。
+  // 不在 mouseleave 时复位 --mx/--my：光晕层靠 opacity 过渡淡出，若此刻把坐标跳到
+  // 50%/50%（卡片正中），淡出中的光晕会先跳到中心再熄灭，视觉上「闪一次」。
+  // 渐变只在 :hover 时可见（非 hover 时 opacity:0），残留坐标无副作用，原地淡出即可。
   const handleMouseMove = (e: ReactMouseEvent<HTMLAnchorElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty('--mx', `${e.clientX - rect.left}px`);
-    e.currentTarget.style.setProperty('--my', `${e.clientY - rect.top}px`);
-  };
-  // 鼠标离开：复位到中心，光晕淡出
-  const handleMouseLeave = (e: ReactMouseEvent<HTMLAnchorElement>) => {
-    e.currentTarget.style.setProperty('--mx', '50%');
-    e.currentTarget.style.setProperty('--my', '50%');
+    spotlightMove(e.currentTarget, e, '.project-card-title, .project-card-desc');
   };
 
   return (
@@ -103,18 +101,18 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
       rel="noopener noreferrer"
       variants={item}
       onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       style={{ '--project-accent': accent } as CSSProperties}
-      className="group relative rounded-xl border overflow-hidden shadow-soft
+      className="project-card spotlight-card group relative rounded-xl border overflow-hidden shadow-soft
                   transition-all duration-500 ease-out
                   dark:border-white/[0.12] dark:bg-white/[0.03] dark:hover:border-white/[0.22]
                   border-black/[0.06] bg-white/70 hover:border-black/[0.14]
                   backdrop-blur-sm dark:backdrop-blur-md
                   hover:scale-[1.015] h-full"
     >
-      {/* hover 光晕：背景光晕 + 边框发光（--project-accent 装饰色，纯 CSS 淡入，红线 #25/#32） */}
-      <div className="project-card-glow" aria-hidden="true" />
-      <div className="project-card-border-glow" aria-hidden="true" />
+      {/* hover 光晕：背景光晕 + 边框发光（公共 .spotlight-glow/.spotlight-border-glow，
+          色源经 projects.css 的 --spotlight-*-color 覆写为每卡 accent，红线 #25/#32） */}
+      <div className="spotlight-glow" aria-hidden="true" />
+      <div className="spotlight-border-glow" aria-hidden="true" />
 
       {/* 顶部渐变条：accent 循环色 → 透明，hover 时提亮 */}
       <div className="project-card-bar" aria-hidden="true" />
@@ -124,7 +122,7 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
         <div className="min-w-0 flex flex-col h-full">
           {/* 头部：名称 + 外链图标 */}
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="project-card-title font-semibold leading-snug text-base">
+            <h3 className="project-card-title spotlight-dye font-semibold leading-snug text-base">
               {project.name}
             </h3>
             <ExternalLink
