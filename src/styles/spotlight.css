@@ -82,9 +82,25 @@ html.dark .spotlight-border-glow {
 }
 
 /* ── 文字聚光染色（双层 background-clip:text：上层 accent 径向渐变 + 下层基色兜底） ──
-   @supports 守卫：不支持的浏览器保持纯色回落（兜底层根本不声明）。
-   暗色无需副本：兜底基色经 --spotlight-dye-base 变量在各元素处声明。 */
+   @supports 守卫：不支持的浏览器保持纯色回落（整个裁剪块不声明，走各页 @supports not 的纯色 hover）。
+   暗色无需副本：兜底基色经 --spotlight-dye-base 变量在各元素处声明。
+
+   不变量 5（unhover 闪白根修）：裁剪必须常驻、不许 hover 门控——
+   旧写法只在 :hover 挂 clip+transparent、离开时整体摘除，Chromium 会在 hover 边界
+   销毁/重建该文字的合成层并整卡重绘，重绘一帧露底发白（项目卡/友链卡半透明卡面上
+   尤其明显）。改为非 hover 也保留「基色兜底单层渐变 + clip + transparent」（视觉与
+   纯色完全一致），hover 只在上层追加径向光斑渐变——background-image 同结构整体
+   替换是原子重绘，不再有层重建闪白。 */
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .spotlight-dye {
+    background-image: linear-gradient(
+      var(--spotlight-dye-base, #1c1917),
+      var(--spotlight-dye-base, #1c1917)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
   .spotlight-card:hover .spotlight-dye {
     background-image:
       radial-gradient(
@@ -93,8 +109,5 @@ html.dark .spotlight-border-glow {
         transparent 100%
       ),
       linear-gradient(var(--spotlight-dye-base, #1c1917), var(--spotlight-dye-base, #1c1917));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
   }
 }
