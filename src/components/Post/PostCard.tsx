@@ -292,7 +292,7 @@ export default function PostCard({
                           才真正生效：移动端与 ≥sm 均两行。
                           溢出容忍：shrink min-h-0 + 两级 wrapper 的 min-h-0 让摘要成为唯一可收缩元素，
                           标签换行/字体差异导致内容超高时摘要压缩吸收，footer 不被裁切（回归 flex-1 时代的保证） */}
-                      <p className="text-stone-500 text-sm leading-relaxed mb-5 line-clamp-2 overflow-hidden h-[46px] shrink min-h-0 dark:text-gray-500">
+                      <p className="post-card-excerpt spotlight-dye text-sm leading-relaxed mb-5 line-clamp-2 overflow-hidden h-[46px] shrink min-h-0">
                         {post.excerpt}
                       </p>
 

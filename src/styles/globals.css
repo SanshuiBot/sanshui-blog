@@ -1128,6 +1128,16 @@ html.dark {
     color: rgb(120 113 108);
     --spotlight-dye-base: rgb(120 113 108);
   }
+  /* 摘要段聚光染色（.spotlight-dye）：对齐自身基色 stone-500 / gray-500，
+     摘要自身无 transform（满足 spotlight.css 不变量 1），无需 color 过渡（不变量 3） */
+  .post-card-excerpt {
+    color: #78716c;
+    --spotlight-dye-base: #78716c;
+  }
+  html.dark .post-card-excerpt {
+    color: #6b7280;
+    --spotlight-dye-base: #6b7280;
+  }
   /* 搜索弹窗关闭按钮 —— accent 联动 hover 走纯 CSS（#26/#47），亮色基值、暗色 html.dark 覆盖 */
   .search-close-btn {
     color: #78716c;
