@@ -29,9 +29,18 @@ export interface SpotlightRefs {
 interface CardSpotlightProps {
   ref: React.RefObject<HTMLDivElement | null>;
   onRefs: (refs: SpotlightRefs | null) => void;
+  /** 染色元素选择器（传给 spotlightMove 的 dyedSelector）；省略时只写卡片根坐标 */
+  dyedSelector?: string;
+  /** tilt 最大角度（deg），默认 5 */
+  maxTilt?: number;
 }
 
-export default function CardSpotlight({ ref: outerRef, onRefs }: CardSpotlightProps) {
+export default function CardSpotlight({
+  ref: outerRef,
+  onRefs,
+  dyedSelector,
+  maxTilt = 5,
+}: CardSpotlightProps) {
   const rx = useMotionValue(0);
   const ry = useMotionValue(0);
   const srx = useSpring(rx, { stiffness: 120, damping: 15 });
@@ -45,11 +54,11 @@ export default function CardSpotlight({ ref: outerRef, onRefs }: CardSpotlightPr
         const el = outerRef.current;
         if (!el) return;
         // 共享坐标写入（卡片根 + 染色元素各自盒）；返回的 rect 复用来算 tilt，少读一次布局
-        const r = spotlightMove(el, e, '.post-card-title-inner, .post-card-readmore-inner');
+        const r = spotlightMove(el, e, dyedSelector);
         const px = (e.clientX - r.left) / r.width;
         const py = (e.clientY - r.top) / r.height;
-        ry.set((px - 0.5) * 5);
-        rx.set(-(py - 0.5) * 5);
+        ry.set((px - 0.5) * maxTilt);
+        rx.set(-(py - 0.5) * maxTilt);
       },
       onLeave: () => {
         // 只回正 tilt；--mx/--my 不复位（渐变仅在 hover 时可见，原地淡出防「闪一次」）

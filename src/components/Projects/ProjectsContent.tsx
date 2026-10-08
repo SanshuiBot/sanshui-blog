@@ -12,18 +12,14 @@
  *   - 入场交错淡入（framer-motion viewport trigger）
  */
 'use client';
-import {
-  useSyncExternalStore,
-  type CSSProperties,
-  type MouseEvent as ReactMouseEvent,
-} from 'react';
+import { useSyncExternalStore, useRef, useState, type CSSProperties } from 'react';
 import { Star, ExternalLink } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import ArrowLink from '@/components/UI/ArrowLink';
 import GithubIcon from '@/components/UI/GithubIcon';
 import Tooltip from '@/components/UI/Tooltip';
 import { useIsOverflow } from '@/components/UI/useIsOverflow';
-import { spotlightMove } from '@/lib/spotlight';
+import CardSpotlight, { type SpotlightRefs } from '@/components/Post/CardSpotlight';
 import { siteConfig } from '@/lib/site';
 import { projects } from '@/lib/projects';
 import type { Project } from '@/lib/projects';
@@ -81,18 +77,14 @@ function ClampedText({ text }: { text: string }) {
 }
 
 // ── 仓库卡片 ──────────────────────────────────────────────────────────────────
-// 统一尺寸卡片：accent 循环光晕背景 + hover 纯 CSS 微展开。
+// 统一尺寸卡片：accent 循环光晕背景 + hover 纯 CSS 微展开 + 3D tilt（复用 PostCard 的 CardSpotlight）。
 function RepoCard({ project, index }: { project: Project; index: number }) {
   // 语言圆点 + 顶部渐变条 + hover 光晕共用同一套 accent（按卡片索引循环）
   const accent = BAR_ACCENTS[index % BAR_ACCENTS.length];
 
-  // 鼠标跟随聚光：坐标写入收口 lib/spotlight.ts（卡片根供光晕层、染色元素按自身盒供染色层）。
-  // 不在 mouseleave 时复位 --mx/--my：光晕层靠 opacity 过渡淡出，若此刻把坐标跳到
-  // 50%/50%（卡片正中），淡出中的光晕会先跳到中心再熄灭，视觉上「闪一次」。
-  // 渐变只在 :hover 时可见（非 hover 时 opacity:0），残留坐标无副作用，原地淡出即可。
-  const handleMouseMove = (e: ReactMouseEvent<HTMLAnchorElement>) => {
-    spotlightMove(e.currentTarget, e, '.project-card-title, .project-card-desc');
-  };
+  const cardRef = useRef<HTMLDivElement>(null);
+  // 骨架槽位模式项目页没有，直接 state 存 refs（同 PostCard 模式）
+  const [spotlight, setSpotlight] = useState<SpotlightRefs | null>(null);
 
   return (
     <motion.a
@@ -100,97 +92,115 @@ function RepoCard({ project, index }: { project: Project; index: number }) {
       target="_blank"
       rel="noopener noreferrer"
       variants={item}
-      onMouseMove={handleMouseMove}
       style={{ '--project-accent': accent } as CSSProperties}
-      className="project-card spotlight-card group relative rounded-xl border overflow-hidden shadow-soft
-                  transition-all duration-500 ease-out
-                  dark:border-white/[0.12] dark:bg-white/[0.03] dark:hover:border-white/[0.22]
-                  border-black/[0.06] bg-white/70 hover:border-black/[0.14]
-                  backdrop-blur-sm dark:backdrop-blur-md
-                  hover:scale-[1.015] h-full"
+      className="project-card-spotlight-host relative h-full [perspective:800px]"
     >
-      {/* hover 光晕：背景光晕 + 边框发光（公共 .spotlight-glow/.spotlight-border-glow，
+      {/* 3D tilt + 聚光坐标分发（收口 CardSpotlight，同 PostCard）：
+          染色选择器传项目卡自己的 title/desc，tilt 弧度比文章卡小（2.5deg，卡片更大更克制） */}
+      <CardSpotlight
+        ref={cardRef}
+        onRefs={setSpotlight}
+        dyedSelector=".project-card-title, .project-card-desc"
+        maxTilt={2.5}
+      />
+      <motion.div
+        ref={cardRef}
+        onMouseMove={(e) => spotlight?.onMove(e)}
+        onMouseLeave={() => spotlight?.onLeave()}
+        className="project-card spotlight-card group relative rounded-xl border overflow-hidden shadow-soft h-full
+                    transition-all duration-500 ease-out
+                    dark:border-white/[0.12] dark:bg-white/[0.03] dark:hover:border-white/[0.22]
+                    border-black/[0.06] bg-white/70 hover:border-black/[0.14]
+                    backdrop-blur-sm dark:backdrop-blur-md"
+        style={{
+          rotateX: spotlight?.rotateX ?? 0,
+          rotateY: spotlight?.rotateY ?? 0,
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        {/* hover 光晕：背景光晕 + 边框发光（公共 .spotlight-glow/.spotlight-border-glow，
           色源经 projects.css 的 --spotlight-*-color 覆写为每卡 accent，红线 #25/#32） */}
-      <div className="spotlight-glow" aria-hidden="true" />
-      <div className="spotlight-border-glow" aria-hidden="true" />
+        <div className="spotlight-glow" aria-hidden="true" />
+        <div className="spotlight-border-glow" aria-hidden="true" />
 
-      {/* 顶部渐变条：accent 循环色 → 透明，hover 时提亮 */}
-      <div className="project-card-bar" aria-hidden="true" />
+        {/* 顶部渐变条：accent 循环色 → 透明，hover 时提亮 */}
+        <div className="project-card-bar" aria-hidden="true" />
 
-      <div className="relative p-5 pl-6 h-full">
-        {/* 文字信息区：纵向 flex，描述固定 3 行高度，技术/标签块始终落在同一垂直位置 */}
-        <div className="min-w-0 flex flex-col h-full">
-          {/* 头部：名称 + 外链图标 */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="project-card-title spotlight-dye font-semibold leading-snug text-base">
-              {project.name}
-            </h3>
-            <ExternalLink
-              size={14}
-              className="shrink-0 text-black/35 transition-all duration-300
+        <div className="relative p-5 pl-6 h-full">
+          {/* 文字信息区：纵向 flex，描述固定 3 行高度，技术/标签块始终落在同一垂直位置 */}
+          <div className="min-w-0 flex flex-col h-full">
+            {/* 头部：名称 + 外链图标 */}
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <h3 className="project-card-title spotlight-dye font-semibold leading-snug text-base">
+                {project.name}
+              </h3>
+              <ExternalLink
+                size={14}
+                className="shrink-0 text-black/35 transition-all duration-300
                          group-hover:text-black/70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5
                          dark:text-fg/50 dark:group-hover:text-fg"
-              aria-hidden="true"
-            />
-          </div>
+                aria-hidden="true"
+              />
+            </div>
 
-          {/* 描述：固定 3 行高度（min-height 锁定 3×行高），超 3 行截断，短描述下方留白；
+            {/* 描述：固定 3 行高度（min-height 锁定 3×行高），超 3 行截断，短描述下方留白；
               同卡技术/标签块因此始终落在同一垂直位置，同行各卡字段对齐；
               Tooltip 只在描述被 line-clamp 截断时 hover 显示完整文案（ClampedText 实测溢出） */}
-          <ClampedText text={project.desc} />
+            <ClampedText text={project.desc} />
 
-          {/* 语言行 + 标签行：mt-auto 贴底，同行各卡字段垂直位置一致 */}
-          <div className="mt-auto">
-            {(project.lang && project.lang.length > 0) ||
-            (project.stars !== undefined && project.stars > 0) ? (
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-gray-500 dark:text-gray-300">
-                {project.lang &&
-                  project.lang.map((language) => (
-                    <span key={language} className="flex items-center gap-1.5">
-                      <span
-                        className="inline-block w-2 h-2 rounded-full ring-1 ring-black/10 dark:ring-white/15"
-                        style={{
-                          background: accent!,
-                          boxShadow: `0 0 6px ${accent!.replace('))', ') / 0.3)')}`,
-                        }}
-                        aria-hidden="true"
-                      />
-                      {language}
+            {/* 语言行 + 标签行：mt-auto 贴底，同行各卡字段垂直位置一致 */}
+            <div className="mt-auto">
+              {(project.lang && project.lang.length > 0) ||
+              (project.stars !== undefined && project.stars > 0) ? (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-gray-500 dark:text-gray-300">
+                  {project.lang &&
+                    project.lang.map((language) => (
+                      <span key={language} className="flex items-center gap-1.5">
+                        <span
+                          className="inline-block w-2 h-2 rounded-full ring-1 ring-black/10 dark:ring-white/15"
+                          style={{
+                            background: accent!,
+                            boxShadow: `0 0 6px ${accent!.replace('))', ') / 0.3)')}`,
+                          }}
+                          aria-hidden="true"
+                        />
+                        {language}
+                      </span>
+                    ))}
+                  {project.stars !== undefined && project.stars > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Star size={12} className="text-amber-500 dark:text-yellow-400/70" />
+                      {project.stars}
                     </span>
-                  ))}
-                {project.stars !== undefined && project.stars > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Star size={12} className="text-amber-500 dark:text-yellow-400/70" />
-                    {project.stars}
-                  </span>
-                )}
-              </div>
-            ) : null}
+                  )}
+                </div>
+              ) : null}
 
-            {/* 标签行 */}
-            {project.tags && project.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-3">
-                {project.tags.map((tag) => {
-                  const tagIdx = tagAccentHash(tag);
-                  return (
-                    <span
-                      key={tag}
-                      data-accent-idx={tagIdx}
-                      className="tag-accent px-2 py-0.5 rounded-full text-[0.6875rem] font-mono
+              {/* 标签行 */}
+              {project.tags && project.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {project.tags.map((tag) => {
+                    const tagIdx = tagAccentHash(tag);
+                    return (
+                      <span
+                        key={tag}
+                        data-accent-idx={tagIdx}
+                        className="tag-accent px-2 py-0.5 rounded-full text-[0.6875rem] font-mono
                                  transition-all duration-300
                                  dark:border-white/[0.2] dark:bg-white/10 dark:text-fg
                                  border-black/[0.08] bg-black/[0.04] text-stone-500
                                  group-hover:border-transparent"
-                    >
-                      {tag}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
+                      >
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </motion.a>
   );
 }
