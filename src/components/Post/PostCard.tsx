@@ -202,11 +202,14 @@ export default function PostCard({
               {!skeleton && <CardSpotlight ref={ref} onRefs={setSpotlight} />}
 
               {/* Card wrapper with CSS hover（纯 CSS 替代 Framer whileHover，约定 #25/#32/#42）
-                  用独立 scale/translate 属性（非 transform），与 framer 的 rotateX/Y 内联 transform 叠加 */}
-              <div
+                  rotateX/Y 通过 framer 订阅 MotionValue（不可直接字符串插值：MotionValue 无
+                  toString，模板会产出 "rotateX([object Object]deg)" 且渲染期不重读最新值）；
+                  scale 等其余缩放/位移用独立 CSS 属性（非 transform），与之叠加 */}
+              <motion.div
                 className="post-card-hover-target p-[1px] rounded-2xl bg-black/[0.03] h-full post-card-shell shadow-neon-hover dark:bg-white/10"
                 style={{
-                  transform: `perspective(800px) rotateX(${spotlight?.rotateX ?? 0}deg) rotateY(${spotlight?.rotateY ?? 0}deg)`,
+                  rotateX: spotlight?.rotateX ?? 0,
+                  rotateY: spotlight?.rotateY ?? 0,
                   transformStyle: 'preserve-3d',
                 }}
               >
@@ -316,7 +319,7 @@ export default function PostCard({
                     </Link>
                   </div>
                 </article>
-              </div>
+              </motion.div>
 
               {/* Spotlight glow layer（纯 CSS 公共光晕，随 --mx/--my 移动）
                   必须排在卡片壳之后（根节点最后一个子元素）：卡片内层 article 是不透明底

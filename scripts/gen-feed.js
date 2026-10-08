@@ -45,15 +45,6 @@ function hasFullContent(index) {
   return index < FULL_CONTENT_LIMIT;
 }
 
-/** 提取正文首个 h1/h2/代码块外的纯文本前 160 字做 item description（无 frontmatter 的 excerpt 兜底） */
-function plainExcerpt(content, fallback) {
-  if (fallback) return fallback;
-  return content
-    .slice(0, 160)
-    .replace(/[#*`\[\]]/g, '')
-    .trim();
-}
-
 /** CDATA 安全包裹：正文里出现 `]]>` 会提前终止 CDATA 段（如文章内嵌 XML 示例），
     需拆成两个 CDATA 段拼接，避免产出畸形 XML。 */
 function cdata(s) {
@@ -85,7 +76,7 @@ async function build() {
   const items = posts
     .map((p, i) => {
       const link = `${SITE.baseUrl}/posts/${encodeURIComponent(p.slug)}/`;
-      const description = plainExcerpt(p.content, p.excerpt);
+      const description = p.excerpt;
       // 全文只进最新 FULL_CONTENT_LIMIT 篇；旧文章仅摘要，控制 feed 体积
       const fullContent = hasFullContent(i) ? cdata(p.content) : '';
       return `    <item>
@@ -135,4 +126,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { esc, rfc822, plainExcerpt, cdata, hasFullContent, FULL_CONTENT_LIMIT };
+module.exports = { esc, rfc822, cdata, hasFullContent, FULL_CONTENT_LIMIT };

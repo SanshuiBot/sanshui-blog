@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  cdata,
-  esc,
-  plainExcerpt,
-  rfc822,
-  hasFullContent,
-  FULL_CONTENT_LIMIT,
-} from '../scripts/gen-feed.js';
+import { cdata, esc, rfc822, hasFullContent, FULL_CONTENT_LIMIT } from '../scripts/gen-feed.js';
 
 describe('gen-feed 纯函数契约', () => {
   it('cdata：普通文本原样包裹', () => {
@@ -24,11 +17,6 @@ describe('gen-feed 纯函数契约', () => {
 
   it('esc：XML 五实体转义', () => {
     expect(esc(`a&b<c>"d'`)).toBe('a&amp;b&lt;c&gt;&quot;d&apos;');
-  });
-
-  it('plainExcerpt：无 excerpt 时去 markdown 记号取前 160 字', () => {
-    expect(plainExcerpt('## title\n```js\ncode\n```', '')).toContain('title');
-    expect(plainExcerpt('ignored', '已有 excerpt')).toBe('已有 excerpt');
   });
 
   it('rfc822：合法日期转 RFC822，非法回退固定 epoch（避免 git 噪音）', () => {
