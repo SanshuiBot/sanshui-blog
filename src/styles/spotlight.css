@@ -92,7 +92,12 @@ html.dark .spotlight-border-glow {
    纯色完全一致），hover 只在上层追加径向光斑渐变——background-image 同结构整体
    替换是原子重绘，不再有层重建闪白。 */
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .spotlight-dye {
+  /* 双写类名提升特异度（0,3,0）：各页给染色元素声明的纯色基色（如 projects.css
+     .project-card-title / terminal-links.css .terminal-card-name-row，特异度最高 0,2,0）
+     与这里的 color:transparent 同为「页面 CSS vs 共享 CSS」的层叠竞争——直载时样式表
+     顺序恰好共享在后，SPA 客户端导航时页面专属 CSS 后注入会反超，文字被涂成不透明、
+     聚光染色消失（首次进入不变色、刷新才恢复的根因）。特异度取胜后不再依赖注入顺序。 */
+  .spotlight-dye.spotlight-dye.spotlight-dye {
     background-image: linear-gradient(
       var(--spotlight-dye-base, #1c1917),
       var(--spotlight-dye-base, #1c1917)
@@ -101,7 +106,9 @@ html.dark .spotlight-border-glow {
     background-clip: text;
     color: transparent;
   }
-  .spotlight-card:hover .spotlight-dye {
+  /* hover 规则同步多写一个类（0,4,0）：与基规则靠特异度决胜而非源顺序——
+     若被 bundler 重排或日后拆文件，hover 光斑仍稳压基色兜底层 */
+  .spotlight-card:hover .spotlight-dye.spotlight-dye {
     background-image:
       radial-gradient(
         var(--spotlight-dye-radius, 120px) circle at var(--mx, 50%) var(--my, 50%),
