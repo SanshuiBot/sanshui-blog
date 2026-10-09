@@ -284,7 +284,7 @@ export default function AboutContent({ resumeMarkdown }: AboutContentProps) {
             <Mail size={14} />
             Email
           </a>
-          <Tooltip label="KFC Crazy Thursday, V 50 —— 玩梗的：点个 Star 或写封邮件就好 ☕">
+          <Tooltip label="KFC Crazy Thursday, V 50 —— 玩个梗：点个 Star 或写封邮件就好 ☕">
             <span
               aria-hidden="true"
               className="mt-2 inline-flex w-full select-none items-center gap-1.5 font-mono text-sm text-gray-600 dark:text-gray-300"
