@@ -16,6 +16,12 @@ export interface PostIndexEntry {
   date: string;
   excerpt: string;
   tags: string[];
+  /**
+   * 预计阅读分钟数 —— 由 gen-posts-index.js 构建期用 parse-post.mjs 的
+   * calcReadingMinutes 算好写进索引，列表卡片直接读；详情页同一函数现算，
+   * 两处同源同值（阅读时间公共化，不写死）。
+   */
+  readingMinutes?: number;
 }
 
 /** 文章详情路由统一构造（保留尾部斜杠，AGENTS.md #22；next/link 自动注入 basePath） */

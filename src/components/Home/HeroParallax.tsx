@@ -21,6 +21,7 @@ import { Mail, ArrowDown } from 'lucide-react';
 import Github from '@/components/UI/GithubIcon';
 import Tooltip from '@/components/UI/Tooltip';
 import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
+import { spotlightMove } from '@/lib/spotlight';
 import { siteConfig } from '@/lib/site';
 import type { PostIndexEntry } from '@/lib/post-index';
 import { getPostsIndex } from '@/lib/posts-index-cache';
@@ -65,9 +66,10 @@ export const EXIT_FADE = { start: 0.2, end: 0.85, scale: 0.94 } as const;
 const springSmooth = { stiffness: 120, damping: 20, restDelta: 0.001 };
 
 export default function HeroParallax({ stats }: { stats?: HeroStats }) {
-  // reduced-motion：首屏视差/入场全是 JS 驱动（Framer），全局 CSS 0.01ms 压制管不到，
-  // 必须组件内自检（AGENTS.md #32）。reduced 时跳过背景视差 transform 与入场动画；
-  // 前景退场是物理滚动，不需要任何 reduced 特判。
+  // reduced-motion（AGENTS.md #32）：仅装饰性「持续/滚动联动」动效受阀门约束——
+  // 背景视差 transform、前景退场 opacity/scale 在 reduced 时跳过（style 置 undefined）。
+  // 一次性入场动画不受阀门限制（#32/#43：入场是「页面到达」语义，与全站其他页
+  // 入场一致，全量页签 CSS reduced 规则也压不到 JS 驱动的 framer 入场）。
   const reduced = usePrefersReducedMotion();
   const [vh, setVh] = useState(800);
   const [w, setW] = useState(1024);
@@ -140,6 +142,9 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
   const onBtnMove = (e: React.MouseEvent) => {
     const el = btnRef.current;
     if (!el) return;
+    // hover 光晕坐标：走全站聚光收口 lib/spotlight.ts（写入 --mx/--my，
+    // spotlight.css 的 .spotlight-glow 消费），不手抄坐标逻辑
+    spotlightMove(el, e);
     const r = el.getBoundingClientRect();
     btnX.set(((e.clientX - (r.left + r.width / 2)) / (r.width / 2)) * 4);
     btnY.set(((e.clientY - (r.top + r.height / 2)) / (r.height / 2)) * 4);
@@ -284,7 +289,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
         <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-32 text-center">
           {/* 身份徽章 */}
           <motion.div
-            initial={reduced ? false : { opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: lineEase }}
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass hero-badge mb-8"
@@ -296,9 +301,9 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
           </motion.div>
 
           {/* Title */}
-          <h1 className="font-serif text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[1.05] mb-6">
+          <h1 className="font-serif font-black text-5xl sm:text-7xl lg:text-8xl tracking-tight leading-[1.05] mb-6">
             <motion.span
-              initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
+              initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               transition={{ duration: 0.9, delay: 0.05, ease: lineEase }}
               className="block text-stone-900 dark:text-fg"
@@ -306,7 +311,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
               工程师 · 写作者
             </motion.span>
             <motion.span
-              initial={reduced ? false : { opacity: 0, y: 28, filter: 'blur(8px)' }}
+              initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               transition={{ duration: 0.9, delay: 0.18, ease: lineEase }}
               className="block mt-3 text-aurora hero-name-shimmer"
@@ -317,10 +322,10 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
 
           {/* Subtitle */}
           <motion.p
-            initial={reduced ? false : { opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg sm:text-xl text-stone-600 max-w-2xl mx-auto mb-8 leading-relaxed dark:text-gray-400"
+            className="text-lg sm:text-xl font-semibold text-stone-600 max-w-2xl mx-auto mb-8 leading-relaxed dark:text-gray-400"
           >
             构建有细节的界面，写下有温度的记录。
           </motion.p>
@@ -328,7 +333,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
           {/* Stats — 极简 inline 行：数字（单色 accent）· 标签，点分隔 */}
           {statItems.length > 0 && (
             <motion.div
-              initial={reduced ? false : { opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.56 }}
               className="hero-stats-inline mb-10"
@@ -362,7 +367,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
 
           {/* CTA + Social */}
           <motion.div
-            initial={reduced ? false : { opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.48 }}
             className="flex flex-wrap items-center justify-center gap-4 mb-8"
@@ -370,7 +375,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
             <motion.a
               ref={btnRef}
               href="#posts"
-              className="hero-cta"
+              className="hero-cta spotlight-card"
               onMouseMove={onBtnMove}
               onMouseLeave={() => {
                 btnX.set(0);
@@ -387,6 +392,8 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
                 className="hero-cta-visual relative inline-flex items-center gap-3 px-7 py-3 rounded-full"
               >
                 <span className="hero-cta-glow" />
+                {/* 鼠标跟随光晕层：spotlight 公共收口（坐标由 spotlightMove 写入外层 .hero-cta） */}
+                <span className="hero-cta-spotlight-glow" aria-hidden />
                 <span className="hero-cta-text relative z-10 font-semibold text-sm">浏览文章</span>
                 <ArrowDown size={15} className="relative z-10" />
               </motion.span>
@@ -399,7 +406,7 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
                   rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   aria-label={label}
                   className="hero-social"
-                  initial={reduced ? false : { opacity: 0, scale: 0 }}
+                  initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.7 + idx * 0.08, type: 'spring', stiffness: 200 }}
                 >
@@ -412,12 +419,17 @@ export default function HeroParallax({ stats }: { stats?: HeroStats }) {
           </motion.div>
         </div>
 
-        {/* Scroll indicator：随前景一起滚出，无需 opacity 映射 */}
+        {/* Scroll indicator：随前景一起滚出，无需 opacity 映射。
+            竖直轨道 + 下落光点（纯 CSS keyframes，reduced-motion 自动 0.01ms 合规）
+            与箭头呼吸（framer）分层：光点「落」，箭头「浮」，标签呼吸辉光。 */}
         <div
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-stone-500 pointer-events-none select-none dark:text-gray-500"
           aria-hidden
         >
           <span className="hero-scroll-label text-[10px] font-medium opacity-60">向下滚动</span>
+          <span className="hero-scroll-track relative w-px h-8 overflow-hidden bg-black/10 dark:bg-white/15">
+            <span className="hero-scroll-dot absolute left-0 top-0 w-px h-2.5" />
+          </span>
           <motion.span
             className="hero-scroll-arrow"
             animate={reduced ? { opacity: 0.5 } : { y: [-4, 6, -4], opacity: [0.4, 1, 0.4] }}

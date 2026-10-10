@@ -17,7 +17,7 @@ import type { Metadata } from 'next';
 import { getPostBySlug, getAllPosts, getAdjacentPosts } from '@/lib/posts';
 import { toIndexEntry } from '@/lib/post-index';
 import { extractHeadings } from '@/lib/toc';
-import readingTime from 'reading-time';
+import { calcReadingMinutes } from '@/lib/parse-post.mjs';
 import PostContent from '@/components/Post/PostContent';
 import PostMeta from '@/components/Post/PostMeta';
 import PostNav from '@/components/Post/PostNav';
@@ -64,12 +64,9 @@ export default async function PostPage({ params }: Props) {
 
   const headings = extractHeadings(post.content);
   const { prev, next } = getAdjacentPosts(slug);
-  // 阅读时间在服务端算好再透传——PostMeta 是 client 组件，
-  // 直接传全文 content 会把整篇文章序列化进 RSC payload
-  const readingMinutes = Math.max(
-    1,
-    Math.ceil(readingTime(post.content, { wordsPerMinute: 300 }).minutes),
-  );
+  // 阅读时间公共化：与 gen-posts-index.js（列表卡片显示）同一 calcReadingMinutes，
+  // 列表页与详情页同源同值，不会各算一版漂移。
+  const readingMinutes = calcReadingMinutes(post.content);
 
   return (
     <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-28">

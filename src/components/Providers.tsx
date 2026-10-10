@@ -3,6 +3,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ThemeProvider } from 'next-themes';
 import { NavigationLoadingProvider } from '@/components/UI/NavigationLoading';
 import ThemeColorSync from '@/components/UI/ThemeColorSync';
+import InSiteNavMarker from '@/components/UI/InSiteNavMarker';
 
 /**
  * 纯 Context 组合：next-themes + 导航加载。不包含任何 DOM 布局或动效。
@@ -27,6 +28,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         >
           {/* 浏览器地址栏颜色跟随主题（需在 ThemeProvider 内读取 resolvedTheme） */}
           <ThemeColorSync />
+          {/* 站内导航会话标记：BackButton「能否 history.back()」的信号源（写/清 sessionStorage） */}
+          <InSiteNavMarker />
           {children}
         </ThemeProvider>
       </NavigationLoadingProvider>

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import BackButton from '@/components/UI/BackButton';
 import CodeCopyInjector from './CodeCopyInjector';
 import { formatDate } from '@/lib/formatDate';
+import { tagGradients } from '@/lib/tag-gradients';
 import type { PostIndexEntry } from '@/lib/post-index';
 
 interface Props {
@@ -22,11 +23,11 @@ export default function PostMeta({ post, readingMinutes }: Props) {
 
       <header className="mb-10">
         <div className="flex flex-wrap gap-2 mb-5">
-          {(post.tags ?? []).map((t: string) => (
+          {(post.tags ?? []).map((t: string, i: number) => (
             <Link
               key={t}
               href={`/tags/${encodeURIComponent(t)}/`}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-accent-violet/10 text-stone-600 hover:bg-accent-violet/20 dark:text-gray-400 transition-colors"
+              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${tagGradients[i % tagGradients.length]} text-stone-600 hover:text-stone-900 dark:text-gray-400 dark:hover:text-fg transition-colors`}
             >
               <Tag size={10} />
               {t}

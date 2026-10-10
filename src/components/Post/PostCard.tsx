@@ -29,7 +29,7 @@
  *     节省同屏多张骨架卡的内存和 rAF 开销。
  */
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowUpRight, Clock, Tag } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -37,20 +37,8 @@ import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import SpotlightTilt from '@/components/UI/SpotlightTilt';
 import { formatDate } from '@/lib/formatDate';
 import { postUrl, type PostIndexEntry } from '@/lib/post-index';
+import { tagGradients } from '@/lib/tag-gradients';
 import '@/styles/spotlight.css';
-
-const tagGradients = [
-  'from-accent-pink/20 to-accent-rose/20',
-  'from-accent-violet/20 to-accent-pink/20',
-  'from-accent-blue/20 to-accent-teal/20',
-  'from-accent-teal/20 to-accent-blue/20',
-  'from-accent-gold/20 to-accent-rose/20',
-] as const;
-
-/**
- * 标签渐变循环语义：共 5 条，第 6 个标签复用第 0 条（index % 5）。
- * 视觉上 pink→violet→blue→teal→gold 五色循环，rose 作为终点色与起点粉色呼应。
- */
 
 /**
  * 骨架层——与卡片同尺寸、同圆角，absolute 铺满容器。
@@ -299,6 +287,17 @@ export default function PostCard({
                           <Clock size={11} />
                           {formatDate(post.date)}
                         </span>
+                        {/* 阅读时间：来自 posts-index.json 构建期字段（calcReadingMinutes），
+                            与详情页同源同值（公共化，不写死） */}
+                        {Number.isFinite(post.readingMinutes) && (
+                          <>
+                            <span className="text-stone-300 dark:text-gray-700">&middot;</span>
+                            <span className="flex items-center gap-1 text-xs text-stone-400 whitespace-nowrap dark:text-gray-600">
+                              <BookOpen size={11} />
+                              {post.readingMinutes} 分钟
+                            </span>
+                          </>
+                        )}
                         <span className="post-card-readmore inline-flex items-center gap-1 text-sm font-medium whitespace-nowrap">
                           {/* 命中区（外层 span）静止，位移在内层 span（红线 #53）；
                               染色挂内层（同标题：transform 与 clip 同元素） */}
