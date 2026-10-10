@@ -10,6 +10,8 @@
  * L33 的字段选取字面一致——未来字段变更改两处（此处 + 脚本）。
  * 见 ADR-0004。
  */
+import { calcReadingMinutes } from '@/lib/reading-minutes.mjs';
+
 export interface PostIndexEntry {
   slug: string;
   title: string;
@@ -34,15 +36,19 @@ export function postUrl(slug: string): string {
  *
  * 入参是 structural（不 import `Post`，保持本模块 client-safe）：
  * `Post` / `parsePostFile` 返回值都满足此结构。固化「content 不进索引」契约。
+ * 入参带 `content` 时（服务端 RSC 调用：归档/标签/详情页透传完整 Post）
+ * 用公共纯函数现算 readingMinutes，与 posts-index.json 同源同值——
+ * 归档/标签页的卡片网格因此也能显示阅读时间。
  */
 export function toIndexEntry<
   T extends { slug: string; title: string; date: string; excerpt: string; tags: string[] },
->(post: T): PostIndexEntry {
+>(post: T & { content?: string }): PostIndexEntry {
   return {
     slug: post.slug,
     title: post.title,
     date: post.date,
     excerpt: post.excerpt,
     tags: post.tags,
+    ...(post.content !== undefined ? { readingMinutes: calcReadingMinutes(post.content) } : {}),
   };
 }

@@ -21,24 +21,7 @@ import matter from 'gray-matter';
  * @param {string} content markdown 正文
  * @returns {number}
  */
-export function calcReadingMinutes(content) {
-  // 兜底：frontmatter 异常/调用方传 null 时软降级为 1 分钟，不崩构建
-  if (typeof content !== 'string') return 1;
-  const text = content
-    // 围栏代码块：容忍 4+ 反引号围栏（内嵌 ``` 的 markdown 教程文），须同一长度成对闭合
-    .replace(/^(`{3,})[\s\S]*?^\1[^\S\n]*$/gm, ' ')
-    .replace(/`[^`]*`/g, ' ')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1'); // 链接只保留可见文字
-  const cjk = text.match(/[\u4e00-\u9fff\u3400-\u4dbf]/g)?.length ?? 0;
-  // 中文按字符计数后，再把 CJK 标点/全角符号剔除，避免「，。」粘住英文词
-  // 被空白分词误计成 latin 词（双计虚高）
-  const latinWords = text
-    .replace(/[\u4e00-\u9fff\u3400-\u4dbf]/g, ' ')
-    .replace(/[\u3000-\u303f\uff01-\uff5e\u2018\u2019\u201c\u201d\u2026\u00b7]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean).length;
-  return Math.max(1, Math.ceil((cjk + latinWords) / 300));
-}
+export { calcReadingMinutes } from './reading-minutes.mjs';
 
 /**
  * 解析单篇 markdown 文章（frontmatter + 正文）。

@@ -25,7 +25,7 @@ describe('toIndexEntry', () => {
     });
   });
 
-  it('content / readingTime 不进索引（剔除契约）', () => {
+  it('content / readingTime 不进索引；带 content 入参时投影出 readingMinutes（同源契约）', () => {
     // 含 content + readingTime 的完整 Post 形状
     const entry = toIndexEntry({
       slug: 'react-19',
@@ -37,9 +37,26 @@ describe('toIndexEntry', () => {
       readingTime: 5,
     });
     expect(entry).not.toHaveProperty('content');
-    expect(entry).not.toHaveProperty('readingTime');
-    // 5 字段齐全
-    expect(Object.keys(entry).sort()).toEqual(['date', 'excerpt', 'slug', 'tags', 'title'].sort());
+    expect(entry).not.toHaveProperty('readingTime'); // 旧 reading-time 字段仍不透传
+    // 入参带 content（服务端 RSC：归档/标签/详情页）→ 现算 readingMinutes，
+    // 与 gen-posts-index.js 写入 posts-index.json 的字段同源同值
+    expect(entry).toHaveProperty('readingMinutes');
+    expect(typeof entry.readingMinutes).toBe('number');
+    // 完整 6 字段：5 字段 + readingMinutes
+    expect(Object.keys(entry).sort()).toEqual(
+      ['date', 'excerpt', 'readingMinutes', 'slug', 'tags', 'title'].sort(),
+    );
+  });
+
+  it('入参无 content（client 投影，如 SearchModal 场景）时不产出 readingMinutes', () => {
+    const entry = toIndexEntry({
+      slug: 'a',
+      title: 'A',
+      date: '2026-01-01',
+      excerpt: '',
+      tags: [],
+    });
+    expect(entry.readingMinutes).toBeUndefined();
   });
 
   it('返回值满足 PostIndexEntry 接口（类型契约）', () => {
