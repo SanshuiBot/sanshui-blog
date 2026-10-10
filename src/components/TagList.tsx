@@ -10,12 +10,16 @@ import {
 import { Hash } from 'lucide-react';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 
 function TagItem({ name, count, color }: { name: string; count: number; color: string }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   // 每次进入都 +1，作为涟漪 key：快速重新进入时旧涟漪作废、新涟漪重新播放
   const [rippleRun, setRippleRun] = useState(0);
+  // 红线 #32：tilt/涟漪/微光扫过/图标旋转均为装饰性 JS 动效，reduced 下整体跳过；
+  // 聚光光晕是纯 background 渐变（无位移），保留但亮度和缓（opacity 0.5 静态层）
+  const reduced = usePrefersReducedMotion();
 
   // Mouse-following spotlight
   const mx = useMotionValue(50);
@@ -42,16 +46,20 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
     const py = (e.clientY - r.top) / r.height;
     mx.set(px * 100);
     my.set(py * 100);
+    if (reduced) return; // reduced 下光标仍跟随（纯渐变无位移），tilt 不写
     ry.set((px - 0.5) * 6);
     rx.set(-(py - 0.5) * 6);
   };
 
   const onHoverStart = () => {
     setIsHovered(true);
-    setRippleRun((r) => r + 1);
+    if (!reduced) setRippleRun((r) => r + 1); // 涟漪是装饰性扩散动画，reduced 下不播
   };
   const onLeave = () => {
     setIsHovered(false);
+    // 涟漪随离开一并作废：中途切 reduced 时涟漪不再递增也不再播放完成回调，
+    // 残留的 rippleRun 会让静态涟漪环（opacity 0.9）一直挂在 DOM 上
+    setRippleRun(0);
     mx.set(50);
     my.set(50);
     rx.set(0);
@@ -69,14 +77,15 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
           className="tag-pill group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full glass glass-flat border border-black/[0.06] overflow-hidden dark:border-white/10"
           style={{ transformStyle: 'preserve-3d' }}
         >
-          {/* Spotlight */}
+          {/* Spotlight（reduced 下不播 opacity 过渡：0.5 静态亮度即终态，MotionValue
+              inline style 不受 CSS 全局 0.01ms 压制，须 JS 侧跳过） */}
           <motion.span
             aria-hidden
             className="absolute inset-0 rounded-full pointer-events-none"
-            style={{ background: spotlight }}
+            style={{ background: spotlight, opacity: reduced ? 0.5 : undefined }}
             initial={false}
-            animate={{ opacity: isHovered ? 1 : 0.5 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            animate={reduced ? undefined : { opacity: isHovered ? 1 : 0.5 }}
+            transition={reduced ? undefined : { duration: 0.25, ease: 'easeOut' }}
           />
 
           {/* 3D tilt layer */}
@@ -102,11 +111,11 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
             />
           )}
 
-          {/* Hash icon with colored glow */}
+          {/* Hash icon with colored glow（图标旋转是装饰性动效，reduced 下不转，仅保留辉光变化） */}
           <motion.span
             className="relative flex items-center justify-center"
             animate={{
-              rotate: isHovered ? 360 : 0,
+              rotate: !reduced && isHovered ? 360 : 0,
               filter: isHovered
                 ? `drop-shadow(0 0 8px color-mix(in srgb, ${color} 70%, transparent))`
                 : `drop-shadow(0 0 2px color-mix(in srgb, ${color} 25%, transparent))`,
@@ -124,9 +133,10 @@ function TagItem({ name, count, color }: { name: string; count: number; color: s
             ({count})
           </span>
 
-          {/* Shimmer sweep on hover */}
+          {/* Shimmer sweep on hover（装饰性循环扫光，reduced 下不渲染；
+              不用 AnimatePresence：key 变化即重建，避免退出动画的 onAnimationComplete 提前清掉新涟漪） */}
           <AnimatePresence>
-            {isHovered && (
+            {isHovered && !reduced && (
               <motion.span
                 key="shimmer"
                 initial={{ opacity: 0 }}

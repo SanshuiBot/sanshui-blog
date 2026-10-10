@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useMotionValue, useSpring } from 'framer-motion';
 import type { MotionValue } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import { spotlightMove } from '@/lib/spotlight';
 
 /**
@@ -46,6 +47,10 @@ export default function CardSpotlight({
   const ry = useMotionValue(0);
   const srx = useSpring(rx, { stiffness: 120, damping: 15 });
   const sry = useSpring(ry, { stiffness: 120, damping: 15 });
+  // 红线 #32：3D tilt 是装饰性 JS 动效，prefers-reduced-motion 下跳过（不再写 rotate，
+  // MotionValue 恒 0）；坐标分发保留——聚光光晕是 hover 即时反馈且本体为纯 CSS
+  // （globals.css 的 reduced 全局规则已把其过渡压到 0.01ms），不受本阀门影响。
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     onRefs({
@@ -56,6 +61,7 @@ export default function CardSpotlight({
         if (!el) return;
         // 共享坐标写入（卡片根 + 染色元素各自盒）；返回的 rect 复用来算 tilt，少读一次布局
         const r = spotlightMove(el, e, dyedSelector);
+        if (reduced) return;
         const px = (e.clientX - r.left) / r.width;
         const py = (e.clientY - r.top) / r.height;
         ry.set((px - 0.5) * maxTilt);
@@ -69,9 +75,11 @@ export default function CardSpotlight({
     });
     // 约定 #21：StrictMode 双执行下，cleanup 将引用置 null，
     // 使第二次 mount 可安全覆盖，且首次 mount 的实例可被 GC。
+    // deps 带 reduced：reduced 闭包必须跟随偏好实时变化（中途切换 reduced-motion 也要生效）；
+    // 其余（onRefs/outerRef/rx/ry/srx/sry/dyedSelector/maxTilt）为稳定引用或构造期常量，豁免
     return () => onRefs(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // onRefs is stable (function ref), dependencies intentionally empty
+  }, [reduced]);
 
   return null;
 }

@@ -117,12 +117,12 @@ sanshui-blog/
 │   │   ├── AppShell.tsx        # 布局壳 (Navbar + main + Footer)
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
 │   │   ├── Home/               # HeroParallax（视差拼贴首屏，3 深度层）· HomeHydration（懒加载入口）· PostsList
-│   │   ├── Post/               # PostCard · PostGrid · PostContent · PostMeta · PostNav · PostDone · PostComments (Giscus 评论) · TableOfContents · CodeCopyInjector · CardSpotlight (spotlight/3D tilt 延迟挂载) · ReadingProgress (环形进度回顶按钮)
+│   │   ├── Post/               # PostCard · PostGrid · PostContent · PostMeta · PostNav · PostDone · PostComments (Giscus 评论) · TableOfContents · CodeCopyInjector · CardSpotlight (tilt 弹簧 + 聚光坐标分发，无渲染辅助) · ReadingProgress (环形进度回顶按钮)
 │   │   ├── About/              # AboutContent · ResumeTerminal (流式打印简历)
 │   │   ├── Projects/           # ProjectsContent（项目卡片墙，统一尺寸 + 鼠标跟随光晕）
 │   │   ├── Archive/            # FilterDropdown（归档年份/标签筛选）
 │   │   ├── Links/ · NotFound/ · TagList
-│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop (现仅 Footer 用) · ThemeColorSync · TerminalShell · useDismiss · useScrollLock · useIsBodyScrollLocked (进度判锁基元) · useFocusTrap · usePrefersReducedMotion · useSafeTimeout · useScrollThumbGeometry · ErrorBoundary
+│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop (现仅 Footer 用) · ThemeColorSync · TerminalShell · SpotlightTilt (全站卡片统一 hover 3D + 聚光坐标分发壳) · useDismiss · useScrollLock · useIsBodyScrollLocked (进度判锁基元) · useFocusTrap · usePrefersReducedMotion · useSafeTimeout · useScrollThumbGeometry · ErrorBoundary
 │   └── lib/
 │       ├── types.ts            # Post 类型定义（server-only）
 │       ├── posts.ts            # 文章读取（单次装载，无 mtime 缓存；slug 解码统一兜底）
@@ -459,7 +459,8 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 22 + npm 缓存、`npm ci` �
 - **行尾统一 LF**：`.prettierrc` 的 `endOfLine: "lf"` + 仓库根 `.gitattributes`（`* text=auto eol=lf`）——Windows 上 prettier 写 LF、git 按 LF 归一，避免 CRLF/LF 幻影 diff 与「LF will be replaced by CRLF」警告；新增文件保持 LF
 - **Focus trap 补充（移动端 TOC）**：移动端 TOC 抽屉打开时通过 `useFocusTrap` 将 Tab 焦点限制在抽屉内，关闭后还原焦点，补上键盘用户的 a11y 缺口
 - **Error Boundary 全站兜底**：`src/components/ErrorBoundary.tsx` 包裹 Providers 顶层，任何 client 组件抛异常时显示错误 UI + 重试按钮，避免整页白屏。`getDerivedStateFromError` / `componentDidCatch` 需加 `override` 关键字（tsconfig `noImplicitOverride`）
-- **CardSpotlight 延迟挂载**：PostCard 的 spotlight + 3D tilt 效果收口在 `src/components/Post/CardSpotlight.tsx`，仅在非骨架模式下挂载；effect cleanup 调 `onRefs(null)` 使 StrictMode 双执行幂等、MotionValue 实例可被 GC
+- **卡片 hover 3D 收口 `UI/SpotlightTilt`**：四类卡片（PostCard/PostNav/ProjectsContent/LinksContent）的 hover 3D tilt + 聚光坐标分发统一收口在 `UI/SpotlightTilt.tsx`（壳 = perspective + 命中区；tilt 层 = rotateX/Y 弹簧；`CardSpotlight` 是其内部的无渲染辅助）。新增聚光卡片直接 `<SpotlightTilt dyedSelector="...">` 包住卡面，别再手抄；`dyedSelector` 必传（漏传时染色元素只有卡片根坐标，渐变圆心跑出自身盒外、hover 染色失效——「阅读」按钮曾因此反复修不好）；骨架槽位传 `enabled={false}` 不创建 Spring 实例；effect cleanup 调 `onRefs(null)` 使 StrictMode 双执行幂等、MotionValue 实例可被 GC
+- **MotionValue 内联 style 不受 CSS 全局 reduced 规则约束**：tilt/rotate/scale 等经 MotionValue 写成 inline style 的动画，globals.css 的 0.01ms 压制管不住，必须在 JS 侧用 `usePrefersReducedMotion()` 自检跳过（deps 带上 `reduced`，中途切换偏好也要生效）——CardSpotlight tilt、TagList tilt/涟漪/图标旋转/微光扫过均已接入该阀门
 - **搜索框无障碍**：SearchModal 搜索框已添加 `id="search-input"`，消除 Lighthouse 表单字段无障碍警告
 - **搜索匹配逻辑收口 `lib/search.ts`**：⌘K 的匹配（空格分词多关键词 AND、`splitByTerms` 高亮片段）是纯函数，组件只渲染；契约测试在 `tests/search.test.ts`。改匹配规则改 lib，不要动组件
 - **CSS 独立 `scale`/`translate` 属性**：要与 Framer Motion 的 inline `transform`（如 Hero CTA 的跟手 `x/y`）叠加的缩放/位移，用 `scale:` / `translate:` 独立属性——`transform` 会被内联样式覆盖失效。支持 Chrome 104+ / FF 72+ / Safari 14.1+（2026 年无兼容顾虑）

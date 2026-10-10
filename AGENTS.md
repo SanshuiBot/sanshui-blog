@@ -60,7 +60,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 29. 弹层关闭统一 `useDismiss`（ref 包开关+浮层）。
 30. `posts-index.json` 是产物（prettierignore），别手动格式化。
 31. Turbopack 解析不了 Tailwind v4.3 CSS，dev/build 用 `--webpack`，别移除。
-32. 动画优先纯 CSS（自动合规 reduced-motion 0.01ms）；装饰性 JS 动画（光晕/点击特效）纳入 `AmbientEffects` 的 reduced-motion 阀门；检测统一走 `UI/usePrefersReducedMotion`，别手抄 matchMedia。
+32. 动画优先纯 CSS（自动合规 reduced-motion 0.01ms）；装饰性 JS 动画（光晕/点击特效）纳入 `AmbientEffects` 的 reduced-motion 阀门；检测统一走 `UI/usePrefersReducedMotion`，别手抄 matchMedia。**framer MotionValue 内联 style（tilt/rotate 等）不受 CSS 全局 reduced 规则约束**，必须在 JS 侧跳过（历史漏点：CardSpotlight tilt、TagList tilt/涟漪/图标旋转）；卡片 hover 3D 收口 `UI/SpotlightTilt`（壳+tilt+坐标分发），新增卡片别再手抄。
 33. 仓库内图片用 `<Image />`，别用原生 `<img>`（外部小图例外）。
 34. 图片 onError 降级走 state，不操作 DOM。
 35. CSS 集中 `src/styles/`，禁止组件目录散落 .css。

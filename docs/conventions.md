@@ -79,6 +79,8 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 **装饰性 JS 动效实例化开销**：`PostCard` 的 3D tilt 效果收口在 `src/components/Post/CardSpotlight.tsx`（光晕/文字染色已纯 CSS 化，见下）——作为无渲染辅助组件，仅在卡片非骨架时挂载（`!skeleton`），骨架槽位不创建 MotionValue/Spring 实例。挂载后通过 `onRefs` 回调向父组件暴露 MotionValue，父组件用 state 存储并在渲染期读取（绕开 ref 在渲染期的访问警告）。**约定 #21**：effect cleanup 必须调用 `onRefs(null)`，使 StrictMode 双执行下第二次 mount 可安全覆盖首次创建的实例，且 MotionValue 可被 GC。
 
+**卡片 hover 3D 收口（`UI/SpotlightTilt.tsx`）**：四类卡片（PostCard、PostNav、ProjectsContent、LinksContent）的 hover 3D tilt + 聚光坐标分发统一收口在 `SpotlightTilt`（壳 = perspective + mousemove 命中区 + CardSpotlight 挂载；tilt 层 = rotateX/Y 弹簧，MotionValue 订阅零重渲染）。新增聚光卡片直接 `<SpotlightTilt dyedSelector="...">` 包住卡面，**别再手抄**：`dyedSelector` 必传（TS 强制）——漏传时染色元素只有卡片根坐标，渐变圆心跑出自身盒外、hover 染色失效（PostCard「阅读」按钮曾因此反复修不好，根因是坐标未写入而非 CSS）；`maxTilt` 按卡片尺寸取（文章/友链/上下篇 5°、项目卡 2.5° 更克制）；卡面不透明时经 `glowSlot` 把光晕层渲染在 tilt 层之后（不变量 4）；骨架槽位传 `enabled={false}` 不创建 Spring 实例。
+
 **聚光（Spotlight）全站收口（约定 #40）**：鼠标跟随聚光的三个部件——跟随光晕层 `.spotlight-glow`、边框发光层 `.spotlight-border-glow`、文字聚光染色 `.spotlight-dye`——统一在 `src/styles/spotlight.css`，坐标写入统一在 `src/lib/spotlight.ts` 的 `spotlightMove()`（卡片根写一份 px 供光晕层，每个染色元素按自身盒另写一份 px 供染色层，WeakMap 缓存染色节点）。四个卡片（PostCard、PostNav、ProjectsContent、LinksContent）均已复用：卡片根加 `.spotlight-card`、光晕/边框层用共享类、染色元素加 `.spotlight-dye` 并在其 CSS 声明 `--spotlight-dye-base`（亮基规则 + `html.dark` 覆盖，对齐自身基色）。**新增聚光卡片必须复用这套公共实现，不许再手抄**；尺寸/浓度经 `--spotlight-glow-radius`(320px)/`--spotlight-dye-radius`(120px)/`--spotlight-glow-color`/`--spotlight-border-color`/`--spotlight-dye-color` 变量覆写。三条不变量（详见 spotlight.css 头注释）：染色类只能挂在 transform 与染色同元素的文字节点上（Chromium `background-clip:text` 不沿被 transform 的后代绘制）；mouseleave 不复位 `--mx/--my`（光晕原地淡出防「闪一次」）；染色元素不得声明 color 过渡（unhover 露白）——页内如有纯色 hover 回落规则，须用 `@supports not (background-clip: text)` 守卫，否则会在层叠中压过 `.spotlight-dye` 的 `color: transparent`。**光晕层的 DOM 顺序按卡面底料决定**：卡面半透明（项目卡 `bg-white/70`、友链卡 `rgba(0,0,0,0.02)`、PostNav 玻璃底）时 `.spotlight-glow` 排在内容壳之前即可透出；卡面不透明（PostCard 的 `bg-white`/`dark:bg-surface`）时必须排在内容壳**之后**，否则被整块盖住（实测强制纯红光晕、卡内空白像素一像素不变）。
 
 ## 12. 亮色为基准、暗色为覆盖
@@ -231,6 +233,7 @@ globals.css 的 `@media (prefers-reduced-motion: reduce)` 块把 `animation-dura
 
 - **纯 CSS 动画自动合规**：`transition` / `animation` 实现的 hover、下划线滑入等被 `*` 选择器 + `!important` 自动压到 0.01ms。
 - **Framer Motion 绕开降级**：Framer 用 JS rAF + inline style 驱动位移，inline style 的 `transform` 不受 `transition-duration` 影响。这是「功能性可见动画」的有意例外——但 hover 变色仍走纯 CSS（#25）。
+- **⚠️ MotionValue 内联 style 不受 CSS 全局 reduced 规则约束**：`rotateX`/`rotateY`/`scale` 等经 MotionValue 写成 inline style 的动画，CSS 的 0.01ms 压制管不住——**必须在 JS 侧用 `usePrefersReducedMotion()` 自检跳过**（deps 带上 `reduced`，中途切换偏好也要生效）。历史漏点：CardSpotlight tilt（全站四类卡片的 3D 倾斜）、TagList tilt/涟漪/图标旋转/微光扫过，均已补齐；新增同类动效应以此为鉴。
 - **装饰性 JS 动画入阀（站内已实现）**：`AmbientEffects` 用 `prefers-reduced-motion` 门控 `CursorGlow`（光晕）与 `ClickEffect`（点击特效）；`ScrollProgress` 保留功能性指示条但 spring 平滑用 `useReducedMotion()` 守卫；`ParticleField` 内部自检（reduced 下只画静态帧）。新增装饰性 JS 动画记得入阀（见 §11）。
 - **新增动画前 checklist**：
   1. 优先纯 CSS（`transition` + `transform`/`opacity`/`width` 等合成层属性），自动被 0.01ms 降级覆盖。

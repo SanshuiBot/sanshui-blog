@@ -31,13 +31,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpRight, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
+import SpotlightTilt from '@/components/UI/SpotlightTilt';
 import { formatDate } from '@/lib/formatDate';
 import { postUrl, type PostIndexEntry } from '@/lib/post-index';
-import CardSpotlight from './CardSpotlight';
-import type { SpotlightRefs } from './CardSpotlight';
 import '@/styles/spotlight.css';
 
 const tagGradients = [
@@ -110,7 +109,6 @@ export default function PostCard({
    */
   skeletonDelayMs?: number;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
   const router = useRouter();
   // 不用 withBase()：next/link 的 <Link> 和 router.prefetch 都会自动注入 basePath
@@ -131,10 +129,7 @@ export default function PostCard({
     router.prefetch(postHref);
   };
 
-  // 骨架模式不挂载 spotlight 子组件，节省 MotionValue/Spring 实例。
-  // 用 state 存储 refs（而非 ref.current）：CardSpotlight effect 调用 onRefs 后触发重渲染，
-  // 保证渲染期能安全访问 spotlight 值。
-  const [spotlight, setSpotlight] = useState<SpotlightRefs | null>(null);
+  // 骨架模式不挂载 spotlight 子组件（SpotlightTilt enabled=false），节省 MotionValue/Spring 实例。
 
   // 骨架→卡片切换的过渡：
   //  - 骨架入场：快速淡入（duration 0.15s）+ 按槽位 delay 错峰（skeletonDelayMs），
@@ -191,37 +186,27 @@ export default function PostCard({
             animate={{ opacity: 1, scale: 1, transition: cardEnter }}
             style={{ pointerEvents: 'auto' }}
           >
-            <div
-              ref={ref}
-              onMouseMove={(e) => spotlight?.onMove(e)}
-              onMouseLeave={() => spotlight?.onLeave()}
-              className="group spotlight-card relative h-full rounded-2xl"
-              style={{ perspective: '800px' }}
-            >
-              {/* Spotlight — 仅在非骨架模式下挂载，节省 Spring 实例。
-                  dyedSelector 必传：染色元素（标题/摘要/阅读按钮）的 --mx/--my 要按「自身盒」
-                  单独写（lib/spotlight.ts），省略时只有卡片根坐标，继承到底部小元素后
-                  渐变圆心跑出元素盒外，阅读按钮 hover 永远照不到光（不变色） */}
-              {!skeleton && (
-                <CardSpotlight
-                  ref={ref}
-                  onRefs={setSpotlight}
-                  dyedSelector=".post-card-title-inner, .post-card-excerpt, .post-card-readmore-inner"
-                />
-              )}
-
-              {/* Card wrapper with CSS hover（纯 CSS 替代 Framer whileHover，约定 #25/#32/#42）
-                  rotateX/Y 通过 framer 订阅 MotionValue（不可直接字符串插值：MotionValue 无
-                  toString，模板会产出 "rotateX([object Object]deg)" 且渲染期不重读最新值）；
-                  scale 等其余缩放/位移用独立 CSS 属性（非 transform），与之叠加 */}
-              <motion.div
-                className="post-card-hover-target p-[1px] rounded-2xl bg-black/[0.03] h-full post-card-shell shadow-neon-hover dark:bg-white/10"
-                style={{
-                  rotateX: spotlight?.rotateX ?? 0,
-                  rotateY: spotlight?.rotateY ?? 0,
-                  transformStyle: 'preserve-3d',
-                }}
+            <div className="group spotlight-card relative h-full rounded-2xl">
+              {/* hover 3D tilt + 聚光坐标分发收口 SpotlightTilt（全站卡片统一）：
+                  染色选择器传标题/摘要/阅读按钮；骨架槽位模式 enabled=false 不创建 Spring 实例 */}
+              <SpotlightTilt
+                dyedSelector=".post-card-title-inner, .post-card-excerpt, .post-card-readmore-inner"
+                enabled={!skeleton}
+                className="h-full"
+                tiltClassName="post-card-hover-target p-[1px] rounded-2xl bg-black/[0.03] h-full post-card-shell shadow-neon-hover dark:bg-white/10"
+                glowSlot={
+                  /* Spotlight glow layer（纯 CSS 公共光晕，随 --mx/--my 移动）
+                      必须排在卡片壳之后（根节点最后一个子元素）：卡片内层 article 是不透明底
+                      （bg-white / dark:bg-surface），光晕若排在它前面会被整块盖住——实测把光晕
+                      色强制成纯红、卡内空白像素仍一像素不变（完全遮蔽）。项目页/友链页的卡面底色
+                      是半透明的，光晕排在前面的兄弟位置即可透出，此处不能照抄那个顺序。
+                      （经 glowSlot 渲染在 tilt 层之后——spotlight.css 不变量 4） */
+                  <div className="spotlight-glow" aria-hidden="true" />
+                }
               >
+                {/* rotateX/Y 由 SpotlightTilt 的 tilt 层承担；scale 等其余缩放/位移用独立 CSS 属性
+                    （非 transform），与之叠加（红线 #42） */}
+
                 {/* Border glow */}
                 <div
                   aria-hidden
@@ -328,14 +313,7 @@ export default function PostCard({
                     </Link>
                   </div>
                 </article>
-              </motion.div>
-
-              {/* Spotlight glow layer（纯 CSS 公共光晕，随 --mx/--my 移动）
-                  必须排在卡片壳之后（根节点最后一个子元素）：卡片内层 article 是不透明底
-                  （bg-white / dark:bg-surface），光晕若排在它前面会被整块盖住——实测把光晕
-                  色强制成纯红、卡内空白像素仍一像素不变（完全遮蔽）。项目页/友链页的卡面底色
-                  是半透明的，光晕排在前面的兄弟位置即可透出，此处不能照抄那个顺序。 */}
-              <div className="spotlight-glow" aria-hidden="true" />
+              </SpotlightTilt>
             </div>
           </motion.div>
         )}

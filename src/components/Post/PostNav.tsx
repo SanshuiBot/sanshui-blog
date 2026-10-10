@@ -2,9 +2,9 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useNavigationLoading } from '@/components/UI/NavigationLoading';
+import SpotlightTilt from '@/components/UI/SpotlightTilt';
 import Tooltip from '@/components/UI/Tooltip';
 import { useIsOverflow } from '@/components/UI/useIsOverflow';
-import { spotlightMove } from '@/lib/spotlight';
 import '@/styles/spotlight.css';
 
 interface Props {
@@ -31,62 +31,90 @@ function TruncatedTitle({ title }: { title: string }) {
 }
 
 /**
- * 聚光跟随：经 lib/spotlight.ts 写入坐标（卡片根供光晕层、染色元素按自身盒供染色层，
- * 统一 px），纯 CSS 渲染 .spotlight-glow / .spotlight-dye——不进 React 状态，
- * 高频 mousemove 零重渲染（约定 #25/#47）。
+ * 单张上下篇卡：hover 3D tilt + 聚光坐标分发收口 SpotlightTilt
+ * （同 PostCard/项目卡/友链卡，全站统一），纯 CSS 渲染 .spotlight-glow /
+ * .spotlight-dye——高频 mousemove 零重渲染（约定 #25/#47）。
  */
-function handleSpotlightMove(e: React.MouseEvent<HTMLAnchorElement>) {
-  spotlightMove(e.currentTarget, e, '.post-nav-title, .post-nav-label');
+function PostNavCard({
+  href,
+  slug,
+  label,
+  title,
+  side,
+}: {
+  href: string;
+  slug: string;
+  label: string;
+  title: string;
+  side: 'prev' | 'next';
+}) {
+  const { startNavigation } = useNavigationLoading();
+  const isPrev = side === 'prev';
+
+  return (
+    <div className="post-nav-card group h-full">
+      <SpotlightTilt
+        dyedSelector=".post-nav-title, .post-nav-label"
+        className="h-full"
+        tiltClassName="h-full"
+      >
+        <Link
+          href={href}
+          prefetch={false}
+          onClick={startNavigation}
+          className={`post-nav-link spotlight-card relative flex h-full items-start gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden ${
+            isPrev ? '' : 'justify-end'
+          }`}
+        >
+          {/* 边框发光层 + 光晕层（公共收口 styles/spotlight.css；半透明玻璃卡面，两层排内容之前即可透出） */}
+          <span className="spotlight-border-glow" aria-hidden="true" />
+          <span className="spotlight-glow" aria-hidden="true" />
+          {isPrev ? (
+            <span className="post-nav-chevron-prev">
+              <ChevronLeft size={18} className="mt-0.5 post-nav-icon shrink-0" />
+            </span>
+          ) : null}
+          <div className={`min-w-0 ${isPrev ? '' : 'text-right'}`}>
+            <div className="text-xs mb-1 post-nav-label spotlight-dye">{label}</div>
+            {/* key=slug：换文章时 props 变化但组件可能被复用，重挂载才能重测溢出
+                （title 不能作 key：两篇文章标题可能相同而 slug 不同，复用会沿用旧溢出测量） */}
+            <TruncatedTitle key={slug} title={title} />
+          </div>
+          {isPrev ? null : (
+            <span className="post-nav-chevron-next">
+              <ChevronRight size={18} className="mt-0.5 post-nav-icon shrink-0" />
+            </span>
+          )}
+        </Link>
+      </SpotlightTilt>
+    </div>
+  );
 }
 
 export default function PostNav({ prev, next }: Props) {
-  const { startNavigation } = useNavigationLoading();
   if (!prev && !next) return null;
 
   return (
     <nav className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4" aria-label="上下篇导航">
       {prev ? (
-        <div className="post-nav-card group">
-          <Link
-            href={`/posts/${prev.slug}/`}
-            prefetch={false}
-            onClick={startNavigation}
-            onMouseMove={handleSpotlightMove}
-            className="post-nav-link spotlight-card relative flex h-full items-start gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden"
-          >
-            <span className="spotlight-glow" aria-hidden="true" />
-            <span className="post-nav-chevron-prev">
-              <ChevronLeft size={18} className="mt-0.5 post-nav-icon shrink-0" />
-            </span>
-            <div className="min-w-0">
-              <div className="text-xs mb-1 post-nav-label spotlight-dye">上一篇</div>
-              {/* key=slug：换文章时 props 变化但组件可能被复用，重挂载才能重测溢出 */}
-              <TruncatedTitle key={prev.slug} title={prev.title} />
-            </div>
-          </Link>
-        </div>
+        <PostNavCard
+          href={`/posts/${prev.slug}/`}
+          slug={prev.slug}
+          label="上一篇"
+          title={prev.title}
+          side="prev"
+        />
       ) : (
         <div />
       )}
       {next ? (
-        <div className="post-nav-card group sm:col-start-2">
-          <Link
-            href={`/posts/${next.slug}/`}
-            prefetch={false}
-            onClick={startNavigation}
-            onMouseMove={handleSpotlightMove}
-            className="post-nav-link spotlight-card relative flex h-full items-start justify-end gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden"
-          >
-            <span className="spotlight-glow" aria-hidden="true" />
-            <div className="min-w-0 text-right">
-              <div className="text-xs mb-1 post-nav-label spotlight-dye">下一篇</div>
-              <TruncatedTitle key={next.slug} title={next.title} />
-            </div>
-            <span className="post-nav-chevron-next">
-              <ChevronRight size={18} className="mt-0.5 post-nav-icon shrink-0" />
-            </span>
-          </Link>
-        </div>
+        <PostNavCard
+          href={`/posts/${next.slug}/`}
+          slug={next.slug}
+          label="下一篇"
+          title={next.title}
+          side="next"
+        />
       ) : (
         <div />
       )}

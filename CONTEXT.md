@@ -54,7 +54,7 @@
 
 **命中区分层**: hover 位移/缩放动效的结构约定——外层元素静止只做命中区（`:hover` 判定/`group`），transform 放内层；写在判定元素自身会让光标在边缘反复 enter/leave 疯狂跳动，`translateY` 还会留「悬空带」（hover 态亮着但卡片已浮走）。纯 scale（外扩 ≤1px）与纯色/边框变色可直接写自身。详见 conventions §54。 _Avoid_: hover 抖动修复（指现象不是约定）、外层 transform
 
-**聚光染色文字**: `background-clip: text` 双层背景——上层以光标为圆心的 accent 径向渐变（`--mx/--my` 驱动），下层 hover 前基色兜底（兜底色必须 = hover 前基色，否则光斑离开变色），文字随光标远近连续变色；`@supports` 守卫回落纯色。用于 PostNav 标题/label、项目卡标题/描述、友链名/描述。 _Avoid_: 文字聚光、渐变文字（指 text-aurora 装饰）
+**聚光染色文字**: `background-clip: text` 双层背景——上层以光标为圆心的 accent 径向渐变（`--mx/--my` 驱动），下层 hover 前基色兜底（兜底色必须 = hover 前基色，否则光斑离开变色），文字随光标远近连续变色；`@supports` 守卫回落纯色。用于 PostCard 标题/摘要/阅读按钮、PostNav 标题/label、项目卡标题/描述、友链名/描述；坐标按染色元素各自盒写入（`lib/spotlight.ts`），卡片 3D 收口 `UI/SpotlightTilt`。 _Avoid_: 文字聚光、渐变文字（指 text-aurora 装饰）
 
 ## 项目页
 
@@ -62,7 +62,7 @@
 
 **竖线色哈希**: `hashBarColor(url)`——URL 确定性哈希到 15 色竖线色池的纯函数，同一 URL 恒同色。区别于 `Math.random()`：渲染期随机会触发 lint purity 报错且 hydration 不稳。 _Avoid_: 随机竖线色
 
-**鼠标跟随光晕**: 项目卡片 hover 光晕——`onMouseMove` 写 `--mx/--my` CSS 变量，`.project-card-glow`/`.project-card-border-glow` 纯 CSS 渐变层跟随，离开复位 50%/50% 淡出。与友链磁吸光晕同机制。 _Avoid_: hover 光晕、光标光晕（后者指 CursorGlow 全局光晕）
+**鼠标跟随光晕**: 卡片 hover 光晕——`SpotlightTilt` 经 `lib/spotlight.ts` 写 `--mx/--my` CSS 变量，`.spotlight-glow`/`.spotlight-border-glow`（共享收口 `styles/spotlight.css`）纯 CSS 渐变层跟随；mouseleave **不复位**坐标（光晕靠 opacity 原地淡出防「闪一次」）。项目卡光晕色经 `--spotlight-*-color` 覆写为每卡 accent。 _Avoid_: hover 光晕、光标光晕（后者指 CursorGlow 全局光晕）
 
 **语言色文字加深**: `.project-lang-text`——亮色覆盖用 `color-mix` 混黑加深（浅色语言如黄 `#f1e05a` 亮色下不加深看不清）；圆点保留原色。 _Avoid_: 语言名颜色
 

@@ -5,10 +5,10 @@ import { motion, type Variants } from 'framer-motion';
 import ArrowLink from '@/components/UI/ArrowLink';
 import Github from '@/components/UI/GithubIcon';
 import TerminalShell from '@/components/UI/TerminalShell';
+import SpotlightTilt from '@/components/UI/SpotlightTilt';
 import { siteConfig } from '@/lib/site';
 import { friendLinks } from '@/lib/links';
 import type { FriendLink } from '@/lib/links';
-import { spotlightMove } from '@/lib/spotlight';
 import '@/styles/terminal-links.css';
 import '@/styles/spotlight.css';
 
@@ -27,117 +27,93 @@ const item: Variants = {
 // 命令提示行逐字打出
 const promptChars = '~ ❯ ls ~/friends';
 
-// ── 磁吸元素类型契约 ──────────────────────────────────────────────────────────
-interface MagneticElement extends HTMLElement {
-  __unmount?: () => void;
-}
-
-// ── 磁吸光晕：坐标写入收口 lib/spotlight.ts（卡片根供光晕层、染色元素按自身盒供染色层） ──
-function attachMagneticGlow(el: HTMLElement | null) {
-  if (!el) return;
-  const handler = (e: MouseEvent) => {
-    spotlightMove(el, e, '.terminal-card-name-row, .terminal-card-desc');
-  };
-  el.addEventListener('mousemove', handler);
-  // 不在 mouseleave 时复位 --mx/--my：光晕层靠 opacity 过渡淡出，若此刻把坐标跳到
-  // 50%/50%（卡片正中），淡出中的光晕会先跳到中心再熄灭，视觉上「闪一次」。
-  // 渐变只在 :hover 时可见（非 hover 时 opacity:0），残留坐标无副作用，原地淡出即可。
-  // 记录 cleanup（供 React 卸载时调用，避免泄漏；约定 #21）
-  (el as MagneticElement).__unmount = () => {
-    el.removeEventListener('mousemove', handler);
-  };
-}
-
 // ── 卡片 ─────────────────────────────────────────────────────────────────────
-function LinkCard({ link, ref }: { link: FriendLink; ref?: (el: HTMLElement | null) => void }) {
+// hover 3D tilt + 聚光坐标分发收口 SpotlightTilt（同 PostCard/项目卡/上下篇卡，全站统一）。
+// 原手写磁吸光晕绑定（attachMagneticGlow）已由 SpotlightTilt 的坐标分发取代。
+function LinkCard({ link }: { link: FriendLink }) {
   const dotColor = link.color ?? 'rgb(var(--accent-violet-rgb))';
   const [faviconErr, setFaviconErr] = useState(false);
 
   return (
-    <motion.a
-      ref={ref}
-      href={link.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      variants={item}
-      className="terminal-link-card spotlight-card"
-    >
-      {/* 磁吸光晕层 + 边框发光层（公共收口 styles/spotlight.css，色源走共享默认 violet） */}
-      <div className="spotlight-glow" aria-hidden="true" />
-      <div className="spotlight-border-glow" aria-hidden="true" />
+    <motion.div variants={item}>
+      <SpotlightTilt
+        dyedSelector=".terminal-card-name-row, .terminal-card-desc"
+        className="h-full"
+        tiltClassName="h-full"
+      >
+        <a
+          href={link.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="terminal-link-card spotlight-card h-full"
+        >
+          {/* 光晕层 + 边框发光层（公共收口 styles/spotlight.css，色源走共享默认 violet；
+              半透明卡面，两层排内容之前即可透出） */}
+          <div className="spotlight-glow" aria-hidden="true" />
+          <div className="spotlight-border-glow" aria-hidden="true" />
 
-      {/* 彩色圆点 */}
-      <span className="terminal-card-dot" style={{ background: dotColor, color: dotColor }} />
+          {/* 彩色圆点 */}
+          <span className="terminal-card-dot" style={{ background: dotColor, color: dotColor }} />
 
-      {/* 图标区：自定义 icon > 显式配置的 faviconUrl > 默认 Globe。
-          不自动拼 /favicon.svg 抓取外部图标——省请求数（2026-09 调整） */}
-      <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center relative">
-        {link.icon ? (
-          <link.icon size={13} className="opacity-60" />
-        ) : link.faviconUrl ? (
-          <>
-            {/* 显式配置的 favicon：静态导出无优化器，用原生 img + state 降级，符合约定 #33/#34 */}
-            {/* favicon 加载失败时 display:none 释放占位，Globe 兜底（仅此时渲染，避免盖住已加载的图标） */}
-            {/* loading="eager"：显式退出 Chromium 懒加载干预（该干预会推迟视口外图片的 load/error 事件），保证 onError 降级立即触发 */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={link.faviconUrl}
-              alt=""
-              loading="eager"
-              fetchPriority="low"
-              className="w-4 h-4 opacity-60 rounded-sm object-contain"
-              style={faviconErr ? { display: 'none' } : undefined}
-              onError={() => setFaviconErr(true)}
-            />
-            {faviconErr && <Globe size={13} className="opacity-40 absolute inset-0 m-auto" />}
-          </>
-        ) : (
-          <Globe size={13} className="opacity-40" />
-        )}
-      </div>
+          {/* 图标区：自定义 icon > 显式配置的 faviconUrl > 默认 Globe。
+              不自动拼 /favicon.svg 抓取外部图标——省请求数（2026-09 调整） */}
+          <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center relative">
+            {link.icon ? (
+              <link.icon size={13} className="opacity-60" />
+            ) : link.faviconUrl ? (
+              <>
+                {/* 显式配置的 favicon：静态导出无优化器，用原生 img + state 降级，符合约定 #33/#34 */}
+                {/* favicon 加载失败时 display:none 释放占位，Globe 兜底（仅此时渲染，避免盖住已加载的图标） */}
+                {/* loading="eager"：显式退出 Chromium 懒加载干预（该干预会推迟视口外图片的 load/error 事件），保证 onError 降级立即触发 */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={link.faviconUrl}
+                  alt=""
+                  loading="eager"
+                  fetchPriority="low"
+                  className="w-4 h-4 opacity-60 rounded-sm object-contain"
+                  style={faviconErr ? { display: 'none' } : undefined}
+                  onError={() => setFaviconErr(true)}
+                />
+                {faviconErr && <Globe size={13} className="opacity-40 absolute inset-0 m-auto" />}
+              </>
+            ) : (
+              <Globe size={13} className="opacity-40" />
+            )}
+          </div>
 
-      {/* 文字信息 */}
-      <div className="terminal-card-info">
-        <span className="terminal-card-name-row spotlight-dye">
-          {link.name}
-          <svg
-            className="terminal-card-arrow"
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M7 17 17 7" />
-            <path d="M7 7h10v10" />
-          </svg>
-        </span>
-        <p className="terminal-card-desc spotlight-dye">{link.desc}</p>
-      </div>
-    </motion.a>
+          {/* 文字信息 */}
+          <div className="terminal-card-info">
+            <span className="terminal-card-name-row spotlight-dye">
+              {link.name}
+              <svg
+                className="terminal-card-arrow"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M7 17 17 7" />
+                <path d="M7 7h10v10" />
+              </svg>
+            </span>
+            <p className="terminal-card-desc spotlight-dye">{link.desc}</p>
+          </div>
+        </a>
+      </SpotlightTilt>
+    </motion.div>
   );
 }
 
 // ── 主组件 ────────────────────────────────────────────────────────────────────
 export default function LinksContent() {
-  const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const promptRef = useRef<HTMLDivElement>(null);
   const charIndexRef = useRef(0);
   const typeTimerRef = useRef<number>(0);
-
-  // 挂载：绑定每张卡片的磁吸追踪
-  useEffect(() => {
-    const els = cardRefs.current;
-    els.forEach(attachMagneticGlow);
-    return () => {
-      els.forEach((el) => {
-        (el as MagneticElement)?.__unmount?.();
-      });
-    };
-  }, []);
 
   // 挂载：命令提示行打字机效果
   useEffect(() => {
@@ -207,14 +183,8 @@ export default function LinksContent() {
             animate="show"
             className="terminal-grid"
           >
-            {friendLinks.map((link, i) => (
-              <LinkCard
-                key={link.url}
-                link={link}
-                ref={(el) => {
-                  cardRefs.current[i] = el;
-                }}
-              />
+            {friendLinks.map((link) => (
+              <LinkCard key={link.url} link={link} />
             ))}
           </motion.div>
         </div>
