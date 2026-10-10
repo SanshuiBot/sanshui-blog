@@ -198,8 +198,17 @@ export default function PostCard({
               className="group spotlight-card relative h-full rounded-2xl"
               style={{ perspective: '800px' }}
             >
-              {/* Spotlight — 仅在非骨架模式下挂载，节省 Spring 实例 */}
-              {!skeleton && <CardSpotlight ref={ref} onRefs={setSpotlight} />}
+              {/* Spotlight — 仅在非骨架模式下挂载，节省 Spring 实例。
+                  dyedSelector 必传：染色元素（标题/摘要/阅读按钮）的 --mx/--my 要按「自身盒」
+                  单独写（lib/spotlight.ts），省略时只有卡片根坐标，继承到底部小元素后
+                  渐变圆心跑出元素盒外，阅读按钮 hover 永远照不到光（不变色） */}
+              {!skeleton && (
+                <CardSpotlight
+                  ref={ref}
+                  onRefs={setSpotlight}
+                  dyedSelector=".post-card-title-inner, .post-card-excerpt, .post-card-readmore-inner"
+                />
+              )}
 
               {/* Card wrapper with CSS hover（纯 CSS 替代 Framer whileHover，约定 #25/#32/#42）
                   rotateX/Y 通过 framer 订阅 MotionValue（不可直接字符串插值：MotionValue 无
