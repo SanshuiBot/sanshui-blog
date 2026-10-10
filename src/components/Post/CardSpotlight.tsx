@@ -29,8 +29,9 @@ export interface SpotlightRefs {
 interface CardSpotlightProps {
   ref: React.RefObject<HTMLDivElement | null>;
   onRefs: (refs: SpotlightRefs | null) => void;
-  /** 染色元素选择器（传给 spotlightMove 的 dyedSelector）；省略时只写卡片根坐标 */
-  dyedSelector?: string;
+  /** 染色元素选择器（传给 spotlightMove 的 dyedSelector）——必传：
+      省略时只有卡片根坐标，染色元素继承后渐变圆心跑出自身盒外，hover 染色失效 */
+  dyedSelector: string;
   /** tilt 最大角度（deg），默认 5 */
   maxTilt?: number;
 }
