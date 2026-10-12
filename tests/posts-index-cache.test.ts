@@ -53,4 +53,14 @@ describe('getPostsIndex（共享缓存 Promise）', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([])));
     await expect(getPostsIndex()).resolves.toEqual([]);
   });
+
+  it('合法 JSON 但形状非数组（如代理劫持返回对象）时 reject 且清缓存，不把坏数据交给消费方', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ unexpected: true })));
+    const { getPostsIndex } = await import('@/lib/posts-index-cache');
+
+    await expect(getPostsIndex()).rejects.toBeInstanceOf(Error);
+    // 缓存已清空：换成数组响应后可正常恢复
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse([])));
+    await expect(getPostsIndex()).resolves.toEqual([]);
+  });
 });

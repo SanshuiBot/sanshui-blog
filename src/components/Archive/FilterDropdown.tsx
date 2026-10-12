@@ -11,9 +11,11 @@
  */
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Filter, Hash, X } from 'lucide-react';
 import { useDismiss } from '@/components/UI/useDismiss';
 import { useFocusTrap } from '@/components/UI/useFocusTrap';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 
 interface TagItem {
   name: string;
@@ -35,6 +37,21 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
     if (open) panelRef.current?.focus();
   }, [open]);
 
+  // 进出场为装饰性动效（红线 #32/#43）：reduced-motion 下 initial=false 瞬切，
+  // 不设 exit —— EXIT_FADE 与入场动效均跳过，关闭即卸载，不做淡出/位移
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const panelMotion = prefersReducedMotion
+    ? ({
+        initial: false,
+        animate: { opacity: 1 },
+      } as const)
+    : ({
+        initial: { opacity: 0, y: -6, scale: 0.97 },
+        animate: { opacity: 1, y: 0, scale: 1 },
+        exit: { opacity: 0, y: -6, scale: 0.97, transition: { duration: 0.12 } },
+        transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
+      } as const);
+
   return (
     <div className="relative shrink-0" ref={containerRef}>
       <button
@@ -52,60 +69,64 @@ export default function FilterDropdown({ tags }: { tags: TagItem[] }) {
         </span>
       </button>
 
-      {open && (
-        <div
-          ref={panelRef}
-          role="dialog"
-          aria-label="按标签筛选"
-          tabIndex={-1}
-          className="archive-filter-panel absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl glass-heavy p-4 z-50 outline-none"
-        >
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-medium text-stone-500 uppercase tracking-widest dark:text-gray-500">
-              按标签筛选
-            </span>
-            <button
-              onClick={() => setOpen(false)}
-              className="archive-filter-close p-1 rounded-md transition-colors duration-200 cursor-pointer"
-              aria-label="关闭筛选"
-            >
-              <X size={14} />
-            </button>
-          </div>
-
-          <div className="flex flex-wrap gap-1.5">
-            {tags.map((t) => (
-              <Link
-                key={t.name}
-                href={`/tags/${encodeURIComponent(t.name)}/`}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-label="按标签筛选"
+            tabIndex={-1}
+            style={{ transformOrigin: 'top right' }}
+            className="archive-filter-panel absolute right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl glass-heavy p-4 z-50 outline-none"
+            {...panelMotion}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-xs font-medium text-stone-500 uppercase tracking-widest dark:text-gray-500">
+                按标签筛选
+              </span>
+              <button
                 onClick={() => setOpen(false)}
-                className="archive-filter-chip archive-filter-chip-name archive-filter-chip-count group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs glass glass-flat border border-black/[0.06] hover:border-accent-violet/40 transition-colors duration-200 dark:border-white/10"
+                className="archive-filter-close p-1 rounded-md transition-colors duration-200 cursor-pointer"
+                aria-label="关闭筛选"
               >
-                <Hash
-                  size={10}
-                  className="archive-filter-chip-hash archive-filter-chip-hash-hover"
-                />
-                <span className="archive-filter-chip-name-text transition-colors duration-200">
-                  {t.name}
-                </span>
-                <span className="archive-filter-chip-count-text text-[10px] transition-colors">
-                  {t.count}
-                </span>
-              </Link>
-            ))}
-          </div>
+                <X size={14} />
+              </button>
+            </div>
 
-          <div className="mt-3 pt-3 border-t border-black/[0.1] dark:border-white/10">
-            <Link
-              href="/tags/"
-              onClick={() => setOpen(false)}
-              className="archive-filter-all block text-center text-xs transition-colors duration-200"
-            >
-              查看全部标签 →
-            </Link>
-          </div>
-        </div>
-      )}
+            <div className="flex flex-wrap gap-1.5">
+              {tags.map((t) => (
+                <Link
+                  key={t.name}
+                  href={`/tags/${encodeURIComponent(t.name)}/`}
+                  onClick={() => setOpen(false)}
+                  className="archive-filter-chip archive-filter-chip-name archive-filter-chip-count group inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs glass glass-flat border border-black/[0.06] hover:border-accent-violet/40 transition-colors duration-200 dark:border-white/10"
+                >
+                  <Hash
+                    size={10}
+                    className="archive-filter-chip-hash archive-filter-chip-hash-hover"
+                  />
+                  <span className="archive-filter-chip-name-text transition-colors duration-200">
+                    {t.name}
+                  </span>
+                  <span className="archive-filter-chip-count-text text-[10px] transition-colors">
+                    {t.count}
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-black/[0.1] dark:border-white/10">
+              <Link
+                href="/tags/"
+                onClick={() => setOpen(false)}
+                className="archive-filter-all block text-center text-xs transition-colors duration-200"
+              >
+                查看全部标签 →
+              </Link>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

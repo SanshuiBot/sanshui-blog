@@ -33,10 +33,39 @@ describe('parsePostFile（posts.ts 与 gen-posts-index.js 的共享解析契约�
     expect(parsePostFile('a.md', md('date: not-a-date')).date).toBe('');
   });
 
-  it('excerpt 缺省时取正文前 160 字并剥掉 markdown 符号', () => {
+  it('excerpt 缺省时剥离 markdown 结构并折叠空白（链接留锚文本、无换行残留）', () => {
     const body = '### 标题\n\n**加粗** 与 `代码` [链接](x) 尾部文本';
     const p = parsePostFile('a.md', md('date: 2026-01-01', body));
-    expect(p.excerpt).toBe('标题\n\n加粗 与 代码 链接(x) 尾部文本');
+    expect(p.excerpt).toBe('标题 加粗 与 代码 链接 尾部文本');
+  });
+
+  it('excerpt 派生时移除围栏代码块与图片，只保留叙述文本', () => {
+    const body = '导语一段\n\n```ts\nconst x = 1;\n```\n\n![图](a.png)\n收尾';
+    const p = parsePostFile('a.md', md('date: 2026-01-01', body));
+    expect(p.excerpt).toBe('导语一段 图 收尾');
+  });
+
+  it('excerpt 派生时吞掉未闭合围栏：语言名与代码到文末均不泄漏进摘要', () => {
+    // 书写遗漏/截断导致围栏没有收尾 ```：旧正则只配对闭合，ts 语言名和代码会进摘要
+    const body = '导语一段\n\n```ts\nconst secret = 1;\nconsole.log(secret);';
+    const p = parsePostFile('a.md', md('date: 2026-01-01', body));
+    expect(p.excerpt).toBe('导语一段');
+  });
+
+  it('tags 写成字符串时归一化为单元素数组，非数组/异常类型回退空数组', () => {
+    expect(parsePostFile('a.md', md('tags: Go')).tags).toEqual(['Go']);
+    // YAML 裸标量 123 解析为数字 → 字符串化后保留
+    expect(parsePostFile('a.md', md('tags: 123')).tags).toEqual(['123']);
+    // YAML flow mapping 解析为对象 → 既不是数组也不是字符串 → 空数组（不 spread 键名）
+    expect(parsePostFile('a.md', md('tags: {a: 1}')).tags).toEqual([]);
+  });
+
+  it('updated 缺省时不含该键；合法时规整为 YYYY-MM-DD；非法时省略', () => {
+    expect(parsePostFile('a.md', md('date: 2026-01-01')).updated).toBeUndefined();
+    expect(parsePostFile('a.md', md('date: 2026-01-01\nupdated: 2026-02-03')).updated).toBe(
+      '2026-02-03',
+    );
+    expect(parsePostFile('a.md', md('date: 2026-01-01\nupdated: nope')).updated).toBeUndefined();
   });
 
   it('显式 excerpt 优先于正文回退', () => {

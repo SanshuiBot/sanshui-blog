@@ -67,6 +67,42 @@ function languageLabel(code: HTMLElement): string {
   return LANG_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
 }
 
+/**
+ * 复制到剪贴板：优先 async Clipboard API，失败/不可用（非安全上下文、旧浏览器、
+ * 权限被拒）时回退 document.execCommand('copy')。返回是否复制成功。
+ */
+async function copyToClipboard(text: string): Promise<boolean> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // 落到 execCommand 兜底
+    }
+  }
+  return legacyCopy(text);
+}
+
+/** execCommand 兜底：离屏 textarea + select。已废弃但 HTTP 环境/旧 WebView 唯一可用路径 */
+function legacyCopy(text: string): boolean {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  // 离屏且不可见：避免触发滚动跳动；不能 display:none（部分浏览器 select 失效）
+  ta.style.position = 'fixed';
+  ta.style.top = '-9999px';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    return document.execCommand('copy');
+  } catch {
+    return false;
+  } finally {
+    document.body.removeChild(ta);
+  }
+}
+
 export default function CodeCopyInjector() {
   useEffect(() => {
     const inject = () => {
@@ -96,17 +132,42 @@ export default function CodeCopyInjector() {
         copy.className = 'code-window-copy';
         copy.setAttribute('aria-label', '复制代码');
         copy.textContent = '复制';
+        // 复位定时器挂在按钮自身：元素随文章 DOM 一起销毁，定时器只操作自身节点，
+        // 无跨卸载副作用
+        let resetTimer: ReturnType<typeof setTimeout> | undefined;
+        // in-flight 锁：剪贴板写入是 async，pending 期间的连点直接忽略，
+        // 不重复触发复制、也不产生竞态决议把成功/失败态翻乱
+        let copying = false;
+        const reset = () => {
+          resetTimer = undefined;
+          copy.textContent = '复制';
+          copy.setAttribute('aria-label', '复制代码');
+          copy.classList.remove('code-window-copy-done', 'code-window-copy-fail');
+        };
         copy.onclick = async () => {
+          if (copying) return;
+          copying = true;
+          // 立即作废上一轮的复位计时（不能放在 await 之后：clipboard 可能耗时数百 ms，
+          // 期间旧定时器触发会让按钮先闪回「复制」，决议后又跳回结果态）
+          clearTimeout(resetTimer);
+          resetTimer = undefined;
           try {
-            await navigator.clipboard.writeText(code.textContent ?? '');
-            copy.textContent = '✓ 已复制!';
-            copy.classList.add('code-window-copy-done');
-            setTimeout(() => {
-              copy.textContent = '复制';
+            const ok = await copyToClipboard(code.textContent ?? '');
+            if (ok) {
+              copy.textContent = '✓ 已复制!';
+              copy.setAttribute('aria-label', '复制成功');
+              copy.classList.add('code-window-copy-done');
+              copy.classList.remove('code-window-copy-fail');
+            } else {
+              // 两条路径都失败：给明确反馈（旧实现静默，用户无法判断是否复制成功）
+              copy.textContent = '复制失败';
+              copy.setAttribute('aria-label', '复制失败，请手动选择代码复制');
+              copy.classList.add('code-window-copy-fail');
               copy.classList.remove('code-window-copy-done');
-            }, 2000);
-          } catch {
-            // Clipboard API 不可用时静默失败（同原实现）
+            }
+            resetTimer = setTimeout(reset, 2000);
+          } finally {
+            copying = false;
           }
         };
 

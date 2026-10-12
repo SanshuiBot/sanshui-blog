@@ -28,6 +28,13 @@ interface Props {
   posts: PostIndexEntry[];
   /** 网格槽位总数；默认 = posts.length */
   total?: number;
+  /**
+   * 直出模式（归档/标签等数据随 RSC 已就绪的页面）：
+   * 不播骨架、不做 JS 逐张流式填充，首屏 HTML 直接含全部真实卡片链接（SEO/
+   * 零 JS 可见），入场走纯 CSS 轻量错峰淡入（自动合规 reduced-motion）。
+   * 首页异步列表不传，保留原有骨架 + framer 流式行为。
+   */
+  immediate?: boolean;
 }
 
 /**
@@ -57,21 +64,39 @@ const Slot = memo(function Slot({
   post,
   skeleton,
   skeletonDelayMs,
+  immediate,
+  enterDelayMs = 0,
 }: {
   post?: PostIndexEntry;
   skeleton: boolean;
   skeletonDelayMs: number;
+  immediate?: boolean;
+  /** immediate 模式下 CSS 错峰入场延迟（ms） */
+  enterDelayMs?: number;
 }) {
   // 骨架模式下 post 可能不存在，传安全占位对象满足类型；
   // PostCard 内部对所有字段做了 ??/slice 兜底，不会出现 undefined 渲染
   const safePost = skeleton && !post ? SKELETON_PLACEHOLDER : (post ?? SKELETON_PLACEHOLDER);
-  return <PostCard post={safePost} skeleton={skeleton} skeletonDelayMs={skeletonDelayMs} />;
+  return (
+    <PostCard
+      post={safePost}
+      skeleton={skeleton}
+      skeletonDelayMs={skeletonDelayMs}
+      immediate={immediate}
+      enterDelayMs={enterDelayMs}
+    />
+  );
 });
 
-export default function PostGrid({ posts, total }: Props) {
+/** immediate 模式每张卡片的 CSS 入场错峰步长 / 封顶（避免长列表末张等待过久） */
+const IMMEDIATE_ENTER_STEP_MS = 60;
+const IMMEDIATE_ENTER_MAX_MS = 600;
+
+export default function PostGrid({ posts, total, immediate = false }: Props) {
   const slotCount = total ?? posts.length;
-  /** 已「填充」成真实卡片的数量；< posts.length 时，后面的位置仍是骨架 */
-  const [filled, setFilled] = useState(0);
+  /** 已「填充」成真实卡片的数量；< posts.length 时，后面的位置仍是骨架。
+   *  immediate 模式初始即为全部——effect 直接 no-op，不产生任何定时器。 */
+  const [filled, setFilled] = useState(() => (immediate ? posts.length : 0));
   // 流式填充定时器引用，卸载时清
   const fillTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -79,14 +104,14 @@ export default function PostGrid({ posts, total }: Props) {
   // 公式：max(30, Math.min(100, 3000 / posts.length))
   const interval = Math.max(30, Math.min(100, Math.floor(3000 / Math.max(posts.length, 1))));
 
-  // 数据到了：从第 0 张起逐张填充
+  // 数据到了：从第 0 张起逐张填充（immediate 直出模式无需 JS 填充）
   useEffect(() => {
-    if (filled >= posts.length) return;
+    if (immediate || filled >= posts.length) return;
     fillTimerRef.current = setTimeout(() => setFilled((n) => n + 1), interval);
     return () => {
       if (fillTimerRef.current) clearTimeout(fillTimerRef.current);
     };
-  }, [posts, filled, interval]);
+  }, [posts, filled, interval, immediate]);
 
   // 渲染槽位：每个槽位始终是同一个 <Slot> 实例（key=slot-${i} 稳定）
   // i < filled 且有对应 post → 显示真实卡片；否则显示骨架
@@ -101,6 +126,8 @@ export default function PostGrid({ posts, total }: Props) {
         post={hasPost ? posts[i] : undefined}
         skeleton={!isFilled}
         skeletonDelayMs={Math.min(i * 45, 675)}
+        immediate={immediate}
+        enterDelayMs={Math.min(i * IMMEDIATE_ENTER_STEP_MS, IMMEDIATE_ENTER_MAX_MS)}
       />
     );
   });

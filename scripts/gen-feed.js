@@ -58,6 +58,8 @@ async function build() {
   }
   const { parsePostFile, isPostFile, sortPostsByDateDesc } =
     await import('../src/lib/parse-post.mjs');
+  // 日期字典序比较唯一实现（禁 Math.max：YYYY-MM-DD 强转 NaN，曾致 lastBuildDate 倒退 epoch）
+  const { latestIsoDate } = await import('../src/lib/post-dates.mjs');
   // 站点常量唯一数据源（与 site.ts 共用）；CJS 不能同步 require ESM，在 async 内动态 import
   const { SITE_TITLE, SITE_DESCRIPTION, SITE_ORIGIN, SITE_BASE_PATH, SITE_EMAIL } =
     await import('../src/lib/site-config.mjs');
@@ -79,27 +81,33 @@ async function build() {
       const description = p.excerpt;
       // 全文只进最新 FULL_CONTENT_LIMIT 篇；旧文章仅摘要，控制 feed 体积
       const fullContent = hasFullContent(i) ? cdata(p.content) : '';
+      // 条件节点把换行符收进变量内：缺省时不留空白行（dc/content 各少一行噪音）
+      const dcDate = p.updated ? `\n      <dc:date>${p.updated}T00:00:00Z</dc:date>` : '';
+      const contentEncoded = fullContent
+        ? `\n      <content:encoded>${fullContent}</content:encoded>`
+        : '';
       return `    <item>
       <title>${esc(p.title)}</title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
-      <pubDate>${rfc822(p.date)}</pubDate>
-      <description>${esc(description)}</description>
-      ${fullContent ? `<content:encoded>${fullContent}</content:encoded>` : ''}
+      <pubDate>${rfc822(p.date)}</pubDate>${dcDate}
+      <description>${esc(description)}</description>${contentEncoded}
       ${p.tags.map((t) => `<category>${esc(t)}</category>`).join('\n      ')}
     </item>`;
     })
     .join('\n');
 
-  // lastBuildDate 用最新文章日期（确定性）——不能用 new Date()（每次 build 时间戳不同产生 git 噪音）。
-  // posts 已按日期降序；取全部文章中的最大有效日期，全部缺失则回退固定 epoch
-  const latestDate = posts.reduce((acc, p) => (p.date > acc ? p.date : acc), '');
+  // lastBuildDate 用最新「发布/修订」日期（确定性）——不能用 new Date()（每次 build 时间戳不同产生 git 噪音）。
+  // 取全部文章 date/updated 字典序最大值（老文章被修订也能抬升），全部缺失则回退固定 epoch。
+  // 收口 post-dates.mjs：禁 Math.max（YYYY-MM-DD 强转 NaN 曾致此处倒退 1970）。
+  const latestDate = posts.reduce((acc, p) => latestIsoDate(acc, p.date, p.updated), '');
   const lastBuildDate = latestDate ? rfc822(latestDate) : EPOCH_RFC822;
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
   xmlns:atom="http://www.w3.org/2005/Atom"
-  xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>${esc(SITE.title)}</title>
     <link>${SITE.baseUrl}</link>

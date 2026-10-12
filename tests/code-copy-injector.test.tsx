@@ -22,7 +22,18 @@ afterEach(() => {
   vi.useRealTimers();
   document.body.innerHTML = '';
   Reflect.deleteProperty(navigator, 'clipboard');
+  // jsdom 未实现 execCommand，兜底用例通过 defineProperty 挂载（configurable，可删）
+  Reflect.deleteProperty(document, 'execCommand');
 });
+
+/** 挂载 document.execCommand mock（jsdom 不提供该属性，spyOn 无法挂接） */
+function stubExecCommand(result: boolean) {
+  Object.defineProperty(document, 'execCommand', {
+    value: vi.fn(() => result),
+    configurable: true,
+  });
+  return document.execCommand as unknown as ReturnType<typeof vi.fn>;
+}
 
 /** 重置 body、渲染组件并推进注入定时器 */
 function injectOnce(html: string) {
@@ -137,6 +148,121 @@ describe('CodeCopyInjector', () => {
 
     act(() => {
       vi.advanceTimersByTime(2000);
+    });
+    expect(copy.textContent).toBe('复制');
+  });
+
+  it('Clipboard API 拒绝时回退 execCommand：兜底成功仍显示已复制', async () => {
+    vi.useFakeTimers();
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+      configurable: true,
+    });
+    const execSpy = stubExecCommand(true);
+
+    injectOnce('<article><pre><code class="hljs language-ts">const x = 1;</code></pre></article>');
+    const copy = document.querySelector('.code-window-copy') as HTMLButtonElement;
+
+    await act(async () => {
+      fireEvent.click(copy);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(execSpy).toHaveBeenCalledWith('copy');
+    expect(copy.textContent).toBe('✓ 已复制!');
+    expect(copy.classList.contains('code-window-copy-fail')).toBe(false);
+  });
+
+  it('两条复制路径都失败时显示「复制失败」并在 2s 后复位', async () => {
+    vi.useFakeTimers();
+    // 无 navigator.clipboard（afterEach 已删），execCommand 返回 false
+    stubExecCommand(false);
+
+    injectOnce('<article><pre><code class="hljs language-ts">const x = 1;</code></pre></article>');
+    const copy = document.querySelector('.code-window-copy') as HTMLButtonElement;
+
+    await act(async () => {
+      fireEvent.click(copy);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(copy.textContent).toBe('复制失败');
+    expect(copy.classList.contains('code-window-copy-fail')).toBe(true);
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+    expect(copy.textContent).toBe('复制');
+    expect(copy.classList.contains('code-window-copy-fail')).toBe(false);
+  });
+
+  it('in-flight 锁：clipboard pending 期间连点只触发一次复制，且 pending 时保持原态', async () => {
+    vi.useFakeTimers();
+    let resolveWrite: (() => void) | undefined;
+    const writeText = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveWrite = resolve;
+        }),
+    );
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+
+    injectOnce('<article><pre><code class="hljs language-ts">const x = 1;</code></pre></article>');
+    const copy = document.querySelector('.code-window-copy') as HTMLButtonElement;
+
+    fireEvent.click(copy);
+    // 第二次点击落在第一次的 await pending 窗口内 → 必须被忽略
+    fireEvent.click(copy);
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(copy.textContent).toBe('复制');
+
+    await act(async () => {
+      resolveWrite?.();
+      await Promise.resolve();
+    });
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(copy.textContent).toBe('✓ 已复制!');
+  });
+
+  it('成功态 2s 内再次点击：旧复位计时作废，以新一轮为准不闪回', async () => {
+    vi.useFakeTimers();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true,
+    });
+
+    injectOnce('<article><pre><code class="hljs language-ts">const x = 1;</code></pre></article>');
+    const copy = document.querySelector('.code-window-copy') as HTMLButtonElement;
+
+    // 第一轮：复制成功
+    await act(async () => {
+      fireEvent.click(copy);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(copy.textContent).toBe('✓ 已复制!');
+
+    // 距首轮复位还差 100ms 时再次点击（旧定时器若未提前清除，100ms 后会闪回「复制」）
+    act(() => {
+      vi.advanceTimersByTime(1900);
+    });
+    await act(async () => {
+      fireEvent.click(copy);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(copy.textContent).toBe('✓ 已复制!');
+
+    // 以第二轮点击为起点 2s 后才复位
+    act(() => {
+      vi.advanceTimersByTime(1900);
     });
     expect(copy.textContent).toBe('复制');
   });

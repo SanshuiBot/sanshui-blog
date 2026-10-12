@@ -28,14 +28,22 @@ function parseISODate(date: string): { y: number; m: number; d: number } | null 
 export function formatDate(date: string): string {
   const cached = cache.get(date);
   if (cached !== undefined) return cached;
+  // 缺失/非法日期（parse-post 对坏 frontmatter 规整为空串）返回空串，
+  // 否则 new Date('').toLocaleDateString() 会向用户直出 "Invalid Date"
+  if (!date) return '';
   const parts = parseISODate(date);
-  const s = parts
-    ? `${parts.y}年${parts.m}月${parts.d}日`
-    : new Date(date).toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
+  let s: string;
+  if (parts) {
+    s = `${parts.y}年${parts.m}月${parts.d}日`;
+  } else {
+    const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return '';
+    s = d.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
   cache.set(date, s);
   return s;
 }

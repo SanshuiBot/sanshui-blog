@@ -18,6 +18,7 @@ import { getPostBySlug, getAllPosts, getAdjacentPosts } from '@/lib/posts';
 import { toIndexEntry } from '@/lib/post-index';
 import { extractHeadings } from '@/lib/toc';
 import { calcReadingMinutes } from '@/lib/parse-post.mjs';
+import { postModifiedDate } from '@/lib/post-dates.mjs';
 import PostContent from '@/components/Post/PostContent';
 import PostMeta from '@/components/Post/PostMeta';
 import PostNav from '@/components/Post/PostNav';
@@ -82,7 +83,9 @@ export default async function PostPage({ params }: Props) {
             description: post.excerpt,
             image: `${siteConfig.url}/og.png`,
             datePublished: post.date,
-            dateModified: post.date,
+            // 修订日期：date/updated 取较新（updated 缺省回退发布日期；早于 date 的脏值不取，
+            // 不暴露倒着修订的假信号），字典序比较与 sitemap/feed 共用 post-dates.mjs
+            dateModified: postModifiedDate(post.date, post.updated),
             author: { '@type': 'Person', name: siteConfig.name, url: siteConfig.url },
             mainEntityOfPage: {
               '@type': 'WebPage',

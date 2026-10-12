@@ -16,7 +16,7 @@ import { sans, mono, serifSC } from './fonts';
 import Providers from '@/components/Providers';
 import AmbientEffects from '@/components/AmbientEffects';
 import AppShell from '@/components/AppShell';
-import { withBase } from '@/lib/basePath';
+import { withBase, BASE_PATH } from '@/lib/basePath';
 import { siteConfig } from '@/lib/site';
 import {
   accentBootstrapScript,
@@ -24,6 +24,7 @@ import {
   themeToggleClickScript,
   searchToggleClickScript,
 } from '@/lib/accents';
+import { createNavigationLoadingScript } from '@/lib/navigation-loading-bootstrap';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -56,6 +57,9 @@ export const metadata: Metadata = {
       { url: withBase('/favicon.ico'), sizes: 'any' },
     ],
     shortcut: withBase('/favicon.ico'),
+    // iOS 主屏图标：显式声明——metadata.icons 一旦配置，apple-icon 文件约定
+    // 不会自动合并（构建会生成 /apple-icon.png 路由，但 head 不注入 link）
+    apple: [{ url: withBase('/apple-icon.png'), sizes: '180x180', type: 'image/png' }],
   },
 };
 
@@ -87,15 +91,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             4) searchToggleClick —— 搜索按钮 hydration 前的原生事件委托：记录点击意图 +
                注入「正在打开搜索…」占位弹层（即时反馈），Navbar 挂载后消费意图打开真弹窗；
                React 接管后脚本自注销让位给 openSearch。
+            5) navLoading —— 导航等待胶囊的首屏/硬跳转前置版：首屏 DCL 前 >300ms、
+               以及 hydration 前点击 /posts/ 链接的浏览器原生等待期显示同款玻璃胶囊；
+               Provider 挂载（data-nav-loading-ready）后自注销让位。
             dangerouslySetInnerHTML 安全：脚本内容由 ACCENT_STORAGE_KEY / CUSTOM_ACCENT_STORAGE_KEY /
-            DEFAULT_ACCENT_ID / ACCENT_PRESETS / THEME_COLORS 等模块级常量拼接，无用户输入，无模板注入风险。 */}
+            DEFAULT_ACCENT_ID / ACCENT_PRESETS / THEME_COLORS / BASE_PATH 等模块级常量拼接，无用户输入，无模板注入风险。 */}
         <script
           dangerouslySetInnerHTML={{
             __html:
               accentBootstrapScript +
               themeBootstrapScript +
               themeToggleClickScript +
-              searchToggleClickScript,
+              searchToggleClickScript +
+              createNavigationLoadingScript(BASE_PATH),
           }}
         />
       </head>

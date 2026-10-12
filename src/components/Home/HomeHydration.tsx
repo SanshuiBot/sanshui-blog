@@ -33,11 +33,13 @@ const PostsList = dynamic(() => import('@/components/Home/PostsList'), {
   ssr: false,
   loading: () => (
     <section id="posts" className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* 规格必须与 PostGrid 逐字对齐：grid-cols-2 + gap-3/sm:gap-5 + h-56/sm:h-60，
+          否则 chunk 到达切换为真实网格的瞬间会发生列数（1→2）与高度（192→224/240）跳动 */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-48 rounded-2xl bg-black/[0.03] animate-pulse dark:bg-white/5"
+            className="h-56 sm:h-60 rounded-2xl bg-black/[0.06] animate-pulse dark:bg-white/10"
             aria-hidden
           />
         ))}

@@ -36,7 +36,8 @@ export default function ParticleField() {
     const vg = parts[1] ?? 85;
     const vb = parts[2] ?? 247;
     let w = 0,
-      h = 0;
+      h = 0,
+      dpr = 1;
     const particles: {
       x: number;
       y: number;
@@ -47,12 +48,21 @@ export default function ParticleField() {
       hue: number;
     }[] = [];
     const resize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
+      // DPR 缩放（C3）： backing store 按设备像素比分配，绘制坐标统一用 CSS 像素
+      // （setTransform 之后所有 arc/line 自动 ×dpr）。旧实现 canvas.width=CSS 像素，
+      // Retina/高分屏上每个画布像素被拉成 2×2/3×3 物理像素，粒子与连线明显发虚。
+      // 封顶 2：高分屏（3x 手机）再往上填充率/连线成本翻数倍，观感收益递减。
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      // 改 canvas.width 会重置 context 状态，transform 必须在每次 resize 后重设
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     window.addEventListener('resize', resize);
-    // 粒子数量：视口面积/10000 保证主流显示器（~2M px）约 200 个，上限 80 防低端设备
+    // 粒子数量：按 CSS 视口面积/10000（逻辑像素，不随 dpr 膨胀），上限 80 防低端设备
     const count = Math.min(80, Math.floor((w * h) / 10000));
     for (let i = 0; i < count; i++) {
       particles.push({

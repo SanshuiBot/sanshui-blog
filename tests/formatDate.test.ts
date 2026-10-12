@@ -14,4 +14,9 @@ describe('formatDate', () => {
     // 12:00Z 在 UTC-12 ~ UTC+12 全部落在 1 月 5 日当天；用宽松断言覆盖边缘时区
     expect(formatDate('2023-01-05T12:00:00Z')).toMatch(/^2023年1月\d+日$/);
   });
+
+  it('空串/非法日期返回空串而非 "Invalid Date"（坏 frontmatter 兜底）', () => {
+    expect(formatDate('')).toBe('');
+    expect(formatDate('not-a-date')).toBe('');
+  });
 });

@@ -11,6 +11,7 @@ import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import { useDismiss } from '@/components/UI/useDismiss';
 import { useScrollLock } from '@/components/UI/useScrollLock';
 import { useFocusTrap } from '@/components/UI/useFocusTrap';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import { useRouter } from 'next/navigation';
 import { searchHotkeyLabel } from '@/lib/platform';
 import { getPostsIndex } from '@/lib/posts-index-cache';
@@ -29,6 +30,87 @@ function Highlight({ text, query }: { text: string; query: string }) {
         ),
       )}
     </>
+  );
+}
+
+/**
+ * 单条搜索/最近文章 option（两套旧渲染收口为一个组件，B4）。
+ * - variant="result"：摘要行 + 命中高亮 + framer 错峰入场 + py-3 + 14px 箭头常驻
+ * - variant="recent"：仅标题/日期 + py-2.5 + 12px 箭头（hover 或键盘选中时显示，E4）
+ * id 与 input 的 aria-activedescendant 对应（search-option-${index}）。
+ */
+function OptionRow({
+  post,
+  index,
+  active,
+  variant,
+  query,
+  reduceMotion,
+  onHover,
+  onSelect,
+}: {
+  post: PostIndexEntry;
+  index: number;
+  active: boolean;
+  variant: 'result' | 'recent';
+  /** 传入即对标题/摘要做命中高亮；recent 不传 */
+  query?: string;
+  /** true 时结果行不做 framer 错峰入场（红线 #32：MotionValue 内联动效 CSS 管不到，须 JS 跳过） */
+  reduceMotion: boolean;
+  onHover: (index: number) => void;
+  onSelect: () => void;
+}) {
+  const recent = variant === 'recent';
+  const link = (
+    <Link
+      id={`search-option-${index}`}
+      href={postUrl(post.slug)}
+      role="option"
+      aria-selected={active}
+      data-active={active}
+      onMouseEnter={() => onHover(index)}
+      onClick={onSelect}
+      className={`flex items-center gap-3 px-3 rounded-xl transition-colors group ${
+        recent ? 'py-2.5' : 'py-3'
+      } ${active ? 'bg-black/[0.03] dark:bg-white/5' : ''}`}
+    >
+      <div className="flex-1 min-w-0">
+        <span
+          className={`font-medium truncate block transition-colors ${
+            recent ? 'text-sm' : ''
+          } ${active ? 'text-accent-violet' : 'text-stone-900 dark:text-fg'}`}
+        >
+          {query !== undefined ? <Highlight text={post.title} query={query} /> : post.title}
+        </span>
+        {!recent && (
+          <span className="block text-xs text-stone-500 truncate mt-0.5 dark:text-gray-500">
+            <Highlight text={post.excerpt} query={query ?? ''} />
+          </span>
+        )}
+        <span className="text-[11px] text-stone-400 dark:text-gray-600">
+          {formatDate(post.date)}
+        </span>
+      </div>
+      <ArrowRight
+        size={recent ? 12 : 14}
+        aria-hidden
+        className={`shrink-0 transition-colors ${
+          active ? 'text-accent-violet' : 'text-stone-400 dark:text-gray-600'
+        } ${recent ? `opacity-0 group-hover:opacity-100${active ? ' opacity-100' : ''}` : ''}`}
+      />
+    </Link>
+  );
+  if (recent) return link;
+  // reduced-motion：initial=false 直接呈现，不做位移/淡入/错峰 delay
+  if (reduceMotion) return <motion.div initial={false}>{link}</motion.div>;
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.015 }}
+    >
+      {link}
+    </motion.div>
   );
 }
 
@@ -52,6 +134,8 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const { startNavigation } = useNavigationLoading();
+  // 顶层取一次透传给 OptionRow：结果行 framer 错峰是内联动效，reduced 须在 JS 侧关（#32）
+  const reduceMotion = usePrefersReducedMotion();
   const router = useRouter();
   // 手机端渲染减负：全屏 backdrop-blur + scale/y 位移动画在小屏（尤其低端机）
   // 上的光栅化/合成耗时是「弹窗慢半拍」的元凶，触屏设备改用纯 opacity 过渡
@@ -229,6 +313,25 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                 id="search-input"
                 type="text"
                 name="q"
+                // combobox 语义（E2）：读屏宣告为「带列表的搜索组合框」，
+                // aria-activedescendant 把键盘焦点「虚拟地」导向当前 option
+                role="combobox"
+                aria-label="搜索文章"
+                aria-autocomplete="list"
+                aria-haspopup="listbox"
+                aria-expanded={open}
+                // 仅在 listbox 实际渲染时引用：加载/错误/无结果分支无此 id，
+                // 悬空的 aria-controls 反而让读屏无法解析受控节点
+                aria-controls={
+                  open && indexState === 'ready' && listItems.length > 0
+                    ? 'search-listbox'
+                    : undefined
+                }
+                aria-activedescendant={activeIdx >= 0 ? `search-option-${activeIdx}` : undefined}
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 onKeyDown={(e) => {
@@ -320,55 +423,21 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                   <span className="sr-only" aria-live="polite" aria-atomic="true">
                     {q ? `找到 ${results.length} 篇文章` : '文章列表'}
                   </span>
-                  <div role="listbox" aria-label="搜索结果">
+                  <div id="search-listbox" role="listbox" aria-label="搜索结果">
                     {results.map((p: PostIndexEntry, i: number) => (
-                      <motion.div
+                      <OptionRow
                         key={p.slug}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.015 }}
-                      >
-                        <Link
-                          href={postUrl(p.slug)}
-                          data-active={i === activeIdx}
-                          role="option"
-                          aria-selected={i === activeIdx}
-                          onMouseEnter={() => setActiveIdx(i)}
-                          onClick={() => {
-                            onClose();
-                            startNavigation();
-                          }}
-                          className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors group ${
-                            i === activeIdx ? 'bg-black/[0.03] dark:bg-white/5' : ''
-                          }`}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <span
-                              className={`font-medium transition-colors truncate block ${
-                                i === activeIdx
-                                  ? 'text-accent-violet'
-                                  : 'text-stone-900 dark:text-fg'
-                              }`}
-                            >
-                              <Highlight text={p.title} query={q} />
-                            </span>
-                            <span className="block text-xs text-stone-500 truncate mt-0.5 dark:text-gray-500">
-                              <Highlight text={p.excerpt} query={q} />
-                            </span>
-                            <span className="text-[11px] text-stone-400 dark:text-gray-600">
-                              {formatDate(p.date)}
-                            </span>
-                          </div>
-                          <ArrowRight
-                            size={14}
-                            className={`shrink-0 transition-colors ${
-                              i === activeIdx
-                                ? 'text-accent-violet'
-                                : 'text-stone-400 dark:text-gray-600'
-                            }`}
-                          />
-                        </Link>
-                      </motion.div>
+                        post={p}
+                        index={i}
+                        active={i === activeIdx}
+                        variant="result"
+                        query={q}
+                        reduceMotion={reduceMotion}
+                        onHover={setActiveIdx}
+                        onSelect={() => {
+                          onClose();
+                        }}
+                      />
                     ))}
                   </div>
                 </>
@@ -389,45 +458,20 @@ export default function SearchModal({ open, onClose }: SearchModalProps) {
                       暂无文章
                     </div>
                   ) : (
-                    <div role="listbox" aria-label="最近文章">
+                    <div id="search-listbox" role="listbox" aria-label="最近文章">
                       {listItems.map((p, i) => (
-                        <Link
+                        <OptionRow
                           key={p.slug}
-                          href={postUrl(p.slug)}
-                          role="option"
-                          aria-selected={i === activeIdx}
-                          onMouseEnter={() => setActiveIdx(i)}
-                          onClick={() => {
+                          post={p}
+                          index={i}
+                          active={i === activeIdx}
+                          variant="recent"
+                          reduceMotion={reduceMotion}
+                          onHover={setActiveIdx}
+                          onSelect={() => {
                             onClose();
-                            startNavigation();
                           }}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors group ${
-                            i === activeIdx ? 'bg-black/[0.03] dark:bg-white/5' : ''
-                          }`}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <span
-                              className={`font-medium text-sm truncate block transition-colors ${
-                                i === activeIdx
-                                  ? 'text-accent-violet'
-                                  : 'text-stone-900 dark:text-fg'
-                              }`}
-                            >
-                              {p.title}
-                            </span>
-                            <span className="text-[11px] text-stone-400 dark:text-gray-600">
-                              {formatDate(p.date)}
-                            </span>
-                          </div>
-                          <ArrowRight
-                            size={12}
-                            className={`shrink-0 transition-colors ${
-                              i === activeIdx
-                                ? 'text-accent-violet'
-                                : 'text-stone-400 dark:text-gray-600 opacity-0 group-hover:opacity-100'
-                            }`}
-                          />
-                        </Link>
+                        />
                       ))}
                     </div>
                   )}

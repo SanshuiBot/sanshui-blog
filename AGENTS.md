@@ -41,7 +41,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 10. Tailwind v4 CSS-first（`@import 'tailwindcss'` + `@theme`），无 config。
 11. 客户端动效在 `AmbientEffects` 用 `dynamic(...,{ssr:false})` 注册；别自定义 splitChunks。装饰性 JS 动效（PostCard 3D tilt 收口 `Post/CardSpotlight.tsx`）非骨架才挂载，cleanup 调 onRefs(null)。**聚光全站收口**：光晕/边框发光/文字染色样式统一 `styles/spotlight.css`、坐标写入统一 `lib/spotlight.ts` 的 `spotlightMove()`——新增聚光卡片必须复用（卡片根 `.spotlight-card` + 染色元素 `.spotlight-dye` + `--spotlight-dye-base` 对齐自身基色），不许手抄；三条不变量（Chromium clip 不沿 transform 后代 / mouseleave 不复位 / 染色元素无 color 过渡）见 spotlight.css 头注释；光晕层 DOM 顺序按卡面底料定（不透明卡面须排在内容壳之后，否则被盖住）。
 12. 亮色为基准（默认无 `.dark` 即亮值），暗色只走 `html.dark` 覆盖；改暗色同步查亮色基。**`<body>` 上绝不能写 `bg-ink` / `bg-surface` / `text-fg` 等暗色 token**——这两个 token 是暗色主题底色（`#05050a` / `#f4f4f7`），写在 body 上会让整个页面容器变成暗色画布，亮色模式下背景变黑。body 应保持透明或仅用 `min-h-dvh flex flex-col antialiased relative`。
-13. 导航加载：仅 `/posts/...` 的 `<Link>` 调 `startNavigation`；详情页挂载调 `done()`。
+13. 导航加载收口 `UI/NavigationLoading`：Provider 在 document 捕获阶段**自动委托全部内部链接**点击（判定纯函数 `isInternalNavigation`：同源/basePath 下、非纯锚点、非静态文件）+ `popstate`（同页 `#锚点` 也触发 popstate，须比对 pathname+search 键，键不变不 arm），**新增链接无需手动挂 onClick**；仅命令式 `router.push`（如搜索 Enter）才显式 `startNavigation()`；完成信号靠 `pathname` 变化自动 `done()`（300ms 门控才显示、10s 兜底）。提示体是**非阻塞玻璃胶囊**（`pointer-events:none`，z-70 位于 navbar 下方，别与 z-60 顶部 ScrollProgress 冲突；禁止改回全屏遮罩）；首屏/hydration 前由 `lib/navigation-loading-bootstrap.ts` 内联脚本接管，`data-nav-loading-ready` 交接。`Post/PostDone` 只清残留 hash，不管 done。
 14. ⌘K 搜索 fetch `posts-index.json`，不序列化进 RSC。
 15. 卡片流式渲染：同帧叠加、`h-60`、`slot-${i}` key、`prefetchedRef` 随 slug 重置。骨架入场错峰/卡片入场（scale spring+opacity tween）参数收口 `PostGrid`/`PostCard`。
 16. MDX：`next-mdx-remote/rsc`+gfm+slug+highlight；文章内不用 React 组件。

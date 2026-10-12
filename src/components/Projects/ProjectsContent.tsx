@@ -23,18 +23,14 @@ import { useIsOverflow } from '@/components/UI/useIsOverflow';
 import { siteConfig } from '@/lib/site';
 import { projects } from '@/lib/projects';
 import type { Project } from '@/lib/projects';
+import { ACCENT_RGB_PALETTE } from '@/lib/accents';
 import '@/styles/projects.css';
 import '@/styles/spotlight.css';
 
-// ── 卡片装饰色循环：顶部渐变条 + hover 光晕共用（与 PostCard 标签渐变同语义，index % 5） ──
-// 存 rgb(var(--accent-xxx-rgb)) 字符串 → 跟随 AccentPicker 主题联动，不写固定 hex。
-const BAR_ACCENTS = [
-  'rgb(var(--accent-pink-rgb))',
-  'rgb(var(--accent-violet-rgb))',
-  'rgb(var(--accent-blue-rgb))',
-  'rgb(var(--accent-teal-rgb))',
-  'rgb(var(--accent-gold-rgb))',
-] as const;
+// ── 卡片装饰色循环：顶部渐变条 + hover 光晕共用（与 PostCard 标签渐变同语义）──
+// 色板唯一源收口 lib/accents（B5）；项目装饰不用 rose，取前 5 通道。
+// rgb(var(--accent-xxx-rgb)) 形态 → 跟随 AccentPicker 主题联动，不写固定 hex。
+const BAR_ACCENTS = ACCENT_RGB_PALETTE.slice(0, 5);
 
 // ── Tag 配色循环：用 tag 字符串做确定性哈希，同名 tag 始终同色，跟随主题联动 ──
 function tagAccentHash(tag: string): number {

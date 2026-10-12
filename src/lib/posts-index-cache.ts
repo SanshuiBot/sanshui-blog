@@ -21,11 +21,22 @@ let fetchPromise: Promise<PostIndexEntry[]> | null = null;
 export function getPostsIndex(): Promise<PostIndexEntry[]> {
   if (fetchPromise) return fetchPromise;
   fetchPromise = fetch(withBase('/posts-index.json'))
-    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then(async (r) => {
+      if (!r.ok) return Promise.reject(r.status);
+      const data: unknown = await r.json();
+      // 形状校验：r.json() 只保证是合法 JSON，不保证是数组。
+      // 若返回合法但非数组的 JSON（代理劫持页/构造错误的产物），三个消费方
+      // （new Fuse(数组)、data.map、[...data].sort）会在渲染期抛错 → 白屏。
+      // 统一在此 reject，让调用方走进已有的错误态/静默兜底分支。
+      if (!Array.isArray(data)) {
+        return Promise.reject(new Error('posts-index.json 形状异常：期望数组'));
+      }
+      return data as PostIndexEntry[];
+    })
     .catch((err: unknown) => {
       // 失败时清空缓存，避免永久 cache 错误状态
       fetchPromise = null;
       throw err;
-    }) as Promise<PostIndexEntry[]>;
+    });
   return fetchPromise;
 }

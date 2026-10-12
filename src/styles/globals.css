@@ -93,8 +93,6 @@ html.dark {
     --bg-skeleton: rgba(0, 0, 0, 0.05);
     --bg-skeleton-shimmer: rgba(0, 0, 0, 0.04);
     --border-skeleton: rgba(0, 0, 0, 0.08);
-    /* ── 导航过渡层背景（亮=cream 基值；暗=ink 走文件尾 html.dark 覆盖）── */
-    --bg-nav-loading: #fafaf9;
 
     /* ── Shadow Design System ──（亮色为基；暗色值走文件尾 html.dark 覆盖）── */
     /* B · 彩色霓虹辉光 — 正文卡片 */
@@ -1129,6 +1127,29 @@ html.dark {
   .group:hover .post-nav-icon {
     color: rgb(var(--accent-violet-rgb));
   }
+  /* RSC 直出卡片（归档/标签页 PostGrid immediate）轻量入场：纯 CSS 错峰淡入上浮，
+     --post-enter-delay 由 PostGrid 按槽位注入（步长 60ms、封顶 600ms）。
+     仅用 transform/opacity（合成层属性）；prefers-reduced-motion 下整体关闭（红线 #32/#43）。
+     transform 在卡片根节点、SpotlightTilt 的 framer rotate 在内层，两者不同元素不互相覆盖。 */
+  @keyframes post-card-immediate-enter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .post-card-immediate {
+    animation: post-card-immediate-enter 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--post-enter-delay, 0ms);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .post-card-immediate {
+      animation: none;
+    }
+  }
   /* 聚光联动文字颜色已收口 styles/spotlight.css（.spotlight-dye，约定 #40）：
      双层 background-clip:text——上层 accent 径向渐变以光标为圆心、下层基色兜底。
      兜底基色经上方 --spotlight-dye-base 声明（title 140/180、label 115/163 各自对齐）。 */
@@ -1453,6 +1474,12 @@ html.dark {
     border-color: rgb(34 197 94 / 0.4);
     background: rgb(34 197 94 / 0.1);
   }
+  /* 复制失败态（Clipboard API 与 execCommand 兜底均失败时短暂提示，2s 复位） */
+  .code-window-copy-fail {
+    color: rgb(248 113 113);
+    border-color: rgb(248 113 113 / 0.4);
+    background: rgb(248 113 113 / 0.1);
+  }
   .code-window-body {
     display: flex;
     align-items: stretch;
@@ -1752,6 +1779,52 @@ html.sanshui-hero-active body::after {
   }
 }
 
+/* ── 导航等待胶囊（NavigationLoading：300ms 门控的非阻塞提示，红线 #13）──
+   与顶部 2px 滚动进度条（ScrollProgress：top-0/h-2px/z-60，表「阅读位置」）错开：
+   胶囊位于 h-14(56px) 导航栏下方 20px、水平居中、z-70、pointer-events:none，
+   语义是「页面跳转进行中」；弹层 z-80 / toast z-90 打开时自然盖住它。
+   进出场纯 CSS（合成层 opacity/transform + visibility 延迟切换，常驻 DOM 无硬切），
+   reduced-motion 由文件头全局 0.01ms 规则自动瞬切（#32/#43）。 */
+.nav-loading-pill {
+  position: fixed;
+  top: 4.75rem; /* 76px = 56px 导航栏 + 20px 呼吸距 */
+  left: 50%;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.5rem 0.875rem;
+  border-radius: 9999px;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, -0.5rem);
+  transition:
+    opacity 0.18s ease,
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0.22s; /* 退场：等淡出结束再隐藏，保证可点击性/AT 一致 */
+  will-change: opacity, transform;
+}
+.nav-loading-pill.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition:
+    opacity 0.2s ease 0.02s,
+    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1); /* 进场：visibility 即时可见 */
+}
+.nav-loading-pill__text {
+  font-size: 0.8125rem;
+  line-height: 1;
+  color: #57534e; /* stone-600：亮基玻璃面上可读 */
+}
+html.dark .nav-loading-pill__text {
+  color: #d4d4d8;
+}
+
 /* ── 骨架屏动画：流光扫过 + 跳跃点（133997c 误删，恢复 fa412ce 原定义）── */
 @keyframes shimmer {
   0% {
@@ -1905,6 +1978,13 @@ html.dark body::after {
     );
 }
 
+/* Hero「浏览文章」CTA 是原生锚点跳转（#posts）：固定导航 h-14 会压住
+   「最新文章」标题，给目标 section 留出导航高度（与正文标题 scroll-margin 同思路）。
+   放在 dark overrides 之前的普通规则区，亮暗共用一份。 */
+#posts {
+  scroll-margin-top: 5rem;
+}
+
 /* Dark mode overrides for components */
 html.dark body {
   background: var(--color-ink);
@@ -1946,5 +2026,4 @@ html.dark {
   --af-close: rgb(168 162 158);
   --af-close-bg-hover: rgb(var(--accent-violet-rgb) / 0.08);
   --af-all: rgb(120 113 108);
-  --bg-nav-loading: var(--color-ink);
 }

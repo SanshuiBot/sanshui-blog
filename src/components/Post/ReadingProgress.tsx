@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 import Tooltip from '@/components/UI/Tooltip';
 import { isBodyScrollLocked } from '@/components/UI/useIsBodyScrollLocked';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 
 // 环形进度 SVG 参数（viewBox 36×36）
 const R = 15.5;
@@ -23,6 +24,8 @@ const CIRC = 2 * Math.PI * R; // ≈ 97.4，stroke-dasharray 周长
 export default function ReadingProgress() {
   const [pct, setPct] = useState(0);
   const [show, setShow] = useState(false);
+  // 显式 behavior:'smooth' 绕过 CSS reduced 回退，JS 侧按系统设置选 auto（红线 #32）
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const onScroll = () => {
@@ -49,7 +52,12 @@ export default function ReadingProgress() {
     <div className="fixed bottom-6 right-6 z-30 backtotop-fade-in">
       <Tooltip label="回到顶部">
         <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onClick={() =>
+            window.scrollTo({
+              top: 0,
+              behavior: prefersReducedMotion ? 'auto' : 'smooth',
+            })
+          }
           aria-label="回到顶部"
           className="relative w-11 h-11 rounded-full bg-white border border-black/10 text-stone-600 hover:text-stone-900 dark:bg-stone-100 dark:border-stone-200 dark:text-stone-600 dark:hover:text-stone-900 hover:glow-violet transition-all active:scale-95"
         >

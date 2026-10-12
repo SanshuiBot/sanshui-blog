@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getAllPosts } from '@/lib/posts';
 import { siteConfig } from '@/lib/site';
+import { latestIsoDate, postModifiedDate } from '@/lib/post-dates.mjs';
 
 // 站点 URL 唯一来源 siteConfig.url（= SITE_ORIGIN + BASE_PATH，双端部署自动跟随：
 // GitHub 端 https://sanshuibot.github.io/sanshui-blog、CF 端由环境变量覆盖）。
@@ -17,14 +18,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const postEntries = posts.map((post) => ({
     // 中文 slug 必须百分号编码，否则 sitemap.xml 非法、部分爬虫拒绝解析
     url: `${baseUrl}/posts/${encodeURIComponent(post.slug)}/`,
-    lastModified: post.date,
+    // 文章修订（frontmatter updated）与发布日期取较新；updated 缺省/早于 date 回退 date
+    lastModified: postModifiedDate(post.date, post.updated),
     changeFrequency: 'monthly' as const,
     priority: 0.8,
   }));
 
-  // static page lastModified 用固定日期避免每次 build 产生 git 噪音。
-  // 取最新文章日期作为静态页面"上次更新"基准，语义更清晰。
-  const fixedLastModified = posts.length > 0 ? posts[0]!.date : '1970-01-01';
+  // 静态页 lastModified 用固定日期避免每次 build 产生 git 噪音。
+  // 取全站最新「发布/修订」日期作为静态页面"上次更新"基准（老文章被修订也能抬升基准）；
+  // 无文章（极端情况）回退固定 epoch。字典序比较收口 post-dates.mjs。
+  const fixedLastModified =
+    posts.reduce((acc, p) => latestIsoDate(acc, p.date, p.updated), '') || '1970-01-01';
 
   const staticPages = [
     {

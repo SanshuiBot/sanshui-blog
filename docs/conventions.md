@@ -93,14 +93,15 @@ Next 16 的 `next build` **不再执行 lint**，lint 完全独立于构建：CI
 
 ## 13. 导航加载状态
 
-`NavigationLoadingProvider`（`src/components/UI/NavigationLoading.tsx`）提供 `useNavigationLoading()` hook，返回 `{ startNavigation, done }`。`startNavigation` 延迟 300ms 显示全屏旋转加载覆盖层（快跳转根本看不到），`done` 隐藏。兜底 5 秒自动 clear。
+`NavigationLoadingProvider`（`src/components/UI/NavigationLoading.tsx`）在 `document` **捕获阶段全局委托**：任何**站内路由链接**的左键点击（判定纯函数 `isInternalNavigation`：同源、basePath 之下、非纯 `#锚点`、非同 URL 重复、非带扩展名的静态文件）与 `popstate`（前进/后退）都会 arm——**同页 `#锚点` 也触发 popstate**，必须比对 `routeKeyRef`（pathname+search），键不变则忽略；导航持续 **300ms 以上**才把常驻 DOM 的玻璃胶囊 `.nav-loading-pill` 置为 `.is-visible`，`pathname` 变化即自动 `done()`，另有 **10s** 兜底。bfcache 恢复（`pageshow persisted`）也会收尾。
 
-**只有跳转到文章详情页（`/posts/...`）的 `<Link>` 才调用 `startNavigation`**：
+**形态（2026-10 改版，勿回退）**：非阻塞玻璃小胶囊——固定在 56px 导航栏下方 20px 居中、z-70、`pointer-events:none`（点得穿、不挡任何操作），内含 16px 旋转环 + 「页面加载中…」；进出场纯 CSS（opacity/transform + visibility 延迟，reduced-motion 自动 0.01ms 瞬切）。它**不是**全屏遮罩（旧版 `fixed inset-0 z-9999` + 95% 蒙层已废弃），也**不是**顶部进度条——顶部 z-60/2px 的 `ScrollProgress` 表「阅读位置」，胶囊表「跳转进行中」，位置/层级/语义三者错开。
 
-- 入口（4 处）：`PostCard` 的卡片 Link、`PostNav` 的上/下篇 Link、`SearchModal` 的搜索结果/最近文章 Link、`ArrowLink`（如「查看全部」等文章详情跳转，`onClick` 透传 `startNavigation`）——新增时记得补 `onClick={startNavigation}`，漏加的跳转会看不到加载覆盖层，体感「卡住」。
-- 出口：`src/app/posts/[slug]/page.tsx` 挂载时调用 `done()` 隐藏覆盖层——新增详情页路由时勿漏，否则 loading 会卡住不消失。
-
-**导航、标签、归档、友链等其他入口一律不加**——非文章详情跳转出现 loading 覆盖层会严重影响体验。
+- **新增内部链接不需要任何接线**：委托自动覆盖（导航栏、卡片、标签、归档、友链、项目……全站所有页面间跳转）。
+- **唯一例外**：命令式 `router.push`（如 `SearchModal` 键盘 Enter）没有锚点点击事件，需在 push 前显式 `useNavigationLoading().startNavigation()`；`done()` 一般不用手动调。
+- **首屏/hydration 前**：`src/lib/navigation-loading-bootstrap.ts` 工厂生成内联 IIFE（`layout.tsx` 注入 `<head>`），覆盖首屏文档 DCL 前 >300ms 与 hydration 前硬跳转两段空窗，判定规则与 React 侧同构（basePath 双态），样式全内联（不依赖外部 CSS）；Provider 挂载写 `<html data-nav-loading-ready>` 并广播 `navloading:ready` 后自注销让位。
+- a11y：胶囊隐藏时 `aria-hidden`，另设独立 `role="status" aria-live="polite"` 节点仅在 visible 时插入文本，慢跳转读屏才播报。
+- `Post/PostDone` 只负责清理跨文章残留 hash，不再调 `done()`。
 
 ## 14. 全局搜索（⌘K）
 

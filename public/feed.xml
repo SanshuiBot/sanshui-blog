@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
   xmlns:atom="http://www.w3.org/2005/Atom"
-  xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>三水 | 个人博客</title>
     <link>https://sanshuibot.github.io/sanshui-blog</link>
@@ -3994,7 +3995,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/react-server-components-%E5%AE%9E%E6%88%98%E4%B8%8E%E8%B8%A9%E5%9D%91/</guid>
       <pubDate>Tue, 21 Jul 2026 00:00:00 GMT</pubDate>
       <description>React Server Components 不是 SSR。本文从 RSC wire protocol 讲到 use client 边界划分，再列出 8 个生产环境踩过的坑，帮你避开 RSC 落地的所有暗礁。</description>
-      
       <category>React</category>
       <category>前端</category>
       <category>技术</category>
@@ -4006,7 +4006,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/redis-%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Mon, 20 Jul 2026 00:00:00 GMT</pubDate>
       <description>一个支付系统的分布式锁写错了，导致同一笔订单被扣两次款。本文讲 SET NX EX 的正确姿势、锁续期看门狗、Redlock 算法的争议，再到 6 个真实生产事故。</description>
-      
       <category>Redis</category>
       <category>后端</category>
       <category>分布式</category>
@@ -4019,7 +4018,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/tailwind-v4-%E8%BF%81%E7%A7%BB%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Sun, 19 Jul 2026 00:00:00 GMT</pubDate>
       <description>Tailwind v4 把配置从 JS 搬到 CSS。本文讲 @theme 令牌、@plugin、@custom-variant、@apply 的语义变化，再到 6 个真实迁移踩坑点。</description>
-      
       <category>Tailwind</category>
       <category>CSS</category>
       <category>前端</category>
@@ -4031,7 +4029,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/typescript-5-%E8%A3%85%E9%A5%B0%E5%99%A8%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Sat, 18 Jul 2026 00:00:00 GMT</pubDate>
       <description>TS 5.0 标准化装饰器，与旧 reflect-metadata 方案完全不同。本文讲新装饰器 API、metadata 提案、手写一个 IoC 容器，再到 NestJS 风格的路由装饰器实现。</description>
-      
       <category>TypeScript</category>
       <category>前端</category>
       <category>技术</category>
@@ -4042,7 +4039,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/vite-6-%E5%86%B7%E5%90%AF%E5%8A%A8%E4%BC%98%E5%8C%96/</guid>
       <pubDate>Fri, 17 Jul 2026 00:00:00 GMT</pubDate>
       <description>大型项目 Vite 冷启动 40s → 3s 的真实优化过程。讲依赖预构建、按需 optimizeDeps、插件 cacheDir、worker 池调优，以及 8 个常见冷启动慢的根因。</description>
-      
       <category>Vite</category>
       <category>前端</category>
       <category>技术</category>
@@ -4054,7 +4050,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/web-worker-%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Thu, 16 Jul 2026 00:00:00 GMT</pubDate>
       <description>主线程长任务 800ms → 12ms。本文讲 Worker 的 6 种创建方式、Transferable 对象、OffscreenCanvas 渲染、SharedArrayBuffer 多线程共享内存，再到 Comlink RPC 封装。</description>
-      
       <category>Web Worker</category>
       <category>前端</category>
       <category>技术</category>
@@ -4066,7 +4061,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/web-%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Wed, 15 Jul 2026 00:00:00 GMT</pubDate>
       <description>LCP 1.2s 到 3.8s 的真实排查过程。本文讲 PerformanceObserver API、Web Vitals 指标体系、LCP 元素归因、CLS 预测布局偏移，再到 RUM 上报方案。</description>
-      
       <category>性能</category>
       <category>前端</category>
       <category>技术</category>
@@ -4077,7 +4071,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/zustand-jotai-%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
       <description>Redux 时代结束了。本文讲 Zustand 的 store 模型、Jotai 的原子模型，再到 8 个真实场景下的选型决策树。</description>
-      
       <category>React</category>
       <category>状态管理</category>
       <category>前端</category>
@@ -4089,7 +4082,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/%E5%BE%AE%E6%9C%8D%E5%8A%A1%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Mon, 13 Jul 2026 00:00:00 GMT</pubDate>
       <description>12 个微服务，每天 2 亿次请求，一个 P99 延迟从 50ms 飙到 800ms 的排查。本文讲 OpenTelemetry Trace/Metrics/Logs 统一管线、Baggage 跨服务透传，再到 5 个生产踩坑。</description>
-      
       <category>可观测性</category>
       <category>后端</category>
       <category>微服务</category>
@@ -4101,7 +4093,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/%E6%B5%8F%E8%A7%88%E5%99%A8%E5%8E%9F%E7%94%9Fapi-%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Sun, 12 Jul 2026 00:00:00 GMT</pubDate>
       <description>不用框架、不用 GSAP，浏览器原生就能做流畅过渡动画。本文讲 View Transitions API、scroll-driven animations、popover API，再到 5 个渐进增强实战。</description>
-      
       <category>浏览器API</category>
       <category>前端</category>
       <category>技术</category>
@@ -4112,7 +4103,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/vue-3-5-%E5%93%8D%E5%BA%94%E5%BC%8F%E7%B3%BB%E7%BB%9F%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Sat, 11 Jul 2026 00:00:00 GMT</pubDate>
       <description>Vue 3.5 的响应式系统经过多次重构，本文从 ref/reactive/computed 的底层实现讲到 effect 依赖追踪，再到 6 个生产环境踩坑点。</description>
-      
       <category>Vue</category>
       <category>前端</category>
       <category>技术</category>
@@ -4124,7 +4114,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/vue-%E7%BC%96%E8%AF%91%E5%99%A8%E4%BC%98%E5%8C%96%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Fri, 10 Jul 2026 00:00:00 GMT</pubDate>
       <description>Vue 编译器在编译期做了大量优化。本文讲静态提升、PatchFlag、Block Tree、缓存事件处理器，再到 5 个真实性能优化案例。</description>
-      
       <category>Vue</category>
       <category>前端</category>
       <category>技术</category>
@@ -4136,7 +4125,6 @@ RCT_DEBUG_FABRIC=1 npx react-native run-ios
       <guid isPermaLink="true">https://sanshuibot.github.io/sanshui-blog/posts/vue-3-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E5%AE%9E%E6%88%98/</guid>
       <pubDate>Thu, 09 Jul 2026 00:00:00 GMT</pubDate>
       <description>Vue 3 时代 Pinia 取代了 Vuex。本文讲 Pinia 的 store 模型、组合式 store、跨 store 依赖，再到与 provide/inject、useState 模式的选型决策。</description>
-      
       <category>Vue</category>
       <category>前端</category>
       <category>状态管理</category>

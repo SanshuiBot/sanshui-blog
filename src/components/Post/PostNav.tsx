@@ -1,7 +1,6 @@
-﻿'use client';
+'use client';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import SpotlightTilt from '@/components/UI/SpotlightTilt';
 import Tooltip from '@/components/UI/Tooltip';
 import { useIsOverflow } from '@/components/UI/useIsOverflow';
@@ -48,7 +47,6 @@ function PostNavCard({
   title: string;
   side: 'prev' | 'next';
 }) {
-  const { startNavigation } = useNavigationLoading();
   const isPrev = side === 'prev';
 
   return (
@@ -61,7 +59,6 @@ function PostNavCard({
         <Link
           href={href}
           prefetch={false}
-          onClick={startNavigation}
           className={`post-nav-link spotlight-card relative flex h-full items-start gap-3 p-4 rounded-xl glass border border-black/[0.06] dark:border-white/5 overflow-hidden ${
             isPrev ? '' : 'justify-end'
           }`}

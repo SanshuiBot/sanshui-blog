@@ -25,13 +25,27 @@ interface Props {
   params: Promise<{ tag: string }>;
 }
 
+/**
+ * decodeURIComponent 容错：非法百分号序列（如 /tags/%E4/、/tags/%zz）会抛
+ * URIError，在服务端组件里直接抛会进 ErrorBoundary 通用错误屏（语义应是「不存在」）。
+ * 统一收口为 notFound() 走 404。metadata 与页面共用。
+ */
+function safeDecodeTag(tag: string): string | null {
+  try {
+    return decodeURIComponent(tag);
+  } catch {
+    return null;
+  }
+}
+
 export async function generateStaticParams() {
   return getAllTags().map((t) => ({ tag: t }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tag } = await params;
-  const decoded = decodeURIComponent(tag);
+  const decoded = safeDecodeTag(tag);
+  if (decoded === null) return { title: '标签不存在' };
   return {
     title: `#${decoded}`,
     description: `${decoded} - 标签页`,
@@ -41,7 +55,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TagPage({ params }: Props) {
   const { tag } = await params;
-  const decoded = decodeURIComponent(tag);
+  const decoded = safeDecodeTag(tag);
+  if (decoded === null) notFound();
   // 只投影索引 5 字段再透传 client PostGrid，避免全文 markdown 进 RSC payload（ADR-0004）
   const posts = getPostsByTag(decoded).map(toIndexEntry);
   if (posts.length === 0) notFound();
@@ -64,7 +79,7 @@ export default async function TagPage({ params }: Props) {
         </h1>
         <p className="mt-3 text-stone-500 dark:text-gray-500">共 {posts.length} 篇文章</p>
       </div>
-      <PostGrid posts={posts} />
+      <PostGrid posts={posts} immediate />
     </div>
   );
 }

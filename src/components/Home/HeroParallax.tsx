@@ -22,6 +22,7 @@ import Github from '@/components/UI/GithubIcon';
 import Tooltip from '@/components/UI/Tooltip';
 import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 import { spotlightMove } from '@/lib/spotlight';
+import { accentVarName, type AccentChannel } from '@/lib/accents';
 import { siteConfig } from '@/lib/site';
 import type { PostIndexEntry } from '@/lib/post-index';
 import { getPostsIndex } from '@/lib/posts-index-cache';
@@ -45,14 +46,10 @@ interface Thumb {
   tag: string;
   accent: string; // accent 通道变量名
 }
-const thumbAccents = [
-  '--accent-violet-rgb',
-  '--accent-pink-rgb',
-  '--accent-blue-rgb',
-  '--accent-teal-rgb',
-  '--accent-gold-rgb',
-  '--accent-rose-rgb',
-];
+// 拼贴墙展示顺序（violet 打头）与色板字符串收口 accents.ts（B5），不再手抄变量名
+const thumbAccents: `--accent-${AccentChannel}-rgb`[] = (
+  ['violet', 'pink', 'blue', 'teal', 'gold', 'rose'] as const satisfies readonly AccentChannel[]
+).map(accentVarName);
 
 // 前景退场润色窗口（vh 倍率）：物理滚出为主，淡出 + 轻微收缩（scale→0.94）
 // 叠加在 0.2→0.85vh 的滚动区段——内容跟随滚动移动，半透明不会产生旧方案

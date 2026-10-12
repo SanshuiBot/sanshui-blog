@@ -31,9 +31,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUpRight, BookOpen, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
-import { useNavigationLoading } from '@/components/UI/NavigationLoading';
 import SpotlightTilt from '@/components/UI/SpotlightTilt';
 import { formatDate } from '@/lib/formatDate';
 import { postUrl, type PostIndexEntry } from '@/lib/post-index';
@@ -84,6 +83,8 @@ export default function PostCard({
   post,
   skeleton = false,
   skeletonDelayMs = 0,
+  immediate = false,
+  enterDelayMs = 0,
 }: {
   post: PostIndexEntry;
   /**
@@ -96,8 +97,15 @@ export default function PostCard({
    * 实现「骨架一格一格快速铺满」的加载节奏；数据到达后的卡片填充不受影响。
    */
   skeletonDelayMs?: number;
+  /**
+   * 直出模式（RSC 归档/标签页）：SSR HTML 即真实卡片，不播 framer 挂载入场
+   * （initial=false，避免 hydration 时整批 opacity:0 闪烁），改由根节点纯 CSS
+   * 错峰淡入承担入场，reduced-motion 下 CSS 动画自动关闭（红线 #32/#43）。
+   */
+  immediate?: boolean;
+  /** immediate 模式 CSS 入场延迟（ms），由 PostGrid 按槽位错峰传入 */
+  enterDelayMs?: number;
 }) {
-  const { startNavigation } = useNavigationLoading();
   const router = useRouter();
   // 不用 withBase()：next/link 的 <Link> 和 router.prefetch 都会自动注入 basePath
   const postHref = postUrl(post.slug);
@@ -146,7 +154,12 @@ export default function PostCard({
   };
 
   return (
-    <div className="relative h-56 sm:h-60">
+    <div
+      className={`relative h-56 sm:h-60${immediate ? ' post-card-immediate' : ''}`}
+      style={
+        immediate ? ({ '--post-enter-delay': `${enterDelayMs}ms` } as CSSProperties) : undefined
+      }
+    >
       {/* 骨架层：absolute 铺底，skeleton=true 时可见，切到卡片时 opacity 渐隐。
           AnimatePresence 让骨架在 skeleton 切到 false 时淡出，而非瞬间消失。 */}
       <AnimatePresence>
@@ -168,10 +181,12 @@ export default function PostCard({
           骨架模式不挂载（避免空 post 撑高度），切到非骨架时挂载并淡入。 */}
       <AnimatePresence>
         {!skeleton && (
+          /* immediate 直出：SSR 即最终态（initial=false），入场交给根节点 CSS 动画；
+             流式模式才用 framer scale spring + opacity tween 逐张弹出 */
           <motion.div
             className="absolute inset-0 h-full"
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1, transition: cardEnter }}
+            initial={immediate ? false : { opacity: 0, scale: 0.88 }}
+            animate={immediate ? undefined : { opacity: 1, scale: 1, transition: cardEnter }}
             style={{ pointerEvents: 'auto' }}
           >
             <div className="group spotlight-card relative h-full rounded-2xl">
@@ -258,7 +273,6 @@ export default function PostCard({
                     <Link
                       href={postHref}
                       prefetch={false}
-                      onClick={startNavigation}
                       onMouseEnter={onCardMouseEnter}
                       className="post-card-link flex-1 min-h-0 flex flex-col"
                     >

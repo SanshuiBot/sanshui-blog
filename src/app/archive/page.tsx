@@ -32,11 +32,20 @@ export default function ArchivePage() {
   // 透传会把全部文章正文序列化进 RSC payload（每篇 20-50KB，ADR-0004）
   const entries = posts.map(toIndexEntry);
   const grouped: Record<string, PostIndexEntry[]> = {};
+  // 缺日期/非法日期（parse-post 规整为空串）会让 new Date('') 得到 Invalid Date、
+  // getFullYear() 返回 NaN —— 直接 String(NaN) 会渲染出「NaN」年份分组。
+  // 无效日期统一归入「未分类」，排在有效年份之后
+  const UNDATED_YEAR = '未分类';
   entries.forEach((p) => {
-    const y = new Date(p.date).getFullYear().toString();
+    const t = new Date(p.date).getTime();
+    const y = Number.isNaN(t) ? UNDATED_YEAR : new Date(p.date).getFullYear().toString();
     (grouped[y] ??= []).push(p);
   });
-  const years = Object.keys(grouped).sort((a, b) => Number(b) - Number(a));
+  const years = Object.keys(grouped).sort((a, b) => {
+    if (a === UNDATED_YEAR) return 1;
+    if (b === UNDATED_YEAR) return -1;
+    return Number(b) - Number(a);
+  });
 
   // 标题右侧筛选按钮的下拉数据：单趟 O(N) 计数（getTagCounts），
   // 避免「每个标签一次全量 filter」的 O(T×N) 嵌套循环；按文章数降序，最多 16 个
@@ -70,17 +79,24 @@ export default function ArchivePage() {
         {tags.length > 0 && <FilterDropdown tags={tags} />}
       </div>
 
-      {years.map((year) => (
-        <section key={year} className="mb-14 last:mb-0">
-          <div className="relative mb-8 flex items-center gap-5">
-            <div className="text-3xl font-bold text-stone-500 tracking-tight dark:text-gray-500">
-              {year}
+      {years.length === 0 ? (
+        /* 空态：content/posts 无文章时不留仅含标题的空白页 */
+        <div className="rounded-2xl border border-dashed border-black/[0.1] dark:border-white/10 py-20 text-center text-stone-500 dark:text-gray-500">
+          还没有文章，敬请期待
+        </div>
+      ) : (
+        years.map((year) => (
+          <section key={year} className="mb-14 last:mb-0">
+            <div className="relative mb-8 flex items-center gap-5">
+              <div className="text-3xl font-bold text-stone-500 tracking-tight dark:text-gray-500">
+                {year}
+              </div>
+              <div className="flex-1 h-px bg-black/[0.06] dark:bg-white/10" />
             </div>
-            <div className="flex-1 h-px bg-black/[0.06] dark:bg-white/10" />
-          </div>
-          <PostGrid posts={grouped[year] ?? []} />
-        </section>
-      ))}
+            <PostGrid posts={grouped[year] ?? []} immediate />
+          </section>
+        ))
+      )}
     </div>
   );
 }

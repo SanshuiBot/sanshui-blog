@@ -15,13 +15,16 @@
  */
 import { getAllPosts, getAllTags } from '@/lib/posts';
 import { withBase } from '@/lib/basePath';
+import { formatDate } from '@/lib/formatDate';
 import HomeHydration from '@/components/Home/HomeHydration';
 
 export default function Home() {
   const posts = getAllPosts();
 
-  // 首屏 Hero 统计胶囊：服务端一次性算好，避免客户端再 fetch
-  const lastUpdated = posts[0]?.date ?? '';
+  // 首屏 Hero 统计胶囊：服务端一次性算好，避免客户端再 fetch。
+  // 日期走全站唯一 formatDate（与卡片/详情页同口径「2026年7月28日」），
+  // 不直出原始 YYYY-MM-DD；无文章/日期缺失时用 — 占位，避免空白胶囊
+  const lastUpdated = posts[0]?.date ? formatDate(posts[0].date) : '—';
   const stats = {
     posts: posts.length,
     tags: getAllTags().length,

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useCallback, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -41,6 +41,9 @@ export default function Navbar() {
   // 预取命中后点击时 resolve 已在缓存，setTimeout(0) 内同步 setState 挂载，点击即弹。
   const [SearchModalComp, setSearchModalComp] = useState<SearchModalComponent | null>(null);
   const chunkPromisesRef = useRef<Promise<SearchModalComponent> | null>(null);
+  // 用户主动打开搜索时 chunk 加载失败的提示（idle 预取失败不打扰，只静默重试）：
+  // 旧行为 catch 后只关弹窗，用户面对「点了没反应」无任何反馈（A5）
+  const [chunkError, setChunkError] = useState(false);
   const mobileMenuRef = useRef<HTMLElement>(null);
 
   // 移动端菜单仅启用 Esc 关闭：开关按钮在 header（浮层外），mousedown 外点判定会误关，
@@ -77,6 +80,7 @@ export default function Navbar() {
     const p = import('@/components/UI/SearchModal')
       .then((m) => m.default)
       .then((Comp) => {
+        setChunkError(false);
         setSearchModalComp(() => Comp);
         return Comp;
       })
@@ -113,10 +117,18 @@ export default function Navbar() {
   // （内部按 open 显隐 + AnimatePresence），不再有「open=true 但组件缺失」的空窗。
   const openSearch = useCallback(() => {
     setSearchOpen(true);
+    // 主动打开失败才提示（idle 预取的 catch 保持静默）；成功时 loadChunk 内清错
     loadChunk().catch(() => {
-      /* 失败已在 loadChunk 内关闭并清缓存，下次点击重试 */
+      setChunkError(true);
     });
   }, [loadChunk]);
+
+  // 失败提示 5s 自动消失（定时器随状态/卸载清理，幂等可重复触发）
+  useEffect(() => {
+    if (!chunkError) return;
+    const t = setTimeout(() => setChunkError(false), 5000);
+    return () => clearTimeout(t);
+  }, [chunkError]);
 
   // 消费 hydration 前的原生点击意图（见 accents.ts searchToggleClickScript）：
   // 移动端首载 React 尚未 hydrate 时点搜索图标，委托脚本记 __searchIntent 并显示
@@ -330,6 +342,22 @@ export default function Navbar() {
           点击即置 open=true，chunk 就绪的同一帧组件就在 DOM 里，无「点了没反应」空窗 */}
       {SearchModalComp !== null && (
         <SearchModalComp open={searchOpen} onClose={() => setSearchOpen(false)} />
+      )}
+      {/* chunk 加载失败 toast：role=status 供读屏播报；5s 自动消失，也可立即重试 */}
+      {chunkError && (
+        <div
+          role="status"
+          className="fixed bottom-6 left-1/2 z-[90] flex -translate-x-1/2 items-center gap-3 rounded-xl border border-black/[0.1] glass-heavy px-4 py-2.5 text-sm shadow-emboss dark:border-white/10"
+        >
+          <span className="text-stone-600 dark:text-gray-300">搜索模块加载失败，请重试</span>
+          <button
+            type="button"
+            onClick={openSearch}
+            className="btn-retry rounded-lg border border-black/[0.1] px-2.5 py-1 text-xs dark:border-white/15"
+          >
+            重试
+          </button>
+        </div>
       )}
     </>
   );

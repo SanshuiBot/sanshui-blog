@@ -5,6 +5,7 @@ import type { TocItem } from '@/lib/toc';
 import { useScrollThumbGeometry } from '@/components/UI/useScrollThumbGeometry';
 import { useFocusTrap } from '@/components/UI/useFocusTrap';
 import { useScrollLock } from '@/components/UI/useScrollLock';
+import { usePrefersReducedMotion } from '@/components/UI/usePrefersReducedMotion';
 
 interface Props {
   items: TocItem[];
@@ -35,6 +36,8 @@ export default function TableOfContents({ items }: Props) {
   const [activeId, setActiveId] = useState<string>(items[0]?.id ?? '');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
+  // 显式 behavior:'smooth' 会绕过 CSS 的 reduced-motion 回退，必须在 JS 侧改 auto（红线 #32）
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   // 移动端抽屉焦点陷阱：Tab 循环限制在抽屉可聚焦元素内，关闭后焦点还原
   useFocusTrap(drawerRef, drawerOpen);
@@ -101,17 +104,23 @@ export default function TableOfContents({ items }: Props) {
   ); // activeId 是反向滚动兜底的防抖检查，加入依赖会让 observer 随每次高亮重连，破坏滚动监听
 
   // 点击跳转：平滑滚动 + 写 URL hash，但不触发原生锚点跳转 (P5)
-  const handleJump = useCallback((e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // 用 replaceState 不留 history 嗽迹，避免后退循环
-      history.replaceState(null, '', `#${id}`);
-      setActiveId(id);
-    }
-    setDrawerOpen(false);
-  }, []);
+  const handleJump = useCallback(
+    (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+      e.preventDefault();
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({
+          behavior: prefersReducedMotion ? 'auto' : 'smooth',
+          block: 'start',
+        });
+        // 用 replaceState 不留 history 嗽迹，避免后退循环
+        history.replaceState(null, '', `#${id}`);
+        setActiveId(id);
+      }
+      setDrawerOpen(false);
+    },
+    [prefersReducedMotion],
+  );
 
   // 淡入淡出滚动条 —— 显隐「只」由 hover 控制：mouseenter → 显示，mouseleave → 隐藏。
   // 几何由 useScrollThumbGeometry hook 算（rAF 防抖 + ResizeObserver + scroll + fonts.ready 兜底），

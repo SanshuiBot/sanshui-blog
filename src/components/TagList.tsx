@@ -182,7 +182,8 @@ export default function TagList({
   colors,
 }: {
   tags: { name: string; count: number }[];
-  colors: string[];
+  /** 只读色板（ACCENT_RGB_PALETTE 为 readonly，消费方只按索引读不改写） */
+  colors: readonly string[];
 }) {
   return (
     <motion.div

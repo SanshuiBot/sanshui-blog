@@ -15,6 +15,7 @@ import { getTagCounts } from '@/lib/posts';
 import TagList from '@/components/TagList';
 import type { Metadata } from 'next';
 import { siteConfig } from '@/lib/site';
+import { ACCENT_RGB_PALETTE } from '@/lib/accents';
 
 export const metadata: Metadata = {
   title: '标签',
@@ -25,14 +26,8 @@ export const metadata: Metadata = {
 export default function TagsPage() {
   // 单趟 O(N) 统计（getTagCounts），替代「每个标签一次 getPostsByTag().length」的 O(T×N) 嵌套循环
   const tags = [...getTagCounts().entries()].map(([name, count]) => ({ name, count }));
-  const colors = [
-    'rgb(var(--accent-pink-rgb))',
-    'rgb(var(--accent-violet-rgb))',
-    'rgb(var(--accent-blue-rgb))',
-    'rgb(var(--accent-teal-rgb))',
-    'rgb(var(--accent-gold-rgb))',
-    'rgb(var(--accent-rose-rgb))',
-  ];
+  // 色板唯一源收口 lib/accents（B5），TagList 按索引循环取色
+  const colors = ACCENT_RGB_PALETTE;
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-24">

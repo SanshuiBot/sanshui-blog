@@ -10,9 +10,9 @@ interface ArrowLinkProps {
   dir: 'back' | 'more';
   /** 透传给 <Link> 的类名（.link-back / .link-more 及布局类） */
   className?: string;
-  /** 透传给 <Link>：文章详情跳转时配合 startNavigation 使用 */
+  /** 透传给 <Link> 的 prefetch */
   prefetch?: boolean;
-  /** 透传给 <Link>：文章详情跳转时配合 startNavigation 使用 */
+  /** 透传给 <Link> 的 onClick（导航等待胶囊由全局委托自动接管，无需在此接线） */
   onClick?: MouseEventHandler<HTMLAnchorElement>;
   /** 链接文字 */
   children: ReactNode;

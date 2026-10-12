@@ -40,6 +40,18 @@ export const ACCENT_CHANNELS: readonly AccentChannel[] = [
   'rose',
 ] as const;
 
+/** 通道名 → CSS 变量名（pink → `--accent-pink-rgb`）。
+ *  各消费方（Hero 拼贴墙/标签云/项目条）不再手抄变量名字符串（B5 收口）；
+ *  需要不同展示顺序时（如 Hero 以 violet 打头），就地对通道名数组重排后 map 本函数 */
+export const accentVarName = (ch: AccentChannel): `--accent-${AccentChannel}-rgb` =>
+  `--accent-${ch}-rgb`;
+
+/** 可直接用于 style/className 的 rgb() 色板（标签云、项目条哈希取色用），
+ *  按 ACCENT_CHANNELS 顺序；魔法字符串全站只此一处 */
+export const ACCENT_RGB_PALETTE: readonly string[] = ACCENT_CHANNELS.map(
+  (ch) => `rgb(var(${accentVarName(ch)}))`,
+);
+
 /**
  * 6 个 accent 通道的中文标签（UI 展示用）——描述该通道的**主导用途**而非纯颜色名。
  * 注意：6 通道是协同调色板（多用于渐变组合），不存在严格的一一对应元素；
