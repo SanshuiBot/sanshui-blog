@@ -25,6 +25,7 @@ import {
   searchToggleClickScript,
 } from '@/lib/accents';
 import { createNavigationLoadingScript } from '@/lib/navigation-loading-bootstrap';
+import { createBackButtonScript } from '@/lib/back-button-bootstrap';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -81,7 +82,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${sans.variable} ${mono.variable} ${serifSC.variable}`}
     >
       <head>
-        {/* 防 FOUC + 首点（单个阻塞脚本，内联四个 IIFE）：
+        {/* 防 FOUC + 首点（单个阻塞脚本，内联六个 IIFE）：
             1) accent —— 首屏前同步应用上次的强调色；由 accents.ts 生成，与 resolveAccentColors 共享数据源。
             2) theme —— 首屏前同步设 .dark 类 + meta theme-color（next-themes 的 ThemeProvider 渲染在
                <body> 内，其内联 script 进不了 <head>，否则亮暗闪屏 + 地址栏先亮后暗）。
@@ -94,6 +95,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             5) navLoading —— 导航等待胶囊的首屏/硬跳转前置版：首屏 DCL 前 >300ms、
                以及 hydration 前点击 /posts/ 链接的浏览器原生等待期显示同款玻璃胶囊；
                Provider 挂载（data-nav-loading-ready）后自注销让位。
+            6) backButton —— 文章页「返回」按钮 hydration 前的原生代劳：读取 sessionStorage
+               导航链（NavHistoryTracker 维护），有站内上一页则 location.assign 上一页，
+               否则放行默认 href="/" 回首页；BackButton 挂载（data-back-ready）后自注销。
+               修复移动端「点了返回却回首页」（SSR href="/" 在 React handler 挂载前生效）。
             dangerouslySetInnerHTML 安全：脚本内容由 ACCENT_STORAGE_KEY / CUSTOM_ACCENT_STORAGE_KEY /
             DEFAULT_ACCENT_ID / ACCENT_PRESETS / THEME_COLORS / BASE_PATH 等模块级常量拼接，无用户输入，无模板注入风险。 */}
         <script
@@ -103,7 +108,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               themeBootstrapScript +
               themeToggleClickScript +
               searchToggleClickScript +
-              createNavigationLoadingScript(BASE_PATH),
+              createNavigationLoadingScript(BASE_PATH) +
+              createBackButtonScript(),
           }}
         />
       </head>

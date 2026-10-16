@@ -432,3 +432,26 @@ Next 16.3.4 静态导出下 `next-font-manifest` 的 app 映射为空（框架 b
 - **Border/玻璃底留在内层视觉壳**：若把 border 移到外层命中区元素再 scale，边框被拉伸变形、双层玻璃圆角错位（PostNav 已试过并回退）。
 
 **站内落地**：PostNav（`.post-nav-card` 静止命中区 + `.post-nav-link` 内层动效 + 聚光跟随 `--mx/--my`）、Hero CTA（`.hero-cta` 外层 `<a>` 静止 + `.hero-cta-visual` 内层，见 §42）、TagList（`.tag-item` → `.tag-pill`）、PostCard 标题/标签/阅读链接（`.group:hover` 驱动，原自身 `:hover` transform 已改）。新增 hover 位移/缩放动效时按此分层，别把 transform 挂在判定元素上。
+
+## 55. 文章页返回按钮与站内导航链（对齐 AGENTS #54）
+
+**历史故障（2026-10 修复，两个移动端专属症状，PC 不复现）**：旧 `BackButton` 在**挂载时**用「同源 referrer + sessionStorage 站内标记」猜「上一条历史是不是本站」，两个信号都不可靠——① referrer 只在文档加载时有效，SPA 软导航后是过期的初始值；② 标记由任意页面挂载时写、`pagehide` 时清，而**移动端切后台/切 tab 也发 `pagehide`**（PC 切窗口不发），标记被误清 → 之后软导航新挂载时误判「无站内历史」→ 回首页；反过来 reload（移动端下拉刷新）后 referrer 变自身同源、标记被本会话首个页面自身写入而残留 → 误判「有历史」→ `history.back()` 退到外站条目/浏览器空白页（表现为「点击无响应/跳去站外」）。另有第三根因：SSR 的返回按钮就是 `<a href="/">`，**hydration 前**的点击走浏览器默认行为全文档导航回首页（移动端 JS 慢窗口期长，PC 快无感）。
+
+**现行架构（记录事实，不再猜测）**：sessionStorage 维护「本标签页实际走过的站内路由栈」，链尾 = 当前页，链尾前一项 = 应返回的上一页。
+
+- **`src/lib/nav-history.ts`**（客户端安全纯函数，`window.sessionStorage` 读写全部 try/catch 静默降级）：`syncNavHistory`（追加/幂等/镜像截断，上限 100 条截尾）、`resetNavHistory`、`getBackTarget`、`isStaticFilePathname`。键 `sansui-nav-history`，值 JSON 字符串数组，元素是**含 basePath 的 `location.pathname`**。
+- **`src/components/UI/NavHistoryTracker.tsx`**（Providers 顶层挂载，取代已删除的 `InSiteNavMarker.tsx`）：唯一写链方。写入规则四条——
+  1. 文档加载：referrer 是**同源路由**（reload 自指/本站全文档导航）→ 保留链；外站/空（新标签、书签、地址栏、标签页恢复）/静态文件（`/feed.xml` 等，`isStaticFilePathname` 同 `isInternalNavigation` 扩展名规则）→ 重置为 `[当前页]`；
+  2. 路由变化（软导航/popstate）：`usePathname` 变化触发 `syncNavHistory(location.pathname)` 镜像历史栈（后退/前进回到旧条目 → 截断到该处）；
+  3. 捕获阶段点击**跨域 http(s) 链接**（左键无修饰、本标签页）：导航尚未发生即重置为 `[当前页]`——离开后再回来（bfcache 恢复或全新加载）时浏览器上一条已不是本站页面，应回首页而非再退到外站；
+  4. **刻意不监听 `pagehide`**：切后台/bfcache 进缓存不截断（移动端切后台同样发 `pagehide`，截断即旧 bug）；reload 与地址栏离开分别由规则 1 的 referrer 判定覆盖，卸载时不做任何事。
+- **`src/components/UI/BackButton.tsx`**：**点击时**（而非挂载时）读链判定；`getBackTarget()` 非 null → `preventDefault()` + `router.back()`（保留滚动位置），否则放行 `<Link href="/">` 默认导航回首页。挂载 effect 写 `<html data-back-ready>` 并派发 `backbutton:ready`（hydration 交接，同 NavigationLoading 模式）。
+- **`src/lib/back-button-bootstrap.ts`**：`<head>` 内联 IIFE（`layout.tsx` 与另五个前置脚本拼接注入），document 捕获阶段委托 `a[data-back-link]`（`ArrowLink` 的 `backLink` prop 打标，**只给文章页返回按钮打**，归档/标签/关于等页的「返回首页」是普通导航不打标）；有上一页 → `preventDefault + location.assign(上一页)`（pre-hydration 无 App Router，全文档导航到链条里的站内路径），无上一页 → 放行默认 `href="/"`；`backbutton:ready` 或 `data-back-ready` 出现即自注销。**判定规则与 React 侧必须逐条一致**（同键同格式 + `history.length>1` + 链长 ≥2 + 链尾=当前页），改任一侧同步另一侧。
+
+**返回判定三条件**（`getBackTarget`，缺一即回首页）：`window.history.length > 1` + 链长 ≥ 2 + 链尾 === 当前页。链尾校验防「陈旧链」（pre-hydration 时跟踪器尚未同步）；`history.length` 守卫防「链与历史栈背离」——**复制标签页会复制 sessionStorage 但不复制历史栈**（新页 length=1、链却是旧的），此时 `router.back()` 静默无操作，又是「点击无响应」诱因。
+
+**basePath 注意**：`usePathname()` 剥 basePath（Next 源码 `hasBasePath ? removeBasePath : pathname`），**只能当路由变化触发器**；链里必须存 `location.pathname`（含 basePath），脚本的 `location.assign(链路径)` 才直通。两侧都拿 `window.location.pathname` 比对，生产/dev 双态不错位。
+
+**降级与边界**：sessionStorage 不可用（隐私模式）→ 链空 → 回首页，与无 JS 行为一致；无 JS 时文章正文在 React Suspense 边界内不揭示（`S:0 display:none`，React 19 流式 SSR 既有特性，与返回按钮无关），返回按钮退化为普通 `<a href="/">`。已知接受项：双击返回可能回退两级（旧代码同样暴露）；同一路径访问两次后再前进的镜像舞蹈会退化为回首页（罕见）。
+
+**测试**：`tests/nav-history.test.ts`（链条纯函数契约 18 例）、`tests/nav-history-tracker.test.tsx`（referrer 四规则/路由镜像/跨域点击截断 10 例）、`tests/back-button.test.tsx`（点击判定/SSR 契约/hydration 交接 8 例）、`tests/back-button-bootstrap.test.ts`（契约 + jsdom 求值 IIFE 的行为 11 例）。jsdom 坑：`vi.spyOn(window.sessionStorage, 'getItem')` 在 Storage Proxy 上**静默失效**，须 spy `Storage.prototype`；`history.length`/`document.referrer` 用实例属性遮蔽后要在 afterEach 删除还原。决策背景见 ADR-0005。

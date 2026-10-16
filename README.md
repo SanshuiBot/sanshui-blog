@@ -95,7 +95,7 @@ sanshui-blog/
 ├── src/
 │   ├── app/                    # Next.js App Router 页面
 │   │   ├── page.tsx            # 首页 (Hero + 最新文章列表；HomeHydration 懒加载 HeroParallax/PostsList)
-│   │   ├── layout.tsx          # 根布局 (Providers/AmbientEffects/AppShell + favicon metadata + 防 FOUC accent 脚本)
+│   │   ├── layout.tsx          # 根布局 (Providers/AmbientEffects/AppShell + favicon metadata + 防 FOUC/首点内联脚本簇：accent · theme · themeToggle · searchToggle · navLoading · backButton 六个 IIFE)
 │   │   ├── fonts.ts            # Inter + JetBrains Mono 字体配置
 │   │   ├── not-found.tsx       # 404 页面 (粒子动画)
 │   │   ├── sitemap.ts          # sitemap.xml（force-static，中文 slug 编码）
@@ -112,7 +112,7 @@ sanshui-blog/
 │   │   ├── resume-terminal.css # 简历内容区（变量 + 暗/亮双主题覆盖）
 │   │   └── projects.css        # 项目卡片（标题渐变 / 语言色文字 / hover 光晕的亮暗双态）
 │   ├── components/
-│   │   ├── Providers.tsx       # 纯 Context 组合 (ErrorBoundary + next-themes + 导航加载，无 framer 依赖)
+│   │   ├── Providers.tsx       # 纯 Context 组合 (ErrorBoundary + next-themes + 导航加载 + 导航链跟踪，无 framer 依赖)
 │   │   ├── AmbientEffects.tsx  # 全局动效注册表 (懒加载 + reduced-motion 兜底)
 │   │   ├── AppShell.tsx        # 布局壳 (Navbar + main + Footer)
 │   │   ├── Layout/             # Navbar · Footer · ScrollProgress
@@ -122,7 +122,7 @@ sanshui-blog/
 │   │   ├── Projects/           # ProjectsContent（项目卡片墙，统一尺寸 + 鼠标跟随光晕）
 │   │   ├── Archive/            # FilterDropdown（归档年份/标签筛选）
 │   │   ├── Links/ · NotFound/ · TagList
-│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop (现仅 Footer 用) · ThemeColorSync · TerminalShell · SpotlightTilt (全站卡片统一 hover 3D + 聚光坐标分发壳) · useDismiss · useScrollLock · useIsBodyScrollLocked (进度判锁基元) · useFocusTrap · usePrefersReducedMotion · useSafeTimeout · useScrollThumbGeometry · ErrorBoundary
+│   │   └── UI/                 # CursorGlow · ClickEffect · ParticleField · AccentPicker · SearchModal · ThemeToggle · Tooltip · NavigationLoading · SpinRing (共用加载环) · GithubIcon · ArrowLink · BackToTop (现仅 Footer 用) · ThemeColorSync · TerminalShell · SpotlightTilt (全站卡片统一 hover 3D + 聚光坐标分发壳) · BackButton (文章页返回按钮，点击时读导航链判定) · NavHistoryTracker (站内导航链写入口，Providers 挂载) · useDismiss · useScrollLock · useIsBodyScrollLocked (进度判锁基元) · useFocusTrap · usePrefersReducedMotion · useSafeTimeout · useScrollThumbGeometry · ErrorBoundary
 │   └── lib/
 │       ├── types.ts            # Post 类型定义（server-only）
 │       ├── posts.ts            # 文章读取（单次装载，无 mtime 缓存；slug 解码统一兜底）
@@ -143,7 +143,9 @@ sanshui-blog/
 │       ├── clickParticles.ts   # 点击特效粒子物理纯函数
 │       ├── formatDate.ts       # 日期格式化（zh-CN 长格式 + 模块级缓存，全站唯一实现）
 │       ├── search.ts           # 搜索匹配纯函数（空格分词 AND + 高亮片段，可单测）
-│       └── post-index.ts       # PostIndexEntry 客户端安全索引形状 + toIndexEntry + postUrl
+│       ├── post-index.ts       # PostIndexEntry 客户端安全索引形状 + toIndexEntry + postUrl
+│       ├── nav-history.ts      # 站内导航链：sessionStorage 路由栈（返回按钮判定的唯一事实源，客户端安全，读写全 try/catch 降级）
+│       └── back-button-bootstrap.ts # 返回按钮 hydration 前代劳脚本生成（内联 <head> 的 IIFE，与 nav-history 同键同规则）
 ├── tests/                      # Vitest 单测（lib 纯函数/契约 + jsdom 组件测试 RTL）
 ├── scripts/
 │   ├── predev.js               # ConsoleNinja 兼容：生成 .next/routes-manifest.json
@@ -401,6 +403,7 @@ CI 配置见 `.github/workflows/deploy.yml`：Node 22 + npm 缓存、`npm ci` �
 - **TypeScript 严格**：`strict: true` + `noUncheckedIndexedAccess` + `noUnusedLocals` + `noUnusedParameters`，所有索引访问都需 undefined 检查
 - **中文 Slug**：`getPostBySlug()` / `getAdjacentPosts()` 内部经 `decodeSlug()` 统一做 `decodeURIComponent`（非法编码按原样查找、不抛异常）；`generateStaticParams` 返回原始 slug，新增 slug 查询时保持一致
 - **导航状态**：通过 `useNavigationLoading` hook（来自 `@/components/UI/NavigationLoading`）管理页面过渡状态，**只有跳转到文章详情页（`/posts/...`）的 `<Link>` 才调用 `startNavigation`** 触发加载指示器（与 AGENTS.md 约定 #13 一致）
+- **文章页返回按钮走站内导航链（移动端专项修复）**：`BackButton`（`Post/PostMeta` 挂载，`ArrowLink dir="back"` + `data-back-link` 标）**不在挂载时猜历史**——旧实现用「同源 referrer + sessionStorage 标记」双信号，移动端有两个确定性失效模式（切后台发 `pagehide` 误清标记 → 误回首页；reload 后 referrer 变自身同源/标记残留 → `history.back()` 退到站外），且 SSR 的 `href="/"` 在 hydration 前的点击必然回首页。现改为记录事实：`NavHistoryTracker`（Providers 顶层）在 sessionStorage 维护「本标签页实际走过的站内路由栈」（`lib/nav-history.ts`，键 `sansui-nav-history`），软导航/popstate 镜像历史栈、跨域 http(s) 链接点击即重置、reload 不截断、**刻意不监听 pagehide**；`BackButton` **点击时**读链，三条件（`history.length>1` + 链长 ≥2 + 链尾=当前页，防陈旧链与复制标签页的链栈背离）全满足才 `preventDefault()` + `router.back()`，否则放行 `<Link href="/">` 回首页。链存**含 basePath 的 `location.pathname`**（`usePathname()` 剥 basePath，只能当路由变化触发器）。hydration 前由 `lib/back-button-bootstrap.ts` 内联脚本用同一链条 `location.assign(上一页)` 代劳（`backbutton:ready` 交接自注销），无 JS/隐私模式降级回首页。详见 AGENTS.md #54 / conventions §55 / ADR-0005
 - **自定义 Easing 曲线**：Tailwind 主题预定义了 `--ease-out-expo`、`--ease-out-back`、`--ease-in-out-circ`，Framer Motion 动画大量使用 `[0.16, 1, 0.3, 1]` 等自定义曲线
 - **静态导出通过环境变量切换**：`next.config.ts` 中 `output: 'export'`、`basePath`、`assetPrefix` **仅**在 `NEXT_BUILD=1` 时生效。`npm run dev` 不会设置此变量，因此开发模式下没有 `basePath`、没有 `assetPrefix`。**不要手动设置 `output: 'export'`**，否则 HMR 会挂
 - **basePath 双边一致**：`process.env.NEXT_BUILD` 没有 `NEXT_PUBLIC_` 前缀，Next.js 不会把它 inline 到客户端 bundle。`next.config.ts` 通过 `env: { NEXT_PUBLIC_BASE_PATH: BASE_PATH }` 把 basePath 注入 `NEXT_PUBLIC_BASE_PATH`，Next.js 会 inline 到 SSR + 客户端 bundle 两边，`src/lib/basePath.ts` 读取此变量。新增需要 basePath 的客户端代码时，**必须**走 `withBase()`，不要自己拼 `process.env.NEXT_BUILD`

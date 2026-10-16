@@ -22,12 +22,12 @@
 ```
 content/   posts/*.md(x)（文件名即 slug）+ resume.md
 src/app/   App Router 页面；src/components/ 组件；src/styles/ CSS（集中 #35）
-src/lib/   纯函数/读取层（formatDate/search/post-index 为客户端安全模块），职责看文件头
+src/lib/   纯函数/读取层（formatDate/search/post-index/nav-history 为客户端安全模块），职责看文件头
 scripts/   predev.js gen-posts-index.js gen-feed.js gen-og-image.js gen-dotted-tag-payloads.js post-build-cleanup.js post-build-font-preload.js
 tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产物（posts-index.json feed.xml og.png）
 ```
 
-## 红线（52 条；详版见 docs/conventions.md §N）
+## 红线（54 条；详版见 docs/conventions.md §N）
 
 1. `NEXT_BUILD` 双态（dev 不设/build 必设），别手动设 `output:'export'`。basePath：`<Link>`/router 自动注入别套 withBase；`<Image>`/原生 `<a>`/`<img>`/`<link>`/`fetch()` 必须套；metadata 图走 metadataBase 裸路径。`<Link>` 只用于真实路由（静态文件用原生 `<a>`+withBase）。
 2. `params` 是 Promise，必须 `await`。
@@ -82,6 +82,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 51. 文章页回顶并入 `Post/ReadingProgress` 环形按钮（accent 弧线进度 + 圆心「↑ 百分比」+ 点击回顶，滚动 >400px 出现，z-30 低于弹层）；`UI/BackToTop` 仅 Footer 用。
 52. 行尾统一 LF：`.prettierrc` `endOfLine:"lf"` + 仓库根 `.gitattributes`（`* text=auto eol=lf`），新增文件保持 LF，避免 CRLF/LF 幻影 diff。
 53. hover 动效命中区分层：位移/缩放等 transform **不能写在 hover 判定元素自身**（光标在边缘时命中区随位移变化 → 反复 enter/leave 疯狂跳动；translateY 还会留「悬空带」——光标在带内 hover 态亮着但卡片已浮走）。**外层元素静止只做命中区（hover 判定/`group`），transform 放内层**；纯 scale（外扩 ≤1px）可接受。纯色/边框变色可直接写自身 `:hover`。见 conventions §54。
+54. 文章页返回按钮走**站内导航链**（`lib/nav-history.ts` + `UI/NavHistoryTracker`，Providers 顶层挂载）：sessionStorage 存本标签页实际走过的站内路由栈（含 basePath 的 `location.pathname`），链尾前一项才是返回目标；点击时（非挂载时）判定，`getBackTarget()` 非 null 才 `router.back()`，否则放行 `<Link href="/">` 回首页。三条铁律：**不监听 pagehide**（移动端切后台也发，截断会误判无历史→误回首页，旧 bug 根因）；**跨域 http(s) 链接点击即重置链条**（离开再回来时上一条已非本站）；**reload 不截断**（下拉刷新后链条须保留）。判定三条件：`history.length>1` + 链长 ≥2 + 链尾=当前页（陈旧链/复制标签页背离都不返）。SSR href 恒为 `/`，hydration 前由 `lib/back-button-bootstrap.ts` 内联脚本用同一链条代劳（`data-back-ready` 交接），无 JS 降级回首页。`usePathname` 剥 basePath 只能当变化触发器，链里必须存 `location.pathname`。见 conventions §55、ADR-0005。
 
 ## 内容编辑
 
@@ -94,7 +95,7 @@ tests/     lib 单测 + jsdom 组件测试（RTL）；public/ 静态资源 + 产
 
 - 排查路由以 `src/app/` 为准；`out/` 是产物（gitignore），别清。
 - Agent skills（issue-tracker / triage-labels / domain）见 `docs/agents/`。
-- ADR（docs/adr/）：0001 TOC 几何 · 0002 Accent 解析统一 · 0003 useSafeTimeout primitive · 0004 PostIndexEntry 适配器；候选 ⑤（basePath 双态）不深化。
+- ADR（docs/adr/）：0001 TOC 几何 · 0002 Accent 解析统一 · 0003 useSafeTimeout primitive · 0004 PostIndexEntry 适配器 · 0005 站内导航链（返回按钮判定）；审查候选编号 ⑤（basePath 双态）不深化。
 
 <!-- BEGIN:nextjs-agent-rules -->
 

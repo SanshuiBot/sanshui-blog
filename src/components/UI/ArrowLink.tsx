@@ -14,6 +14,12 @@ interface ArrowLinkProps {
   prefetch?: boolean;
   /** 透传给 <Link> 的 onClick（导航等待胶囊由全局委托自动接管，无需在此接线） */
   onClick?: MouseEventHandler<HTMLAnchorElement>;
+  /**
+   * 文章页「返回」专用：打 data-back-link 标，供 <head> 内联脚本
+   * back-button-bootstrap.ts 在 hydration 前识别并代劳返回上一页。
+   * 其他页面（归档/标签/关于等）的「返回首页」链接是普通导航，不打标。
+   */
+  backLink?: boolean;
   /** 链接文字 */
   children: ReactNode;
 }
@@ -32,6 +38,7 @@ export default function ArrowLink({
   className = '',
   prefetch,
   onClick,
+  backLink,
   children,
 }: ArrowLinkProps) {
   const Icon = dir === 'back' ? ArrowLeft : ArrowRight;
@@ -48,7 +55,13 @@ export default function ArrowLink({
   // back：箭头在文字左侧（向左移）；more：箭头在文字右侧（向右移）
   return (
     <motion.div initial="idle" whileHover="hovered" className="inline-block">
-      <Link href={href} prefetch={prefetch} onClick={onClick} className={className}>
+      <Link
+        href={href}
+        prefetch={prefetch}
+        onClick={onClick}
+        className={className}
+        data-back-link={backLink ? '' : undefined}
+      >
         {dir === 'back' ? (
           <>
             {arrow}
